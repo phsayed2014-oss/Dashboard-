@@ -3489,23 +3489,13 @@ function renderAll(){
     [...tb.querySelectorAll('tr')].forEach((tr,i)=>{tr.style.animationDelay=Math.min(i*10,180)+'ms';tr.classList.add('row-animate');});
   }),60);
 }
-function renderActive(){
-  const at=window._activePanel||(document.querySelector('.tab.active')?.dataset.panel)||'overview';
-  /* ── SECTION ROUTING: panels that don't need branch picker ── */
-  const noBranch=['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','drugintel','targettrack','nearexpiry','plsales','pureherb','dailytrack','agedmeds'];
-  document.getElementById('branchPickerCard').style.display=noBranch.includes(at)?'none':'block';
-
-  /* ── NO-BRANCH panels ── */
-  if(at==='featured'){renderFeatured();return;} /* FIX: تجديد كل كروت القسم عند الفتح بما فيها الجدول المجمّع */
-  if(at==='targeted'){renderTargeted();return;}
-  if(at==='compare'){renderCompare();return;}
-  if(at==='timecomp'){renderTimeComp();return;}
-  /* ══════════════════════════════════════════
+/* ══════════════════════════════════════════
    SECTION: قسم الأدوية آجل — مقارنة أول 6 أشهر 2025/2026
    مصدر البيانات: تقرير "التعاون - المجمعات الثلاثة - مدمج بالتخصص"
    (بيانات ثابتة مُستخرجة ومُدقَّقة يدويًا — ليست من رفع ملف Oracle)
 ══════════════════════════════════════════ */
-const AGEDMEDS_DATA = {
+const AGEDMEDS_KEY = 'pharmdash_agedmeds_v1';
+const AGEDMEDS_DEFAULT = {
   months: ['يناير','فبراير','مارس','أبريل','مايو','يونيو'],
   y2025: {
     T1: [1135979,1028298,917551,1085674,1094024,879284],
@@ -3521,6 +3511,64 @@ const AGEDMEDS_DATA = {
   specialties2025: [["الطب العام",2419631],["الباطنة",2394220],["العظام",759043],["الاطفال",757865],["العيون",444877],["الانف والاذن",387332],["النسا والولادة",343652],["النفسية",311816],["الجلدية",306911],["الاسنان",279427]],
   specialties2026: [["الطب العام",1866550],["الباطنة",1755057],["العظام",697791],["الاطفال",539580],["العيون",418948],["الانف والاذن",284985],["النسا والولادة",283150],["الجلدية",261722],["النفسية",218604],["المسالك",179390]]
 };
+let AGEDMEDS_DATA = loadAgedMedsData();
+
+function loadAgedMedsData(){
+  try{
+    const raw = localStorage.getItem(AGEDMEDS_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(parsed && parsed.y2025 && parsed.y2026 && parsed.months) return parsed;
+    }
+  }catch(e){}
+  return JSON.parse(JSON.stringify(AGEDMEDS_DEFAULT));
+}
+function saveAgedMedsData(data){
+  AGEDMEDS_DATA = data;
+  try{ localStorage.setItem(AGEDMEDS_KEY, JSON.stringify(data)); }catch(e){}
+}
+function parseAgedMedsNum(v){
+  return Math.max(0, Math.round(parseFloat(String(v).replace(/[^\d.]/g,''))||0));
+}
+function syncAgedMedsJuneConfirmed(){
+  AGEDMEDS_DATA.june2026Confirmed = agedMedsTotals('y2026')[5];
+}
+function agedMedsInputStyle(){
+  return 'width:100%;min-width:72px;max-width:110px;padding:4px 8px;text-align:left;direction:ltr;font-family:Inter,Alexandria,sans-serif;font-size:12px;font-weight:700;background:var(--bg-glass2);border:1px solid rgba(37,99,235,.25);border-radius:6px;color:var(--text);';
+}
+function agedMedsCell(year, branch, monthIdx){
+  const v = AGEDMEDS_DATA[year][branch][monthIdx];
+  return '<td class="num" style="padding:4px 6px;"><input type="text" inputmode="numeric" class="agedmeds-inp" value="'+v+'" onchange="updateAgedMedsCell(\''+year+'\',\''+branch+'\','+monthIdx+',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}" style="'+agedMedsInputStyle()+'"></td>';
+}
+function agedMedsSpecCell(year, specIdx, value){
+  return '<td class="num" style="padding:4px 6px;"><input type="text" inputmode="numeric" class="agedmeds-inp" value="'+value+'" onchange="updateAgedMedsSpec(\''+year+'\','+specIdx+',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}" style="'+agedMedsInputStyle()+'"></td>';
+}
+function updateAgedMedsCell(year, branch, monthIdx, raw){
+  AGEDMEDS_DATA[year][branch][monthIdx] = parseAgedMedsNum(raw);
+  if(year==='y2026' && monthIdx===5) syncAgedMedsJuneConfirmed();
+  saveAgedMedsData(AGEDMEDS_DATA);
+  renderAgedMeds();
+}
+function updateAgedMedsSpec(year, specIdx, raw){
+  const n = parseAgedMedsNum(raw);
+  if(year==='y2025'){
+    AGEDMEDS_DATA.specialties2025[specIdx][1] = n;
+  }else{
+    const name = AGEDMEDS_DATA.specialties2025[specIdx][0];
+    const match = AGEDMEDS_DATA.specialties2026.find(function(s){ return s[0]===name; });
+    if(match) match[1] = n;
+    else AGEDMEDS_DATA.specialties2026.push([name, n]);
+  }
+  saveAgedMedsData(AGEDMEDS_DATA);
+  renderAgedMeds();
+}
+function resetAgedMedsData(){
+  if(!confirm('استعادة الأرقام الافتراضية؟ سيتم حذف كل التعديلات المحفوظة.')) return;
+  AGEDMEDS_DATA = JSON.parse(JSON.stringify(AGEDMEDS_DEFAULT));
+  saveAgedMedsData(AGEDMEDS_DATA);
+  renderAgedMeds();
+  toast('تمت استعادة الأرقام الافتراضية ✓');
+}
 
 function agedMedsTotals(year){
   const d = AGEDMEDS_DATA[year];
@@ -3528,6 +3576,7 @@ function agedMedsTotals(year){
 }
 
 function renderAgedMeds() {
+  AGEDMEDS_DATA = loadAgedMedsData();
   const container = document.getElementById('agedmeds-content');
   const m = AGEDMEDS_DATA.months;
   const tot25 = agedMedsTotals('y2025');
@@ -3554,23 +3603,27 @@ function renderAgedMeds() {
     const isJune = (i===5);
     return '<tr'+(isJune?' style="background:rgba(217,119,6,.07);"':'')+'>'+
       '<td style="font-weight:700;">'+name+(isJune?' <span class="tag amber" style="font-size:9px;margin-right:4px;">مُدخَل يدوي</span>':'')+'</td>'+
-      '<td class="num">'+fmt(AGEDMEDS_DATA.y2025.T1[i])+'</td><td class="num">'+fmt(AGEDMEDS_DATA.y2025.T2[i])+'</td><td class="num">'+fmt(AGEDMEDS_DATA.y2025.T3[i])+'</td><td class="num" style="font-weight:800;">'+fmt(v25)+'</td>'+
-      '<td class="num">'+fmt(AGEDMEDS_DATA.y2026.T1[i])+'</td><td class="num">'+fmt(AGEDMEDS_DATA.y2026.T2[i])+'</td><td class="num">'+fmt(AGEDMEDS_DATA.y2026.T3[i])+'</td><td class="num" style="font-weight:800;">'+fmt(v26)+'</td>'+
+      agedMedsCell('y2025','T1',i)+agedMedsCell('y2025','T2',i)+agedMedsCell('y2025','T3',i)+'<td class="num" style="font-weight:800;">'+fmt(v25)+'</td>'+
+      agedMedsCell('y2026','T1',i)+agedMedsCell('y2026','T2',i)+agedMedsCell('y2026','T3',i)+'<td class="num" style="font-weight:800;">'+fmt(v26)+'</td>'+
       '<td class="num" style="color:'+gc+';font-weight:800;">'+(g>=0?'+':'')+g.toFixed(1)+'%</td></tr>';
   }).join('');
 
-  const specRows = AGEDMEDS_DATA.specialties2025.map(function(row){
+  const specRows = AGEDMEDS_DATA.specialties2025.map(function(row, idx){
     const name=row[0], v25=row[1];
     const match = AGEDMEDS_DATA.specialties2026.find(function(s){return s[0]===name;});
     const v26 = match ? match[1] : 0;
     const g = v25>0 ? ((v26-v25)/v25*100) : 0;
     const gc = g>=0 ? 'var(--teal-l)' : 'var(--rose-l)';
-    return '<tr><td style="font-weight:700;">'+escapeHtml(name)+'</td><td class="num">'+fmt(v25)+'</td><td class="num">'+fmt(v26)+'</td><td class="num" style="color:'+gc+';font-weight:800;">'+(g>=0?'+':'')+g.toFixed(1)+'%</td></tr>';
+    return '<tr><td style="font-weight:700;">'+escapeHtml(name)+'</td>'+agedMedsSpecCell('y2025',idx,v25)+agedMedsSpecCell('y2026',idx,v26)+'<td class="num" style="color:'+gc+';font-weight:800;">'+(g>=0?'+':'')+g.toFixed(1)+'%</td></tr>';
   }).join('');
 
   container.innerHTML =
     '<div class="card" style="margin-bottom:16px;">'+
-      '<div class="card-head"><div class="card-title"><span class="dot"></span> الأدوية آجل — مقارنة أول 6 أشهر (2025 مقابل 2026)</div></div>'+
+      '<div class="card-head"><div class="card-title"><span class="dot"></span> الأدوية آجل — مقارنة أول 6 أشهر (2025 مقابل 2026)</div>'+
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'+
+          '<span class="tag amber" style="font-size:10px;">✏️ الأرقام قابلة للتعديل</span>'+
+          '<button type="button" onclick="resetAgedMedsData()" style="padding:6px 12px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:var(--r-md);color:var(--text-muted);font-weight:700;font-size:11px;cursor:pointer;font-family:inherit;">↺ استعادة الافتراضي</button>'+
+        '</div></div>'+
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;">'+
         '<div style="background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(37,99,235,.04));border:1px solid rgba(37,99,235,.3);border-radius:var(--r-lg);padding:18px;text-align:center;">'+
           '<div style="font-size:11px;font-weight:800;color:var(--violet-l);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;">إجمالي H1 2025</div>'+
@@ -3612,6 +3665,7 @@ function renderAgedMeds() {
         '<div style="font-size:12px;font-weight:800;color:var(--text-muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px;">📋 التفصيل الشهري الكامل</div>'+
         '<div style="overflow-x:auto;"><table><thead><tr><th rowspan="2" style="vertical-align:middle;">الشهر</th><th colspan="4" style="text-align:center;">2025</th><th colspan="4" style="text-align:center;">2026</th><th rowspan="2" style="vertical-align:middle;">النمو</th></tr><tr><th>T1</th><th>T2</th><th>T3</th><th>إجمالي</th><th>T1</th><th>T2</th><th>T3</th><th>إجمالي</th></tr></thead><tbody>'+monthRows+'</tbody></table></div>'+
         '<div style="font-size:10.5px;color:var(--text-dim);margin-top:10px;line-height:1.7;">'+
+          '✏️ اضغط على أي رقم في الجدول لتعديله — التغييرات تُحفظ تلقائيًا وتُحدَّث الإجماليات والرسم.<br>'+
           '✓ يونيو 2026: الملف المرفوع لا يحتوي بيانات يونيو بعد — الأرقام مُدخَلة يدويًا ومؤكَّدة من حضرتك (إجمالي مؤكَّد: '+fmt(AGEDMEDS_DATA.june2026Confirmed)+' ريال، مطابق تمامًا لمجموع الفروع الثلاثة أعلاه — سيتم استبداله تلقائيًا عند رفع ملف يونيو الفعلي).<br>'+
           'ملحوظة: عمود "الأدوية" في التقرير الأصلي يمثل بالكامل الجزء "الآجل" من الإيراد (تم التحقق حسابيًا من أن اجمالي الايراد مع/بدون أدوية آجل يتطابقان تمامًا مع طرح هذا العمود).'+
         '</div>'+
@@ -3644,6 +3698,18 @@ function renderAgedMeds() {
   },40);
 }
 
+
+function renderActive(){
+  const at=window._activePanel||(document.querySelector('.tab.active')?.dataset.panel)||'overview';
+  /* ── SECTION ROUTING: panels that don't need branch picker ── */
+  const noBranch=['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','drugintel','targettrack','nearexpiry','plsales','pureherb','dailytrack','agedmeds'];
+  document.getElementById('branchPickerCard').style.display=noBranch.includes(at)?'none':'block';
+
+  /* ── NO-BRANCH panels ── */
+  if(at==='featured'){renderFeatured();return;} /* FIX: تجديد كل كروت القسم عند الفتح بما فيها الجدول المجمّع */
+  if(at==='targeted'){renderTargeted();return;}
+  if(at==='compare'){renderCompare();return;}
+  if(at==='timecomp'){renderTimeComp();return;}
 /* ── SECTION 10: Pareto Analysis ── */
 
   if(at==='pareto'){renderPareto();return;}
