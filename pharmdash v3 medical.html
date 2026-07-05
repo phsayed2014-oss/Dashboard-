@@ -2748,6 +2748,85 @@ tbody tr.clickable:hover{background:rgba(37,99,235,.04)!important;}
 /* ── Actions area ── */
 [data-theme="light"] .actions .btn{font-weight:600!important;}
 
+/* ══════════════════════════════════════════════════════
+   PHARMADASH VISUAL IDENTITY v3
+   ألوان · خطوط · تباعد — تحسين عام آمن (CSS فقط)
+══════════════════════════════════════════════════════ */
+:root{
+  --space-2xs:4px;--space-xs:8px;--space-sm:12px;--space-md:16px;--space-lg:24px;--space-xl:32px;--space-2xl:40px;
+  --font-display:'Alexandria','IBM Plex Sans Arabic',sans-serif;
+  --font-body:'IBM Plex Sans Arabic',sans-serif;
+  --font-num:'Inter','Alexandria',sans-serif;
+  --text-xs:10.5px;--text-sm:12px;--text-base:13.5px;--text-md:15px;--text-lg:18px;--text-xl:24px;--text-2xl:32px;
+  --text-readable:#f2f6ff;--text-readable-dim:#a3b0cc;--text-readable-muted:#6d7c9a;
+  --medical-teal:#0d9488;--medical-teal-soft:rgba(13,148,136,.14);--medical-teal-glow:rgba(13,148,136,.35);
+}
+[data-theme="light"]{
+  --text-readable:#0f172a;--text-readable-dim:#475569;--text-readable-muted:#94a3b8;
+  --medical-teal-soft:rgba(13,148,136,.1);--medical-teal-glow:rgba(13,148,136,.22);
+}
+body{font-family:var(--font-body);font-size:var(--text-base);line-height:1.68;letter-spacing:.012em;color:var(--text-readable);text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+.brand h1,.sb-logo-text .t1,.new-topbar .nb-title h1,.card-title,.login-logo h1,.period-popup-box h3,.feat-title,.mini-dash-name,.tgt-modal-branch .vl{font-family:var(--font-display);letter-spacing:-.025em;}
+.kpi-value,.sb-val,.num,.feat-stat .v,.compare-val,.detail-card .v,.mini-dash-kpi .v,.kpi-hero .hero-num,.tgt-modal-branch .vl,.up-pct,.mini-drug-count{font-family:var(--font-num);font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;}
+.container{padding:var(--space-lg) clamp(14px,2.2vw,26px);max-width:1580px;}
+.wrap .card{padding:clamp(18px,2vw,26px);margin-bottom:var(--space-lg);}
+.card-head{margin-bottom:var(--space-md);padding-bottom:var(--space-sm);gap:var(--space-sm);}
+.kpi-grid{gap:var(--space-md);margin-bottom:var(--space-lg);}
+.kpi{padding:var(--space-md) clamp(16px,2vw,22px);}
+.branch-bar{gap:var(--space-md);margin-bottom:var(--space-lg);}
+.branch-card{padding:var(--space-md) clamp(14px,1.8vw,20px);gap:var(--space-sm);}
+.grid-2,.featured-grid,.compare-grid{gap:var(--space-md);}
+.summary-bar{padding:var(--space-sm) clamp(16px,2.5vw,24px);gap:clamp(14px,2vw,22px);margin-bottom:var(--space-md);}
+.sb-sec-label{padding:var(--space-md) var(--space-md) var(--space-2xs);margin-top:var(--space-xs);}
+.sb-nav-item{padding:10px var(--space-sm);margin:2px var(--space-xs);font-size:var(--text-sm);}
+.new-topbar{padding:var(--space-md) clamp(14px,2vw,22px);gap:var(--space-md);margin-bottom:var(--space-md);}
+.card-title{color:var(--text-readable);}
+.kpi-label,.sb-label,.detail-card .l,.branch-info .meta,.login-field label,.global-search::placeholder{color:var(--text-readable-dim);}
+.kpi-foot,.feat-sub,.sb-logo-text .t2,.login-footer{color:var(--text-readable-muted);}
+[data-theme="light"] .card-title{color:var(--text-readable)!important;}
+[data-theme="light"] .kpi-label{color:var(--text-readable-dim)!important;}
+[data-theme="light"] .kpi-value{color:var(--text-readable)!important;}
+.new-topbar,.topbar{border-color:rgba(96,165,250,.16);box-shadow:0 10px 36px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.05);}
+[data-theme="light"] .new-topbar,[data-theme="light"] .topbar{border-color:rgba(15,23,42,.08)!important;box-shadow:0 4px 20px rgba(15,23,42,.06)!important;}
+.btn{padding:9px 17px;font-size:var(--text-sm);font-weight:700;letter-spacing:.02em;border-radius:11px;}
+.input,.select,.global-search,.login-input{font-size:var(--text-base);padding:11px 15px;border-radius:11px;line-height:1.45;}
+.input::placeholder,.global-search::placeholder,.login-input::placeholder{opacity:.85;}
+.table-wrap{border-radius:12px;border-color:rgba(96,165,250,.12);}
+thead th{padding:11px 15px;font-size:var(--text-xs);letter-spacing:.06em;color:var(--text-readable-dim);}
+tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
+[data-density="compact"] th,[data-density="compact"] td{padding:7px 11px;}
+.kpi::before{height:3px;opacity:.85;background:linear-gradient(90deg,var(--medical-teal),#14b8a6,#60a5fa)!important;}
+.kpi-label{font-size:var(--text-xs);letter-spacing:.05em;}
+.kpi-value{font-size:clamp(26px,3vw,34px);letter-spacing:-.04em;line-height:1.05;}
+.branch-info .name{font-size:var(--text-md);font-weight:800;letter-spacing:-.02em;}
+.branch-info .meta{font-size:var(--text-xs);margin-top:var(--space-2xs);line-height:1.45;}
+.sb-logo{padding:var(--space-lg) var(--space-md) var(--space-md);}
+.sb-logo-text .t2{font-size:var(--text-xs);line-height:1.4;}
+.sb-user{padding:var(--space-sm) var(--space-xs);}
+#loginScreen{background:radial-gradient(900px 520px at 18% 12%,rgba(37,99,235,.18),transparent 62%),radial-gradient(700px 480px at 82% 88%,rgba(13,148,136,.16),transparent 58%),var(--bg-void);}
+.login-box{padding:clamp(28px,4vw,40px);border-radius:22px;border:1px solid rgba(96,165,250,.2);box-shadow:0 28px 80px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06);}
+.login-logo h1{font-size:var(--text-xl);margin-top:var(--space-sm);}
+.login-logo p{font-size:var(--text-sm);line-height:1.5;}
+.login-field{margin-bottom:var(--space-md);}
+.login-btn{margin-top:var(--space-xs);padding:13px;font-size:var(--text-md);border-radius:12px;letter-spacing:.02em;}
+[data-theme="light"] #loginScreen{background:linear-gradient(145deg,#f0fdfa 0%,#f8fafc 45%,#ecfdf5 100%)!important;}
+[data-theme="light"] .login-box{background:#fff!important;border-color:rgba(15,23,42,.08)!important;box-shadow:0 20px 60px rgba(15,23,42,.1)!important;}
+.sb-nav-item[data-tab="pureherb"]{border-right:2px solid rgba(124,58,237,.45)!important;}
+.sb-nav-item[data-tab="featured"]{border-right:2px solid rgba(13,148,136,.45)!important;}
+.sb-nav-item[data-tab="nearexpiry"]{border-right:2px solid rgba(220,38,38,.4)!important;}
+.sb-nav-item[data-tab="targeted"]{border-right:2px solid rgba(217,119,6,.45)!important;}
+.feat-card{border-radius:16px;padding:var(--space-md);transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;}
+.feat-card:hover{transform:translateY(-3px);box-shadow:0 14px 36px rgba(0,0,0,.22);}
+.feat-title{font-size:var(--text-md);line-height:1.35;}
+.feat-stat .l{font-size:var(--text-xs);letter-spacing:.04em;text-transform:uppercase;}
+.feat-stat .v{font-size:var(--text-lg);margin-top:var(--space-2xs);}
+.pl-pill{border-radius:14px;padding:var(--space-sm) var(--space-md);}
+.sb-val{font-size:clamp(17px,2vw,20px);letter-spacing:-.03em;}
+.sb-label{font-size:var(--text-xs);letter-spacing:.05em;}
+@media(max-width:768px){.container{padding:var(--space-md) var(--space-sm);}.new-topbar{padding:var(--space-sm) var(--space-sm);}.kpi-grid{gap:var(--space-sm);}.card{padding:var(--space-md);}.summary-bar{padding:var(--space-sm) var(--space-md);gap:var(--space-sm);}.sb-divider{height:24px;}}
+@media(max-width:480px){body{font-size:13px;}.kpi-value{font-size:26px;}.login-box{padding:var(--space-lg) var(--space-md);}}
+@media(prefers-reduced-motion:reduce){.feat-card:hover,.kpi:hover,.card:hover,.btn:hover{transform:none!important;}}
+
 </style>
 </head>
 <body>
@@ -3396,7 +3475,7 @@ function aggregate(rows){
 }
 async function parseExcel(file){const buf=await file.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});const sh=wb.Sheets[wb.SheetNames[0]];return XLSX.utils.sheet_to_json(sh,{defval:'',raw:true}).map(normalizeRow).filter(Boolean);}
 async function parseCSV(file){const text=await file.text();const wb=XLSX.read(text,{type:'string'});const sh=wb.Sheets[wb.SheetNames[0]];return XLSX.utils.sheet_to_json(sh,{defval:''}).map(normalizeRow).filter(Boolean);}
-function normalizeRow(r){const map={};Object.keys(r).forEach(k=>map[k.replace(/\s+/g,'').toLowerCase()]=k);const get=(...keys)=>{for(const k of keys){const key=map[k.toLowerCase()];if(key!==undefined){const v=r[key];if(v!==''&&v!=null) return String(v).trim();}}return'';};const doctor=get('doctorname','اسمالطبيب');const service=get('servicename','اسمالخدمة');const section=get('sectionname','اسمالقسم');const patient=get('patientno','رقمالمريض');const patientName=get('patientname','اسمالمريض');const orderNo=get('orderno','رقمالأمر');const status=get('status','الحالة');if(!doctor&&!service) return null;return{doctor,service,section,patient,patientName,orderNo,status};}
+function normalizeRow(r){const map={};Object.keys(r).forEach(k=>map[k.replace(/\s+/g,'').toLowerCase()]=k);const get=(...keys)=>{for(const k of keys){const key=map[k.toLowerCase()];if(key!==undefined){const v=r[key];if(v!==''&&v!=null) return String(v).replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();}}return'';};const doctor=get('doctorname','اسمالطبيب');const service=get('servicename','اسمالخدمة');const section=get('sectionname','اسمالقسم');const patient=get('patientno','رقمالمريض');const patientName=get('patientname','اسمالمريض');const orderNo=get('orderno','رقمالأمر');const status=get('status','الحالة');if(!doctor&&!service) return null;return{doctor,service,section,patient,patientName,orderNo,status};}
 async function parsePDF(file){
   if(!window.pdfjsLib) window.pdfjsLib=window['pdfjs-dist/build/pdf'];
   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -4289,6 +4368,123 @@ function editPLTarget(){
 
 
 /* ══════════════════════════════════════════
+   مستهدف مبيعات PureHerb — إدخال يدوي، يُحفظ تلقائياً
+   نفس نمط مستهدف Private Label (gauge + شريط تقدّم + متبقٍ)
+══════════════════════════════════════════ */
+const PH_TARGET_KEY = 'pharmdash_ph_target_v1';
+
+function loadPHTarget(){
+  try{ const r=localStorage.getItem(PH_TARGET_KEY); if(r) return JSON.parse(r); }catch(e){}
+  return { target:20000, achieved:0, month:'يونيو 2026', currency:'ريال' };
+}
+function savePHTarget(t){
+  try{ localStorage.setItem(PH_TARGET_KEY, JSON.stringify(t)); }catch(e){}
+}
+
+function renderPHTarget(){
+  const box = document.getElementById('phTargetCard');
+  if(!box) return;
+  const t = loadPHTarget();
+  const pct = t.target>0 ? Math.min(100, (t.achieved/t.target*100)) : 0;
+  const remaining = Math.max(0, t.target - t.achieved);
+  const over = t.achieved > t.target;
+  const pace = plPaceInfo(remaining);
+
+  let color, statusLabel;
+  if(pct>=100){ color='#0d9488'; statusLabel='🎉 تحقق الهدف!'; }
+  else if(pct>=75){ color='#84cc16'; statusLabel='قريب من الهدف'; }
+  else if(pct>=50){ color='#d97706'; statusLabel='في المنتصف'; }
+  else if(pct>=25){ color='#fb923c'; statusLabel='يحتاج دفعة'; }
+  else { color='#7c3aed'; statusLabel='البداية'; }
+
+  box.innerHTML = `
+    <div style="background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(109,40,217,.04));border:1.5px solid rgba(124,58,237,.25);border-radius:var(--r-lg);padding:20px;">
+      <div class="flex-between" style="flex-wrap:wrap;gap:12px;margin-bottom:18px;">
+        <div>
+          <div style="font-size:15px;font-weight:900;font-family:'Inter','Alexandria',sans-serif;display:flex;align-items:center;gap:8px;">
+            مستهدف مبيعات PureHerb
+            <span style="font-size:10px;background:rgba(124,58,237,.12);color:#7c3aed;padding:2px 9px;border-radius:99px;font-weight:800;">${escapeHtml(t.month)}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:3px;">${statusLabel}</div>
+        </div>
+        <button onclick="editPHTarget()" style="padding:7px 14px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:var(--r-md);color:var(--text-muted);font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;">✏️ تعديل الأرقام</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;">
+        <div style="text-align:center;flex-shrink:0;">
+          ${plGaugeSVG(pct, color)}
+        </div>
+        <div>
+          <div style="margin-bottom:16px;">
+            <div class="flex-between" style="margin-bottom:6px;">
+              <span style="font-size:12px;font-weight:700;color:var(--text-muted);">التقدّم نحو الهدف</span>
+              <span class="num-font" style="font-size:14px;font-weight:900;color:${color};">${pct.toFixed(1)}%</span>
+            </div>
+            <div style="height:12px;background:var(--border);border-radius:6px;overflow:hidden;">
+              <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${color}aa,${color});border-radius:6px;transition:width .6s ease;"></div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div class="compare-card compare-card-muted">
+              <div>
+                <div class="c-title">المحقّق حتى الآن</div>
+                <div class="c-price" style="color:var(--teal-l);">${fmt(t.achieved)}</div>
+                <div class="c-sub">${escapeHtml(t.currency)}</div>
+              </div>
+              <div style="font-size:28px;opacity:.2;">✅</div>
+            </div>
+            <div class="compare-card compare-card-muted">
+              <div>
+                <div class="c-title">المستهدف الشهري</div>
+                <div class="c-price" style="color:var(--text);">${fmt(t.target)}</div>
+                <div class="c-sub">${escapeHtml(t.currency)}</div>
+              </div>
+              <div style="font-size:28px;opacity:.2;">🎯</div>
+            </div>
+            <div class="compare-card ${over?'card-gradient-teal':'card-gradient-amber'}">
+              <div>
+                <div class="c-title">${over?'تجاوزت الهدف بـ':'المتبقّي للهدف'}</div>
+                <div class="c-price">${fmt(over?t.achieved-t.target:remaining)}</div>
+                <div class="c-sub">${over?'احتفل! 🎉':'اقترب أكثر 💪'}</div>
+              </div>
+              <div style="font-size:28px;opacity:.25;">${over?'🏆':'⚡'}</div>
+            </div>
+            <div class="compare-card compare-card-muted">
+              <div>
+                <div class="c-title">المطلوب يومياً للحاق الهدف</div>
+                <div class="c-price" style="color:${over?'var(--teal-l)':'#7c3aed'};">${over?'✓ تم':fmt(Math.ceil(pace.perDay))}</div>
+                <div class="c-sub">${pace.days} يوم عمل متبقٍ (بدون الجمعة)</div>
+              </div>
+              <div style="font-size:28px;opacity:.2;">📆</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function editPHTarget(){
+  const t = loadPHTarget();
+  const achieved = prompt('رقم مبيعات PureHerb المحقّق (بالريال):', t.achieved);
+  if(achieved===null) return;
+  const target = prompt('مستهدف مبيعات PureHerb (بالريال):', t.target);
+  if(target===null) return;
+  const month = prompt('الشهر:', t.month);
+  if(month===null) return;
+  const nt = {
+    target: parseFloat(String(target).replace(/[^\d.]/g,''))||20000,
+    achieved: parseFloat(String(achieved).replace(/[^\d.]/g,''))||0,
+    month: month||t.month,
+    currency: t.currency||'ريال'
+  };
+  savePHTarget(nt);
+  renderPHTarget();
+  toast('تم تحديث مستهدف PureHerb ✓');
+}
+
+
+/* ══════════════════════════════════════════
    مقارنة Private Label — بالعدد (تلقائي) + بالمبلغ (يدوي)
 ══════════════════════════════════════════ */
 const PL_AMOUNT_KEY = 'pharmdash_pl_amounts_v1';
@@ -4597,7 +4793,7 @@ function showPLShareCard(name){
     + '<span style="font-weight:800;color:' + _totalLabel + ';font-size:13.5px;">إجمالي كتابات منتجاتنا</span>'
     + '<span style="font-family:\'Inter\',sans-serif;font-weight:700;font-size:26px;color:#14b8a6;">' + fmt(d.total) + '</span></div>'
     + '<div style="text-align:center;margin-top:16px;font-size:12.5px;color:' + _thanksColor + ';">شكراً لثقتكم ودعمكم لمنتجاتنا 🌟</div>'
-    + '<div style="text-align:center;margin-top:10px;font-size:9.5px;color:' + _dateColor + ';">التقرير الاسبوعي لرئيس مجلس الادارة الفترة يونيو 2026</div>'
+    + '<div style="text-align:center;margin-top:10px;font-size:9.5px;color:' + _dateColor + ';">التقرير الدوري لرئيس مجلس الادارة يوليو 2027</div>'
     + '</div>';
   document.body.appendChild(ov);
 }
@@ -7307,12 +7503,14 @@ function renderNearExpiry(){
   if(loaded.length){
     items.forEach(item=>{
       const code = item.code;
-      const nameLC = item.name.toLowerCase();
+      const nameLC = item.name.replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim().toLowerCase();
+      const nameKey = nameLC.split(' ').slice(0,2).join(' ');
       let totalRx = 0, docs = new Set();
       loaded.forEach(b=>{
         const d = STATE.data[b];
         d.drugs.forEach(drug=>{
-          if(drug.name.toLowerCase().includes(nameLC.split(' ')[0].toLowerCase())){
+          const drugNameLC = drug.name.replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim().toLowerCase();
+          if(nameKey && drugNameLC.includes(nameKey)){
             totalRx += drug.total;
             drug.doctors.forEach(dr=>docs.add(dr.name));
           }
@@ -9676,7 +9874,8 @@ function renderPureHerb(){
   if(!el) return;
   const loaded = Object.keys(STATE.data).filter(b=>STATE.data[b]);
   if(!loaded.length){
-    el.innerHTML='<div class="card"><div style="text-align:center;padding:48px 24px;"><h3 style="color:var(--text-dim);margin-bottom:8px;">لا توجد بيانات</h3><p style="color:var(--text-muted);font-size:13px;">يرجى رفع ملف الفرع (PDF أو Excel) من شريط الفروع بالأعلى</p></div></div>';
+    el.innerHTML='<div id="phTargetCard" style="margin-bottom:16px;"></div><div class="card"><div style="text-align:center;padding:48px 24px;"><h3 style="color:var(--text-dim);margin-bottom:8px;">لا توجد بيانات كتابات</h3><p style="color:var(--text-muted);font-size:13px;">مبيعات ومستهدف PureHerb أعلاه يُدخلان يدوياً. لتحليل الكتابات، ارفع ملف الفرع (PDF أو Excel) من شريط الفروع بالأعلى</p></div></div>';
+    renderPHTarget();
     return;
   }
   /* Collect PureHerb drugs from loaded branches */
@@ -9695,7 +9894,7 @@ function renderPureHerb(){
     });
   });
   var totalAll = Object.values(phData).reduce((s,x)=>s+x.total,0);
-  var html='<div class="card"><div class="card-head"><div class="card-title"><span class="dot" style="background:#7c3aed;"></span> أصناف PureHerb — تحليل الكتابات</div></div><div class="card-body">';
+  var html='<div id="phTargetCard" style="margin-bottom:16px;"></div><div class="card"><div class="card-head"><div class="card-title"><span class="dot" style="background:#7c3aed;"></span> أصناف PureHerb — تحليل الكتابات</div></div><div class="card-body">';
   /* KPI strip */
   html+='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">';
   html+='<div style="flex:1;min-width:140px;background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:12px;padding:16px;text-align:center;">';
@@ -9735,6 +9934,7 @@ function renderPureHerb(){
   }
   html+='</div></div>';
   el.innerHTML=html;
+  renderPHTarget();
 }
 
 </script>
