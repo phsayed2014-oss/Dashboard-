@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Alexandria:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#0d9488">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232563eb'/><text x='50' y='65' text-anchor='middle' font-size='48' font-weight='900' fill='white' font-family='system-ui'>PD</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -2827,9 +2827,52 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 @media(max-width:480px){body{font-size:13px;}.kpi-value{font-size:26px;}.login-box{padding:var(--space-lg) var(--space-md);}}
 @media(prefers-reduced-motion:reduce){.feat-card:hover,.kpi:hover,.card:hover,.btn:hover{transform:none!important;}}
 
+/* ══════════════════════════════════════════════════════
+   PHARMADASH GLOBAL UX v3.1 — onboarding · breadcrumbs · a11y
+══════════════════════════════════════════════════════ */
+.pd-skip-link{position:fixed;top:-100px;right:16px;z-index:99999;padding:10px 16px;background:var(--medical-teal,#0d9488);color:#fff;font-weight:800;font-size:var(--text-sm,12px);border-radius:10px;text-decoration:none;box-shadow:var(--shadow-sm);transition:top .2s ease;}
+.pd-skip-link:focus{top:16px;outline:3px solid rgba(96,165,250,.55);outline-offset:2px;}
+:focus-visible{outline:2px solid rgba(96,165,250,.65);outline-offset:2px;}
+.btn:focus-visible,.sb-nav-item:focus-visible,.branch-upload-btn:focus-visible,.login-btn:focus-visible{outline:2px solid rgba(96,165,250,.75);outline-offset:2px;}
+.page-context{padding:0 clamp(14px,2.2vw,26px) var(--space-sm,12px);max-width:1580px;margin:0 auto var(--space-sm,12px);}
+.pd-breadcrumb{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:var(--text-xs,11px);color:var(--text-readable-muted,var(--text-muted));}
+.pd-breadcrumb .bc-sep{opacity:.45;font-size:10px;}
+.pd-breadcrumb .bc-current{color:var(--text-readable,var(--text));font-weight:800;font-size:var(--text-sm,12px);}
+.page-context-desc{margin:6px 0 0;font-size:var(--text-sm,12px);line-height:1.55;color:var(--text-readable-dim,var(--text-dim));max-width:720px;}
+.search-kbd-hint{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:var(--text-muted);background:var(--bg-glass2);border:1px solid var(--border);border-radius:6px;padding:2px 6px;pointer-events:none;font-family:var(--font-num,Inter,sans-serif);}
+.global-search-wrap .global-search-icon{left:auto;right:11px;}
+.global-search-wrap .global-search{padding-left:52px;padding-right:36px;}
+.pd-empty-state{text-align:center;padding:clamp(36px,5vw,56px) clamp(16px,3vw,28px);border:1px dashed rgba(96,165,250,.22);border-radius:var(--r-lg,16px);background:linear-gradient(180deg,rgba(13,148,136,.04),transparent);}
+.pd-empty-state .es-ico{font-size:48px;line-height:1;margin-bottom:14px;opacity:.55;display:block;}
+.pd-empty-state h3{color:var(--text-readable,var(--text));font-size:var(--text-md,15px);font-weight:800;margin:0 0 8px;font-family:var(--font-display,Alexandria,sans-serif);}
+.pd-empty-state p{color:var(--text-readable-dim,var(--text-dim));font-size:var(--text-sm,12px);line-height:1.6;margin:0 auto 16px;max-width:420px;}
+.pd-empty-state .es-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.pd-empty-state .es-btn{padding:9px 16px;border-radius:11px;font-size:var(--text-sm,12px);font-weight:800;border:1px solid rgba(13,148,136,.35);background:rgba(13,148,136,.12);color:var(--teal-l,#14b8a6);cursor:pointer;font-family:inherit;}
+.pd-empty-state .es-btn.secondary{background:var(--bg-glass2);border-color:var(--border);color:var(--text-readable-dim,var(--text-dim));}
+#onboardOverlay{position:fixed;inset:0;z-index:10050;background:rgba(2,6,20,.72);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:16px;}
+#onboardOverlay.show{display:flex;}
+.onboard-box{width:min(520px,100%);background:var(--bg-card);border:1px solid rgba(96,165,250,.2);border-radius:22px;padding:clamp(22px,4vw,32px);box-shadow:var(--shadow-lg);animation:loginIn .45s cubic-bezier(.34,1.56,.64,1) both;}
+.onboard-box h2{margin:0 0 6px;font-family:var(--font-display,Alexandria,sans-serif);font-size:var(--text-lg,18px);}
+.onboard-box .ob-sub{color:var(--text-readable-dim,var(--text-dim));font-size:var(--text-sm,12px);margin-bottom:18px;line-height:1.5;}
+.onboard-steps{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.ob-step{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:14px;border:1px solid var(--border);background:var(--bg-glass);}
+.ob-step.active{border-color:rgba(13,148,136,.45);background:rgba(13,148,136,.08);}
+.ob-num{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;background:var(--bg-glass2);color:var(--text-muted);}
+.ob-step.active .ob-num{background:linear-gradient(135deg,#0d9488,#14b8a6);color:#fff;}
+.ob-step strong{display:block;font-size:var(--text-sm,12px);margin-bottom:3px;}
+.ob-step span{font-size:var(--text-xs,11px);color:var(--text-readable-dim,var(--text-dim));line-height:1.45;}
+.onboard-actions{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;}
+.onboard-actions .btn.primary{background:linear-gradient(135deg,#0d9488,#14b8a6)!important;color:#fff!important;border:none!important;}
+[data-theme="light"] #onboardOverlay{background:rgba(15,23,42,.45);}
+[data-theme="light"] .onboard-box{background:#fff;border-color:rgba(15,23,42,.08);}
+[data-theme="light"] .ob-step{background:#f8fafc;}
+[data-theme="light"] .page-context-desc{color:#64748b!important;}
+@media(max-width:768px){.page-context-desc{display:none;}.search-kbd-hint{display:none;}.pd-breadcrumb{overflow-x:auto;white-space:nowrap;}}
+
 </style>
 </head>
 <body>
+<a href="#mainContent" class="pd-skip-link">تخطي إلى المحتوى</a>
 <!-- ══════════════ LOGIN SCREEN ══════════════ -->
 <div id="loginScreen">
   <div class="login-box">
@@ -2855,6 +2898,23 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
   </div>
 </div>
 <!-- ══════════════ END LOGIN ══════════════ -->
+
+<div id="onboardOverlay" role="dialog" aria-modal="true" aria-labelledby="onboardTitle" onclick="if(event.target===this)closeOnboarding(false)">
+  <div class="onboard-box">
+    <h2 id="onboardTitle">مرحباً في PharmaDash</h2>
+    <p class="ob-sub">دليل سريع لبدء التحليل — 3 خطوات فقط</p>
+    <div class="onboard-steps">
+      <div class="ob-step active" id="obStep1"><div class="ob-num">1</div><div><strong>ارفع ملف فرع</strong><span>اضغط «رفع» بجانب T1 أو T2 أو T3 — PDF أو Excel</span></div></div>
+      <div class="ob-step" id="obStep2"><div class="ob-num">2</div><div><strong>تنقّل بين الأقسام</strong><span>استخدم القائمة الجانبية: NOSTRI · PureHerb · الأطباء · المقارنات</span></div></div>
+      <div class="ob-step" id="obStep3"><div class="ob-num">3</div><div><strong>بحث فوري</strong><span>اضغط Ctrl+K للبحث عن أي طبيب أو دواء من أي مكان</span></div></div>
+    </div>
+    <div class="onboard-actions">
+      <button type="button" class="btn" onclick="closeOnboarding(false)">تخطي</button>
+      <button type="button" class="btn primary" id="onboardNextBtn" onclick="onboardNext(2)">التالي</button>
+    </div>
+  </div>
+</div>
+
 <canvas id="bgCanvas"></canvas>
 <!-- Mobile overlay -->
 <div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
@@ -2958,25 +3018,29 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 
   <!-- Title -->
   <div class="nb-title">
-    <h1>PharmaDash</h1>
+    <h1 id="pageTitle">PharmaDash</h1>
     <div class="sub" id="todayDate">
       <span class="live-dot"></span>
       <span>بيانات يونيو 2026</span>
       <span class="dot-sep"></span>
       <span>T1 / T2 / T3</span>
+      <span class="dot-sep"></span>
+      <span style="font-size:10px;opacity:.75;">v3.1 Global</span>
     </div>
   </div>
 
   <!-- Search -->
   <div class="global-search-wrap">
+    <span class="search-kbd-hint" aria-hidden="true">Ctrl+K</span>
     <span class="global-search-icon">🔍</span>
-    <input class="global-search" id="globalSearch" placeholder="بحث سريع: طبيب أو دواء..." autocomplete="off">
+    <input class="global-search" id="globalSearch" aria-label="بحث سريع" placeholder="بحث سريع: طبيب أو دواء..." autocomplete="off">
     <div class="search-results-dropdown" id="searchDropdown"></div>
   </div>
 
   <!-- Actions -->
   <div class="actions">
     <!-- saved badge removed -->
+    <button class="btn" onclick="showOnboarding(true)" title="جولة تعريفية" aria-label="جولة تعريفية">❔</button>
     <button class="btn" id="themeBtn" onclick="toggleTheme()" title="Dark / Light">☀️</button>
     <button class="btn" id="exportXlsxBtn">Excel</button>
     <button class="btn btn-success" id="shareBtn">مشاركة</button>
@@ -2984,9 +3048,14 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
   </div>
 </div>
 
+<div class="page-context" id="pageContext" aria-live="polite">
+  <nav class="pd-breadcrumb" id="pdBreadcrumb" aria-label="مسار التنقل"></nav>
+  <p class="page-context-desc" id="pageContextDesc"></p>
+</div>
+
 <div class="wrap">
 <div class="loading-bar" id="loadingBar"></div>
-<div class="container">
+<div class="container" id="mainContent">
 
 <div class="branch-bar">
   <div class="branch-card t1" data-branch="T1">
@@ -3815,7 +3884,7 @@ function renderActive(){
   if(!d && at==='overview' && loadedBranches.length) d = STATE.data[loadedBranches[0]];
   if(!d){
     const el=document.getElementById(at+'-content');
-    if(el)el.innerHTML='<div class="card"><div class="no-data"><div><div class="ico">📤</div><h2>ارفع أول ملف لبدء التحليل</h2><p style="color:var(--text-dim)">اضغط على زرار "رفع" بجانب أي فرع</p></div></div></div>';
+    if(el)el.innerHTML=emptyStateHTML({icon:'📤',title:'ارفع أول ملف لبدء التحليل',desc:'اضغط «رفع» بجانب أي فرع (T1 · T2 · T3) — PDF أو Excel',primaryLabel:'رفع ملف T1',primaryAction:"document.querySelector('[data-upload=\'T1\']')?.click()",secondaryLabel:'جولة تعريفية',secondaryAction:'showOnboarding(true)'});
     return;
   }
   /* ── SECTION 1: Overview (الصفحة الرئيسية المدموجة) ── */
@@ -9106,9 +9175,89 @@ function animateNums(root){
   }catch(err){}
 }
 
+
+/* ══════════════════════════════════════════
+   GLOBAL UX v3.1 — breadcrumbs · onboarding · empty states
+══════════════════════════════════════════ */
+const ONBOARD_KEY = 'pharmdash_onboard_v1_done';
+const SECTION_META = {
+  overview:{group:'الرئيسية',title:'نظرة عامة',desc:'ملخص KPIs والاتجاهات لكل فرع في لمحة واحدة.'},
+  visitcard:{group:'الرئيسية',title:'بطاقة زيارة طبيب',desc:'تحضير زيارة ميدانية ببيانات الطبيب وفرص التحويل.'},
+  dailytrack:{group:'الرئيسية',title:'متابعة يومية',desc:'متابعة كتابات الأطباء يومياً وأسبوعياً وشهرياً.'},
+  pureherb:{group:'المستهدفات',title:'PureHerb',desc:'تحليل كتابات PureHerb ومستهدف المبيعات الشهري.'},
+  featured:{group:'المستهدفات',title:'NOSTRI',desc:'أداء منتجات Private Label والكتابات المجمّعة.'},
+  nearexpiry:{group:'المستهدفات',title:'أصناف قرب الانتهاء',desc:'مخزون قريب من الانتهاء مع أولويات التصريف.'},
+  targeted:{group:'المستهدفات',title:'أصناف أوفرستوك',desc:'أصناف ذات مخزون زائد تحتاج خطة تصريف.'},
+  targettrack:{group:'المستهدفات',title:'متابعة الأوفرستوك',desc:'متابعة تنفيذ خطة الأصناف المستهدفة.'},
+  doctors:{group:'تحليلات',title:'الأطباء',desc:'ترتيب الأطباء حسب الكتابات والمساهمة.'},
+  drugs:{group:'تحليلات',title:'الأدوية',desc:'تحليل الأدوية الأكثر كتابة والاتجاهات.'},
+  sections:{group:'تحليلات',title:'الأقسام',desc:'مساهمة الأقسام الطبية في إجمالي الكتابات.'},
+  drugintel:{group:'تحليلات',title:'بحث الأدوية',desc:'بحث متقدم عن دواء وكتاباته حسب الطبيب.'},
+  trends:{group:'تحليلات متقدمة',title:'اتجاه الأطباء',desc:'تتبع صعود وهبوط كتابات الأطباء عبر الزمن.'},
+  loyalty:{group:'تحليلات متقدمة',title:'ولاء الأطباء',desc:'تصنيف الأطباء حسب الاستمرارية والولاء.'},
+  pareto:{group:'تحليلات متقدمة',title:'باريتو 80/20',desc:'تحديد الأطباء والأدوية الأكثر تأثيراً.'},
+  basket:{group:'تحليلات متقدمة',title:'تركّز الأطباء',desc:'تحليل تركّز كتابات الأطباء على أصناف محددة.'},
+  agedmeds:{group:'تحليل مالي',title:'الأدوية آجل',desc:'مقارنة H1 2025/2026 للإيراد الآجل — قابلة للتعديل.'},
+  compare:{group:'مقارنات',title:'مقارنة الفروع',desc:'مقارنة T1 و T2 و T3 جنباً إلى جنب.'},
+  timecomp:{group:'مقارنات',title:'مقارنة زمنية',desc:'مقارنة فترات زمنية مختلفة لنفس الفرع.'},
+  plsales:{group:'المستهدفات',title:'مبيعات PL',desc:'متابعة مبيعات Private Label.'}
+};
+
+function emptyStateHTML(opts){
+  const o = opts || {};
+  const icon = o.icon || '📊';
+  const title = o.title || 'لا توجد بيانات';
+  const desc = o.desc || '';
+  const primary = o.primaryLabel ? `<button type="button" class="es-btn" onclick="${o.primaryAction||''}">${o.primaryLabel}</button>` : '';
+  const secondary = o.secondaryLabel ? `<button type="button" class="es-btn secondary" onclick="${o.secondaryAction||''}">${o.secondaryLabel}</button>` : '';
+  const actions = (primary||secondary) ? `<div class="es-actions">${primary}${secondary}</div>` : '';
+  return `<div class="card"><div class="pd-empty-state"><span class="es-ico">${icon}</span><h3>${title}</h3>${desc?`<p>${desc}</p>`:''}${actions}</div></div>`;
+}
+
+function updatePageContext(panel){
+  const meta = SECTION_META[panel] || {group:'PharmaDash',title:panel||'PharmaDash',desc:''};
+  const titleEl = document.getElementById('pageTitle');
+  const bc = document.getElementById('pdBreadcrumb');
+  const descEl = document.getElementById('pageContextDesc');
+  if(titleEl) titleEl.textContent = meta.title;
+  if(bc){
+    bc.innerHTML = `<span>PharmaDash</span><span class="bc-sep">›</span><span>${meta.group}</span><span class="bc-sep">›</span><span class="bc-current">${meta.title}</span>`;
+  }
+  if(descEl) descEl.textContent = meta.desc || '';
+}
+
+function showOnboarding(force){
+  if(!force){
+    try{ if(localStorage.getItem(ONBOARD_KEY)==='1') return; }catch(e){}
+  }
+  const ov = document.getElementById('onboardOverlay');
+  if(ov) ov.classList.add('show');
+}
+function closeOnboarding(markDone){
+  const ov = document.getElementById('onboardOverlay');
+  if(ov) ov.classList.remove('show');
+  if(markDone!==false){
+    try{ localStorage.setItem(ONBOARD_KEY,'1'); }catch(e){}
+  }
+}
+function onboardNext(step){
+  document.querySelectorAll('.ob-step').forEach((el,i)=>el.classList.toggle('active', i===step-1));
+  const btn = document.getElementById('onboardNextBtn');
+  if(!btn) return;
+  if(step>=3){ btn.textContent='ابدأ الآن'; btn.onclick=()=>closeOnboarding(true); }
+  else { btn.textContent='التالي'; btn.onclick=()=>onboardNext(step+1); }
+}
+function initGlobalUX(){
+  updatePageContext(window._activePanel||'overview');
+  const gs = document.getElementById('globalSearch');
+  if(gs && !gs.placeholder.includes('Ctrl')) gs.placeholder = 'بحث: طبيب · دواء · قسم  (Ctrl+K)';
+  if(sessionStorage.getItem('pharmdash_user')) setTimeout(()=>showOnboarding(false), 600);
+}
+
 function sidebarNav(el, panel) {
   // Track active panel globally
   window._activePanel = panel;
+  updatePageContext(panel);
   // Update sidebar active state
   document.querySelectorAll('.sb-nav-item').forEach(i => i.classList.remove('active'));
   el.classList.add('active');
@@ -9235,7 +9384,7 @@ function doLogin() {
     const screen = document.getElementById('loginScreen');
     screen.style.transition = 'opacity .4s ease';
     screen.style.opacity = '0';
-    setTimeout(() => { screen.style.display = 'none'; }, 400);
+    setTimeout(() => { screen.style.display = 'none'; initGlobalUX(); }, 400);
   } else {
     err.classList.add('show');
     document.getElementById('loginPass').value = '';
@@ -9262,7 +9411,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Check if already logged in this session
   if (sessionStorage.getItem('pharmdash_user')) {
     document.getElementById('loginScreen').style.display = 'none';
-    /* الاستعادة ملغاة */
+    initGlobalUX();
   }
 });
 
