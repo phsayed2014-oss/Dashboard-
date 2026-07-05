@@ -2869,6 +2869,22 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 [data-theme="light"] .page-context-desc{color:#64748b!important;}
 @media(max-width:768px){.page-context-desc{display:none;}.search-kbd-hint{display:none;}.pd-breadcrumb{overflow-x:auto;white-space:nowrap;}}
 
+/* PHARMADASH v3.2 — i18n LTR + Performance */
+html[dir="ltr"] .sidebar{border-left:none;border-right:1px solid var(--sidebar-border);}
+html[dir="ltr"] .sb-nav-item[data-tab="pureherb"],html[dir="ltr"] .sb-nav-item[data-tab="featured"],html[dir="ltr"] .sb-nav-item[data-tab="nearexpiry"],html[dir="ltr"] .sb-nav-item[data-tab="targeted"]{border-right:none!important;border-left:2px solid rgba(124,58,237,.45)!important;}
+html[dir="ltr"] .sb-nav-item[data-tab="featured"]{border-left-color:rgba(13,148,136,.45)!important;}
+html[dir="ltr"] .sb-nav-item[data-tab="nearexpiry"]{border-left-color:rgba(220,38,38,.4)!important;}
+html[dir="ltr"] .sb-nav-item[data-tab="targeted"]{border-left-color:rgba(217,119,6,.45)!important;}
+html[dir="ltr"] .global-search-wrap .global-search-icon{right:auto;left:11px;}
+html[dir="ltr"] .global-search-wrap .global-search{padding-right:15px;padding-left:36px;}
+html[dir="ltr"] .search-kbd-hint{left:auto;right:10px;}
+html[dir="ltr"] .pd-skip-link{right:auto;left:16px;}
+html[dir="ltr"] .pd-breadcrumb{direction:ltr;}
+.lang-toggle{min-width:42px;font-weight:900;font-size:11px;letter-spacing:.04em;font-family:var(--font-num,Inter,sans-serif);}
+.panel:not(.active){content-visibility:hidden;contain-intrinsic-size:auto 420px;}
+.panel.active{content-visibility:visible;}
+.card,.kpi,.feat-card{contain:layout style paint;}
+
 </style>
 </head>
 <body>
@@ -2901,7 +2917,7 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 
 <div id="onboardOverlay" role="dialog" aria-modal="true" aria-labelledby="onboardTitle" onclick="if(event.target===this)closeOnboarding(false)">
   <div class="onboard-box">
-    <h2 id="onboardTitle">مرحباً في PharmaDash</h2>
+    <h2 id="onboardTitle" data-i18n="onboard.title">مرحباً في PharmaDash</h2>
     <p class="ob-sub">دليل سريع لبدء التحليل — 3 خطوات فقط</p>
     <div class="onboard-steps">
       <div class="ob-step active" id="obStep1"><div class="ob-num">1</div><div><strong>ارفع ملف فرع</strong><span>اضغط «رفع» بجانب T1 أو T2 أو T3 — PDF أو Excel</span></div></div>
@@ -2909,7 +2925,7 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
       <div class="ob-step" id="obStep3"><div class="ob-num">3</div><div><strong>بحث فوري</strong><span>اضغط Ctrl+K للبحث عن أي طبيب أو دواء من أي مكان</span></div></div>
     </div>
     <div class="onboard-actions">
-      <button type="button" class="btn" onclick="closeOnboarding(false)">تخطي</button>
+      <button type="button" class="btn" onclick="closeOnboarding(false)" data-i18n="onboard.skip">تخطي</button>
       <button type="button" class="btn primary" id="onboardNextBtn" onclick="onboardNext(2)">التالي</button>
     </div>
   </div>
@@ -2929,7 +2945,7 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
     <div class="sb-logo-icon">PD</div>
     <div class="sb-logo-text">
       <div class="t1">PharmaDash</div>
-      <div class="t2">الإدارة التجارية</div>
+      <div class="t2" data-i18n="brand.sub">الإدارة التجارية</div>
     </div>
   </div>
 
@@ -2937,61 +2953,61 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
   <nav style="flex:1;padding-bottom:8px;">
 
     <!-- ═══ الرئيسية ═══ -->
-    <div class="sb-nav-item active" data-tab="overview" onclick="sidebarNav(this,'overview')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>      <span>نظرة عامة</span>
+    <div class="sb-nav-item active" data-tab="overview" onclick="sidebarNav(this,'overview')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>      <span data-i18n="nav.overview">نظرة عامة</span>
     </div>
-    <div class="sb-nav-item" data-tab="visitcard" onclick="sidebarNav(this,'visitcard')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><line x1="13" y1="9" x2="19" y2="9"/><line x1="13" y1="13" x2="19" y2="13"/></svg></span>      <span>بطاقة زيارة طبيب</span>
+    <div class="sb-nav-item" data-tab="visitcard" onclick="sidebarNav(this,'visitcard')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><line x1="13" y1="9" x2="19" y2="9"/><line x1="13" y1="13" x2="19" y2="13"/></svg></span>      <span data-i18n="nav.visitcard">بطاقة زيارة طبيب</span>
     </div>
-    <div class="sb-nav-item" data-tab="dailytrack" onclick="sidebarNav(this,'dailytrack')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><polyline points="8 14 11 17 16 12"/></svg></span>      <span>متابعة يومية</span>
+    <div class="sb-nav-item" data-tab="dailytrack" onclick="sidebarNav(this,'dailytrack')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><polyline points="8 14 11 17 16 12"/></svg></span>      <span data-i18n="nav.dailytrack">متابعة يومية</span>
     </div>
 
     <!-- ═══ المستهدفات ═══ -->
-    <div class="sb-sec-label">المستهدفات</div>
+    <div class="sb-sec-label" data-i18n="sec.targets">المستهدفات</div>
     <div class="sb-nav-item" data-tab="pureherb" onclick="sidebarNav(this,'pureherb')" style="border-right:2px solid rgba(124,58,237,.5);"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 20 12 12 22 4 12"/><line x1="12" y1="6" x2="12" y2="18"/></svg></span>      <span>PureHerb</span>
     </div>
     <div class="sb-nav-item" data-tab="featured" onclick="sidebarNav(this,'featured')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="8" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/></svg></span>      <span>NOSTRI</span>
     </div>
-    <div class="sb-nav-item" data-tab="nearexpiry" onclick="sidebarNav(this,'nearexpiry')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 15 15"/><line x1="9" y1="2" x2="15" y2="2"/></svg></span>      <span>أصناف قرب الانتهاء</span>
+    <div class="sb-nav-item" data-tab="nearexpiry" onclick="sidebarNav(this,'nearexpiry')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 15 15"/><line x1="9" y1="2" x2="15" y2="2"/></svg></span>      <span data-i18n="nav.nearexpiry">أصناف قرب الانتهاء</span>
     </div>
-    <div class="sb-nav-item" data-tab="targeted" onclick="sidebarNav(this,'targeted')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 8 12 3 21 8 21 16 12 21 3 16"/><polyline points="3 8 12 13 21 8"/><line x1="12" y1="13" x2="12" y2="21"/></svg></span>      <span>أصناف أوفرستوك</span>
+    <div class="sb-nav-item" data-tab="targeted" onclick="sidebarNav(this,'targeted')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 8 12 3 21 8 21 16 12 21 3 16"/><polyline points="3 8 12 13 21 8"/><line x1="12" y1="13" x2="12" y2="21"/></svg></span>      <span data-i18n="nav.targeted">أصناف أوفرستوك</span>
     </div>
-    <div class="sb-nav-item" data-tab="targettrack" onclick="sidebarNav(this,'targettrack')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><polyline points="4 6 5 7 7 5"/><polyline points="4 12 5 13 7 11"/><polyline points="4 18 5 19 7 17"/></svg></span>      <span>متابعة أصناف الأوفرستوك</span>
+    <div class="sb-nav-item" data-tab="targettrack" onclick="sidebarNav(this,'targettrack')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><polyline points="4 6 5 7 7 5"/><polyline points="4 12 5 13 7 11"/><polyline points="4 18 5 19 7 17"/></svg></span>      <span data-i18n="nav.targettrack">متابعة أصناف الأوفرستوك</span>
     </div>
 
     <!-- ═══ تحليلات ═══ -->
-    <div class="sb-sec-label">تحليلات</div>
-    <div class="sb-nav-item" data-tab="doctors" onclick="sidebarNav(this,'doctors')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><rect x="6" y="14" width="12" height="9" rx="6"/></svg></span>      <span>الأطباء</span>
+    <div class="sb-sec-label" data-i18n="sec.analytics">تحليلات</div>
+    <div class="sb-nav-item" data-tab="doctors" onclick="sidebarNav(this,'doctors')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><rect x="6" y="14" width="12" height="9" rx="6"/></svg></span>      <span data-i18n="nav.doctors">الأطباء</span>
       <span class="sb-badge" id="sb-badge-doctors">0</span>
     </div>
-    <div class="sb-nav-item" data-tab="drugs" onclick="sidebarNav(this,'drugs')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="8" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/></svg></span>      <span>الأدوية</span>
+    <div class="sb-nav-item" data-tab="drugs" onclick="sidebarNav(this,'drugs')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="8" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/></svg></span>      <span data-i18n="nav.drugs">الأدوية</span>
       <span class="sb-badge" id="sb-badge-drugs">0</span>
     </div>
-    <div class="sb-nav-item" data-tab="sections" onclick="sidebarNav(this,'sections')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 8 12 14 2 8"/><polyline points="2 14 12 20 22 14"/></svg></span>      <span>الأقسام</span>
+    <div class="sb-nav-item" data-tab="sections" onclick="sidebarNav(this,'sections')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 8 12 14 2 8"/><polyline points="2 14 12 20 22 14"/></svg></span>      <span data-i18n="nav.sections">الأقسام</span>
       <span class="sb-badge" id="sb-badge-sections">0</span>
     </div>
-    <div class="sb-nav-item" data-tab="drugintel" onclick="sidebarNav(this,'drugintel')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg></span>      <span>بحث الأدوية</span>
+    <div class="sb-nav-item" data-tab="drugintel" onclick="sidebarNav(this,'drugintel')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg></span>      <span data-i18n="nav.drugintel">بحث الأدوية</span>
     </div>
 
     <!-- ═══ تحليلات متقدمة ═══ -->
-    <div class="sb-sec-label">تحليلات متقدمة</div>
-    <div class="sb-nav-item" data-tab="trends" onclick="sidebarNav(this,'trends')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/></svg></span>      <span>اتجاه الأطباء</span>
+    <div class="sb-sec-label" data-i18n="sec.advanced">تحليلات متقدمة</div>
+    <div class="sb-nav-item" data-tab="trends" onclick="sidebarNav(this,'trends')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/></svg></span>      <span data-i18n="nav.trends">اتجاه الأطباء</span>
     </div>
-    <div class="sb-nav-item" data-tab="loyalty" onclick="sidebarNav(this,'loyalty')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="9" r="3.5"/><circle cx="15.5" cy="9" r="3.5"/><polygon points="4 10 12 21 20 10"/></svg></span>      <span>ولاء الأطباء</span>
+    <div class="sb-nav-item" data-tab="loyalty" onclick="sidebarNav(this,'loyalty')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="9" r="3.5"/><circle cx="15.5" cy="9" r="3.5"/><polygon points="4 10 12 21 20 10"/></svg></span>      <span data-i18n="nav.loyalty">ولاء الأطباء</span>
     </div>
-    <div class="sb-nav-item" data-tab="pareto" onclick="sidebarNav(this,'pareto')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="12"/><line x1="12" y1="12" x2="19" y2="7"/></svg></span>      <span>باريتو 80/20</span>
+    <div class="sb-nav-item" data-tab="pareto" onclick="sidebarNav(this,'pareto')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="12"/><line x1="12" y1="12" x2="19" y2="7"/></svg></span>      <span data-i18n="nav.pareto">باريتو 80/20</span>
     </div>
-    <div class="sb-nav-item" data-tab="basket" onclick="sidebarNav(this,'basket')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></span>      <span>تركّز الأطباء</span>
+    <div class="sb-nav-item" data-tab="basket" onclick="sidebarNav(this,'basket')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></span>      <span data-i18n="nav.basket">تركّز الأطباء</span>
     </div>
 
     <!-- ═══ تحليل مالي ═══ -->
-    <div class="sb-sec-label">تحليل مالي</div>
-    <div class="sb-nav-item" data-tab="agedmeds" onclick="sidebarNav(this,'agedmeds')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>      <span>الأدوية آجل</span>
+    <div class="sb-sec-label" data-i18n="sec.financial">تحليل مالي</div>
+    <div class="sb-nav-item" data-tab="agedmeds" onclick="sidebarNav(this,'agedmeds')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>      <span data-i18n="nav.agedmeds">الأدوية آجل</span>
     </div>
 
     <!-- ═══ مقارنات ═══ -->
-    <div class="sb-sec-label">مقارنات</div>
-    <div class="sb-nav-item" data-tab="compare" onclick="sidebarNav(this,'compare')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg></span>      <span>مقارنة الفروع</span>
+    <div class="sb-sec-label" data-i18n="sec.compare">مقارنات</div>
+    <div class="sb-nav-item" data-tab="compare" onclick="sidebarNav(this,'compare')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg></span>      <span data-i18n="nav.compare">مقارنة الفروع</span>
     </div>
-    <div class="sb-nav-item" data-tab="timecomp" onclick="sidebarNav(this,'timecomp')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 15 15"/><line x1="5" y1="3" x2="3" y2="5"/><line x1="19" y1="3" x2="21" y2="5"/></svg></span>      <span>مقارنة زمنية</span>
+    <div class="sb-nav-item" data-tab="timecomp" onclick="sidebarNav(this,'timecomp')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 15 15"/><line x1="5" y1="3" x2="3" y2="5"/><line x1="19" y1="3" x2="21" y2="5"/></svg></span>      <span data-i18n="nav.timecomp">مقارنة زمنية</span>
     </div>
   </nav>
 
@@ -3025,7 +3041,7 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
       <span class="dot-sep"></span>
       <span>T1 / T2 / T3</span>
       <span class="dot-sep"></span>
-      <span style="font-size:10px;opacity:.75;">v3.1 Global</span>
+      <span style="font-size:10px;opacity:.75;">v3.2 Performance</span>
     </div>
   </div>
 
@@ -3040,11 +3056,12 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
   <!-- Actions -->
   <div class="actions">
     <!-- saved badge removed -->
+    <button class="btn lang-toggle" id="langBtn" onclick="toggleLang()" title="Language / اللغة" aria-label="Toggle language">EN</button>
     <button class="btn" onclick="showOnboarding(true)" title="جولة تعريفية" aria-label="جولة تعريفية">❔</button>
     <button class="btn" id="themeBtn" onclick="toggleTheme()" title="Dark / Light">☀️</button>
     <button class="btn" id="exportXlsxBtn">Excel</button>
-    <button class="btn btn-success" id="shareBtn">مشاركة</button>
-    <button class="btn" onclick="doLogout()" title="تسجيل الخروج" style="background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.25);color:var(--rose-l);">خروج</button>
+    <button class="btn btn-success" id="shareBtn" data-i18n="btn.share">مشاركة</button>
+    <button class="btn" onclick="doLogout()" title="تسجيل الخروج" style="background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.25);color:var(--rose-l);" data-i18n="btn.logout">خروج</button>
   </div>
 </div>
 
@@ -3065,7 +3082,7 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
       <div class="meta" id="meta-T1">لم يتم رفع ملف بعد</div>
       <div class="branch-periods" id="periods-T1"></div>
     </div>
-    <button class="branch-upload-btn" data-upload="T1">رفع</button>
+    <button class="branch-upload-btn" data-upload="T1" data-i18n="btn.upload">رفع</button>
     <button class="add-period-btn" onclick="startAddPeriod('T1')">+ فترة</button>
     <input type="file" class="file-input" id="file-T1" accept=".xlsx,.xls,.csv,.pdf">
     <div class="up-overlay" id="uprog-T1">
@@ -3082,7 +3099,7 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
       <div class="meta" id="meta-T2">لم يتم رفع ملف بعد</div>
       <div class="branch-periods" id="periods-T2"></div>
     </div>
-    <button class="branch-upload-btn" data-upload="T2">رفع</button>
+    <button class="branch-upload-btn" data-upload="T2" data-i18n="btn.upload">رفع</button>
     <button class="add-period-btn" onclick="startAddPeriod('T2')">+ فترة</button>
     <input type="file" class="file-input" id="file-T2" accept=".xlsx,.xls,.csv,.pdf">
     <div class="up-overlay" id="uprog-T2">
@@ -3099,7 +3116,7 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
       <div class="meta" id="meta-T3">لم يتم رفع ملف بعد</div>
       <div class="branch-periods" id="periods-T3"></div>
     </div>
-    <button class="branch-upload-btn" data-upload="T3">رفع</button>
+    <button class="branch-upload-btn" data-upload="T3" data-i18n="btn.upload">رفع</button>
     <button class="add-period-btn" onclick="startAddPeriod('T3')">+ فترة</button>
     <input type="file" class="file-input" id="file-T3" accept=".xlsx,.xls,.csv,.pdf">
     <div class="up-overlay" id="uprog-T3">
@@ -3328,31 +3345,23 @@ const PRIVATE_LABEL=[
 ];
 
 const BRANCHES=['T1','T2','T3'];
+const BRANCH_LABELS_I18N={T1:{ar:'التعاون الأول',en:'Coop Branch 1'},T2:{ar:'التعاون الثاني',en:'Coop Branch 2'},T3:{ar:'التعاون الثالث',en:'Coop Branch 3'}};
 const BRANCH_LABELS={T1:'التعاون الأول',T2:'التعاون الثاني',T3:'التعاون الثالث'};
+function syncBranchLabels(){BRANCHES.forEach(b=>{if(BRANCH_LABELS_I18N[b])BRANCH_LABELS[b]=BRANCH_LABELS_I18N[b][CURRENT_LANG]||BRANCH_LABELS_I18N[b].ar;});}
 const STATE={data:{T1:null,T2:null,T3:null},active:null,periods:{T1:[],T2:[],T3:[]}};
 let _pendingBranch=null,_pendingMode=null; /* upload state */
 const SOURCE_TEMPLATE=(function(){let h='<!DOCTYPE html>\n'+document.documentElement.outerHTML;const o='<scr'+'ipt id="embedded-rx-data">',c='<'+'/scr'+'ipt>';const i=h.indexOf(o);if(i>=0){const j=h.indexOf(c,i);if(j>=0) h=h.substring(0,i)+h.substring(j+c.length);}return h;})();
 
-/* Live Clock */
+/* Live Clock — bilingual */
 (function(){
-  const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   function updateClock(){
-    const d=new Date();
-    const el=document.getElementById('todayDate');
-    if(!el) return;
-    const hh=String(d.getHours()).padStart(2,'0');
-    const mm=String(d.getMinutes()).padStart(2,'0');
-    const ss=String(d.getSeconds()).padStart(2,'0');
-    el.innerHTML=
-      '<span>'+days[d.getDay()]+' '+d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear()+'</span>'+
-      '<span class="dot-sep">●</span>'+
-      '<span style="font-variant-numeric:tabular-nums;letter-spacing:.5px;">'+hh+':'+mm+':'+ss+'</span>'+
-      '<span class="dot-sep">●</span>'+
-      '<span>الإدارة التجارية - قطاع الصيدليات</span>';
+    const el=document.getElementById('todayDate'); if(!el)return;
+    const period=(typeof t==='function')?t('meta.period'):'بيانات يونيو 2026';
+    const branches=(typeof t==='function')?t('meta.branches'):'T1 / T2 / T3';
+    el.innerHTML='<span class="live-dot"></span><span>'+period+'</span><span class="dot-sep"></span><span>'+branches+'</span><span class="dot-sep"></span><span style="font-size:10px;opacity:.75;">v3.2 Performance</span>';
   }
-  updateClock();
-  setInterval(updateClock,1000);
+  window.updateLiveClock=updateClock;
+  setInterval(updateClock,60000);
 })();
 
 /* Theme */
@@ -3403,7 +3412,8 @@ if(localStorage.getItem('rx-calm')==='1'){
   setTimeout(()=>{const b=document.getElementById('calmBtn');if(b)b.textContent='🌙';},100);
 }
 
-const fmt=n=>(n==null||isNaN(n))?'—':Number(n).toLocaleString('en-US');
+function fmtNum(n,loc){return Number(n).toLocaleString(loc||'en-US');}
+const fmt=n=>(n==null||isNaN(n))?'—':fmtNum(n,(typeof CURRENT_LANG!=='undefined'&&CURRENT_LANG==='ar')?'ar-SA':'en-US');
 /* debounce — يؤخّر تنفيذ الدالة حتى يتوقف المستخدم عن الكتابة (يمنع تجمّد المتصفح) */
 function debounce(fn,wait){let t;return function(...args){clearTimeout(t);t=setTimeout(()=>fn.apply(this,args),wait||250);};}
 const pct=(a,b)=>b>0?(a*100/b):0;
@@ -3884,7 +3894,7 @@ function renderActive(){
   if(!d && at==='overview' && loadedBranches.length) d = STATE.data[loadedBranches[0]];
   if(!d){
     const el=document.getElementById(at+'-content');
-    if(el)el.innerHTML=emptyStateHTML({icon:'📤',title:'ارفع أول ملف لبدء التحليل',desc:'اضغط «رفع» بجانب أي فرع (T1 · T2 · T3) — PDF أو Excel',primaryLabel:'رفع ملف T1',primaryAction:"document.querySelector('[data-upload=\'T1\']')?.click()",secondaryLabel:'جولة تعريفية',secondaryAction:'showOnboarding(true)'});
+    if(el)el.innerHTML=emptyStateHTML({icon:'📤',title:t('empty.uploadTitle'),desc:t('empty.uploadDesc'),primaryLabel:t('empty.uploadBtn'),primaryAction:"document.querySelector('[data-upload=\'T1\']')?.click()",secondaryLabel:t('empty.tourBtn'),secondaryAction:'showOnboarding(true)'});
     return;
   }
   /* ── SECTION 1: Overview (الصفحة الرئيسية المدموجة) ── */
@@ -8049,7 +8059,7 @@ function runGlobalSearch() {
   const q = gSearch.value.trim().toLowerCase();
   if (!q || q.length < 2) { gDropdown.classList.remove('open'); return; }
   const loaded = BRANCHES.filter(b => STATE.data[b]);
-  if (!loaded.length) { gDropdown.innerHTML = '<div class="sr-empty">ارفع ملف أولاً</div>'; gDropdown.classList.add('open'); return; }
+  if (!loaded.length) { gDropdown.innerHTML = '<div class="sr-empty">'+t('search.uploadFirst')+'</div>'; gDropdown.classList.add('open'); return; }
 
   // Aggregate across all branches
   const docMap = new Map(), drugMap = new Map();
@@ -8070,7 +8080,7 @@ function runGlobalSearch() {
 
   let html = '';
   if (matchDocs.length) {
-    html += '<div class="sr-section">👨‍⚕️ الأطباء</div>';
+    html += '<div class="sr-section">'+t('search.doctors')+'</div>';
     html += matchDocs.map(d => `<div class="sr-item" data-type="doc" data-name="${escapeAttr(d.name)}">
       <div class="sr-item-icon" style="background:var(--bg-glass2);">👨‍⚕️</div>
       <div class="sr-item-name">${escapeHtml(d.name)}</div>
@@ -8078,14 +8088,14 @@ function runGlobalSearch() {
     </div>`).join('');
   }
   if (matchDrugs.length) {
-    html += '<div class="sr-section">💊 الأدوية</div>';
+    html += '<div class="sr-section">'+t('search.drugs')+'</div>';
     html += matchDrugs.map(d => `<div class="sr-item" data-type="drug" data-name="${escapeAttr(d.name)}">
       <div class="sr-item-icon" style="background:var(--bg-glass2);">💊</div>
       <div class="sr-item-name">${escapeHtml(d.name)}</div>
-      <div class="sr-item-val">${fmt(d.total)} كتابة</div>
+      <div class="sr-item-val">${fmt(d.total)} '+t('search.rx')+'</div>
     </div>`).join('');
   }
-  if (!html) html = '<div class="sr-empty">لا توجد نتائج</div>';
+  if (!html) html = '<div class="sr-empty">'+t('search.noResults')+'</div>';
   gDropdown.innerHTML = html;
   gDropdown.classList.add('open');
 
@@ -9140,15 +9150,8 @@ document.getElementById('modalBg').addEventListener('click', e => {
 /* ══ SIDEBAR NAV ══ */
 
 /* ── Visual polish: spotlight hover on cards ── */
-document.addEventListener('pointermove', function(e){
-  try{
-    var c = e.target && e.target.closest ? e.target.closest('.card') : null;
-    if(!c) return;
-    var r = c.getBoundingClientRect();
-    c.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-    c.style.setProperty('--my', (e.clientY - r.top) + 'px');
-  }catch(err){}
-},{passive:true});
+var _pmPending=false,_pmEv=null;
+document.addEventListener('pointermove', function(e){ _pmEv=e; if(_pmPending)return; _pmPending=true; requestAnimationFrame(function(){ _pmPending=false; var e=_pmEv; if(!e)return; try{ var c=e.target&&e.target.closest?e.target.closest('.card'):null; if(!c)return; var r=c.getBoundingClientRect(); c.style.setProperty('--mx',(e.clientX-r.left)+'px'); c.style.setProperty('--my',(e.clientY-r.top)+'px'); }catch(err){} }); },{passive:true});
 
 /* ── Visual polish: KPI count-up animation ── */
 function animateNums(root){
@@ -9177,81 +9180,167 @@ function animateNums(root){
 
 
 /* ══════════════════════════════════════════
-   GLOBAL UX v3.1 — breadcrumbs · onboarding · empty states
+   I18N v3.2 + GLOBAL UX — AR/EN · RTL/LTR · Performance
 ══════════════════════════════════════════ */
-const ONBOARD_KEY = 'pharmdash_onboard_v1_done';
-const SECTION_META = {
-  overview:{group:'الرئيسية',title:'نظرة عامة',desc:'ملخص KPIs والاتجاهات لكل فرع في لمحة واحدة.'},
-  visitcard:{group:'الرئيسية',title:'بطاقة زيارة طبيب',desc:'تحضير زيارة ميدانية ببيانات الطبيب وفرص التحويل.'},
-  dailytrack:{group:'الرئيسية',title:'متابعة يومية',desc:'متابعة كتابات الأطباء يومياً وأسبوعياً وشهرياً.'},
-  pureherb:{group:'المستهدفات',title:'PureHerb',desc:'تحليل كتابات PureHerb ومستهدف المبيعات الشهري.'},
-  featured:{group:'المستهدفات',title:'NOSTRI',desc:'أداء منتجات Private Label والكتابات المجمّعة.'},
-  nearexpiry:{group:'المستهدفات',title:'أصناف قرب الانتهاء',desc:'مخزون قريب من الانتهاء مع أولويات التصريف.'},
-  targeted:{group:'المستهدفات',title:'أصناف أوفرستوك',desc:'أصناف ذات مخزون زائد تحتاج خطة تصريف.'},
-  targettrack:{group:'المستهدفات',title:'متابعة الأوفرستوك',desc:'متابعة تنفيذ خطة الأصناف المستهدفة.'},
-  doctors:{group:'تحليلات',title:'الأطباء',desc:'ترتيب الأطباء حسب الكتابات والمساهمة.'},
-  drugs:{group:'تحليلات',title:'الأدوية',desc:'تحليل الأدوية الأكثر كتابة والاتجاهات.'},
-  sections:{group:'تحليلات',title:'الأقسام',desc:'مساهمة الأقسام الطبية في إجمالي الكتابات.'},
-  drugintel:{group:'تحليلات',title:'بحث الأدوية',desc:'بحث متقدم عن دواء وكتاباته حسب الطبيب.'},
-  trends:{group:'تحليلات متقدمة',title:'اتجاه الأطباء',desc:'تتبع صعود وهبوط كتابات الأطباء عبر الزمن.'},
-  loyalty:{group:'تحليلات متقدمة',title:'ولاء الأطباء',desc:'تصنيف الأطباء حسب الاستمرارية والولاء.'},
-  pareto:{group:'تحليلات متقدمة',title:'باريتو 80/20',desc:'تحديد الأطباء والأدوية الأكثر تأثيراً.'},
-  basket:{group:'تحليلات متقدمة',title:'تركّز الأطباء',desc:'تحليل تركّز كتابات الأطباء على أصناف محددة.'},
-  agedmeds:{group:'تحليل مالي',title:'الأدوية آجل',desc:'مقارنة H1 2025/2026 للإيراد الآجل — قابلة للتعديل.'},
-  compare:{group:'مقارنات',title:'مقارنة الفروع',desc:'مقارنة T1 و T2 و T3 جنباً إلى جنب.'},
-  timecomp:{group:'مقارنات',title:'مقارنة زمنية',desc:'مقارنة فترات زمنية مختلفة لنفس الفرع.'},
-  plsales:{group:'المستهدفات',title:'مبيعات PL',desc:'متابعة مبيعات Private Label.'}
+const LANG_KEY = 'pharmdash_lang_v1';
+let CURRENT_LANG = 'ar';
+const I18N = {
+  ar:{
+    'brand.sub':'الإدارة التجارية',
+    'sec.targets':'المستهدفات','sec.analytics':'تحليلات','sec.advanced':'تحليلات متقدمة','sec.financial':'تحليل مالي','sec.compare':'مقارنات',
+    'nav.overview':'نظرة عامة','nav.visitcard':'بطاقة زيارة طبيب','nav.dailytrack':'متابعة يومية',
+    'nav.nearexpiry':'أصناف قرب الانتهاء','nav.targeted':'أصناف أوفرستوك','nav.targettrack':'متابعة أصناف الأوفرستوك',
+    'nav.doctors':'الأطباء','nav.drugs':'الأدوية','nav.sections':'الأقسام','nav.drugintel':'بحث الأدوية',
+    'nav.trends':'اتجاه الأطباء','nav.loyalty':'ولاء الأطباء','nav.pareto':'باريتو 80/20','nav.basket':'تركّز الأطباء',
+    'nav.agedmeds':'الأدوية آجل','nav.compare':'مقارنة الفروع','nav.timecomp':'مقارنة زمنية',
+    'btn.share':'مشاركة','btn.logout':'خروج','btn.upload':'رفع','btn.tour':'جولة تعريفية','btn.theme.dark':'الوضع الداكن','btn.theme.light':'الوضع الفاتح',
+    'search.placeholder':'بحث: طبيب · دواء · قسم  (Ctrl+K)','search.uploadFirst':'ارفع ملف أولاً','search.noResults':'لا توجد نتائج','search.doctors':'👨‍⚕️ الأطباء','search.drugs':'💊 الأدوية','search.rx':'كتابة',
+    'empty.uploadTitle':'ارفع أول ملف لبدء التحليل','empty.uploadDesc':'اضغط «رفع» بجانب أي فرع (T1 · T2 · T3) — PDF أو Excel','empty.uploadBtn':'رفع ملف T1','empty.tourBtn':'جولة تعريفية','empty.noData':'لا توجد بيانات',
+    'onboard.title':'مرحباً في PharmaDash','onboard.sub':'دليل سريع لبدء التحليل — 3 خطوات فقط',
+    'onboard.s1t':'ارفع ملف فرع','onboard.s1d':'اضغط «رفع» بجانب T1 أو T2 أو T3 — PDF أو Excel',
+    'onboard.s2t':'تنقّل بين الأقسام','onboard.s2d':'استخدم القائمة: NOSTRI · PureHerb · الأطباء · المقارنات',
+    'onboard.s3t':'بحث فوري','onboard.s3d':'اضغط Ctrl+K للبحث عن أي طبيب أو دواء',
+    'onboard.skip':'تخطي','onboard.next':'التالي','onboard.start':'ابدأ الآن',
+    'login.user':'اسم المستخدم','login.pass':'كلمة المرور','login.btn':'تسجيل الدخول','login.tagline':'الإدارة التجارية — قطاع الصيدليات',
+    'login.userPh':'أدخل اسم المستخدم','login.passPh':'أدخل كلمة المرور','login.error':'❌ اسم المستخدم أو كلمة المرور غلط',
+    'meta.period':'بيانات يونيو 2026','meta.branches':'T1 / T2 / T3',
+    'branch.noFile':'لم يتم رفع ملف بعد','skip.link':'تخطي إلى المحتوى'
+  },
+  en:{
+    'brand.sub':'Commercial Management',
+    'sec.targets':'Targets','sec.analytics':'Analytics','sec.advanced':'Advanced Analytics','sec.financial':'Financial','sec.compare':'Comparisons',
+    'nav.overview':'Overview','nav.visitcard':'Doctor Visit Card','nav.dailytrack':'Daily Tracking',
+    'nav.nearexpiry':'Near Expiry','nav.targeted':'Overstock Items','nav.targettrack':'Overstock Tracking',
+    'nav.doctors':'Doctors','nav.drugs':'Drugs','nav.sections':'Departments','nav.drugintel':'Drug Search',
+    'nav.trends':'Doctor Trends','nav.loyalty':'Doctor Loyalty','nav.pareto':'Pareto 80/20','nav.basket':'Doctor Focus',
+    'nav.agedmeds':'Credit Sales','nav.compare':'Branch Compare','nav.timecomp':'Time Compare',
+    'btn.share':'Share','btn.logout':'Logout','btn.upload':'Upload','btn.tour':'Quick tour','btn.theme.dark':'Dark mode','btn.theme.light':'Light mode',
+    'search.placeholder':'Search: doctor · drug · dept  (Ctrl+K)','search.uploadFirst':'Upload a branch file first','search.noResults':'No results','search.doctors':'👨‍⚕️ Doctors','search.drugs':'💊 Drugs','search.rx':'Rx',
+    'empty.uploadTitle':'Upload your first file to start','empty.uploadDesc':'Click Upload next to any branch (T1 · T2 · T3) — PDF or Excel','empty.uploadBtn':'Upload T1 file','empty.tourBtn':'Quick tour','empty.noData':'No data',
+    'onboard.title':'Welcome to PharmaDash','onboard.sub':'Quick start guide — 3 steps only',
+    'onboard.s1t':'Upload a branch file','onboard.s1d':'Click Upload next to T1, T2, or T3 — PDF or Excel',
+    'onboard.s2t':'Navigate sections','onboard.s2d':'Use the sidebar: NOSTRI · PureHerb · Doctors · Comparisons',
+    'onboard.s3t':'Instant search','onboard.s3d':'Press Ctrl+K to search any doctor or drug',
+    'onboard.skip':'Skip','onboard.next':'Next','onboard.start':'Get started',
+    'login.user':'Username','login.pass':'Password','login.btn':'Sign in','login.tagline':'Commercial Management — Pharmacy Sector',
+    'login.userPh':'Enter username','login.passPh':'Enter password','login.error':'❌ Invalid username or password',
+    'meta.period':'June 2026 data','meta.branches':'T1 / T2 / T3',
+    'branch.noFile':'No file uploaded yet','skip.link':'Skip to content'
+  }
 };
 
+const ONBOARD_KEY = 'pharmdash_onboard_v1_done';
+const SECTION_META = {
+  overview:{ar:{group:'الرئيسية',title:'نظرة عامة',desc:'ملخص KPIs والاتجاهات لكل فرع في لمحة واحدة.'},en:{group:'Home',title:'Overview',desc:'KPI summary and branch trends at a glance.'}},
+  visitcard:{ar:{group:'الرئيسية',title:'بطاقة زيارة طبيب',desc:'تحضير زيارة ميدانية ببيانات الطبيب وفرص التحويل.'},en:{group:'Home',title:'Doctor Visit Card',desc:'Field visit prep with doctor data and conversion opportunities.'}},
+  dailytrack:{ar:{group:'الرئيسية',title:'متابعة يومية',desc:'متابعة كتابات الأطباء يومياً وأسبوعياً وشهرياً.'},en:{group:'Home',title:'Daily Tracking',desc:'Track doctor prescriptions daily, weekly, and monthly.'}},
+  pureherb:{ar:{group:'المستهدفات',title:'PureHerb',desc:'تحليل كتابات PureHerb ومستهدف المبيعات الشهري.'},en:{group:'Targets',title:'PureHerb',desc:'PureHerb Rx analysis and monthly sales target.'}},
+  featured:{ar:{group:'المستهدفات',title:'NOSTRI',desc:'أداء منتجات Private Label والكتابات المجمّعة.'},en:{group:'Targets',title:'NOSTRI',desc:'Private Label product performance and aggregated Rx.'}},
+  nearexpiry:{ar:{group:'المستهدفات',title:'أصناف قرب الانتهاء',desc:'مخزون قريب من الانتهاء مع أولويات التصريف.'},en:{group:'Targets',title:'Near Expiry',desc:'Expiring inventory with disposal priorities.'}},
+  targeted:{ar:{group:'المستهدفات',title:'أصناف أوفرستوك',desc:'أصناف ذات مخزون زائد تحتاج خطة تصريف.'},en:{group:'Targets',title:'Overstock',desc:'Excess inventory items needing a clearance plan.'}},
+  targettrack:{ar:{group:'المستهدفات',title:'متابعة الأوفرستوك',desc:'متابعة تنفيذ خطة الأصناف المستهدفة.'},en:{group:'Targets',title:'Overstock Tracking',desc:'Track execution of targeted overstock plan.'}},
+  doctors:{ar:{group:'تحليلات',title:'الأطباء',desc:'ترتيب الأطباء حسب الكتابات والمساهمة.'},en:{group:'Analytics',title:'Doctors',desc:'Doctors ranked by prescriptions and contribution.'}},
+  drugs:{ar:{group:'تحليلات',title:'الأدوية',desc:'تحليل الأدوية الأكثر كتابة والاتجاهات.'},en:{group:'Analytics',title:'Drugs',desc:'Most prescribed drugs and trends.'}},
+  sections:{ar:{group:'تحليلات',title:'الأقسام',desc:'مساهمة الأقسام الطبية في إجمالي الكتابات.'},en:{group:'Analytics',title:'Departments',desc:'Medical department contribution to total Rx.'}},
+  drugintel:{ar:{group:'تحليلات',title:'بحث الأدوية',desc:'بحث متقدم عن دواء وكتاباته حسب الطبيب.'},en:{group:'Analytics',title:'Drug Search',desc:'Advanced drug search by prescribing doctors.'}},
+  trends:{ar:{group:'تحليلات متقدمة',title:'اتجاه الأطباء',desc:'تتبع صعود وهبوط كتابات الأطباء عبر الزمن.'},en:{group:'Advanced',title:'Doctor Trends',desc:'Track rising and falling doctor Rx over time.'}},
+  loyalty:{ar:{group:'تحليلات متقدمة',title:'ولاء الأطباء',desc:'تصنيف الأطباء حسب الاستمرارية والولاء.'},en:{group:'Advanced',title:'Doctor Loyalty',desc:'Classify doctors by consistency and loyalty.'}},
+  pareto:{ar:{group:'تحليلات متقدمة',title:'باريتو 80/20',desc:'تحديد الأطباء والأدوية الأكثر تأثيراً.'},en:{group:'Advanced',title:'Pareto 80/20',desc:'Identify highest-impact doctors and drugs.'}},
+  basket:{ar:{group:'تحليلات متقدمة',title:'تركّز الأطباء',desc:'تحليل تركّز كتابات الأطباء على أصناف محددة.'},en:{group:'Advanced',title:'Doctor Focus',desc:'Analyze doctor Rx concentration on specific items.'}},
+  agedmeds:{ar:{group:'تحليل مالي',title:'الأدوية آجل',desc:'مقارنة H1 2025/2026 للإيراد الآجل — قابلة للتعديل.'},en:{group:'Financial',title:'Credit Sales',desc:'H1 2025 vs 2026 credit revenue — editable.'}},
+  compare:{ar:{group:'مقارنات',title:'مقارنة الفروع',desc:'مقارنة T1 و T2 و T3 جنباً إلى جنب.'},en:{group:'Compare',title:'Branch Compare',desc:'Side-by-side T1, T2, and T3 comparison.'}},
+  timecomp:{ar:{group:'مقارنات',title:'مقارنة زمنية',desc:'مقارنة فترات زمنية مختلفة لنفس الفرع.'},en:{group:'Compare',title:'Time Compare',desc:'Compare different time periods for the same branch.'}},
+  plsales:{ar:{group:'المستهدفات',title:'مبيعات PL',desc:'متابعة مبيعات Private Label.'},en:{group:'Targets',title:'PL Sales',desc:'Private Label sales tracking.'}}
+};
+
+function t(key,fallback){return (I18N[CURRENT_LANG]&&I18N[CURRENT_LANG][key])||I18N.ar[key]||fallback||key;}
+function getSectionMeta(panel){const m=SECTION_META[panel];if(!m)return{group:'PharmaDash',title:panel||'PharmaDash',desc:''};return m[CURRENT_LANG]||m.ar;}
+
+function applyI18nChrome(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.getAttribute('data-i18n'));});
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{el.placeholder=t(el.getAttribute('data-i18n-placeholder'));});
+  const skip=document.querySelector('.pd-skip-link');if(skip)skip.textContent=t('skip.link');
+  const gs=document.getElementById('globalSearch');if(gs)gs.placeholder=t('search.placeholder');
+  const langBtn=document.getElementById('langBtn');if(langBtn)langBtn.textContent=CURRENT_LANG==='ar'?'EN':'ع';
+  syncBranchLabels();
+  BRANCHES.forEach(b=>{const el=document.getElementById('meta-'+b);if(el&&!STATE.data[b])el.textContent=t('branch.noFile');});
+  const steps=[['obStep1','onboard.s1t','onboard.s1d'],['obStep2','onboard.s2t','onboard.s2d'],['obStep3','onboard.s3t','onboard.s3d']];
+  steps.forEach(([id,tk,dk])=>{const box=document.getElementById(id);if(!box)return;const s=box.querySelector('strong');const p=box.querySelector('span');if(s)s.textContent=t(tk);if(p)p.textContent=t(dk);});
+  const lf=document.querySelectorAll('.login-field');
+  if(lf[0]){const l=lf[0].querySelector('label');if(l)l.textContent=t('login.user');const i=lf[0].querySelector('input');if(i)i.placeholder=t('login.userPh');}
+  if(lf[1]){const l=lf[1].querySelector('label');if(l)l.textContent=t('login.pass');const i=lf[1].querySelector('input');if(i)i.placeholder=t('login.passPh');}
+  const lb=document.querySelector('.login-btn');if(lb)lb.textContent=t('login.btn');
+  const lp=document.querySelector('.login-logo p');if(lp)lp.textContent=t('login.tagline');
+  const le=document.getElementById('loginError');if(le)le.textContent=t('login.error');
+  updateThemeIcon();
+}
+
+function setLang(lang){
+  CURRENT_LANG=(lang==='en')?'en':'ar';
+  try{localStorage.setItem(LANG_KEY,CURRENT_LANG);}catch(e){}
+  document.documentElement.lang=CURRENT_LANG;
+  document.documentElement.dir=CURRENT_LANG==='ar'?'rtl':'ltr';
+  applyI18nChrome();
+  updatePageContext(window._activePanel||'overview');
+  if(typeof updateLiveClock==='function')updateLiveClock();
+  if(typeof renderActive==='function')requestAnimationFrame(()=>renderActive());
+}
+function toggleLang(){setLang(CURRENT_LANG==='ar'?'en':'ar');}
+function loadLang(){
+  try{const s=localStorage.getItem(LANG_KEY);if(s==='en'||s==='ar')CURRENT_LANG=s;}catch(e){}
+  document.documentElement.lang=CURRENT_LANG;
+  document.documentElement.dir=CURRENT_LANG==='ar'?'rtl':'ltr';
+}
+
 function emptyStateHTML(opts){
-  const o = opts || {};
-  const icon = o.icon || '📊';
-  const title = o.title || 'لا توجد بيانات';
-  const desc = o.desc || '';
-  const primary = o.primaryLabel ? `<button type="button" class="es-btn" onclick="${o.primaryAction||''}">${o.primaryLabel}</button>` : '';
-  const secondary = o.secondaryLabel ? `<button type="button" class="es-btn secondary" onclick="${o.secondaryAction||''}">${o.secondaryLabel}</button>` : '';
-  const actions = (primary||secondary) ? `<div class="es-actions">${primary}${secondary}</div>` : '';
+  const o=opts||{};
+  const icon=o.icon||'📊';
+  const title=o.title||t('empty.noData');
+  const desc=o.desc||'';
+  const primary=o.primaryLabel?`<button type="button" class="es-btn" onclick="${o.primaryAction||''}">${o.primaryLabel}</button>`:'';
+  const secondary=o.secondaryLabel?`<button type="button" class="es-btn secondary" onclick="${o.secondaryAction||''}">${o.secondaryLabel}</button>`:'';
+  const actions=(primary||secondary)?`<div class="es-actions">${primary}${secondary}</div>`:'';
   return `<div class="card"><div class="pd-empty-state"><span class="es-ico">${icon}</span><h3>${title}</h3>${desc?`<p>${desc}</p>`:''}${actions}</div></div>`;
 }
 
 function updatePageContext(panel){
-  const meta = SECTION_META[panel] || {group:'PharmaDash',title:panel||'PharmaDash',desc:''};
-  const titleEl = document.getElementById('pageTitle');
-  const bc = document.getElementById('pdBreadcrumb');
-  const descEl = document.getElementById('pageContextDesc');
-  if(titleEl) titleEl.textContent = meta.title;
-  if(bc){
-    bc.innerHTML = `<span>PharmaDash</span><span class="bc-sep">›</span><span>${meta.group}</span><span class="bc-sep">›</span><span class="bc-current">${meta.title}</span>`;
-  }
-  if(descEl) descEl.textContent = meta.desc || '';
+  const meta=getSectionMeta(panel);
+  const titleEl=document.getElementById('pageTitle');
+  const bc=document.getElementById('pdBreadcrumb');
+  const descEl=document.getElementById('pageContextDesc');
+  if(titleEl)titleEl.textContent=meta.title;
+  if(bc)bc.innerHTML=`<span>PharmaDash</span><span class="bc-sep">›</span><span>${meta.group}</span><span class="bc-sep">›</span><span class="bc-current">${meta.title}</span>`;
+  if(descEl)descEl.textContent=meta.desc||'';
 }
 
 function showOnboarding(force){
-  if(!force){
-    try{ if(localStorage.getItem(ONBOARD_KEY)==='1') return; }catch(e){}
-  }
-  const ov = document.getElementById('onboardOverlay');
-  if(ov) ov.classList.add('show');
+  if(!force){try{if(localStorage.getItem(ONBOARD_KEY)==='1')return;}catch(e){}}
+  applyI18nChrome();
+  const ov=document.getElementById('onboardOverlay');if(ov)ov.classList.add('show');
 }
 function closeOnboarding(markDone){
-  const ov = document.getElementById('onboardOverlay');
-  if(ov) ov.classList.remove('show');
-  if(markDone!==false){
-    try{ localStorage.setItem(ONBOARD_KEY,'1'); }catch(e){}
-  }
+  const ov=document.getElementById('onboardOverlay');if(ov)ov.classList.remove('show');
+  if(markDone!==false){try{localStorage.setItem(ONBOARD_KEY,'1');}catch(e){}}
 }
 function onboardNext(step){
-  document.querySelectorAll('.ob-step').forEach((el,i)=>el.classList.toggle('active', i===step-1));
-  const btn = document.getElementById('onboardNextBtn');
-  if(!btn) return;
-  if(step>=3){ btn.textContent='ابدأ الآن'; btn.onclick=()=>closeOnboarding(true); }
-  else { btn.textContent='التالي'; btn.onclick=()=>onboardNext(step+1); }
+  document.querySelectorAll('.ob-step').forEach((el,i)=>el.classList.toggle('active',i===step-1));
+  const btn=document.getElementById('onboardNextBtn');if(!btn)return;
+  if(step>=3){btn.textContent=t('onboard.start');btn.onclick=()=>closeOnboarding(true);}
+  else{btn.textContent=t('onboard.next');btn.onclick=()=>onboardNext(step+1);}
 }
 function initGlobalUX(){
+  loadLang();
+  applyI18nChrome();
   updatePageContext(window._activePanel||'overview');
-  const gs = document.getElementById('globalSearch');
-  if(gs && !gs.placeholder.includes('Ctrl')) gs.placeholder = 'بحث: طبيب · دواء · قسم  (Ctrl+K)';
-  if(sessionStorage.getItem('pharmdash_user')) setTimeout(()=>showOnboarding(false), 600);
+  if(typeof updateLiveClock==='function')updateLiveClock();
+  if(sessionStorage.getItem('pharmdash_user'))setTimeout(()=>showOnboarding(false),600);
+}
+
+let _renderActiveQueued=false;
+function scheduleRenderActive(){
+  if(_renderActiveQueued)return;
+  _renderActiveQueued=true;
+  requestAnimationFrame(()=>{ _renderActiveQueued=false; renderActive(); });
 }
 
 function sidebarNav(el, panel) {
@@ -9270,7 +9359,7 @@ function sidebarNav(el, panel) {
   if (panelEl) panelEl.classList.add('active');
   document.getElementById('branchPickerCard').style.display =
     (['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','drugintel','targettrack','nearexpiry','plsales','pureherb','dailytrack','agedmeds'].includes(panel))?'none':'block';
-  renderActive();
+  scheduleRenderActive();
   try{ setTimeout(function(){ animateNums(document.getElementById('panel-'+panel)); }, 40); }catch(e){}
   // العودة لأعلى الصفحة عند تبديل القسم
   const mainEl = document.querySelector('.main-content') || document.querySelector('main') || window;
@@ -9371,7 +9460,7 @@ function updateThemeIcon(){
   if(!btn) return;
   var isLight=document.documentElement.getAttribute('data-theme')==='light';
   btn.textContent=isLight?'🌙':'☀️';
-  btn.title=isLight?'الوضع الداكن':'الوضع الفاتح';
+  btn.title=isLight?t('btn.theme.dark'):t('btn.theme.light');
 }
 
 function doLogin() {
