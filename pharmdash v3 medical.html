@@ -2880,6 +2880,12 @@ html[dir="ltr"] .global-search-wrap .global-search{padding-right:15px;padding-le
 html[dir="ltr"] .search-kbd-hint{left:auto;right:10px;}
 html[dir="ltr"] .pd-skip-link{right:auto;left:16px;}
 html[dir="ltr"] .pd-breadcrumb{direction:ltr;}
+
+.sync-badge{font-size:14px;line-height:1;padding:6px 8px;border-radius:10px;border:1px solid var(--border);background:var(--bg-glass2);cursor:default;transition:transform .2s ease;}
+.sync-badge[data-state="syncing"]{animation:pdSpin 1s linear infinite;}
+.sync-badge[data-state="online"]{border-color:rgba(13,148,136,.35);background:rgba(13,148,136,.1);}
+.sync-badge[data-state="error"]{border-color:rgba(220,38,38,.35);background:rgba(220,38,38,.1);}
+@keyframes pdSpin{to{transform:rotate(360deg);}}
 .lang-toggle{min-width:42px;font-weight:900;font-size:11px;letter-spacing:.04em;font-family:var(--font-num,Inter,sans-serif);}
 .panel:not(.active){content-visibility:hidden;contain-intrinsic-size:auto 420px;}
 .panel.active{content-visibility:visible;}
@@ -3041,7 +3047,7 @@ html[dir="ltr"] .pd-breadcrumb{direction:ltr;}
       <span class="dot-sep"></span>
       <span>T1 / T2 / T3</span>
       <span class="dot-sep"></span>
-      <span style="font-size:10px;opacity:.75;">v3.2 Performance</span>
+      <span style="font-size:10px;opacity:.75;">v4.0 Cloud</span>
     </div>
   </div>
 
@@ -3056,6 +3062,7 @@ html[dir="ltr"] .pd-breadcrumb{direction:ltr;}
   <!-- Actions -->
   <div class="actions">
     <!-- saved badge removed -->
+    <span class="sync-badge" id="syncBadge" data-state="offline" title="Offline">📴</span>
     <button class="btn lang-toggle" id="langBtn" onclick="toggleLang()" title="Language / اللغة" aria-label="Toggle language">EN</button>
     <button class="btn" onclick="showOnboarding(true)" title="جولة تعريفية" aria-label="جولة تعريفية">❔</button>
     <button class="btn" id="themeBtn" onclick="toggleTheme()" title="Dark / Light">☀️</button>
@@ -3358,7 +3365,7 @@ const SOURCE_TEMPLATE=(function(){let h='<!DOCTYPE html>\n'+document.documentEle
     const el=document.getElementById('todayDate'); if(!el)return;
     const period=(typeof t==='function')?t('meta.period'):'بيانات يونيو 2026';
     const branches=(typeof t==='function')?t('meta.branches'):'T1 / T2 / T3';
-    el.innerHTML='<span class="live-dot"></span><span>'+period+'</span><span class="dot-sep"></span><span>'+branches+'</span><span class="dot-sep"></span><span style="font-size:10px;opacity:.75;">v3.2 Performance</span>';
+    el.innerHTML='<span class="live-dot"></span><span>'+period+'</span><span class="dot-sep"></span><span>'+branches+'</span><span class="dot-sep"></span><span style="font-size:10px;opacity:.75;">v4.0 Cloud</span>';
   }
   window.updateLiveClock=updateClock;
   setInterval(updateClock,60000);
@@ -3683,7 +3690,7 @@ function loadAgedMedsData(){
 }
 function saveAgedMedsData(data){
   AGEDMEDS_DATA = data;
-  try{ localStorage.setItem(AGEDMEDS_KEY, JSON.stringify(data)); }catch(e){}
+  try{ localStorage.setItem(AGEDMEDS_KEY, JSON.stringify(data)); PDCloud.trackSave(AGEDMEDS_KEY, data); }catch(e){}
 }
 function parseAgedMedsNum(v){
   return Math.max(0, Math.round(parseFloat(String(v).replace(/[^\d.]/g,''))||0));
@@ -4317,7 +4324,7 @@ function loadPLTarget(){
   return { target:60000, achieved:0, month:'مايو 2026', currency:'ريال' };
 }
 function savePLTarget(t){
-  try{ localStorage.setItem(PL_TARGET_KEY, JSON.stringify(t)); }catch(e){}
+  try{ localStorage.setItem(PL_TARGET_KEY, JSON.stringify(t)); PDCloud.trackSave(PL_TARGET_KEY, t); }catch(e){}
 }
 
 function renderPLTarget(){
@@ -4457,7 +4464,7 @@ function loadPHTarget(){
   return { target:20000, achieved:0, month:'يونيو 2026', currency:'ريال' };
 }
 function savePHTarget(t){
-  try{ localStorage.setItem(PH_TARGET_KEY, JSON.stringify(t)); }catch(e){}
+  try{ localStorage.setItem(PH_TARGET_KEY, JSON.stringify(t)); PDCloud.trackSave(PH_TARGET_KEY, t); }catch(e){}
 }
 
 function renderPHTarget(){
@@ -4572,7 +4579,7 @@ function loadPLAmounts(){
   try{ const r=localStorage.getItem(PL_AMOUNT_KEY); if(r){ const a=JSON.parse(r); if(a.unitsBefore===undefined)a.unitsBefore=0; if(a.unitsAfter===undefined)a.unitsAfter=0; return a; } }catch(e){}
   return { before:0, after:0, unitsBefore:0, unitsAfter:0, beforeLabel:'الفترة السابقة', afterLabel:'الفترة الحالية' };
 }
-function savePLAmounts(a){ try{ localStorage.setItem(PL_AMOUNT_KEY, JSON.stringify(a)); }catch(e){} }
+function savePLAmounts(a){ try{ localStorage.setItem(PL_AMOUNT_KEY, JSON.stringify(a)); PDCloud.trackSave(PL_AMOUNT_KEY, a); }catch(e){} }
 
 function renderPLComparison(){
   const box = document.getElementById('plComparisonCard');
@@ -7270,7 +7277,7 @@ function getCompCustom(){
   return {add:{},exclude:{}};
 }
 function saveCompCustom(c){
-  try{ localStorage.setItem('pharmdash_comp_custom_v1', JSON.stringify(c)); }catch(e){}
+  try{ localStorage.setItem('pharmdash_comp_custom_v1', JSON.stringify(c)); PDCloud.trackSave('pharmdash_comp_custom_v1', c); }catch(e){}
   window._compCustom=c;
 }
 function compIsMatch(def, svc){
@@ -9204,7 +9211,7 @@ const I18N = {
     'login.user':'اسم المستخدم','login.pass':'كلمة المرور','login.btn':'تسجيل الدخول','login.tagline':'الإدارة التجارية — قطاع الصيدليات',
     'login.userPh':'أدخل اسم المستخدم','login.passPh':'أدخل كلمة المرور','login.error':'❌ اسم المستخدم أو كلمة المرور غلط',
     'meta.period':'بيانات يونيو 2026','meta.branches':'T1 / T2 / T3',
-    'branch.noFile':'لم يتم رفع ملف بعد','skip.link':'تخطي إلى المحتوى'
+    'branch.noFile':'لم يتم رفع ملف بعد','skip.link':'تخطي إلى المحتوى','cloud.online':'متزامن ☁️','cloud.offline':'بدون اتصال 📴'
   },
   en:{
     'brand.sub':'Commercial Management',
@@ -9225,7 +9232,7 @@ const I18N = {
     'login.user':'Username','login.pass':'Password','login.btn':'Sign in','login.tagline':'Commercial Management — Pharmacy Sector',
     'login.userPh':'Enter username','login.passPh':'Enter password','login.error':'❌ Invalid username or password',
     'meta.period':'June 2026 data','meta.branches':'T1 / T2 / T3',
-    'branch.noFile':'No file uploaded yet','skip.link':'Skip to content'
+    'branch.noFile':'No file uploaded yet','skip.link':'Skip to content','cloud.online':'Synced ☁️','cloud.offline':'Offline 📴'
   }
 };
 
@@ -9277,12 +9284,13 @@ function applyI18nChrome(){
 
 function setLang(lang){
   CURRENT_LANG=(lang==='en')?'en':'ar';
-  try{localStorage.setItem(LANG_KEY,CURRENT_LANG);}catch(e){}
+  try{localStorage.setItem(LANG_KEY,CURRENT_LANG); PDCloud.trackSave(LANG_KEY,CURRENT_LANG);}catch(e){}
   document.documentElement.lang=CURRENT_LANG;
   document.documentElement.dir=CURRENT_LANG==='ar'?'rtl':'ltr';
   applyI18nChrome();
   updatePageContext(window._activePanel||'overview');
   if(typeof updateLiveClock==='function')updateLiveClock();
+  if(PDCloud.online)PDCloud.setStatus('online');
   if(typeof renderActive==='function')requestAnimationFrame(()=>renderActive());
 }
 function toggleLang(){setLang(CURRENT_LANG==='ar'?'en':'ar');}
@@ -9328,11 +9336,12 @@ function onboardNext(step){
   if(step>=3){btn.textContent=t('onboard.start');btn.onclick=()=>closeOnboarding(true);}
   else{btn.textContent=t('onboard.next');btn.onclick=()=>onboardNext(step+1);}
 }
-function initGlobalUX(){
+async function initGlobalUX(){
   loadLang();
   applyI18nChrome();
   updatePageContext(window._activePanel||'overview');
   if(typeof updateLiveClock==='function')updateLiveClock();
+  await PDCloud.init();
   if(sessionStorage.getItem('pharmdash_user'))setTimeout(()=>showOnboarding(false),600);
 }
 
@@ -9433,55 +9442,221 @@ document.getElementById('tabs').addEventListener('click', e => {
 
 
 /* ══════════════════════════════════════════
-   LOGIN SYSTEM
+   PHARMADASH CLOUD v4 — API · JWT Auth · Sync
+   Works online (server) + offline fallback (local)
 ══════════════════════════════════════════ */
-const USERS = {
-  'elsayed':  { pass: 'pharma2026', name: 'Dr. Elsayed Hassan',  role: 'مدير تطوير الأعمال' },
-  'admin':    { pass: 'admin123',   name: 'Admin',               role: 'مدير النظام' },
-  'manager':  { pass: 'manager123', name: 'المدير',              role: 'مدير قطاع الصيدليات' },
+const PDCloud = {
+  base: localStorage.getItem('pharmdash_api_base') || (location.protocol === 'file:' ? 'http://localhost:3847' : ''),
+  token: null,
+  ready: false,
+  online: false,
+  syncing: false,
+  _saveQueue: {},
+  _saveTimer: null,
+  SYNC_KEYS: [
+    'pharmdash_agedmeds_v1','pharmdash_ph_target_v1','pharmdash_pl_target_v1',
+    'pharmdash_pl_amounts_v1','pharmdash_lang_v1','pharmdash_onboard_v1_done',
+    'pharmdash_comp_custom_v1','rx-theme','rx-density','rx-calm'
+  ]
 };
 
+PDCloud.headers = function(){
+  const h = { 'Content-Type': 'application/json' };
+  if (PDCloud.token) h.Authorization = 'Bearer ' + PDCloud.token;
+  return h;
+};
 
-function toggleTheme(){
-  const html=document.documentElement;
-  const isLight=html.getAttribute('data-theme')==='light';
-  if(isLight){
-    html.removeAttribute('data-theme');
-    try{localStorage.setItem('rx-theme','dark');}catch(e){}
-  }else{
-    html.setAttribute('data-theme','light');
-    try{localStorage.setItem('rx-theme','light');}catch(e){}
+PDCloud.setStatus = function(state, title){
+  const el = document.getElementById('syncBadge');
+  if (!el) return;
+  el.dataset.state = state;
+  el.title = title || '';
+  const labels = {
+    online: CURRENT_LANG === 'en' ? 'Cloud synced' : 'متزامن مع السحابة',
+    offline: CURRENT_LANG === 'en' ? 'Offline mode' : 'وضع بدون اتصال',
+    syncing: CURRENT_LANG === 'en' ? 'Syncing…' : 'جاري المزامنة…',
+    error: CURRENT_LANG === 'en' ? 'Sync error' : 'خطأ في المزامنة'
+  };
+  el.textContent = state === 'online' ? '☁️' : state === 'syncing' ? '↻' : state === 'error' ? '⚠️' : '📴';
+  el.title = title || labels[state] || '';
+};
+
+PDCloud.api = async function(path, opts){
+  if (!PDCloud.base) throw new Error('No API base');
+  const res = await fetch(PDCloud.base + path, Object.assign({ headers: PDCloud.headers() }, opts || {}));
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || res.statusText || 'API error');
+  return data;
+};
+
+PDCloud.checkHealth = async function(){
+  if (!PDCloud.base) { PDCloud.online = false; PDCloud.setStatus('offline'); return false; }
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 3500);
+    const res = await fetch(PDCloud.base + '/api/health', { signal: ctrl.signal });
+    clearTimeout(t);
+    PDCloud.online = res.ok;
+    if (PDCloud.online && PDCloud.token) PDCloud.setStatus('online');
+    else if (PDCloud.online) PDCloud.setStatus('offline', PDCloud.base);
+    else PDCloud.setStatus('offline');
+    return PDCloud.online;
+  } catch (e) {
+    PDCloud.online = false;
+    PDCloud.setStatus('offline');
+    return false;
   }
-  updateThemeIcon();
-  renderActive();
-}
-function updateThemeIcon(){
-  var btn=document.getElementById('themeBtn');
-  if(!btn) return;
-  var isLight=document.documentElement.getAttribute('data-theme')==='light';
-  btn.textContent=isLight?'🌙':'☀️';
-  btn.title=isLight?t('btn.theme.dark'):t('btn.theme.light');
-}
+};
 
-function doLogin() {
+PDCloud.login = async function(username, password){
+  const data = await PDCloud.api('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ username, password })
+  });
+  PDCloud.token = data.token;
+  sessionStorage.setItem('pharmdash_token', data.token);
+  sessionStorage.setItem('pharmdash_user', JSON.stringify(data.user));
+  PDCloud.ready = true;
+  PDCloud.online = true;
+  PDCloud.setStatus('syncing');
+  await PDCloud.pullSettings();
+  PDCloud.setStatus('online');
+  return data.user;
+};
+
+PDCloud.logout = function(){
+  PDCloud.token = null;
+  PDCloud.ready = false;
+  sessionStorage.removeItem('pharmdash_token');
+  PDCloud.setStatus('offline');
+};
+
+PDCloud.pullSettings = async function(){
+  if (!PDCloud.token || !PDCloud.base) return;
+  try {
+    PDCloud.syncing = true;
+    PDCloud.setStatus('syncing');
+    const data = await PDCloud.api('/api/settings');
+    const settings = data.settings || {};
+    let changed = false;
+    PDCloud.SYNC_KEYS.forEach(function(key){
+      if (settings[key] === undefined || settings[key] === null) return;
+      const val = typeof settings[key] === 'string' ? settings[key] : JSON.stringify(settings[key]);
+      const cur = localStorage.getItem(key);
+      if (cur !== val) {
+        localStorage.setItem(key, val);
+        changed = true;
+      }
+    });
+    if (changed) {
+      if (typeof loadLang === 'function') loadLang();
+      if (typeof AGEDMEDS_DATA !== 'undefined' && typeof loadAgedMedsData === 'function') {
+        AGEDMEDS_DATA = loadAgedMedsData();
+      }
+    }
+    PDCloud.setStatus('online');
+  } catch (e) {
+    console.warn('PDCloud pull failed', e);
+    PDCloud.setStatus('error', e.message);
+  } finally {
+    PDCloud.syncing = false;
+  }
+};
+
+PDCloud.queueSave = function(key, value){
+  if (!PDCloud.token || !PDCloud.ready) return;
+  PDCloud._saveQueue[key] = value;
+  clearTimeout(PDCloud._saveTimer);
+  PDCloud._saveTimer = setTimeout(function(){ PDCloud.flushSaves(); }, 600);
+};
+
+PDCloud.flushSaves = async function(){
+  if (!PDCloud.token || !Object.keys(PDCloud._saveQueue).length) return;
+  const batch = PDCloud._saveQueue;
+  PDCloud._saveQueue = {};
+  try {
+    PDCloud.setStatus('syncing');
+    await PDCloud.api('/api/settings', { method: 'PUT', body: JSON.stringify({ settings: batch }) });
+    PDCloud.setStatus('online');
+  } catch (e) {
+    console.warn('PDCloud save failed', e);
+    Object.assign(PDCloud._saveQueue, batch);
+    PDCloud.setStatus('error', e.message);
+  }
+};
+
+PDCloud.trackSave = function(key, rawValue){
+  if (!PDCloud.SYNC_KEYS.includes(key)) return;
+  let val = rawValue;
+  try {
+    if (typeof rawValue === 'string') JSON.parse(rawValue);
+  } catch (e) {
+    val = rawValue;
+  }
+  PDCloud.queueSave(key, val);
+};
+
+PDCloud.init = async function(){
+  PDCloud.token = sessionStorage.getItem('pharmdash_token');
+  if (location.protocol !== 'file:' && !localStorage.getItem('pharmdash_api_base')) {
+    PDCloud.base = '';
+  }
+  await PDCloud.checkHealth();
+  if (PDCloud.token && PDCloud.online) {
+    PDCloud.ready = true;
+    try {
+      await PDCloud.api('/api/auth/me');
+      await PDCloud.pullSettings();
+    } catch (e) {
+      PDCloud.logout();
+      sessionStorage.removeItem('pharmdash_user');
+    }
+  }
+};
+
+/* Offline fallback users — used when API unavailable or file:// */
+const USERS_OFFLINE = {
+  'elsayed': { pass: 'pharma2026', name: 'Dr. Elsayed Hassan', role: 'مدير تطوير الأعمال' },
+  'admin':   { pass: 'admin123',   name: 'Admin',               role: 'مدير النظام' },
+  'manager': { pass: 'manager123', name: 'المدير',              role: 'مدير قطاع الصيدليات' }
+};
+
+async function doLogin() {
   const u = document.getElementById('loginUser').value.trim().toLowerCase();
   const p = document.getElementById('loginPass').value;
   const err = document.getElementById('loginError');
-  if (USERS[u] && USERS[u].pass === p) {
+  const finish = () => {
     err.classList.remove('show');
-    sessionStorage.setItem('pharmdash_user', JSON.stringify({ username: u, ...USERS[u] }));
     const screen = document.getElementById('loginScreen');
     screen.style.transition = 'opacity .4s ease';
     screen.style.opacity = '0';
     setTimeout(() => { screen.style.display = 'none'; initGlobalUX(); }, 400);
-  } else {
-    err.classList.add('show');
-    document.getElementById('loginPass').value = '';
-    document.getElementById('loginPass').focus();
+  };
+  try {
+    await PDCloud.checkHealth();
+    if (PDCloud.online) {
+      await PDCloud.login(u, p);
+      finish();
+      return;
+    }
+  } catch (e) {
+    console.warn('Cloud login unavailable, trying offline', e);
   }
+  const off = USERS_OFFLINE[u];
+  if (off && off.pass === p) {
+    sessionStorage.setItem('pharmdash_user', JSON.stringify({ username: u, name: off.name, role: off.role }));
+    PDCloud.ready = false;
+    finish();
+    return;
+  }
+  err.classList.add('show');
+  err.textContent = t('login.error');
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginPass').focus();
 }
 
 function doLogout() {
+  PDCloud.logout();
   sessionStorage.removeItem('pharmdash_user');
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
@@ -9500,7 +9675,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Check if already logged in this session
   if (sessionStorage.getItem('pharmdash_user')) {
     document.getElementById('loginScreen').style.display = 'none';
-    initGlobalUX();
+    initGlobalUX().catch(function(){});
   }
 });
 
