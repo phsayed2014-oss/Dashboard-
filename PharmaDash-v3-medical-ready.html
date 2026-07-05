@@ -9565,7 +9565,26 @@ document.getElementById('modalBg').addEventListener('click', e => {
   }
 });
 
-/* ── THEME: handled by toggleTheme() ── */
+/* ── THEME: dark / light toggle ── */
+function updateThemeIcon() {
+  const btn = document.getElementById('themeBtn');
+  if (!btn) return;
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  btn.textContent = isLight ? '🌙' : '☀️';
+  btn.title = isLight ? t('btn.theme.dark') : t('btn.theme.light');
+}
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  if (isLight) {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('rx-theme', 'dark');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('rx-theme', 'light');
+  }
+  updateThemeIcon();
+  if (typeof PDCloud !== 'undefined') PDCloud.trackSave('rx-theme', localStorage.getItem('rx-theme'));
+}
 
 /* ══ SIDEBAR NAV ══ */
 
