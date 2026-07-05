@@ -2891,6 +2891,43 @@ html[dir="ltr"] .pd-breadcrumb{direction:ltr;}
 .panel.active{content-visibility:visible;}
 .card,.kpi,.feat-card{contain:layout style paint;}
 
+/* PHARMADASH v5.0 — Smart Insights */
+.sync-badge.pd-offline-hidden{display:none!important;}
+html[dir="ltr"] .sb-nav-item[data-tab="smartinsights"]{border-right:none!important;border-left:2px solid rgba(124,58,237,.55)!important;}
+.si-hero{background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(37,99,235,.04));}
+.si-hero-grid{display:flex;gap:24px;align-items:center;flex-wrap:wrap;}
+.si-health-ring{position:relative;width:120px;height:120px;flex-shrink:0;}
+.si-health-ring svg{width:100%;height:100%;}
+.si-health-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.si-health-val span{font-size:28px;font-weight:900;font-family:Inter,Alexandria,sans-serif;color:var(--si-c,var(--violet-l));}
+.si-health-val small{font-size:10px;color:var(--text-dim);font-weight:700;}
+.si-hero-body{flex:1;min-width:220px;}
+.si-exec-text{font-size:13px;line-height:1.65;color:var(--text-dim);margin:0 0 12px;}
+.si-trend-pills{display:flex;flex-wrap:wrap;gap:8px;}
+.si-trend-pills span{font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;}
+.si-grid-gap{gap:16px;margin-top:16px;}
+.si-actions-list{display:flex;flex-direction:column;gap:10px;}
+.si-action{border:1px solid;border-radius:var(--r-lg);padding:14px 16px;}
+.si-action-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.si-action-ico{font-size:20px;}
+.si-priority{font-size:10px;font-weight:800;letter-spacing:.04em;}
+.si-action-title{font-size:13px;font-weight:800;margin-bottom:5px;}
+.si-action-body{font-size:12px;color:var(--text-dim);line-height:1.55;margin-bottom:10px;}
+.si-link-btn{background:var(--bg-glass2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;color:var(--violet-l);cursor:pointer;font-family:inherit;}
+.si-link-btn:hover{border-color:rgba(124,58,237,.4);}
+.si-forecast-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.si-fkpi{background:var(--bg-glass2);border:1px solid var(--border);border-radius:var(--r-md);padding:12px;text-align:center;}
+.si-fkpi-label{font-size:10px;font-weight:800;color:var(--text-muted);margin-bottom:6px;}
+.si-fkpi-val{font-size:20px;font-weight:900;font-family:Inter,Alexandria,sans-serif;}
+.si-fkpi-sub{font-size:10px;color:var(--text-dim);margin-top:4px;}
+.si-risk-list{display:flex;flex-direction:column;gap:12px;}
+.si-risk-row{display:grid;grid-template-columns:1fr 2fr 36px;gap:10px;align-items:center;}
+.si-risk-label{font-size:12px;font-weight:700;color:var(--text-dim);}
+.si-risk-bar-wrap{height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.si-risk-bar{height:100%;border-radius:4px;transition:width .4s ease;}
+.si-risk-score{font-size:12px;font-weight:900;font-family:Inter,sans-serif;color:var(--text-muted);text-align:center;}
+@media(max-width:768px){.si-forecast-kpis{grid-template-columns:1fr;}.si-risk-row{grid-template-columns:1fr;}}
+
 </style>
 </head>
 <body>
@@ -2995,6 +3032,9 @@ html[dir="ltr"] .pd-breadcrumb{direction:ltr;}
 
     <!-- ═══ تحليلات متقدمة ═══ -->
     <div class="sb-sec-label" data-i18n="sec.advanced">تحليلات متقدمة</div>
+    <div class="sb-nav-item" data-tab="smartinsights" onclick="sidebarNav(this,'smartinsights')" style="border-right:2px solid rgba(124,58,237,.55);"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.2 4.7-3 6.2V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-1.8C6.2 13.7 5 11.5 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="22" x2="15" y2="22"/></svg></span>      <span data-i18n="nav.smartinsights">رؤى ذكية</span>
+      <span class="sb-badge" id="sb-badge-smartinsights" style="background:rgba(124,58,237,.25);color:#a78bfa;">AI</span>
+    </div>
     <div class="sb-nav-item" data-tab="trends" onclick="sidebarNav(this,'trends')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/></svg></span>      <span data-i18n="nav.trends">اتجاه الأطباء</span>
     </div>
     <div class="sb-nav-item" data-tab="loyalty" onclick="sidebarNav(this,'loyalty')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="9" r="3.5"/><circle cx="15.5" cy="9" r="3.5"/><polygon points="4 10 12 21 20 10"/></svg></span>      <span data-i18n="nav.loyalty">ولاء الأطباء</span>
@@ -3047,7 +3087,7 @@ html[dir="ltr"] .pd-breadcrumb{direction:ltr;}
       <span class="dot-sep"></span>
       <span>T1 / T2 / T3</span>
       <span class="dot-sep"></span>
-      <span style="font-size:10px;opacity:.75;">v4.0 Cloud</span>
+      <span style="font-size:10px;opacity:.75;">v5.0 Insights</span>
     </div>
   </div>
 
@@ -3257,6 +3297,7 @@ html[dir="ltr"] .pd-breadcrumb{direction:ltr;}
 
 <div class="panel" id="panel-dailytrack"><div id="dailytrack-content"></div></div>
 <div class="panel" id="panel-trends"><div id="trends-content"></div></div>
+<div class="panel" id="panel-smartinsights"><div id="smartinsights-content"></div></div>
 <div class="panel" id="panel-agedmeds"><div id="agedmeds-content"></div></div>
 
 
@@ -3365,7 +3406,7 @@ const SOURCE_TEMPLATE=(function(){let h='<!DOCTYPE html>\n'+document.documentEle
     const el=document.getElementById('todayDate'); if(!el)return;
     const period=(typeof t==='function')?t('meta.period'):'بيانات يونيو 2026';
     const branches=(typeof t==='function')?t('meta.branches'):'T1 / T2 / T3';
-    el.innerHTML='<span class="live-dot"></span><span>'+period+'</span><span class="dot-sep"></span><span>'+branches+'</span><span class="dot-sep"></span><span style="font-size:10px;opacity:.75;">v4.0 Cloud</span>';
+    el.innerHTML='<span class="live-dot"></span><span>'+period+'</span><span class="dot-sep"></span><span>'+branches+'</span><span class="dot-sep"></span><span style="font-size:10px;opacity:.75;">v5.0 Insights</span>';
   }
   window.updateLiveClock=updateClock;
   setInterval(updateClock,60000);
@@ -3867,7 +3908,7 @@ function renderAgedMeds() {
 function renderActive(){
   const at=window._activePanel||(document.querySelector('.tab.active')?.dataset.panel)||'overview';
   /* ── SECTION ROUTING: panels that don't need branch picker ── */
-  const noBranch=['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','drugintel','targettrack','nearexpiry','plsales','pureherb','dailytrack','agedmeds'];
+  const noBranch=['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','smartinsights','drugintel','targettrack','nearexpiry','plsales','pureherb','dailytrack','agedmeds'];
   document.getElementById('branchPickerCard').style.display=noBranch.includes(at)?'none':'block';
 
   /* ── NO-BRANCH panels ── */
@@ -3891,8 +3932,9 @@ function renderActive(){
     if(at==='pureherb'){renderPureHerb();return;}
   if(at==='dailytrack'){renderDailyTrack();return;}
   if(at==='trends'){renderTrends();return;}
+  if(at==='smartinsights'){renderSmartInsights();return;}
   if(at==='agedmeds'){renderAgedMeds();return;}
-  /* ── SECTION 16: AI Smart Recommendations ── */
+  /* ── SECTION 16: Smart Insights ── */
 
   /* ── BRANCH-DEPENDENT panels ── */
   const loadedBranches = BRANCHES.filter(b=>STATE.data[b]);
@@ -8019,11 +8061,382 @@ function renderTrends() {
 }
 
 // ══════════════════════════════════════════
-// SECTION 16 — AI SMART RECOMMENDATIONS
-// توصيات للعمل مبنية على:
-//   • تحليل التخصصات × الأدوية
-//   • Private Label gaps
+// SECTION 16 — SMART INSIGHTS (Predictive Analytics · Offline)
+// ══════════════════════════════════════════
+function buildSmartInsightsData() {
+  const loaded = BRANCHES.filter(b => STATE.data[b]);
+  if (!loaded.length) return null;
 
+  const plKeys = PRIVATE_LABEL.map(p => p.key.toLowerCase());
+  const docAgg = new Map();
+  const drugAgg = new Map();
+  let grandTotal = 0;
+  let plTotal = 0;
+  let totalPatients = 0;
+  const branchTotals = { T1: 0, T2: 0, T3: 0 };
+
+  loaded.forEach(b => {
+    const d = STATE.data[b];
+    grandTotal += d.totalRows || 0;
+    branchTotals[b] = (branchTotals[b] || 0) + (d.totalRows || 0);
+    const pats = new Set();
+    (d.rows || []).forEach(r => { if (r.patient) pats.add(r.patient); });
+    totalPatients += pats.size;
+    (d.doctors || []).forEach(doc => {
+      if (!docAgg.has(doc.name)) {
+        docAgg.set(doc.name, { name: doc.name, section: doc.section || '—', total: 0, branches: new Set(), drugs: new Map() });
+      }
+      const r = docAgg.get(doc.name);
+      r.total += doc.total;
+      r.branches.add(b);
+      (doc.drugs || []).forEach(dr => r.drugs.set(dr.name, (r.drugs.get(dr.name) || 0) + dr.count));
+    });
+    (d.drugs || []).forEach(dr => {
+      drugAgg.set(dr.name, (drugAgg.get(dr.name) || 0) + dr.total);
+      if (plKeys.some(k => dr.name.toLowerCase().includes(k))) plTotal += dr.total;
+    });
+  });
+
+  const allDocs = [...docAgg.values()].sort((a, b) => b.total - a.total);
+  const avgTotal = allDocs.length ? allDocs.reduce((s, d) => s + d.total, 0) / allDocs.length : 0;
+  const plPct = grandTotal > 0 ? (plTotal / grandTotal * 100) : 0;
+
+  const analyzed = allDocs.map(d => {
+    const diversityScore = d.drugs.size;
+    const volumeRatio = avgTotal > 0 ? d.total / avgTotal : 0;
+    const branchSpread = d.branches.size;
+    const plDrugs = [...d.drugs.entries()].filter(([n]) => plKeys.some(k => n.toLowerCase().includes(k)));
+    const plDocTotal = plDrugs.reduce((s, [, c]) => s + c, 0);
+    const plDocPct = d.total > 0 ? (plDocTotal / d.total * 100) : 0;
+    const sharePct = grandTotal > 0 ? (d.total / grandTotal * 100) : 0;
+    let trend = 'stable';
+    if (volumeRatio >= 2 && diversityScore >= 4) trend = 'star';
+    else if (volumeRatio >= 1.2 && diversityScore >= 3) trend = 'growing';
+    else if (d.total <= 3) trend = 'new';
+    else if (volumeRatio < 0.5 || diversityScore < 2) trend = 'risk';
+    else if (volumeRatio < 0.8) trend = 'declining';
+    return { ...d, diversityScore, volumeRatio, branchSpread, plDocPct, sharePct, trend };
+  });
+
+  const trendCounts = { star: 0, growing: 0, stable: 0, new: 0, declining: 0, risk: 0 };
+  analyzed.forEach(d => { if (trendCounts[d.trend] !== undefined) trendCounts[d.trend]++; });
+
+  const critDocs = analyzed.filter(d => d.sharePct >= 15);
+  const highDepDocs = analyzed.filter(d => d.sharePct >= 8);
+  const top10n = Math.max(1, Math.ceil(allDocs.length * 0.1));
+  const top10Share = analyzed.slice(0, top10n).reduce((s, d) => s + d.sharePct, 0);
+  const declineShare = ((trendCounts.declining + trendCounts.risk) / Math.max(allDocs.length, 1)) * 100;
+
+  const expiryCritical = (typeof NEAR_EXPIRY_DATA !== 'undefined' ? NEAR_EXPIRY_DATA : []).filter(item => {
+    const days = Math.ceil((new Date(item.expiry) - new Date()) / 86400000);
+    return days <= 30;
+  }).length;
+
+  const branchMax = Math.max(branchTotals.T1 || 0, branchTotals.T2 || 0, branchTotals.T3 || 0);
+  const branchImbalance = grandTotal > 0 ? (branchMax / grandTotal * 100) : 0;
+
+  const plGap = Math.max(0, 15 - plPct);
+  const dependencyRisk = Math.min(100, top10Share * 1.2);
+  const trendRisk = Math.min(100, declineShare * 1.5);
+  const plRisk = Math.min(100, plGap * 6);
+  const expiryRisk = Math.min(100, expiryCritical * 8);
+  const branchRisk = Math.min(100, Math.max(0, branchImbalance - 40) * 2);
+
+  const risks = [
+    { key: 'dependency', score: dependencyRisk, label: t('si.riskDependency') },
+    { key: 'trend', score: trendRisk, label: t('si.riskTrend') },
+    { key: 'pl', score: plRisk, label: t('si.riskPL') },
+    { key: 'expiry', score: expiryRisk, label: t('si.riskExpiry') },
+    { key: 'branch', score: branchRisk, label: t('si.riskBranch') }
+  ];
+  const avgRisk = risks.reduce((s, r) => s + r.score, 0) / risks.length;
+  const healthScore = Math.round(Math.max(0, Math.min(100, 100 - avgRisk * 0.85)));
+
+  let forecastRx = null, forecastPL = null, forecastDocs = null, hasPeriods = false;
+  const periodBranches = loaded.filter(b => (STATE.periods[b] || []).length >= 2);
+  if (periodBranches.length) {
+    hasPeriods = true;
+    let baseRx = 0, curRx = 0, basePL = 0, curPL = 0;
+    const baseDocs = new Set(), curDocs = new Set();
+    periodBranches.forEach(b => {
+      const ps = STATE.periods[b];
+      const scored = ps.map(p => ({ p, s: periodDateScore(p.label) }));
+      const allDated = scored.every(x => x.s > 0);
+      let oldestP, newestP;
+      if (allDated) { const srt = [...scored].sort((a, b) => a.s - b.s); oldestP = srt[0].p; newestP = srt[srt.length - 1].p; }
+      else { oldestP = ps[0]; newestP = ps[ps.length - 1]; }
+      const bp = oldestP.data, cp = newestP.data;
+      baseRx += bp.totalRows || 0; curRx += cp.totalRows || 0;
+      (bp.doctors || []).forEach(x => baseDocs.add(x.name));
+      (cp.doctors || []).forEach(x => curDocs.add(x.name));
+      (bp.drugs || []).forEach(dr => { if (plKeys.some(k => dr.name.toLowerCase().includes(k))) basePL += dr.total; });
+      (cp.drugs || []).forEach(dr => { if (plKeys.some(k => dr.name.toLowerCase().includes(k))) curPL += dr.total; });
+    });
+    if (baseRx > 0) forecastRx = ((curRx - baseRx) / baseRx * 100);
+    if (basePL > 0) forecastPL = ((curPL - basePL) / basePL * 100);
+    if (baseDocs.size > 0) forecastDocs = ((curDocs.size - baseDocs.size) / baseDocs.size * 100);
+  }
+
+  const projectedRx = forecastRx !== null ? Math.round(grandTotal * (1 + forecastRx / 100)) : null;
+  const projectedPL = forecastPL !== null ? Math.round(plTotal * (1 + forecastPL / 100)) : null;
+
+  const actions = [];
+  const isEn = CURRENT_LANG === 'en';
+
+  if (critDocs.length) {
+    actions.push({
+      priority: 95, icon: '🔴', color: '#dc2626', bg: 'rgba(220,38,38,.08)', border: 'rgba(220,38,38,.25)',
+      title: isEn ? `Critical dependency: ${critDocs.length} doctor(s)` : `اعتماد حرج: ${critDocs.length} طبيب`,
+      body: isEn
+        ? `${critDocs.slice(0, 2).map(d => d.name).join(', ')} drive ≥15% of Rx — schedule retention visits this week.`
+        : `${critDocs.slice(0, 2).map(d => d.name).join('، ')} يحركون ≥15% من الكتابات — جدول زيارات احتفاظ هذا الأسبوع.`,
+      tab: 'basket', label: t('si.goTo') + ' · ' + t('nav.basket')
+    });
+  }
+
+  const lowPlStars = analyzed.filter(d => (d.trend === 'star' || d.trend === 'growing') && d.plDocPct < 5 && d.total >= 10);
+  if (lowPlStars.length) {
+    actions.push({
+      priority: 88, icon: '⭐', color: '#db2777', bg: 'rgba(219,39,119,.08)', border: 'rgba(219,39,119,.25)',
+      title: isEn ? `${lowPlStars.length} rising doctors with low PL share` : `${lowPlStars.length} طبيب صاعد بنسبة PL منخفضة`,
+      body: isEn
+        ? `Top opportunity: ${lowPlStars[0].name} (${lowPlStars[0].plDocPct.toFixed(1)}% PL) — pitch NOSTRI portfolio.`
+        : `أفضل فرصة: ${lowPlStars[0].name} (${lowPlStars[0].plDocPct.toFixed(1)}% PL) — قدم محفظة NOSTRI.`,
+      tab: 'featured', label: t('si.goTo') + ' · NOSTRI'
+    });
+  }
+
+  const atRisk = analyzed.filter(d => d.trend === 'risk' || d.trend === 'declining').slice(0, 5);
+  if (atRisk.length) {
+    actions.push({
+      priority: 82, icon: '📉', color: '#d97706', bg: 'rgba(217,119,6,.08)', border: 'rgba(217,119,6,.25)',
+      title: isEn ? `${atRisk.length} doctors at decline risk` : `${atRisk.length} طبيب في خطر تراجع`,
+      body: isEn
+        ? `Start with ${atRisk[0].name} — review visit frequency and competitive alternatives.`
+        : `ابدأ بـ ${atRisk[0].name} — راجع وتيرة الزيارات والبدائل المنافسة.`,
+      tab: 'trends', label: t('si.goTo') + ' · ' + t('nav.trends')
+    });
+  }
+
+  if (expiryCritical > 0) {
+    actions.push({
+      priority: 78, icon: '⏰', color: '#dc2626', bg: 'rgba(220,38,38,.06)', border: 'rgba(220,38,38,.2)',
+      title: isEn ? `${expiryCritical} near-expiry SKUs (≤30 days)` : `${expiryCritical} صنف قرب الانتهاء (≤30 يوم)`,
+      body: isEn ? 'Prioritize clearance bundles linked to high-Rx doctors.' : 'أولوية تصريف مرتبط بأطباء كتاباتهم عالية.',
+      tab: 'nearexpiry', label: t('si.goTo') + ' · ' + t('nav.nearexpiry')
+    });
+  }
+
+  if (plPct < 12) {
+    actions.push({
+      priority: 72, icon: '💊', color: '#2563eb', bg: 'rgba(37,99,235,.08)', border: 'rgba(37,99,235,.25)',
+      title: isEn ? `PL share ${plPct.toFixed(1)}% — below 12% target` : `نسبة PL ${plPct.toFixed(1)}% — أقل من هدف 12%`,
+      body: isEn ? 'Focus PureHerb + NOSTRI in top 20 doctor visits.' : 'ركّز PureHerb + NOSTRI في زيارات أعلى 20 طبيب.',
+      tab: 'pureherb', label: t('si.goTo') + ' · PureHerb'
+    });
+  }
+
+  const multiBranch = analyzed.filter(d => d.branchSpread >= 2 && d.total >= 8);
+  if (multiBranch.length >= 3) {
+    actions.push({
+      priority: 65, icon: '🔗', color: '#0d9488', bg: 'rgba(13,148,136,.08)', border: 'rgba(13,148,136,.25)',
+      title: isEn ? `${multiBranch.length} multi-branch champions` : `${multiBranch.length} طبيب في فروع متعددة`,
+      body: isEn ? 'Protect these relationships — they stabilize network performance.' : 'حافظ على هذه العلاقات — تثبّت أداء الشبكة.',
+      tab: 'loyalty', label: t('si.goTo') + ' · ' + t('nav.loyalty')
+    });
+  }
+
+  actions.sort((a, b) => b.priority - a.priority);
+
+  let healthLabel, healthColor;
+  if (healthScore >= 75) { healthLabel = t('si.healthGood'); healthColor = '#0d9488'; }
+  else if (healthScore >= 50) { healthLabel = t('si.healthWarn'); healthColor = '#d97706'; }
+  else { healthLabel = t('si.healthCrit'); healthColor = '#dc2626'; }
+
+  const executive = isEn
+    ? `Network health ${healthScore}/100 (${healthLabel}). ${fmt(allDocs.length)} doctors · ${fmt(grandTotal)} Rx · PL ${plPct.toFixed(1)}%. Top 10% drive ${top10Share.toFixed(0)}% of volume${hasPeriods && forecastRx !== null ? ` — Rx trend ${forecastRx >= 0 ? '+' : ''}${forecastRx.toFixed(0)}%` : ''}.`
+    : `صحة الشبكة ${healthScore}/100 (${healthLabel}). ${fmt(allDocs.length)} طبيب · ${fmt(grandTotal)} كتابة · PL ${plPct.toFixed(1)}%. أعلى 10% يحركون ${top10Share.toFixed(0)}% من الحجم${hasPeriods && forecastRx !== null ? ` — اتجاه الكتابات ${forecastRx >= 0 ? '+' : ''}${forecastRx.toFixed(0)}%` : ''}.`;
+
+  return {
+    loaded, grandTotal, plTotal, plPct, allDocs: analyzed, healthScore, healthLabel, healthColor,
+    risks, actions: actions.slice(0, 6), executive, trendCounts, hasPeriods,
+    forecastRx, forecastPL, forecastDocs, projectedRx, projectedPL, expiryCritical,
+    topDrugs: [...drugAgg.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5),
+    highDepDocs: highDepDocs.slice(0, 5)
+  };
+}
+
+function renderSmartInsights() {
+  const container = document.getElementById('smartinsights-content');
+  if (!container) return;
+  const data = buildSmartInsightsData();
+  if (!data) {
+    container.innerHTML = emptyStateHTML({
+      icon: '🧠',
+      title: t('empty.uploadTitle'),
+      desc: t('empty.uploadDesc'),
+      primaryLabel: t('empty.uploadBtn'),
+      primaryAction: "document.querySelector('[data-upload=\\'T1\\']')?.click()",
+      secondaryLabel: t('empty.tourBtn'),
+      secondaryAction: 'showOnboarding(true)'
+    });
+    return;
+  }
+
+  const d = data;
+  const healthRing = `
+    <div class="si-health-ring" style="--si-h:${d.healthScore};--si-c:${d.healthColor};">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border)" stroke-width="10"/>
+        <circle cx="60" cy="60" r="52" fill="none" stroke="${d.healthColor}" stroke-width="10" stroke-linecap="round"
+          stroke-dasharray="${(d.healthScore / 100 * 327).toFixed(1)} 327" transform="rotate(-90 60 60)"/>
+      </svg>
+      <div class="si-health-val"><span>${d.healthScore}</span><small>${t('si.scoreLabel')}</small></div>
+    </div>`;
+
+  container.innerHTML = `
+    <div class="card si-hero">
+      <div class="si-hero-grid">
+        ${healthRing}
+        <div class="si-hero-body">
+          <div class="card-title" style="font-size:18px;margin-bottom:6px;"><span class="dot"></span> ${t('si.title')}</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">${t('si.subtitle')}</div>
+          <p class="si-exec-text">${escapeHtml(d.executive)}</p>
+          <div class="si-trend-pills">
+            ${[
+              { k: 'star', ar: '🚀', c: '#0d9488' }, { k: 'growing', ar: '📈', c: '#2563eb' },
+              { k: 'stable', ar: '➖', c: '#0284c7' }, { k: 'declining', ar: '📉', c: '#d97706' },
+              { k: 'risk', ar: '⚠', c: '#dc2626' }
+            ].map(x => `<span style="background:${x.c}18;border:1px solid ${x.c}40;color:${x.c};">${x.ar} ${d.trendCounts[x.k] || 0}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2 si-grid-gap">
+      <div class="card">
+        <div class="card-head"><div class="card-title"><span class="dot"></span> ${t('si.actions')}</div></div>
+        <div class="si-actions-list">
+          ${d.actions.length ? d.actions.map((a, i) => `
+            <div class="si-action" style="background:${a.bg};border-color:${a.border};">
+              <div class="si-action-top">
+                <span class="si-action-ico">${a.icon}</span>
+                <span class="si-priority" style="color:${a.color};">${t('si.actionPriority')} ${a.priority}</span>
+              </div>
+              <div class="si-action-title" style="color:${a.color};">${escapeHtml(a.title)}</div>
+              <div class="si-action-body">${escapeHtml(a.body)}</div>
+              <button type="button" class="si-link-btn" onclick="sidebarNav(document.querySelector('[data-tab=\\'${a.tab}\\']'),'${a.tab}')">${escapeHtml(a.label)} →</button>
+            </div>`).join('') : `<p style="color:var(--text-dim);font-size:13px;padding:12px;">${t('si.noActions')}</p>`}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div class="card-title"><span class="dot"></span> ${t('si.forecast')}</div></div>
+        ${d.hasPeriods ? `
+          <div class="si-forecast-kpis">
+            ${[
+              { label: t('si.forecastRx'), val: d.forecastRx, proj: d.projectedRx },
+              { label: t('si.forecastPL'), val: d.forecastPL, proj: d.projectedPL },
+              { label: t('si.forecastDocs'), val: d.forecastDocs, proj: null }
+            ].map(f => {
+              const v = f.val;
+              const up = v !== null && v >= 0;
+              const col = v === null ? 'var(--text-muted)' : (up ? 'var(--teal-l)' : 'var(--rose-l)');
+              return `<div class="si-fkpi">
+                <div class="si-fkpi-label">${f.label}</div>
+                <div class="si-fkpi-val" style="color:${col};">${v === null ? '—' : (up ? '+' : '') + v.toFixed(1) + '%'}</div>
+                ${f.proj !== null ? `<div class="si-fkpi-sub">${t('si.projected')}: ${fmt(f.proj)}</div>` : ''}
+              </div>`;
+            }).join('')}
+          </div>
+          <div style="position:relative;height:200px;margin-top:14px;"><canvas id="siForecastChart"></canvas></div>
+        ` : `<div class="pd-empty-state" style="padding:28px;"><span class="es-ico">📅</span><p>${t('si.noPeriod')}</p></div>`}
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="card-head"><div class="card-title"><span class="dot"></span> ${t('si.radar')}</div></div>
+      <div class="grid-2" style="gap:16px;align-items:center;">
+        <div style="position:relative;height:280px;max-width:340px;margin:0 auto;"><canvas id="siRiskRadar"></canvas></div>
+        <div class="si-risk-list">
+          ${d.risks.map(r => `
+            <div class="si-risk-row">
+              <div class="si-risk-label">${escapeHtml(r.label)}</div>
+              <div class="si-risk-bar-wrap"><div class="si-risk-bar" style="width:${r.score.toFixed(0)}%;background:${r.score >= 60 ? '#dc2626' : r.score >= 35 ? '#d97706' : '#0d9488'};"></div></div>
+              <div class="si-risk-score">${r.score.toFixed(0)}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  setTimeout(() => {
+    const c = chartColors();
+    destroyChart('siRiskRadar');
+    const radarEl = document.getElementById('siRiskRadar');
+    if (radarEl) {
+      charts['siRiskRadar'] = new Chart(radarEl, {
+        type: 'radar',
+        data: {
+          labels: d.risks.map(r => r.label),
+          datasets: [{
+            label: t('si.radar'),
+            data: d.risks.map(r => r.score),
+            backgroundColor: 'rgba(37,99,235,.15)',
+            borderColor: 'rgba(37,99,235,.8)',
+            pointBackgroundColor: 'rgba(37,99,235,.9)',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            r: {
+              min: 0, max: 100,
+              ticks: { display: false, stepSize: 25 },
+              grid: { color: c.grid },
+              angleLines: { color: c.grid },
+              pointLabels: { color: c.text, font: { size: 10, family: 'IBM Plex Sans Arabic' } }
+            }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    if (d.hasPeriods && d.forecastRx !== null) {
+      destroyChart('siForecastChart');
+      const fcEl = document.getElementById('siForecastChart');
+      if (fcEl) {
+        const labels = [t('si.current'), t('si.projected')];
+        charts['siForecastChart'] = new Chart(fcEl, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              label: t('si.forecastRx'),
+              data: [d.grandTotal, d.projectedRx || d.grandTotal],
+              backgroundColor: ['rgba(37,99,235,.7)', 'rgba(13,148,136,.7)'],
+              borderRadius: 8
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: c.text, font: { family: 'IBM Plex Sans Arabic', size: 11 } }, grid: { display: false } },
+              y: { ticks: { color: c.text, font: { family: 'IBM Plex Sans Arabic', size: 10 } }, grid: { color: c.grid } }
+            }
+          }
+        });
+      }
+    }
+  }, 60);
+}
+
+function goSmartInsightsTab(tab) {
+  const el = document.querySelector('.sb-nav-item[data-tab="' + tab + '"]');
+  if (el) sidebarNav(el, tab);
+}
 
 /* ── init handled at end of script ── */
 
@@ -9198,6 +9611,15 @@ const I18N = {
     'nav.overview':'نظرة عامة','nav.visitcard':'بطاقة زيارة طبيب','nav.dailytrack':'متابعة يومية',
     'nav.nearexpiry':'أصناف قرب الانتهاء','nav.targeted':'أصناف أوفرستوك','nav.targettrack':'متابعة أصناف الأوفرستوك',
     'nav.doctors':'الأطباء','nav.drugs':'الأدوية','nav.sections':'الأقسام','nav.drugintel':'بحث الأدوية',
+'nav.smartinsights':'رؤى ذكية',
+    'si.title':'رؤى ذكية — تحليل تنبؤي','si.subtitle':'ملخص تنفيذي · إجراءات أولوية · توقعات · رادار مخاطر',
+    'si.health':'صحة الشبكة','si.healthGood':'ممتاز','si.healthWarn':'يحتاج انتباه','si.healthCrit':'حرج',
+    'si.executive':'الملخص التنفيذي','si.actions':'إجراءات ذات أولوية','si.forecast':'توقعات الأداء','si.radar':'رادار المخاطر',
+    'si.actionPriority':'أولوية','si.goTo':'انتقل إلى','si.noActions':'لا توجد إجراءات عاجلة — الأداء مستقر.',
+    'si.forecastRx':'اتجاه الكتابات','si.forecastPL':'اتجاه PL','si.forecastDocs':'اتجاه عدد الأطباء',
+    'si.noPeriod':'ارفع فترتين زمنيتين (مقارنة زمنية) لتفعيل التوقعات.',
+    'si.riskDependency':'اعتماد الأطباء','si.riskTrend':'تراجع الاتجاه','si.riskPL':'فجوة PL','si.riskExpiry':'انتهاء الصلاحية','si.riskBranch':'اختلال الفروع',
+    'si.scoreLabel':'نقطة','si.current':'الحالي','si.projected':'المتوقع',
     'nav.trends':'اتجاه الأطباء','nav.loyalty':'ولاء الأطباء','nav.pareto':'باريتو 80/20','nav.basket':'تركّز الأطباء',
     'nav.agedmeds':'الأدوية آجل','nav.compare':'مقارنة الفروع','nav.timecomp':'مقارنة زمنية',
     'btn.share':'مشاركة','btn.logout':'خروج','btn.upload':'رفع','btn.tour':'جولة تعريفية','btn.theme.dark':'الوضع الداكن','btn.theme.light':'الوضع الفاتح',
@@ -9219,6 +9641,15 @@ const I18N = {
     'nav.overview':'Overview','nav.visitcard':'Doctor Visit Card','nav.dailytrack':'Daily Tracking',
     'nav.nearexpiry':'Near Expiry','nav.targeted':'Overstock Items','nav.targettrack':'Overstock Tracking',
     'nav.doctors':'Doctors','nav.drugs':'Drugs','nav.sections':'Departments','nav.drugintel':'Drug Search',
+'nav.smartinsights':'Smart Insights',
+    'si.title':'Smart Insights — Predictive Analytics','si.subtitle':'Executive summary · priority actions · forecast · risk radar',
+    'si.health':'Network health','si.healthGood':'Excellent','si.healthWarn':'Needs attention','si.healthCrit':'Critical',
+    'si.executive':'Executive summary','si.actions':'Priority actions','si.forecast':'Performance forecast','si.radar':'Risk radar',
+    'si.actionPriority':'Priority','si.goTo':'Go to','si.noActions':'No urgent actions — performance is stable.',
+    'si.forecastRx':'Rx trend','si.forecastPL':'PL trend','si.forecastDocs':'Doctor count trend',
+    'si.noPeriod':'Upload two time periods (Time Compare) to enable forecasts.',
+    'si.riskDependency':'Doctor dependency','si.riskTrend':'Trend decline','si.riskPL':'PL gap','si.riskExpiry':'Expiry risk','si.riskBranch':'Branch imbalance',
+    'si.scoreLabel':'score','si.current':'Current','si.projected':'Projected',
     'nav.trends':'Doctor Trends','nav.loyalty':'Doctor Loyalty','nav.pareto':'Pareto 80/20','nav.basket':'Doctor Focus',
     'nav.agedmeds':'Credit Sales','nav.compare':'Branch Compare','nav.timecomp':'Time Compare',
     'btn.share':'Share','btn.logout':'Logout','btn.upload':'Upload','btn.tour':'Quick tour','btn.theme.dark':'Dark mode','btn.theme.light':'Light mode',
@@ -9250,6 +9681,7 @@ const SECTION_META = {
   drugs:{ar:{group:'تحليلات',title:'الأدوية',desc:'تحليل الأدوية الأكثر كتابة والاتجاهات.'},en:{group:'Analytics',title:'Drugs',desc:'Most prescribed drugs and trends.'}},
   sections:{ar:{group:'تحليلات',title:'الأقسام',desc:'مساهمة الأقسام الطبية في إجمالي الكتابات.'},en:{group:'Analytics',title:'Departments',desc:'Medical department contribution to total Rx.'}},
   drugintel:{ar:{group:'تحليلات',title:'بحث الأدوية',desc:'بحث متقدم عن دواء وكتاباته حسب الطبيب.'},en:{group:'Analytics',title:'Drug Search',desc:'Advanced drug search by prescribing doctors.'}},
+  smartinsights:{ar:{group:'تحليلات متقدمة',title:'رؤى ذكية',desc:'ملخص تنفيذي وإجراءات أولوية وتوقعات ورادار مخاطر — بدون اتصال.'},en:{group:'Advanced',title:'Smart Insights',desc:'Executive summary, priority actions, forecasts, and risk radar — fully offline.'}},
   trends:{ar:{group:'تحليلات متقدمة',title:'اتجاه الأطباء',desc:'تتبع صعود وهبوط كتابات الأطباء عبر الزمن.'},en:{group:'Advanced',title:'Doctor Trends',desc:'Track rising and falling doctor Rx over time.'}},
   loyalty:{ar:{group:'تحليلات متقدمة',title:'ولاء الأطباء',desc:'تصنيف الأطباء حسب الاستمرارية والولاء.'},en:{group:'Advanced',title:'Doctor Loyalty',desc:'Classify doctors by consistency and loyalty.'}},
   pareto:{ar:{group:'تحليلات متقدمة',title:'باريتو 80/20',desc:'تحديد الأطباء والأدوية الأكثر تأثيراً.'},en:{group:'Advanced',title:'Pareto 80/20',desc:'Identify highest-impact doctors and drugs.'}},
@@ -9442,11 +9874,11 @@ document.getElementById('tabs').addEventListener('click', e => {
 
 
 /* ══════════════════════════════════════════
-   PHARMADASH CLOUD v4 — API · JWT Auth · Sync
+   PHARMADASH v5 Insights — API · JWT Auth · Sync
    Works online (server) + offline fallback (local)
 ══════════════════════════════════════════ */
 const PDCloud = {
-  base: localStorage.getItem('pharmdash_api_base') || (location.protocol === 'file:' ? 'http://localhost:3847' : ''),
+  base: localStorage.getItem('pharmdash_api_base') || '',
   token: null,
   ready: false,
   online: false,
@@ -9598,8 +10030,12 @@ PDCloud.trackSave = function(key, rawValue){
 
 PDCloud.init = async function(){
   PDCloud.token = sessionStorage.getItem('pharmdash_token');
-  if (location.protocol !== 'file:' && !localStorage.getItem('pharmdash_api_base')) {
+  if (location.protocol === 'file:' && !localStorage.getItem('pharmdash_api_base')) {
     PDCloud.base = '';
+  }
+  if (!PDCloud.base) {
+    const badge = document.getElementById('syncBadge');
+    if (badge) badge.classList.add('pd-offline-hidden');
   }
   await PDCloud.checkHealth();
   if (PDCloud.token && PDCloud.online) {
