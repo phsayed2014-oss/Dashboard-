@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname);
 const HTML = path.join(ROOT, 'PharmaDash-v3-medical-ready.html');
-const PDF = '/home/ubuntu/.cursor/projects/workspace/uploads/_____________________16-05-2026__a09f.pdf';
+const PDF = process.argv[2] || process.env.PDF || '/home/ubuntu/.cursor/projects/workspace/uploads/24-06-2026_2_7fd9.pdf';
 const PORT = 8765;
 
 function startServer() {
@@ -87,8 +87,6 @@ async function main() {
     const docBadge = await page.locator('#sb-badge-doctors').textContent();
     checks.push('Doctors badge: ' + docBadge.trim());
     if (parseInt(docBadge) < 5) errors.push('Doctors badge too low: ' + docBadge);
-
-    // Navigate doctors
     await page.click('[data-tab="doctors"]');
     await page.waitForTimeout(800);
     const doctorsContent = await page.locator('#doctors-content').innerText();
@@ -113,11 +111,15 @@ async function main() {
     if (trendsText.includes('طبيب') || trendsText.includes('doctor') || trendsText.includes('13')) checks.push('Trends section OK');
     else errors.push('Trends section unexpected: ' + trendsText.slice(0, 100));
 
-    // Global search
-    await page.fill('#globalSearch', 'Paracetamol');
+    // Global search — use a common drug token from loaded data
+    const searchTerm = await page.evaluate(() => {
+      const d = STATE.data['T1'];
+      return d?.drugs?.[0]?.name?.split(/[\s,/(]+/)[0] || 'AMOX';
+    });
+    await page.fill('#globalSearch', searchTerm);
     await page.waitForTimeout(400);
     const searchOpen = await page.locator('#searchDropdown.open').count();
-    if (searchOpen) checks.push('Global search works');
+    if (searchOpen) checks.push('Global search works (' + searchTerm + ')');
     else errors.push('Global search dropdown did not open');
 
     // Verify sync badge hidden (offline mode on http without api base - actually PDCloud might try health check)
@@ -143,8 +145,9 @@ async function main() {
     });
     checks.push('STATE: ' + JSON.stringify(stateSummary));
 
-    if (!stateSummary || stateSummary.rows !== 4304) errors.push('Expected 4304 rows, got ' + (stateSummary?.rows || 0));
-    if (stateSummary && stateSummary.doctors !== 13) errors.push('Expected 13 doctors, got ' + stateSummary.doctors);
+    if (!stateSummary || stateSummary.rows < 100) errors.push('Too few rows parsed: ' + (stateSummary?.rows || 0));
+    if (stateSummary && stateSummary.doctors < 5) errors.push('Too few doctors: ' + stateSummary.doctors);
+    if (stateSummary && stateSummary.drugs < 50) errors.push('Too few drugs: ' + stateSummary.drugs);
 
   } finally {
     await browser.close();

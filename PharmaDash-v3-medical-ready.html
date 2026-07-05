@@ -3609,7 +3609,7 @@ async function parsePDF(file){
   const buf=await file.arrayBuffer();
   const pdf=await pdfjsLib.getDocument({data:buf}).promise;
   const SEC_WORDS=['GASTROENTEROLOGY','ENDOCRINOLOGY','OPHTHALMOLOGY','OPTHALMOLOGY','RHEUMATOLOGY','PULMONOLOGY','PARACITIONER','DERMATOLOGY','ORTHOPAEDIC','PSYCHIATRY','OBSTETRICS','PAEDIATRIC','CARDIOLOGY','NEPHROLOGY','NEUROLOGY','ONCOLOGY','INTERNAL','UROLOGY','GENERAL','SURGERY','DENTAL','RADIOLOGY','GYNECOLOGY','MEDICINE','ENT'];
-  const COL_P=[0,75],COL_PN=[75,243],COL_SVC=[243,476],COL_ORD=[476,535],COL_ST=[535,596],COL_DS=[596,1200];
+  const COL_P=[0,75],COL_PN=[75,243],COL_SVC=[243,471],COL_ORD=[471,535],COL_ST=[535,596],COL_DS=[596,1200];
   function g(ws,r){return ws.filter(w=>w.x>=r[0]&&w.x<r[1]).map(w=>w.s).join(' ').trim();}
   function splitDS(txt){
     const words=txt.split(/\s+/);
