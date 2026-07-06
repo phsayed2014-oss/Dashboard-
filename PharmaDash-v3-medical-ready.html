@@ -9999,23 +9999,40 @@ function ssPickQtyLines(lines,start,count){
     var j=i,arr=[];
     while(j<lines.length && /^\d+$/.test(lines[j])){ arr.push(lines[j]); j++; }
     var filtered=arr.filter(function(x){ return Number(x)<10000; });
-    if(filtered.length>=count) return filtered.slice(0,count).map(ssNum);
+    if(filtered.length>=count) return {values:filtered.slice(0,count).map(ssNum), end:j};
   }
-  return Array(count).fill(0);
+  return {values:Array(count).fill(0), end:start};
 }
 function ssPickValueLines(lines,start,count){
   var re=/^[\d,]+(?:\.\d+)?$/;
+  var candidates=[];
   for(var i=start;i<lines.length;i++){
     if(!re.test(lines[i])) continue;
     var j=i,arr=[];
     while(j<lines.length && re.test(lines[j])){ arr.push(lines[j]); j++; }
-    var vals=arr.map(ssNum).filter(function(v){ return v>0; });
-    if(vals.length>=count) return vals.slice(0,count);
+    if(arr.length>=count){
+      var raw=arr.slice(0,count);
+      var vals=raw.map(ssNum);
+      var hasDecimal=raw.some(function(x){ return /[.,]/.test(x); });
+      var maxV=Math.max.apply(null,vals);
+      var avgV=vals.reduce(function(s,v){ return s+v; },0)/(vals.length||1);
+      var score=0;
+      if(hasDecimal) score+=6;
+      if(maxV>=100) score+=3;
+      if(avgV>=20) score+=1;
+      if(!hasDecimal && maxV<20) score-=2;
+      candidates.push({score:score,vals:vals,start:i});
+    }
+    i=j-1;
   }
-  var fallback=lines.slice(start).filter(function(l){ return re.test(l) && /[.,]/.test(l); }).map(ssNum);
-  if(fallback.length>=count) return fallback.slice(0,count);
-  while(fallback.length<count) fallback.push(0);
-  return fallback.slice(0,count);
+  if(candidates.length){
+    candidates.sort(function(a,b){
+      if(b.score!==a.score) return b.score-a.score;
+      return b.start-a.start; /* غالبًا القيم تقع بعد الكمية */
+    });
+    return candidates[0].vals.slice(0,count);
+  }
+  return Array(count).fill(0);
 }
 function ssParseSupplierPageText(text){
   var lines=String(text||'').split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean);
@@ -10023,8 +10040,9 @@ function ssParseSupplierPageText(text){
   if(block.start<0||!block.len) return [];
   var codes=lines.slice(block.start,block.start+block.len);
   var names=ssPickNameLines(lines,block.start,codes.length);
-  var qty=ssPickQtyLines(lines,block.start+block.len,codes.length);
-  var val=ssPickValueLines(lines,block.start+block.len,codes.length);
+  var qtyBlock=ssPickQtyLines(lines,block.start+block.len,codes.length);
+  var qty=qtyBlock.values||Array(codes.length).fill(0);
+  var val=ssPickValueLines(lines,qtyBlock.end||block.start+block.len,codes.length);
   return codes.map(function(code,i){
     return {code:code,name:names[i]||'—',qtySold:ssNum(qty[i]),saleValue:ssNum(val[i])};
   });
@@ -10063,26 +10081,58 @@ async function ssExtractPageText(pdf,pageNo){
   });
   return {text:lines.join('\n'),lines:lines};
 }
-async function ssExtractSupplierRowsFromFile(file,pageNo){
+async function ssExtractSupplierRowsFromFile(file,pageNo,products){
   if(!window.pdfjsLib) window.pdfjsLib=window['pdfjs-dist/build/pdf'];
   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   var buf=await file.arrayBuffer();
   var pdf=await pdfjsLib.getDocument({data:buf}).promise;
-  if(!pageNo || pageNo<1 || pageNo>pdf.numPages){
-    return {
-      rows:[],
-      reportRange:'',
-      issues:['الصفحة '+pageNo+' غير موجودة (عدد صفحات الملف: '+pdf.numPages+')']
-    };
+  var parsedPages=[];
+  for(var p=1;p<=pdf.numPages;p++){
+    var pageTxt=await ssExtractPageText(pdf,p);
+    var rows=ssParseSupplierPageText(pageTxt.text);
+    if(!rows.length) continue;
+    var matched=0;
+    rows.forEach(function(r){ if(ssFindProductForRow(r,products)) matched++; });
+    parsedPages.push({
+      pageNo:p,
+      rows:rows,
+      matched:matched,
+      reportRange:ssExtractDateRange(pageTxt.text)
+    });
   }
-  var pageTxt=await ssExtractPageText(pdf,pageNo);
-  var rows=ssParseSupplierPageText(pageTxt.text);
-  var issues=[];
-  if(!rows.length) issues.push('لم يتم العثور على جدول منتجات واضح في الصفحة '+pageNo);
+
+  var issues=[], chosen=null;
+  var preferredValid=pageNo && pageNo>=1 && pageNo<=pdf.numPages;
+  var preferred=preferredValid?parsedPages.find(function(x){ return x.pageNo===pageNo; }):null;
+  var best=parsedPages.slice().sort(function(a,b){
+    if(b.matched!==a.matched) return b.matched-a.matched;
+    return b.rows.length-a.rows.length;
+  })[0]||null;
+
+  if(preferred && preferred.matched>0){
+    chosen=preferred;
+  }else if(best){
+    chosen=best;
+    if(!preferredValid){
+      issues.push('الصفحة '+pageNo+' غير موجودة (عدد صفحات الملف: '+pdf.numPages+') — تم التحليل تلقائياً من صفحة '+chosen.pageNo);
+    }else if(!preferred){
+      issues.push('لا يوجد جدول واضح في الصفحة '+pageNo+' — تم التحليل تلقائياً من صفحة '+chosen.pageNo);
+    }else if(preferred.matched===0 && chosen.pageNo!==pageNo){
+      issues.push('لم يتم العثور على منتجات مستهدفة في الصفحة '+pageNo+' — تم التحليل تلقائياً من صفحة '+chosen.pageNo);
+    }
+  }else{
+    if(!preferredValid) issues.push('الصفحة '+pageNo+' غير موجودة (عدد صفحات الملف: '+pdf.numPages+')');
+    issues.push('لم يتم العثور على جدول منتجات واضح في الملف');
+  }
+  if(chosen && chosen.matched===0){
+    issues.push('تم العثور على جدول بالملف لكن بدون تطابق واضح مع المنتجات المستهدفة');
+  }
+
   return {
-    rows:rows,
-    reportRange:ssExtractDateRange(pageTxt.text),
-    issues:issues
+    rows:chosen?chosen.rows:[],
+    reportRange:chosen?(chosen.reportRange||''):'',
+    issues:issues,
+    usedPage:chosen?chosen.pageNo:null
   };
 }
 async function ssImportPdf(filesByBranch,pageMap){
@@ -10099,7 +10149,7 @@ async function ssImportPdf(filesByBranch,pageMap){
       sourceFiles.push(f.name||'');
       sourceFilesByBranch[b].push(f.name||'');
       try{
-        var parsed=await ssExtractSupplierRowsFromFile(f,pNo);
+        var parsed=await ssExtractSupplierRowsFromFile(f,pNo,products);
         if(parsed.reportRange) reportRanges.push(parsed.reportRange);
         if(parsed.issues&&parsed.issues.length){
           parsed.issues.forEach(function(msg){ issues.push('⚠️ '+dtBranchLabel(b)+' — '+(f.name||'')+': '+msg); });
@@ -10260,6 +10310,9 @@ function dtRenderSupplierSalesCard(){
     var meta=[];
     meta.push('اليوم المحدد: '+dtFmtAr(sel));
     if(dayRec.sourceFiles&&dayRec.sourceFiles.length) meta.push('عدد الملفات: '+dayRec.sourceFiles.length);
+    if(dayRec.sourceFilesByBranch){
+      meta.push('T1:'+((dayRec.sourceFilesByBranch.T1||[]).length)+' · T2:'+((dayRec.sourceFilesByBranch.T2||[]).length)+' · T3:'+((dayRec.sourceFilesByBranch.T3||[]).length));
+    }
     if(dayRec.reportRanges&&dayRec.reportRanges.length) meta.push('الفترة: '+escapeHtml(dayRec.reportRanges.join(' | ')));
     if(dayRec.importedAt) meta.push('وقت الرفع: '+new Date(dayRec.importedAt).toLocaleString('en-GB'));
     html+='<div style="font-size:10.5px;color:var(--text-dim);margin-bottom:10px;">'+meta.join(' • ')+'</div>';
