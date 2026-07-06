@@ -9878,9 +9878,21 @@ function ssTrackedProducts(){
   return list;
 }
 function ssNorm(s){ return String(s||'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').replace(/\s+/g,' ').trim(); }
+function ssToLatinDigits(s){
+  var map={'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
+  return String(s||'').replace(/[٠-٩]/g,function(ch){ return map[ch]||ch; });
+}
+function ssNormalizeCode(s){
+  var x=ssToLatinDigits(s).replace(/[‐‑‒–—−]/g,'-').replace(/\s+/g,'');
+  x=x.replace(/[^0-9-]/g,'');
+  var m=x.match(/^(\d)-?(\d{2})-?(\d{3})-?(\d{3})$/);
+  if(m) return m[1]+'-'+m[2]+'-'+m[3]+'-'+m[4];
+  return x;
+}
+function ssIsDrugCode(s){ return /^\d-\d{2}-\d{3}-\d{3}$/.test(ssNormalizeCode(s)); }
 function ssNum(v){
   if(v==null) return 0;
-  var n=Number(String(v).replace(/,/g,'').trim());
+  var n=Number(ssToLatinDigits(String(v)).replace(/,/g,'').trim());
   return isNaN(n)?0:n;
 }
 function ssFmtMoney(v){ return Number(v||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2}); }
@@ -9968,12 +9980,12 @@ function ssExtractDateRange(text){
   return '';
 }
 function ssLongestCodeBlock(lines){
-  var re=/^\d-\d{2}-\d{3}-\d{3}$/, best={start:-1,len:0};
+  var best={start:-1,len:0};
   var i=0;
   while(i<lines.length){
-    if(!re.test(lines[i])){ i++; continue; }
+    if(!ssIsDrugCode(lines[i])){ i++; continue; }
     var j=i;
-    while(j<lines.length && re.test(lines[j])) j++;
+    while(j<lines.length && ssIsDrugCode(lines[j])) j++;
     if((j-i)>best.len) best={start:i,len:j-i};
     i=j;
   }
@@ -9984,7 +9996,7 @@ function ssPickNameLines(lines,start,count){
   for(var i=start-1;i>=0 && names.length<count;i--){
     var l=lines[i];
     if(!l || /^\d+$/.test(l)) continue;
-    if(/^\d-\d{2}-\d{3}-\d{3}$/.test(l)) continue;
+    if(ssIsDrugCode(l)) continue;
     if(/^(Page\s+\d+\s+of\s+\d+|--\s*\d+\s+of\s+\d+\s*--|Printed By\s*:)/i.test(l)) continue;
     if(/^[\u0600-\u06FF0-9\s\-\.\,\:\/]+$/.test(l)) continue; /* تجاهل الأسطر العربية البحتة */
     if(!/[A-Za-z]/.test(l)) continue;
@@ -9995,9 +10007,10 @@ function ssPickNameLines(lines,start,count){
 }
 function ssPickQtyLines(lines,start,count){
   for(var i=start;i<lines.length;i++){
-    if(!/^\d+$/.test(lines[i])) continue;
+    var lineI=ssToLatinDigits(lines[i]);
+    if(!/^\d+$/.test(lineI)) continue;
     var j=i,arr=[];
-    while(j<lines.length && /^\d+$/.test(lines[j])){ arr.push(lines[j]); j++; }
+    while(j<lines.length && /^\d+$/.test(ssToLatinDigits(lines[j]))){ arr.push(ssToLatinDigits(lines[j])); j++; }
     var filtered=arr.filter(function(x){ return Number(x)<10000; });
     if(filtered.length>=count) return {values:filtered.slice(0,count).map(ssNum), end:j};
   }
@@ -10007,9 +10020,10 @@ function ssPickValueLines(lines,start,count){
   var re=/^[\d,]+(?:\.\d+)?$/;
   var candidates=[];
   for(var i=start;i<lines.length;i++){
-    if(!re.test(lines[i])) continue;
+    var lineI=ssToLatinDigits(lines[i]);
+    if(!re.test(lineI)) continue;
     var j=i,arr=[];
-    while(j<lines.length && re.test(lines[j])){ arr.push(lines[j]); j++; }
+    while(j<lines.length && re.test(ssToLatinDigits(lines[j]))){ arr.push(ssToLatinDigits(lines[j])); j++; }
     if(arr.length>=count){
       var raw=arr.slice(0,count);
       var vals=raw.map(ssNum);
@@ -10038,7 +10052,7 @@ function ssParseSupplierPageText(text){
   var lines=String(text||'').split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean);
   var block=ssLongestCodeBlock(lines);
   if(block.start<0||!block.len) return [];
-  var codes=lines.slice(block.start,block.start+block.len);
+  var codes=lines.slice(block.start,block.start+block.len).map(ssNormalizeCode);
   var names=ssPickNameLines(lines,block.start,codes.length);
   var qtyBlock=ssPickQtyLines(lines,block.start+block.len,codes.length);
   var qty=qtyBlock.values||Array(codes.length).fill(0);
@@ -10049,7 +10063,10 @@ function ssParseSupplierPageText(text){
 }
 function ssFindProductForRow(row,products){
   if(row.code){
-    for(var i=0;i<products.length;i++){ if(products[i].code && products[i].code===row.code) return products[i]; }
+    var rc=ssNormalizeCode(row.code);
+    for(var i=0;i<products.length;i++){
+      if(products[i].code && ssNormalizeCode(products[i].code)===rc) return products[i];
+    }
   }
   var rn=ssNorm(row.name);
   if(!rn) return null;
