@@ -2928,6 +2928,67 @@ html[dir="ltr"] .sb-nav-item[data-tab="smartinsights"]{border-right:none!importa
 .si-risk-score{font-size:12px;font-weight:900;font-family:Inter,sans-serif;color:var(--text-muted);text-align:center;}
 @media(max-width:768px){.si-forecast-kpis{grid-template-columns:1fr;}.si-risk-row{grid-template-columns:1fr;}}
 
+
+/* PHARMADASH v5.2 — Global Visual Polish (Safe) */
+:root{
+  --ui-space-1:4px;--ui-space-2:8px;--ui-space-3:12px;--ui-space-4:16px;--ui-space-5:24px;
+  --ui-radius-sm:10px;--ui-radius-md:14px;--ui-radius-lg:18px;
+}
+.new-topbar{
+  border-bottom:1px solid var(--border-h);
+  backdrop-filter:blur(10px) saturate(130%);
+}
+.page-context{padding:10px 2px 4px;}
+.page-context .page-context-desc{line-height:1.7;max-width:95ch;}
+.card{
+  border-radius:var(--ui-radius-lg);
+  padding:18px;
+  box-shadow:0 10px 26px rgba(2,6,23,.32);
+}
+.card:hover{box-shadow:0 16px 32px rgba(2,6,23,.4);}
+.card-head{margin-bottom:14px;align-items:center;gap:10px;}
+.card-title{font-size:14px;font-weight:800;letter-spacing:.01em;}
+.kpi-grid{gap:16px;}
+.kpi{border-radius:16px!important;}
+.btn{
+  min-height:36px;
+  padding:8px 13px;
+  border-radius:12px;
+  font-weight:700;
+  letter-spacing:.01em;
+}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(15,23,42,.22);}
+.btn:active{transform:translateY(0);}
+.global-search-wrap .global-search{border-radius:12px;}
+.global-search-wrap .global-search:focus{box-shadow:0 0 0 3px rgba(96,165,250,.2);}
+.sb-nav-item{min-height:38px;}
+.sb-nav-item .sb-ico{width:24px;height:24px;border-radius:8px;}
+.sb-nav-item.active{box-shadow:0 8px 20px rgba(37,99,235,.18);}
+.table-wrap{border-radius:14px;overflow:auto;}
+.table-wrap table th,.table-wrap table td{padding:11px 12px;}
+.table-wrap thead th{
+  position:sticky;
+  top:0;
+  z-index:1;
+  background:rgba(10,14,24,.96);
+  backdrop-filter:blur(6px);
+}
+.table-wrap tbody tr:nth-child(even){background:rgba(255,255,255,.015);}
+[data-theme="light"] .card{box-shadow:0 8px 20px rgba(15,23,42,.08);}
+[data-theme="light"] .table-wrap thead th{background:rgba(248,250,252,.98);}
+[data-theme="light"] .table-wrap tbody tr:nth-child(even){background:rgba(15,23,42,.02);}
+[data-theme="light"] .btn:hover{box-shadow:0 6px 14px rgba(15,23,42,.12);}
+@media (max-width:1024px){
+  .card{padding:14px;}
+  .kpi-grid{grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;}
+}
+@media (prefers-reduced-motion:reduce){
+  .card,.btn,.sb-nav-item,.kpi{transition:none!important;animation:none!important;transform:none!important;}
+}
+@media print{
+  .table-wrap thead th{position:static;}
+}
+
 </style>
 </head>
 <body>
