@@ -2767,7 +2767,7 @@ tbody tr.clickable:hover{background:rgba(37,99,235,.04)!important;}
 }
 body{font-family:var(--font-body);font-size:var(--text-base);line-height:1.68;letter-spacing:.012em;color:var(--text-readable);text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
 .brand h1,.sb-logo-text .t1,.new-topbar .nb-title h1,.card-title,.login-logo h1,.period-popup-box h3,.feat-title,.mini-dash-name,.tgt-modal-branch .vl{font-family:var(--font-display);letter-spacing:-.025em;}
-.kpi-value,.sb-val,.num,.feat-stat .v,.compare-val,.detail-card .v,.mini-dash-kpi .v,.kpi-hero .hero-num,.tgt-modal-branch .vl,.up-pct,.mini-drug-count{font-family:var(--font-num);font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1;}
+.kpi-value,.sb-val,.num,.feat-stat .v,.compare-val,.detail-card .v,.mini-dash-kpi .v,.kpi-hero .hero-num,.tgt-modal-branch .vl,.up-pct,.mini-drug-count,.sb-badge,.meta{font-family:var(--font-num);font-variant-numeric:lining-nums tabular-nums;font-feature-settings:'lnum' 1,'tnum' 1;}
 .container{padding:var(--space-lg) clamp(14px,2.2vw,26px);max-width:1580px;}
 .wrap .card{padding:clamp(18px,2vw,26px);margin-bottom:var(--space-lg);}
 .card-head{margin-bottom:var(--space-md);padding-bottom:var(--space-sm);gap:var(--space-sm);}
@@ -3083,7 +3083,7 @@ html[dir="ltr"] .sb-nav-item[data-tab="smartinsights"]{border-right:none!importa
     <h1 id="pageTitle">PharmaDash</h1>
     <div class="sub" id="todayDate">
       <span class="live-dot"></span>
-      <span>بيانات يونيو 2026</span>
+      <span>الاداره التجاريه - قطاع الصيدليات</span>
       <span class="dot-sep"></span>
       <span>T1 / T2 / T3</span>
       <span class="dot-sep"></span>
@@ -3404,7 +3404,7 @@ const SOURCE_TEMPLATE=(function(){let h='<!DOCTYPE html>\n'+document.documentEle
 (function(){
   function updateClock(){
     const el=document.getElementById('todayDate'); if(!el)return;
-    const period=(typeof t==='function')?t('meta.period'):'بيانات يونيو 2026';
+    const period=(typeof t==='function')?t('meta.period'):'الاداره التجاريه - قطاع الصيدليات';
     const branches=(typeof t==='function')?t('meta.branches'):'T1 / T2 / T3';
     el.innerHTML='<span class="live-dot"></span><span>'+period+'</span><span class="dot-sep"></span><span>'+branches+'</span><span class="dot-sep"></span><span style="font-size:10px;opacity:.75;">v5.0 Insights</span>';
   }
@@ -3460,8 +3460,8 @@ if(localStorage.getItem('rx-calm')==='1'){
   setTimeout(()=>{const b=document.getElementById('calmBtn');if(b)b.textContent='🌙';},100);
 }
 
-function fmtNum(n,loc){return Number(n).toLocaleString(loc||'en-US');}
-const fmt=n=>(n==null||isNaN(n))?'—':fmtNum(n,(typeof CURRENT_LANG!=='undefined'&&CURRENT_LANG==='ar')?'ar-SA':'en-US');
+function fmtNum(n){return Number(n).toLocaleString('en-US');}
+const fmt=n=>(n==null||isNaN(n))?'—':fmtNum(n);
 /* debounce — يؤخّر تنفيذ الدالة حتى يتوقف المستخدم عن الكتابة (يمنع تجمّد المتصفح) */
 function debounce(fn,wait){let t;return function(...args){clearTimeout(t);t=setTimeout(()=>fn.apply(this,args),wait||250);};}
 const pct=(a,b)=>b>0?(a*100/b):0;
@@ -4097,7 +4097,7 @@ function renderOverviewCore(d){
 
   /* ── إضافات مدموجة من الصفحة الرئيسية ── */
   // Status Strip
-  const _lastUpd = new Date().toLocaleString('ar-EG',{hour:'2-digit',minute:'2-digit',day:'numeric',month:'short'});
+  const _lastUpd = new Date().toLocaleString('ar-EG-u-nu-latn',{hour:'2-digit',minute:'2-digit',day:'numeric',month:'short'});
   const _totPeriods = loaded.reduce((s,b)=>s+(STATE.periods[b]||[]).length,0);
   // اسم الفترة المعروضة (للفرع المعروض حالياً)
   let _shownPeriod = '';
@@ -6459,7 +6459,7 @@ function renderHome() {
   }
 
   // ── Status Strip ──
-  const lastUpdate = new Date().toLocaleString('ar-EG',{ hour:'2-digit', minute:'2-digit', day:'numeric', month:'short' });
+  const lastUpdate = new Date().toLocaleString('ar-EG-u-nu-latn',{ hour:'2-digit', minute:'2-digit', day:'numeric', month:'short' });
   const totalPeriods = loaded.reduce((s,b)=>s+(STATE.periods[b]||[]).length,0);
 
   container.innerHTML = `
@@ -9550,7 +9550,7 @@ function drawSparklineFull(id, data, color) {
   });
   // value labels
   ctx.fillStyle=color;ctx.font='bold 10px "IBM Plex Sans Arabic"';ctx.textAlign='center';
-  pts.forEach((p,i)=>ctx.fillText(data[i].toLocaleString(),p.x,p.y-8));
+  pts.forEach((p,i)=>ctx.fillText(data[i].toLocaleString('en-US'),p.x,p.y-8));
 }
 
 /* ── Reset modal wide class on close ── */
@@ -9651,7 +9651,7 @@ const I18N = {
     'onboard.skip':'تخطي','onboard.next':'التالي','onboard.start':'ابدأ الآن',
     'login.user':'اسم المستخدم','login.pass':'كلمة المرور','login.btn':'تسجيل الدخول','login.tagline':'الإدارة التجارية — قطاع الصيدليات',
     'login.userPh':'أدخل اسم المستخدم','login.passPh':'أدخل كلمة المرور','login.error':'❌ اسم المستخدم أو كلمة المرور غلط',
-    'meta.period':'بيانات يونيو 2026','meta.branches':'T1 / T2 / T3',
+    'meta.period':'الاداره التجاريه - قطاع الصيدليات','meta.branches':'T1 / T2 / T3',
     'branch.noFile':'لم يتم رفع ملف بعد','skip.link':'تخطي إلى المحتوى','cloud.online':'متزامن ☁️','cloud.offline':'بدون اتصال 📴'
   },
   en:{
@@ -9681,7 +9681,7 @@ const I18N = {
     'onboard.skip':'Skip','onboard.next':'Next','onboard.start':'Get started',
     'login.user':'Username','login.pass':'Password','login.btn':'Sign in','login.tagline':'Commercial Management — Pharmacy Sector',
     'login.userPh':'Enter username','login.passPh':'Enter password','login.error':'❌ Invalid username or password',
-    'meta.period':'June 2026 data','meta.branches':'T1 / T2 / T3',
+    'meta.period':'Commercial Administration — Pharmacies Sector','meta.branches':'T1 / T2 / T3',
     'branch.noFile':'No file uploaded yet','skip.link':'Skip to content','cloud.online':'Synced ☁️','cloud.offline':'Offline 📴'
   }
 };
