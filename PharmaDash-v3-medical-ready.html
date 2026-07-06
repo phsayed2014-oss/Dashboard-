@@ -9291,6 +9291,16 @@ function clearSavedData() { /* ملغى */ }
 
 /* تخزين: { "YYYY-MM-DD": { T1: {rows,label,loaded}, T2:…, T3:… } } */
 var DT = { store: {}, view: 'daily', selDate: null, selWeek: null, selMonth: null };
+/* تتبّع مبيعات المورد (كمية مباعة + قيمة بسعر البيع) */
+var SUPPLIER_SALES = {
+  pageMap:{T1:1,T2:18,T3:7},
+  importedAt:'',
+  reportRange:'',
+  sourceFile:'',
+  issues:[],
+  unmatched:{T1:[],T2:[],T3:[]},
+  branches:{T1:{},T2:{},T3:{}}
+};
 
 /* ── helpers ── */
 function dtDateStr(d){ var dt=d||new Date(); return dt.toISOString().slice(0,10); }
@@ -9481,7 +9491,10 @@ function renderDailyTrack(){
   var html='<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">'
     +'<div><div style="font-size:18px;font-weight:800;">📅 متابعة يومية — كتابات الأطباء</div>'
     +'<div style="font-size:12px;color:var(--text-dim);margin-top:3px;">ارفع ملف لكل فرع بتاريخه — قارن اليومي والأسبوعي والشهري</div></div>'
+    +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
+    +'<button onclick="ssOpenImportModal()" style="padding:9px 15px;background:linear-gradient(135deg,#0ea5e9,#0284c7);border:none;border-radius:var(--r-sm);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;">💰 رفع مبيعات المورد</button>'
     +'<button onclick="dtOpenUpload(\''+dtToday()+'\')" style="padding:9px 18px;background:var(--grad-p);border:none;border-radius:var(--r-sm);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;">📂 رفع ملف</button>'
+    +'</div>'
     +'</div>';
 
   /* ── View Tabs ── */
@@ -9501,6 +9514,7 @@ function renderDailyTrack(){
       +'<div style="font-size:13px;margin-bottom:20px;">ارفع ملف كتابات الأطباء لأي فرع لتبدأ المتابعة اليومية</div>'
       +'<button onclick="dtOpenUpload(\''+dtToday()+'\')" style="padding:10px 22px;background:var(--grad-p);border:none;border-radius:var(--r-sm);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📂 رفع أول ملف</button>'
       +'</div>';
+    html+=dtRenderSupplierSalesCard();
     el.innerHTML=html; return;
   }
 
@@ -9580,6 +9594,7 @@ function dtRenderDay(ds){
 
     /* ── PL Card ── */
     html+=dtRenderPLCard(ds);
+    html+=dtRenderSupplierSalesCard();
 
   } else {
     html+='<div style="text-align:center;padding:40px;color:var(--text-muted);">'
@@ -9587,6 +9602,7 @@ function dtRenderDay(ds){
       +'<div style="font-size:13px;font-weight:700;color:var(--text-dim);margin-bottom:6px;">لا توجد بيانات لـ '+dtFmtAr(ds)+'</div>'
       +'<button onclick="dtOpenUpload(\''+ds+'\')" style="padding:8px 18px;background:var(--grad-p);border:none;border-radius:var(--r-sm);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📂 رفع ملف لهذا اليوم</button>'
       +'</div>';
+    html+=dtRenderSupplierSalesCard();
   }
   return html;
 }
@@ -9827,6 +9843,358 @@ function dtRenderPLCard(ds){
   }
 
   html+='</div>';
+  return html;
+}
+
+/* ── Supplier Sales Tracker (Private Label + PureHerb) ── */
+function ssTrackedProducts(){
+  var plCodes = {
+    reflex:'1-02-066-034',
+    rizer:'2-09-031-483',
+    oracure:'',
+    intimo:'1-14-166-032',
+    nostriderm:'1-09-118-050',
+    nostricure:'1-09-066-046'
+  };
+  var list = [];
+  PRIVATE_LABEL.forEach(function(p){
+    list.push({
+      id:'pl:'+p.key,
+      group:'Private Label',
+      short:p.name,
+      name:p.name,
+      code:plCodes[p.key]||'',
+      tokens:[p.name,p.key,p.form]
+    });
+  });
+  if(typeof PUREHERB_PRODUCTS!=='undefined' && Array.isArray(PUREHERB_PRODUCTS)){
+    PUREHERB_PRODUCTS.forEach(function(p){
+      list.push({
+        id:'ph:'+p.key,
+        group:'PureHerb',
+        short:p.key,
+        name:p.name,
+        code:p.code||'',
+        tokens:[p.key,p.name]
+      });
+    });
+  }
+  return list;
+}
+function ssNorm(s){ return String(s||'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').replace(/\s+/g,' ').trim(); }
+function ssNum(v){
+  if(v==null) return 0;
+  var n=Number(String(v).replace(/,/g,'').trim());
+  return isNaN(n)?0:n;
+}
+function ssFmtMoney(v){ return Number(v||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2}); }
+function ssEnsureStateProducts(){
+  var products=ssTrackedProducts();
+  ['T1','T2','T3'].forEach(function(b){
+    if(!SUPPLIER_SALES.branches[b]) SUPPLIER_SALES.branches[b]={};
+    products.forEach(function(p){
+      if(!SUPPLIER_SALES.branches[b][p.id]) SUPPLIER_SALES.branches[b][p.id]={qty:0,value:0};
+    });
+  });
+}
+function ssExtractDateRange(text){
+  var m=String(text||'').match(/\b\d{2}-\d{2}-\d{4}\b/g)||[];
+  if(m.length>=2) return m[0]+' → '+m[1];
+  return '';
+}
+function ssLongestCodeBlock(lines){
+  var re=/^\d-\d{2}-\d{3}-\d{3}$/, best={start:-1,len:0};
+  var i=0;
+  while(i<lines.length){
+    if(!re.test(lines[i])){ i++; continue; }
+    var j=i;
+    while(j<lines.length && re.test(lines[j])) j++;
+    if((j-i)>best.len) best={start:i,len:j-i};
+    i=j;
+  }
+  return best;
+}
+function ssPickNameLines(lines,start,count){
+  var names=[];
+  for(var i=start-1;i>=0 && names.length<count;i--){
+    var l=lines[i];
+    if(!l || /^\d+$/.test(l)) continue;
+    if(/^\d-\d{2}-\d{3}-\d{3}$/.test(l)) continue;
+    if(/^(Page\s+\d+\s+of\s+\d+|--\s*\d+\s+of\s+\d+\s*--|Printed By\s*:)/i.test(l)) continue;
+    if(/^[\u0600-\u06FF0-9\s\-\.\,\:\/]+$/.test(l)) continue; /* تجاهل الأسطر العربية البحتة */
+    if(!/[A-Za-z]/.test(l)) continue;
+    names.unshift(l);
+  }
+  while(names.length<count) names.unshift('—');
+  return names.slice(names.length-count);
+}
+function ssPickQtyLines(lines,start,count){
+  for(var i=start;i<lines.length;i++){
+    if(!/^\d+$/.test(lines[i])) continue;
+    var j=i,arr=[];
+    while(j<lines.length && /^\d+$/.test(lines[j])){ arr.push(lines[j]); j++; }
+    var filtered=arr.filter(function(x){ return Number(x)<10000; });
+    if(filtered.length>=count) return filtered.slice(0,count).map(ssNum);
+  }
+  return Array(count).fill(0);
+}
+function ssPickValueLines(lines,start,count){
+  var re=/^[\d,]+(?:\.\d+)?$/;
+  for(var i=start;i<lines.length;i++){
+    if(!re.test(lines[i])) continue;
+    var j=i,arr=[];
+    while(j<lines.length && re.test(lines[j])){ arr.push(lines[j]); j++; }
+    var vals=arr.map(ssNum).filter(function(v){ return v>0; });
+    if(vals.length>=count) return vals.slice(0,count);
+  }
+  var fallback=lines.slice(start).filter(function(l){ return re.test(l) && /[.,]/.test(l); }).map(ssNum);
+  if(fallback.length>=count) return fallback.slice(0,count);
+  while(fallback.length<count) fallback.push(0);
+  return fallback.slice(0,count);
+}
+function ssParseSupplierPageText(text){
+  var lines=String(text||'').split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean);
+  var block=ssLongestCodeBlock(lines);
+  if(block.start<0||!block.len) return [];
+  var codes=lines.slice(block.start,block.start+block.len);
+  var names=ssPickNameLines(lines,block.start,codes.length);
+  var qty=ssPickQtyLines(lines,block.start+block.len,codes.length);
+  var val=ssPickValueLines(lines,block.start+block.len,codes.length);
+  return codes.map(function(code,i){
+    return {code:code,name:names[i]||'—',qtySold:ssNum(qty[i]),saleValue:ssNum(val[i])};
+  });
+}
+function ssFindProductForRow(row,products){
+  if(row.code){
+    for(var i=0;i<products.length;i++){ if(products[i].code && products[i].code===row.code) return products[i]; }
+  }
+  var rn=ssNorm(row.name);
+  if(!rn) return null;
+  for(var p=0;p<products.length;p++){
+    var prod=products[p], tokens=(prod.tokens||[]).concat([prod.short,prod.name]);
+    for(var t=0;t<tokens.length;t++){
+      var tn=ssNorm(tokens[t]);
+      if(!tn) continue;
+      if(rn.indexOf(tn)>-1 || tn.indexOf(rn)>-1 || rn.indexOf(tn.split(' ')[0])>-1) return prod;
+    }
+  }
+  return null;
+}
+async function ssExtractPageText(pdf,pageNo){
+  var page=await pdf.getPage(pageNo);
+  var c=await page.getTextContent();
+  var lineMap={};
+  c.items.forEach(function(it){
+    var str=(it.str||'').trim();
+    if(!str) return;
+    var y=Math.round((it.transform&&it.transform[5]?it.transform[5]:0)/2)*2;
+    if(!lineMap[y]) lineMap[y]=[];
+    lineMap[y].push({x:it.transform&&it.transform[4]?it.transform[4]:0,s:str});
+  });
+  var lines=[];
+  Object.keys(lineMap).map(Number).sort(function(a,b){ return b-a; }).forEach(function(y){
+    var text=lineMap[y].sort(function(a,b){ return a.x-b.x; }).map(function(w){ return w.s; }).join(' ').replace(/\s+/g,' ').trim();
+    if(text) lines.push(text);
+  });
+  return {text:lines.join('\n'),lines:lines};
+}
+async function ssImportPdf(file,pageMap){
+  if(!window.pdfjsLib) window.pdfjsLib=window['pdfjs-dist/build/pdf'];
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  var buf=await file.arrayBuffer();
+  var pdf=await pdfjsLib.getDocument({data:buf}).promise;
+  var products=ssTrackedProducts();
+  ssEnsureStateProducts();
+
+  ['T1','T2','T3'].forEach(function(b){
+    products.forEach(function(p){ SUPPLIER_SALES.branches[b][p.id]={qty:0,value:0}; });
+  });
+  var issues=[], unmatched={T1:[],T2:[],T3:[]}, reportRange='';
+  var order=['T1','T2','T3'];
+  for(var k=0;k<order.length;k++){
+    var b=order[k], pageNo=Number(pageMap[b]);
+    if(!pageNo || pageNo<1 || pageNo>pdf.numPages){
+      issues.push('⚠️ '+dtBranchLabel(b)+': الصفحة '+pageNo+' غير موجودة (عدد صفحات الملف: '+pdf.numPages+')');
+      continue;
+    }
+    var pageTxt=await ssExtractPageText(pdf,pageNo);
+    if(!reportRange) reportRange=ssExtractDateRange(pageTxt.text);
+    var rows=ssParseSupplierPageText(pageTxt.text);
+    if(!rows.length){
+      issues.push('⚠️ '+dtBranchLabel(b)+': لم يتم العثور على جدول منتجات واضح في الصفحة '+pageNo);
+      continue;
+    }
+    rows.forEach(function(r){
+      var prod=ssFindProductForRow(r,products);
+      if(prod){
+        SUPPLIER_SALES.branches[b][prod.id].qty+=ssNum(r.qtySold);
+        SUPPLIER_SALES.branches[b][prod.id].value+=ssNum(r.saleValue);
+      }else{
+        unmatched[b].push(r);
+      }
+    });
+  }
+  SUPPLIER_SALES.pageMap={T1:Number(pageMap.T1)||1,T2:Number(pageMap.T2)||18,T3:Number(pageMap.T3)||7};
+  SUPPLIER_SALES.importedAt=new Date().toISOString();
+  SUPPLIER_SALES.reportRange=reportRange;
+  SUPPLIER_SALES.sourceFile=file.name||'';
+  SUPPLIER_SALES.issues=issues;
+  SUPPLIER_SALES.unmatched=unmatched;
+  return {issues:issues,unmatched:unmatched,pages:pdf.numPages};
+}
+function ssOpenImportModal(){
+  var m=SUPPLIER_SALES.pageMap||{T1:1,T2:18,T3:7};
+  window._ssPendingFile=null;
+  var html='<div style="padding:2px 0;">'
+    +'<div style="font-size:17px;font-weight:800;margin-bottom:4px;">💰 رفع تقرير مبيعات المورد</div>'
+    +'<div style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px;">استيراد الكمية المباعة + قيمة البيع لمنتجات Private Label و PureHerb</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;">'
+    +'<div><div style="font-size:11px;color:var(--text-dim);margin-bottom:4px;">التعاون الأول (T1)</div><input id="ssPageT1" type="number" min="1" value="'+(m.T1||1)+'" style="width:100%;padding:8px 10px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;"></div>'
+    +'<div><div style="font-size:11px;color:var(--text-dim);margin-bottom:4px;">التعاون الثالث (T3)</div><input id="ssPageT3" type="number" min="1" value="'+(m.T3||7)+'" style="width:100%;padding:8px 10px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;"></div>'
+    +'<div><div style="font-size:11px;color:var(--text-dim);margin-bottom:4px;">التعاون الثاني (T2)</div><input id="ssPageT2" type="number" min="1" value="'+(m.T2||18)+'" style="width:100%;padding:8px 10px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;"></div>'
+    +'</div>'
+    +'<div style="font-size:10.5px;color:var(--text-muted);margin-bottom:10px;">الإعداد الافتراضي المطلوب: T1=ص1 · T3=ص7 · T2=ص18</div>'
+    +'<div onclick="document.getElementById(\'ssFileInp\').click()" style="border:2px dashed var(--border);border-radius:12px;padding:18px;text-align:center;cursor:pointer;background:var(--bg-glass);">'
+    +'<div style="font-size:26px;">📄</div>'
+    +'<div style="font-size:12.5px;font-weight:700;color:var(--violet-l);margin-top:6px;">اختيار ملف PDF من السيستم</div>'
+    +'<div id="ssFileLbl" style="font-size:11px;color:var(--text-muted);margin-top:4px;">لم يتم اختيار ملف بعد</div>'
+    +'</div>'
+    +'<input id="ssFileInp" type="file" accept=".pdf" style="display:none" onchange="ssHandleFile(this.files[0])">'
+    +'<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">'
+    +'<button onclick="modalBg.classList.remove(\'show\')" style="padding:8px 14px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:8px;color:var(--text-dim);cursor:pointer;font-family:inherit;">إلغاء</button>'
+    +'<button onclick="ssStartImport()" style="padding:8px 14px;background:linear-gradient(135deg,#0ea5e9,#0284c7);border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;font-family:inherit;">تحليل الملف</button>'
+    +'</div>'
+    +'<div id="ssImportMsg" style="display:none;margin-top:10px;padding:10px 12px;border-radius:8px;font-size:11.5px;"></div>'
+    +'</div>';
+  modalBody.innerHTML=html;
+  modalBg.classList.add('show');
+}
+function ssHandleFile(file){
+  window._ssPendingFile=file||null;
+  var el=document.getElementById('ssFileLbl');
+  if(!el) return;
+  el.textContent=file?('✅ '+file.name):'لم يتم اختيار ملف بعد';
+}
+async function ssStartImport(){
+  var box=document.getElementById('ssImportMsg');
+  function showMsg(msg,isErr){
+    if(!box) return;
+    box.style.display='block';
+    box.style.background=isErr?'rgba(220,38,38,.08)':'rgba(13,148,136,.08)';
+    box.style.border='1px solid '+(isErr?'rgba(220,38,38,.28)':'rgba(13,148,136,.28)');
+    box.style.color=isErr?'var(--rose-l)':'var(--teal-l)';
+    box.innerHTML=msg;
+  }
+  if(!window._ssPendingFile){ showMsg('⚠️ اختر ملف PDF أولاً',true); return; }
+  var pageMap={
+    T1:Number(document.getElementById('ssPageT1').value||1),
+    T3:Number(document.getElementById('ssPageT3').value||7),
+    T2:Number(document.getElementById('ssPageT2').value||18)
+  };
+  showMsg('⏳ جاري تحليل تقرير المبيعات…',false);
+  try{
+    var res=await ssImportPdf(window._ssPendingFile,pageMap);
+    renderDailyTrack();
+    var info='✅ تم تحديث بيانات مبيعات المورد بنجاح';
+    if(res.issues&&res.issues.length){
+      info+='<br><span style="color:var(--text-dim);">ملاحظات:</span><br>'+res.issues.map(function(x){ return '• '+x; }).join('<br>');
+    }
+    showMsg(info,false);
+    toast('تم تحديث مبيعات المورد ✓');
+    setTimeout(function(){ modalBg.classList.remove('show'); },1300);
+  }catch(e){
+    console.error(e);
+    showMsg('❌ فشل تحليل ملف المبيعات: '+(e.message||''),true);
+    toast('فشل تحليل مبيعات المورد','error');
+  }
+}
+function dtRenderSupplierSalesCard(){
+  ssEnsureStateProducts();
+  var products=ssTrackedProducts();
+  var byB=SUPPLIER_SALES.branches;
+  var totals={T1:{qty:0,val:0},T2:{qty:0,val:0},T3:{qty:0,val:0}};
+  var grand={qty:0,val:0};
+  products.forEach(function(p){
+    ['T1','T2','T3'].forEach(function(b){
+      var rec=(byB[b]&&byB[b][p.id])?byB[b][p.id]:{qty:0,value:0};
+      totals[b].qty+=ssNum(rec.qty);
+      totals[b].val+=ssNum(rec.value);
+      grand.qty+=ssNum(rec.qty);
+      grand.val+=ssNum(rec.value);
+    });
+  });
+
+  var html='<div style="background:var(--bg-card);border:1px solid var(--border);border-top:2px solid #0ea5e9;border-radius:var(--r-md);padding:16px;margin-top:14px;">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px;">'
+    +'<div><div style="font-size:13.5px;font-weight:800;">💰 متابعة مبيعات المورد — Private Label (6) + PureHerb (7)</div>'
+    +'<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">البيانات: الكمية المباعة (حبات) + القيمة بسعر البيع</div></div>'
+    +'<button onclick="ssOpenImportModal()" style="padding:7px 12px;background:linear-gradient(135deg,#0ea5e9,#0284c7);border:none;border-radius:8px;color:#fff;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">📥 تحديث من PDF</button>'
+    +'</div>';
+
+  var meta=[];
+  if(SUPPLIER_SALES.sourceFile) meta.push('الملف: '+escapeHtml(SUPPLIER_SALES.sourceFile));
+  if(SUPPLIER_SALES.reportRange) meta.push('الفترة: '+escapeHtml(SUPPLIER_SALES.reportRange));
+  if(SUPPLIER_SALES.importedAt) meta.push('آخر تحديث: '+new Date(SUPPLIER_SALES.importedAt).toLocaleString('en-GB'));
+  if(meta.length){
+    html+='<div style="font-size:10.5px;color:var(--text-dim);margin-bottom:10px;">'+meta.join(' • ')+'</div>';
+  }else{
+    html+='<div style="font-size:10.5px;color:var(--text-muted);margin-bottom:10px;">لا توجد بيانات مبيعات بعد — استخدم زر "تحديث من PDF"</div>';
+  }
+
+  if(SUPPLIER_SALES.issues&&SUPPLIER_SALES.issues.length){
+    html+='<div style="margin-bottom:10px;padding:9px 10px;background:rgba(217,119,6,.09);border:1px solid rgba(217,119,6,.24);border-radius:8px;font-size:11px;color:#f59e0b;">'
+      +SUPPLIER_SALES.issues.map(function(x){ return '• '+escapeHtml(x); }).join('<br>')+'</div>';
+  }
+
+  html+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:12px;">';
+  ['T1','T2','T3'].forEach(function(b){
+    html+='<div style="padding:10px;background:var(--bg-glass);border:1px solid var(--border);border-radius:10px;">'
+      +'<div style="font-size:10.5px;color:'+dtBranchColor(b)+';font-weight:800;margin-bottom:4px;">'+dtBranchLabel(b)+'</div>'
+      +'<div style="font-size:14px;font-weight:800;">'+fmt(totals[b].qty)+'</div><div style="font-size:10px;color:var(--text-muted);">حبة مباعة</div>'
+      +'<div style="font-size:13px;font-weight:800;margin-top:4px;color:#38bdf8;">'+ssFmtMoney(totals[b].val)+'</div><div style="font-size:10px;color:var(--text-muted);">ر.س قيمة بيع</div>'
+      +'</div>';
+  });
+  html+='<div style="padding:10px;background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.25);border-radius:10px;">'
+    +'<div style="font-size:10.5px;color:#38bdf8;font-weight:800;margin-bottom:4px;">الإجمالي الكلي</div>'
+    +'<div style="font-size:14px;font-weight:800;">'+fmt(grand.qty)+'</div><div style="font-size:10px;color:var(--text-muted);">حبة مباعة</div>'
+    +'<div style="font-size:13px;font-weight:800;margin-top:4px;color:#38bdf8;">'+ssFmtMoney(grand.val)+'</div><div style="font-size:10px;color:var(--text-muted);">ر.س قيمة بيع</div>'
+    +'</div>';
+  html+='</div>';
+
+  html+='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:11.5px;">'
+    +'<thead><tr style="border-bottom:1px solid var(--border);">'
+    +'<th style="text-align:right;padding:8px 7px;">المنتج</th>'
+    +'<th style="text-align:center;padding:8px 7px;">الكود</th>'
+    +'<th style="text-align:center;padding:8px 7px;color:var(--violet-l);">T1 كمية</th>'
+    +'<th style="text-align:center;padding:8px 7px;color:var(--violet-l);">T1 قيمة</th>'
+    +'<th style="text-align:center;padding:8px 7px;color:var(--teal-l);">T2 كمية</th>'
+    +'<th style="text-align:center;padding:8px 7px;color:var(--teal-l);">T2 قيمة</th>'
+    +'<th style="text-align:center;padding:8px 7px;color:var(--amber-l);">T3 كمية</th>'
+    +'<th style="text-align:center;padding:8px 7px;color:var(--amber-l);">T3 قيمة</th>'
+    +'<th style="text-align:center;padding:8px 7px;">الإجمالي</th>'
+    +'</tr></thead><tbody>';
+
+  var currentGroup='';
+  products.forEach(function(p){
+    if(p.group!==currentGroup){
+      currentGroup=p.group;
+      html+='<tr style="background:var(--bg-glass2);"><td colspan="9" style="padding:7px 9px;font-size:11px;font-weight:800;color:'+(currentGroup==='Private Label'?'#22d3ee':'#a78bfa')+';">'+currentGroup+'</td></tr>';
+    }
+    var t1=byB.T1[p.id]||{qty:0,value:0}, t2=byB.T2[p.id]||{qty:0,value:0}, t3=byB.T3[p.id]||{qty:0,value:0};
+    var tq=ssNum(t1.qty)+ssNum(t2.qty)+ssNum(t3.qty), tv=ssNum(t1.value)+ssNum(t2.value)+ssNum(t3.value);
+    html+='<tr style="border-bottom:1px solid var(--border);">'
+      +'<td style="padding:8px 7px;"><div style="font-weight:700;">'+escapeHtml(p.short)+'</div><div style="font-size:10px;color:var(--text-muted);">'+escapeHtml(p.name)+'</div></td>'
+      +'<td style="text-align:center;padding:8px 7px;font-size:10px;color:var(--text-dim);">'+(p.code?escapeHtml(p.code):'—')+'</td>'
+      +'<td style="text-align:center;padding:8px 7px;font-weight:700;">'+(t1.qty?fmt(t1.qty):'—')+'</td>'
+      +'<td style="text-align:center;padding:8px 7px;font-weight:700;color:#38bdf8;">'+(t1.value?ssFmtMoney(t1.value):'—')+'</td>'
+      +'<td style="text-align:center;padding:8px 7px;font-weight:700;">'+(t2.qty?fmt(t2.qty):'—')+'</td>'
+      +'<td style="text-align:center;padding:8px 7px;font-weight:700;color:#38bdf8;">'+(t2.value?ssFmtMoney(t2.value):'—')+'</td>'
+      +'<td style="text-align:center;padding:8px 7px;font-weight:700;">'+(t3.qty?fmt(t3.qty):'—')+'</td>'
+      +'<td style="text-align:center;padding:8px 7px;font-weight:700;color:#38bdf8;">'+(t3.value?ssFmtMoney(t3.value):'—')+'</td>'
+      +'<td style="text-align:center;padding:8px 7px;"><div style="font-weight:800;">'+(tq?fmt(tq):'—')+'</div><div style="font-size:10px;color:#38bdf8;">'+(tv?ssFmtMoney(tv):'—')+'</div></td>'
+      +'</tr>';
+  });
+  html+='</tbody></table></div></div>';
   return html;
 }
 
