@@ -9294,12 +9294,8 @@ var DT = { store: {}, view: 'daily', selDate: null, selWeek: null, selMonth: nul
 /* تتبّع مبيعات المورد (كمية مباعة + قيمة بسعر البيع) */
 var SUPPLIER_SALES = {
   pageMap:{T1:1,T2:18,T3:7},
-  importedAt:'',
-  reportRange:'',
-  sourceFile:'',
-  issues:[],
-  unmatched:{T1:[],T2:[],T3:[]},
-  branches:{T1:{},T2:{},T3:{}}
+  selDate:'',
+  store:{}
 };
 
 /* ── helpers ── */
@@ -9888,14 +9884,80 @@ function ssNum(v){
   return isNaN(n)?0:n;
 }
 function ssFmtMoney(v){ return Number(v||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2}); }
-function ssEnsureStateProducts(){
-  var products=ssTrackedProducts();
+function ssBranchesSkeleton(products){
+  var out={T1:{},T2:{},T3:{}};
   ['T1','T2','T3'].forEach(function(b){
-    if(!SUPPLIER_SALES.branches[b]) SUPPLIER_SALES.branches[b]={};
+    products.forEach(function(p){ out[b][p.id]={qty:0,value:0}; });
+  });
+  return out;
+}
+function ssCloneBranches(branches,products){
+  var out=ssBranchesSkeleton(products);
+  if(!branches) return out;
+  ['T1','T2','T3'].forEach(function(b){
+    if(!branches[b]) return;
     products.forEach(function(p){
-      if(!SUPPLIER_SALES.branches[b][p.id]) SUPPLIER_SALES.branches[b][p.id]={qty:0,value:0};
+      var rec=branches[b][p.id]||{};
+      out[b][p.id]={qty:ssNum(rec.qty),value:ssNum(rec.value)};
     });
   });
+  return out;
+}
+function ssEnsureRecord(rec,products){
+  var x=rec||{};
+  x.pageMap=x.pageMap||{T1:1,T2:18,T3:7};
+  x.issues=Array.isArray(x.issues)?x.issues:[];
+  x.unmatched=(x.unmatched&&typeof x.unmatched==='object')?x.unmatched:{T1:[],T2:[],T3:[]};
+  x.branches=ssCloneBranches(x.branches,products);
+  return x;
+}
+function ssStoreDates(){ return Object.keys(SUPPLIER_SALES.store||{}).sort(); }
+function ssSelectedDate(){
+  var dates=ssStoreDates();
+  if(!dates.length) return '';
+  if(SUPPLIER_SALES.selDate && dates.indexOf(SUPPLIER_SALES.selDate)>-1) return SUPPLIER_SALES.selDate;
+  return dates[dates.length-1];
+}
+function ssGetRecord(ds){
+  var products=ssTrackedProducts();
+  if(!ds || !SUPPLIER_SALES.store || !SUPPLIER_SALES.store[ds]) return null;
+  SUPPLIER_SALES.store[ds]=ssEnsureRecord(SUPPLIER_SALES.store[ds],products);
+  return SUPPLIER_SALES.store[ds];
+}
+function ssAggregateAll(products){
+  var agg={branches:ssBranchesSkeleton(products),days:0};
+  ssStoreDates().forEach(function(ds){
+    var rec=ssGetRecord(ds); if(!rec) return;
+    agg.days++;
+    ['T1','T2','T3'].forEach(function(b){
+      products.forEach(function(p){
+        agg.branches[b][p.id].qty += ssNum(rec.branches[b][p.id].qty);
+        agg.branches[b][p.id].value += ssNum(rec.branches[b][p.id].value);
+      });
+    });
+  });
+  return agg;
+}
+function ssBranchTotals(branches,products){
+  var totals={T1:{qty:0,val:0},T2:{qty:0,val:0},T3:{qty:0,val:0},all:{qty:0,val:0}};
+  ['T1','T2','T3'].forEach(function(b){
+    products.forEach(function(p){
+      var rec=(branches[b]&&branches[b][p.id])?branches[b][p.id]:{qty:0,value:0};
+      totals[b].qty += ssNum(rec.qty);
+      totals[b].val += ssNum(rec.value);
+    });
+    totals.all.qty += totals[b].qty;
+    totals.all.val += totals[b].val;
+  });
+  return totals;
+}
+function ssPickDay(ds){ SUPPLIER_SALES.selDate=ds; renderDailyTrack(); }
+function ssDeleteDay(ds){
+  if(!SUPPLIER_SALES.store || !SUPPLIER_SALES.store[ds]) return;
+  delete SUPPLIER_SALES.store[ds];
+  if(SUPPLIER_SALES.selDate===ds) SUPPLIER_SALES.selDate='';
+  renderDailyTrack();
+  toast('تم حذف يوم المبيعات');
 }
 function ssExtractDateRange(text){
   var m=String(text||'').match(/\b\d{2}-\d{2}-\d{4}\b/g)||[];
@@ -10004,11 +10066,7 @@ async function ssImportPdf(file,pageMap){
   var buf=await file.arrayBuffer();
   var pdf=await pdfjsLib.getDocument({data:buf}).promise;
   var products=ssTrackedProducts();
-  ssEnsureStateProducts();
-
-  ['T1','T2','T3'].forEach(function(b){
-    products.forEach(function(p){ SUPPLIER_SALES.branches[b][p.id]={qty:0,value:0}; });
-  });
+  var branches=ssBranchesSkeleton(products);
   var issues=[], unmatched={T1:[],T2:[],T3:[]}, reportRange='';
   var order=['T1','T2','T3'];
   for(var k=0;k<order.length;k++){
@@ -10027,27 +10085,36 @@ async function ssImportPdf(file,pageMap){
     rows.forEach(function(r){
       var prod=ssFindProductForRow(r,products);
       if(prod){
-        SUPPLIER_SALES.branches[b][prod.id].qty+=ssNum(r.qtySold);
-        SUPPLIER_SALES.branches[b][prod.id].value+=ssNum(r.saleValue);
+        branches[b][prod.id].qty += ssNum(r.qtySold);
+        branches[b][prod.id].value += ssNum(r.saleValue);
       }else{
         unmatched[b].push(r);
       }
     });
   }
-  SUPPLIER_SALES.pageMap={T1:Number(pageMap.T1)||1,T2:Number(pageMap.T2)||18,T3:Number(pageMap.T3)||7};
-  SUPPLIER_SALES.importedAt=new Date().toISOString();
-  SUPPLIER_SALES.reportRange=reportRange;
-  SUPPLIER_SALES.sourceFile=file.name||'';
-  SUPPLIER_SALES.issues=issues;
-  SUPPLIER_SALES.unmatched=unmatched;
-  return {issues:issues,unmatched:unmatched,pages:pdf.numPages};
+  return {
+    record:{
+      importedAt:new Date().toISOString(),
+      reportRange:reportRange,
+      sourceFile:file.name||'',
+      issues:issues,
+      unmatched:unmatched,
+      pageMap:{T1:Number(pageMap.T1)||1,T2:Number(pageMap.T2)||18,T3:Number(pageMap.T3)||7},
+      branches:branches
+    },
+    pages:pdf.numPages
+  };
 }
 function ssOpenImportModal(){
   var m=SUPPLIER_SALES.pageMap||{T1:1,T2:18,T3:7};
+  var d=ssSelectedDate()||dtToday();
+  var isExisting=!!(SUPPLIER_SALES.store&&SUPPLIER_SALES.store[d]);
   window._ssPendingFile=null;
   var html='<div style="padding:2px 0;">'
     +'<div style="font-size:17px;font-weight:800;margin-bottom:4px;">💰 رفع تقرير مبيعات المورد</div>'
-    +'<div style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px;">استيراد الكمية المباعة + قيمة البيع لمنتجات Private Label و PureHerb</div>'
+    +'<div style="font-size:12.5px;color:var(--text-dim);margin-bottom:14px;">استيراد الكمية المباعة + قيمة البيع لمنتجات Private Label و PureHerb كبيانات يومية</div>'
+    +'<div style="margin-bottom:10px;"><div style="font-size:11px;color:var(--text-dim);margin-bottom:4px;">تاريخ اليوم</div><input id="ssDateInp" type="date" max="'+dtToday()+'" value="'+d+'" style="width:100%;padding:8px 10px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;"></div>'
+    +(isExisting?'<div style="margin-bottom:10px;padding:7px 10px;background:rgba(217,119,6,.09);border:1px solid rgba(217,119,6,.22);border-radius:8px;font-size:10.5px;color:#f59e0b;">⚠️ يوجد بيانات محفوظة لهذا اليوم وسيتم استبدالها عند التحليل.</div>':'')
     +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;">'
     +'<div><div style="font-size:11px;color:var(--text-dim);margin-bottom:4px;">التعاون الأول (T1)</div><input id="ssPageT1" type="number" min="1" value="'+(m.T1||1)+'" style="width:100%;padding:8px 10px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;"></div>'
     +'<div><div style="font-size:11px;color:var(--text-dim);margin-bottom:4px;">التعاون الثالث (T3)</div><input id="ssPageT3" type="number" min="1" value="'+(m.T3||7)+'" style="width:100%;padding:8px 10px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;"></div>'
@@ -10086,6 +10153,7 @@ async function ssStartImport(){
     box.innerHTML=msg;
   }
   if(!window._ssPendingFile){ showMsg('⚠️ اختر ملف PDF أولاً',true); return; }
+  var ds=document.getElementById('ssDateInp').value||dtToday();
   var pageMap={
     T1:Number(document.getElementById('ssPageT1').value||1),
     T3:Number(document.getElementById('ssPageT3').value||7),
@@ -10094,10 +10162,14 @@ async function ssStartImport(){
   showMsg('⏳ جاري تحليل تقرير المبيعات…',false);
   try{
     var res=await ssImportPdf(window._ssPendingFile,pageMap);
+    if(!SUPPLIER_SALES.store) SUPPLIER_SALES.store={};
+    SUPPLIER_SALES.store[ds]=res.record;
+    SUPPLIER_SALES.selDate=ds;
+    SUPPLIER_SALES.pageMap={T1:pageMap.T1,T2:pageMap.T2,T3:pageMap.T3};
     renderDailyTrack();
-    var info='✅ تم تحديث بيانات مبيعات المورد بنجاح';
-    if(res.issues&&res.issues.length){
-      info+='<br><span style="color:var(--text-dim);">ملاحظات:</span><br>'+res.issues.map(function(x){ return '• '+x; }).join('<br>');
+    var info='✅ تم تحديث مبيعات المورد ليوم '+dtFmtAr(ds)+' بنجاح';
+    if(res.record && res.record.issues && res.record.issues.length){
+      info+='<br><span style="color:var(--text-dim);">ملاحظات:</span><br>'+res.record.issues.map(function(x){ return '• '+x; }).join('<br>');
     }
     showMsg(info,false);
     toast('تم تحديث مبيعات المورد ✓');
@@ -10109,57 +10181,92 @@ async function ssStartImport(){
   }
 }
 function dtRenderSupplierSalesCard(){
-  ssEnsureStateProducts();
   var products=ssTrackedProducts();
-  var byB=SUPPLIER_SALES.branches;
-  var totals={T1:{qty:0,val:0},T2:{qty:0,val:0},T3:{qty:0,val:0}};
-  var grand={qty:0,val:0};
-  products.forEach(function(p){
-    ['T1','T2','T3'].forEach(function(b){
-      var rec=(byB[b]&&byB[b][p.id])?byB[b][p.id]:{qty:0,value:0};
-      totals[b].qty+=ssNum(rec.qty);
-      totals[b].val+=ssNum(rec.value);
-      grand.qty+=ssNum(rec.qty);
-      grand.val+=ssNum(rec.value);
-    });
-  });
+  var dates=ssStoreDates();
+  var sel=ssSelectedDate();
+  if(sel) SUPPLIER_SALES.selDate=sel;
+  var dayRec=sel?ssGetRecord(sel):null;
+  var dayBranches=dayRec?dayRec.branches:ssBranchesSkeleton(products);
+  var dayTotals=ssBranchTotals(dayBranches,products);
+  var agg=ssAggregateAll(products);
+  var aggTotals=ssBranchTotals(agg.branches,products);
 
   var html='<div style="background:var(--bg-card);border:1px solid var(--border);border-top:2px solid #0ea5e9;border-radius:var(--r-md);padding:16px;margin-top:14px;">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px;">'
-    +'<div><div style="font-size:13.5px;font-weight:800;">💰 متابعة مبيعات المورد — Private Label (6) + PureHerb (7)</div>'
-    +'<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">البيانات: الكمية المباعة (حبات) + القيمة بسعر البيع</div></div>'
-    +'<button onclick="ssOpenImportModal()" style="padding:7px 12px;background:linear-gradient(135deg,#0ea5e9,#0284c7);border:none;border-radius:8px;color:#fff;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">📥 تحديث من PDF</button>'
+    +'<div><div style="font-size:13.5px;font-weight:800;">💰 متابعة يومية لمبيعات المورد — Private Label (6) + PureHerb (7)</div>'
+    +'<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">ارفع تقرير كل يوم: يعرض اليوم المحدد + يجمع الإجمالي التراكمي تلقائياً</div></div>'
+    +'<div style="display:flex;gap:6px;align-items:center;">'
+    +'<button onclick="ssOpenImportModal()" style="padding:7px 12px;background:linear-gradient(135deg,#0ea5e9,#0284c7);border:none;border-radius:8px;color:#fff;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">📥 رفع يوم جديد</button>'
+    +(sel?'<button onclick="ssDeleteDay(\''+sel+'\')" style="padding:7px 11px;background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.25);border-radius:8px;color:var(--rose-l);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">🗑 حذف اليوم</button>':'')
+    +'</div>'
     +'</div>';
 
-  var meta=[];
-  if(SUPPLIER_SALES.sourceFile) meta.push('الملف: '+escapeHtml(SUPPLIER_SALES.sourceFile));
-  if(SUPPLIER_SALES.reportRange) meta.push('الفترة: '+escapeHtml(SUPPLIER_SALES.reportRange));
-  if(SUPPLIER_SALES.importedAt) meta.push('آخر تحديث: '+new Date(SUPPLIER_SALES.importedAt).toLocaleString('en-GB'));
-  if(meta.length){
-    html+='<div style="font-size:10.5px;color:var(--text-dim);margin-bottom:10px;">'+meta.join(' • ')+'</div>';
-  }else{
-    html+='<div style="font-size:10.5px;color:var(--text-muted);margin-bottom:10px;">لا توجد بيانات مبيعات بعد — استخدم زر "تحديث من PDF"</div>';
+  if(!dates.length){
+    html+='<div style="padding:16px;border:1px dashed var(--border);border-radius:10px;color:var(--text-muted);font-size:12px;text-align:center;">'
+      +'لا توجد أيام مرفوعة بعد لمبيعات المورد — ارفع أول تقرير يومي من زر "رفع يوم جديد"'
+      +'</div></div>';
+    return html;
   }
 
-  if(SUPPLIER_SALES.issues&&SUPPLIER_SALES.issues.length){
+  html+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">';
+  dates.slice(-20).reverse().forEach(function(ds){
+    var rec=ssGetRecord(ds), t=ssBranchTotals(rec.branches,products), on=(ds===sel);
+    html+='<button onclick="ssPickDay(\''+ds+'\')" style="padding:6px 10px;border-radius:999px;border:1px solid '+(on?'transparent':'var(--border)')+';background:'+(on?'var(--grad-p)':'var(--bg-glass2)')+';color:'+(on?'#fff':'var(--text-dim)')+';font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">'
+      +ds+' · '+fmt(Math.round(t.all.val))+' ر.س</button>';
+  });
+  html+='</div>';
+
+  if(dayRec){
+    var meta=[];
+    meta.push('اليوم المحدد: '+dtFmtAr(sel));
+    if(dayRec.sourceFile) meta.push('الملف: '+escapeHtml(dayRec.sourceFile));
+    if(dayRec.reportRange) meta.push('الفترة: '+escapeHtml(dayRec.reportRange));
+    if(dayRec.importedAt) meta.push('وقت الرفع: '+new Date(dayRec.importedAt).toLocaleString('en-GB'));
+    html+='<div style="font-size:10.5px;color:var(--text-dim);margin-bottom:10px;">'+meta.join(' • ')+'</div>';
+  }
+
+  if(dayRec && dayRec.issues && dayRec.issues.length){
     html+='<div style="margin-bottom:10px;padding:9px 10px;background:rgba(217,119,6,.09);border:1px solid rgba(217,119,6,.24);border-radius:8px;font-size:11px;color:#f59e0b;">'
-      +SUPPLIER_SALES.issues.map(function(x){ return '• '+escapeHtml(x); }).join('<br>')+'</div>';
+      +dayRec.issues.map(function(x){ return '• '+escapeHtml(x); }).join('<br>')+'</div>';
   }
 
   html+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:12px;">';
-  ['T1','T2','T3'].forEach(function(b){
-    html+='<div style="padding:10px;background:var(--bg-glass);border:1px solid var(--border);border-radius:10px;">'
-      +'<div style="font-size:10.5px;color:'+dtBranchColor(b)+';font-weight:800;margin-bottom:4px;">'+dtBranchLabel(b)+'</div>'
-      +'<div style="font-size:14px;font-weight:800;">'+fmt(totals[b].qty)+'</div><div style="font-size:10px;color:var(--text-muted);">حبة مباعة</div>'
-      +'<div style="font-size:13px;font-weight:800;margin-top:4px;color:#38bdf8;">'+ssFmtMoney(totals[b].val)+'</div><div style="font-size:10px;color:var(--text-muted);">ر.س قيمة بيع</div>'
-      +'</div>';
-  });
+  html+='<div style="padding:10px;background:var(--bg-glass);border:1px solid var(--border);border-radius:10px;">'
+    +'<div style="font-size:10.5px;color:var(--violet-l);font-weight:800;margin-bottom:4px;">اليوم المحدد</div>'
+    +'<div style="font-size:14px;font-weight:800;">'+fmt(dayTotals.all.qty)+'</div><div style="font-size:10px;color:var(--text-muted);">حبة مباعة</div>'
+    +'<div style="font-size:13px;font-weight:800;margin-top:4px;color:#38bdf8;">'+ssFmtMoney(dayTotals.all.val)+'</div><div style="font-size:10px;color:var(--text-muted);">ر.س قيمة بيع</div>'
+    +'</div>';
   html+='<div style="padding:10px;background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.25);border-radius:10px;">'
-    +'<div style="font-size:10.5px;color:#38bdf8;font-weight:800;margin-bottom:4px;">الإجمالي الكلي</div>'
-    +'<div style="font-size:14px;font-weight:800;">'+fmt(grand.qty)+'</div><div style="font-size:10px;color:var(--text-muted);">حبة مباعة</div>'
-    +'<div style="font-size:13px;font-weight:800;margin-top:4px;color:#38bdf8;">'+ssFmtMoney(grand.val)+'</div><div style="font-size:10px;color:var(--text-muted);">ر.س قيمة بيع</div>'
+    +'<div style="font-size:10.5px;color:#38bdf8;font-weight:800;margin-bottom:4px;">تراكمي كل الأيام</div>'
+    +'<div style="font-size:14px;font-weight:800;">'+fmt(aggTotals.all.qty)+'</div><div style="font-size:10px;color:var(--text-muted);">'+agg.days+' يوم</div>'
+    +'<div style="font-size:13px;font-weight:800;margin-top:4px;color:#38bdf8;">'+ssFmtMoney(aggTotals.all.val)+'</div><div style="font-size:10px;color:var(--text-muted);">ر.س قيمة بيع</div>'
+    +'</div>';
+  html+='<div style="padding:10px;background:var(--bg-glass);border:1px solid var(--border);border-radius:10px;">'
+    +'<div style="font-size:10.5px;color:var(--teal-l);font-weight:800;margin-bottom:4px;">اليوم — التعاون الأول/الثاني/الثالث</div>'
+    +'<div style="font-size:12px;font-weight:700;color:var(--text-dim);">T1: '+fmt(dayTotals.T1.qty)+' · '+ssFmtMoney(dayTotals.T1.val)+'</div>'
+    +'<div style="font-size:12px;font-weight:700;color:var(--text-dim);">T2: '+fmt(dayTotals.T2.qty)+' · '+ssFmtMoney(dayTotals.T2.val)+'</div>'
+    +'<div style="font-size:12px;font-weight:700;color:var(--text-dim);">T3: '+fmt(dayTotals.T3.qty)+' · '+ssFmtMoney(dayTotals.T3.val)+'</div>'
+    +'</div>';
+  html+='<div style="padding:10px;background:var(--bg-glass);border:1px solid var(--border);border-radius:10px;">'
+    +'<div style="font-size:10.5px;color:var(--amber-l);font-weight:800;margin-bottom:4px;">التراكمي — التعاون الأول/الثاني/الثالث</div>'
+    +'<div style="font-size:12px;font-weight:700;color:var(--text-dim);">T1: '+fmt(aggTotals.T1.qty)+' · '+ssFmtMoney(aggTotals.T1.val)+'</div>'
+    +'<div style="font-size:12px;font-weight:700;color:var(--text-dim);">T2: '+fmt(aggTotals.T2.qty)+' · '+ssFmtMoney(aggTotals.T2.val)+'</div>'
+    +'<div style="font-size:12px;font-weight:700;color:var(--text-dim);">T3: '+fmt(aggTotals.T3.qty)+' · '+ssFmtMoney(aggTotals.T3.val)+'</div>'
     +'</div>';
   html+='</div>';
+
+  html+='<div style="overflow-x:auto;margin-bottom:12px;"><table style="width:100%;border-collapse:collapse;font-size:11px;">'
+    +'<thead><tr style="border-bottom:1px solid var(--border);"><th style="text-align:right;padding:6px 7px;">اليوم</th><th style="text-align:center;padding:6px 7px;">الكمية</th><th style="text-align:center;padding:6px 7px;">القيمة</th><th style="text-align:right;padding:6px 7px;">الملف</th></tr></thead><tbody>';
+  dates.slice().reverse().forEach(function(ds){
+    var rec=ssGetRecord(ds), t=ssBranchTotals(rec.branches,products), on=(ds===sel);
+    html+='<tr onclick="ssPickDay(\''+ds+'\')" style="cursor:pointer;border-bottom:1px solid var(--border);'+(on?'background:rgba(99,102,241,.12);':'')+'">'
+      +'<td style="padding:6px 7px;font-weight:700;">'+dtFmtAr(ds)+'</td>'
+      +'<td style="text-align:center;padding:6px 7px;">'+fmt(t.all.qty)+'</td>'
+      +'<td style="text-align:center;padding:6px 7px;color:#38bdf8;font-weight:700;">'+ssFmtMoney(t.all.val)+'</td>'
+      +'<td style="padding:6px 7px;color:var(--text-muted);font-size:10px;">'+escapeHtml((rec.sourceFile||'').slice(0,42))+'</td>'
+      +'</tr>';
+  });
+  html+='</tbody></table></div>';
 
   html+='<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:11.5px;">'
     +'<thead><tr style="border-bottom:1px solid var(--border);">'
@@ -10171,17 +10278,20 @@ function dtRenderSupplierSalesCard(){
     +'<th style="text-align:center;padding:8px 7px;color:var(--teal-l);">T2 قيمة</th>'
     +'<th style="text-align:center;padding:8px 7px;color:var(--amber-l);">T3 كمية</th>'
     +'<th style="text-align:center;padding:8px 7px;color:var(--amber-l);">T3 قيمة</th>'
-    +'<th style="text-align:center;padding:8px 7px;">الإجمالي</th>'
+    +'<th style="text-align:center;padding:8px 7px;">إجمالي اليوم</th>'
+    +'<th style="text-align:center;padding:8px 7px;">الإجمالي التراكمي</th>'
     +'</tr></thead><tbody>';
 
   var currentGroup='';
   products.forEach(function(p){
     if(p.group!==currentGroup){
       currentGroup=p.group;
-      html+='<tr style="background:var(--bg-glass2);"><td colspan="9" style="padding:7px 9px;font-size:11px;font-weight:800;color:'+(currentGroup==='Private Label'?'#22d3ee':'#a78bfa')+';">'+currentGroup+'</td></tr>';
+      html+='<tr style="background:var(--bg-glass2);"><td colspan="10" style="padding:7px 9px;font-size:11px;font-weight:800;color:'+(currentGroup==='Private Label'?'#22d3ee':'#a78bfa')+';">'+currentGroup+'</td></tr>';
     }
-    var t1=byB.T1[p.id]||{qty:0,value:0}, t2=byB.T2[p.id]||{qty:0,value:0}, t3=byB.T3[p.id]||{qty:0,value:0};
+    var t1=dayBranches.T1[p.id]||{qty:0,value:0}, t2=dayBranches.T2[p.id]||{qty:0,value:0}, t3=dayBranches.T3[p.id]||{qty:0,value:0};
     var tq=ssNum(t1.qty)+ssNum(t2.qty)+ssNum(t3.qty), tv=ssNum(t1.value)+ssNum(t2.value)+ssNum(t3.value);
+    var c1=agg.branches.T1[p.id]||{qty:0,value:0}, c2=agg.branches.T2[p.id]||{qty:0,value:0}, c3=agg.branches.T3[p.id]||{qty:0,value:0};
+    var cq=ssNum(c1.qty)+ssNum(c2.qty)+ssNum(c3.qty), cv=ssNum(c1.value)+ssNum(c2.value)+ssNum(c3.value);
     html+='<tr style="border-bottom:1px solid var(--border);">'
       +'<td style="padding:8px 7px;"><div style="font-weight:700;">'+escapeHtml(p.short)+'</div><div style="font-size:10px;color:var(--text-muted);">'+escapeHtml(p.name)+'</div></td>'
       +'<td style="text-align:center;padding:8px 7px;font-size:10px;color:var(--text-dim);">'+(p.code?escapeHtml(p.code):'—')+'</td>'
@@ -10192,6 +10302,7 @@ function dtRenderSupplierSalesCard(){
       +'<td style="text-align:center;padding:8px 7px;font-weight:700;">'+(t3.qty?fmt(t3.qty):'—')+'</td>'
       +'<td style="text-align:center;padding:8px 7px;font-weight:700;color:#38bdf8;">'+(t3.value?ssFmtMoney(t3.value):'—')+'</td>'
       +'<td style="text-align:center;padding:8px 7px;"><div style="font-weight:800;">'+(tq?fmt(tq):'—')+'</div><div style="font-size:10px;color:#38bdf8;">'+(tv?ssFmtMoney(tv):'—')+'</div></td>'
+      +'<td style="text-align:center;padding:8px 7px;"><div style="font-weight:800;">'+(cq?fmt(cq):'—')+'</div><div style="font-size:10px;color:#38bdf8;">'+(cv?ssFmtMoney(cv):'—')+'</div></td>'
       +'</tr>';
   });
   html+='</tbody></table></div></div>';
