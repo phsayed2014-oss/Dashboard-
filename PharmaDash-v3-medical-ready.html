@@ -10048,18 +10048,61 @@ function ssPickValueLines(lines,start,count){
   }
   return Array(count).fill(0);
 }
+function ssParseInlineCodeRows(lines){
+  var codeRe=/([0-9٠-٩]\s*[-‐‑‒–—−]\s*[0-9٠-٩]{2}\s*[-‐‑‒–—−]\s*[0-9٠-٩]{3}\s*[-‐‑‒–—−]\s*[0-9٠-٩]{3})/;
+  var outMap={};
+  lines.forEach(function(rawLine){
+    var line=String(rawLine||'').replace(/\s+/g,' ').trim();
+    if(!line) return;
+    var m=line.match(codeRe);
+    if(!m) return;
+    var code=ssNormalizeCode(m[1]);
+    if(!ssIsDrugCode(code)) return;
+    var idx=line.indexOf(m[0]);
+    if(idx<0) return;
+    var pre=line.slice(0,idx).trim();
+    var post=line.slice(idx+m[0].length).trim();
+    var preLat=ssToLatinDigits(pre).replace(/\s+/g,' ');
+    preLat=preLat.replace(/^(?:[\d,]+(?:\.\d+)?\s+)+/,'').trim();
+    var nameMatch=preLat.match(/[A-Za-z].*$/);
+    var name=nameMatch?nameMatch[0].trim():'';
+    var rawNums=(ssToLatinDigits(post).match(/[\d,]+(?:\.\d+)?/g)||[]);
+    var qty=0,qtyIdx=-1,value=0;
+    for(var i=0;i<rawNums.length;i++){
+      if(/^\d+$/.test(rawNums[i])){ qty=ssNum(rawNums[i]); qtyIdx=i; break; }
+    }
+    if(!qty && rawNums.length){ qty=ssNum(rawNums[0]); qtyIdx=0; }
+    for(var j=0;j<rawNums.length;j++){
+      if(j===qtyIdx) continue;
+      if(/[.,]/.test(rawNums[j]) && ssNum(rawNums[j])>0){ value=ssNum(rawNums[j]); break; }
+    }
+    if(!value){
+      for(var k=Math.max(0,qtyIdx+1);k<rawNums.length;k++){
+        var v=ssNum(rawNums[k]); if(v>0){ value=v; break; }
+      }
+    }
+    if(!outMap[code]) outMap[code]={code:code,name:name||'—',qtySold:0,saleValue:0};
+    if(name && outMap[code].name==='—') outMap[code].name=name;
+    outMap[code].qtySold += ssNum(qty);
+    outMap[code].saleValue += ssNum(value);
+  });
+  return Object.values(outMap);
+}
 function ssParseSupplierPageText(text){
   var lines=String(text||'').split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean);
   var block=ssLongestCodeBlock(lines);
-  if(block.start<0||!block.len) return [];
-  var codes=lines.slice(block.start,block.start+block.len).map(ssNormalizeCode);
-  var names=ssPickNameLines(lines,block.start,codes.length);
-  var qtyBlock=ssPickQtyLines(lines,block.start+block.len,codes.length);
-  var qty=qtyBlock.values||Array(codes.length).fill(0);
-  var val=ssPickValueLines(lines,qtyBlock.end||block.start+block.len,codes.length);
-  return codes.map(function(code,i){
-    return {code:code,name:names[i]||'—',qtySold:ssNum(qty[i]),saleValue:ssNum(val[i])};
-  });
+  if(block.start>=0 && block.len){
+    var codes=lines.slice(block.start,block.start+block.len).map(ssNormalizeCode);
+    var names=ssPickNameLines(lines,block.start,codes.length);
+    var qtyBlock=ssPickQtyLines(lines,block.start+block.len,codes.length);
+    var qty=qtyBlock.values||Array(codes.length).fill(0);
+    var val=ssPickValueLines(lines,qtyBlock.end||block.start+block.len,codes.length);
+    var rows=codes.map(function(code,i){
+      return {code:code,name:names[i]||'—',qtySold:ssNum(qty[i]),saleValue:ssNum(val[i])};
+    });
+    if(rows.length) return rows;
+  }
+  return ssParseInlineCodeRows(lines);
 }
 function ssFindProductForRow(row,products){
   if(row.code){
