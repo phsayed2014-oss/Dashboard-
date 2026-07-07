@@ -2919,6 +2919,12 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 [data-showcase="canvas"] #overview-content .grid-2{grid-column:1/-1;gap:18px!important;margin-bottom:0!important;}
 [data-showcase="canvas"] #overview-content > div[style*="justify-content:space-between"]{display:none!important;}
 [data-showcase="canvas"] .canvas-dash-footer{grid-column:1/-1;text-align:center;padding:16px;font-size:11px;color:var(--text-muted);font-weight:700;border-top:1px solid var(--cv-border);}
+[data-showcase="canvas"] .no-data,[data-showcase="canvas"] .pl-no-data{
+  padding:56px 24px!important;border-radius:var(--cv-radius)!important;
+  background:radial-gradient(ellipse at 50% 0%,rgba(37,99,235,.12),transparent 65%),var(--cv-glass)!important;
+  border:1px dashed rgba(96,165,250,.25)!important;
+}
+[data-showcase="canvas"] .no-data h2,[data-showcase="canvas"] .pl-no-data h3{color:#e0e7ff!important;}
 
 </style>
 </head>
@@ -3085,9 +3091,9 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 <div class="canvas-upload-head" id="canvasUploadHead">
   <div>
     <h2>📂 رفع ملفات الفروع</h2>
-    <p>ارفع تقارير Excel / CSV / PDF لكل فرع — البيانات تُسحب تلقائياً لكل أقسام الداشبورد</p>
+    <p>ارفع تقارير Excel / CSV / PDF لكل فرع — الداشبورد يتحدّث فوراً ببياناتك الحقيقية</p>
   </div>
-  <div class="hint">اسحب الملف وأفلته · أو اضغط رفع · + فترة للمقارنة الزمنية</div>
+  <div class="hint">ابدأ برفع ملف · xlsx · csv · pdf · + فترة للمقارنة</div>
 </div>
 
 <div class="branch-bar">
@@ -10781,50 +10787,7 @@ function renderPureHerb(){
   renderPHTarget();
 }
 
-/* ══ CANVAS SHOWCASE — بيانات تجريبية + عرض فوري ══ */
-function generateShowcaseRows(scale){
-  const n=Math.round(1180*scale);
-  const doctors=[
-    {name:'د. أحمد حسن العمري',section:'INTERNAL MEDICINE',w:22},
-    {name:'د. سارة محمود الزهراني',section:'PEDIATRIC',w:18},
-    {name:'د. خالد سعد الفهد',section:'CARDIOLOGY',w:16},
-    {name:'د. نورة عبدالله السعيد',section:'DERMATOLOGY',w:14},
-    {name:'د. عمر يوسف القحطاني',section:'ORTHOPAEDIC',w:13},
-    {name:'د. ليلى محمد الشمري',section:'GYNECOLOGY',w:12},
-    {name:'د. يوسف علي الدوسري',section:'ENT',w:11},
-    {name:'د. هدى إبراهيم الحربي',section:'NEUROLOGY',w:10},
-    {name:'د. فهد ناصر العتيبي',section:'UROLOGY',w:9},
-    {name:'د. ريم سلطان الغامدي',section:'OPHTHALMOLOGY',w:8},
-    {name:'د. ماجد فهد المطيري',section:'PULMONOLOGY',w:7},
-    {name:'د. منى سالم البلوي',section:'ENDOCRINOLOGY',w:6}
-  ];
-  const drugs=[
-    {name:'Amoxicillin 500mg',w:14},{name:'Paracetamol 500mg',w:13},{name:'Omeprazole 20mg',w:12},
-    {name:'Metformin 500mg',w:11},{name:'Atorvastatin 20mg',w:10},{name:'Cetirizine 10mg',w:9},
-    {name:'Amlodipine 5mg',w:9},{name:'Ibuprofen 400mg',w:8},{name:'Losartan 50mg',w:8},
-    {name:'Vitamin D3 50000',w:7},{name:'Reflex Massage Emulgel',w:4},{name:'Rizer Apply Cream',w:3},
-    {name:'Oracure Mouth Wash',w:3},{name:'Nostriderm Ointment',w:2}
-  ];
-  function pick(arr){
-    const t=arr.reduce((s,x)=>s+x.w,0);let r=Math.random()*t;
-    for(const x of arr){r-=x.w;if(r<=0)return x;}
-    return arr[arr.length-1];
-  }
-  const rows=[];
-  for(let i=0;i<n;i++){
-    const d=pick(doctors),dr=pick(drugs);
-    const st=Math.random();
-    const status=st<.87?'Closed':st<.95?'New':'Canceled';
-    rows.push({
-      doctor:d.name,section:d.section,service:dr.name,
-      patient:'P'+String(100000+Math.floor(Math.random()*28000)),
-      patientName:'مريض '+((i%900)+1),
-      orderNo:'O'+String(500000+i),
-      status
-    });
-  }
-  return rows;
-}
+/* ══ CANVAS PREMIUM — عرض فوري بدون بيانات وهمية ══ */
 function initFxCanvas(){
   const cv=document.getElementById('fxCanvas');if(!cv)return;
   const ctx=cv.getContext('2d');let W,H,t=0;
@@ -10871,21 +10834,11 @@ function initCanvasShowcase(){
     enableCanvasPremium();
     document.getElementById('loginScreen').style.display='none';
     sessionStorage.setItem('pharmdash_user',JSON.stringify({username:'demo',name:'د. السيد',role:'admin'}));
-    if(!STATE.data.T1){
-      [['T1',1],['T2',.84],['T3',.71]].forEach(([b,sc],idx)=>{
-        const rows=generateShowcaseRows(sc);
-        setBranchData(b,rows,'تقرير '+BRANCH_LABELS[b]+' — عرض Canvas','2026-07-01');
-        const prev=generateShowcaseRows(sc*.88);
-        STATE.periods[b].push({id:Date.now()+idx+1,label:'يونيو 2026',rows:prev,data:aggregate(prev),_main:false});
-      });
-      STATE.active='T1';
-      if(typeof renderAll==='function') renderAll();
-      else if(typeof renderActive==='function'){renderBranchPicker();renderActive();}
-      setTimeout(polishCanvasDashboard,400);
-      if(typeof toast==='function') toast('ارفع ملفاتك أو استخدم البيانات التجريبية الحالية','success');
-    }else{
-      polishCanvasDashboard();
-    }
+    STATE.active=null;
+    if(typeof renderAll==='function') renderAll();
+    else if(typeof renderActive==='function'){renderBranchPicker();renderActive();}
+    setTimeout(polishCanvasDashboard,200);
+    if(typeof toast==='function') toast('ارفع ملفات التعاونات الثلاثة لتحديث الداشبورد','success');
   }catch(e){console.error('Canvas showcase init:',e);}
 }
 const _origRenderOverview=typeof renderOverview==='function'?renderOverview:null;
