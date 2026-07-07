@@ -2857,21 +2857,36 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
 }
 [data-showcase="canvas"] .container{padding:18px 20px 40px;max-width:1680px;}
-[data-showcase="canvas"] .branch-bar{display:none!important;}
-[data-showcase="canvas"] .canvas-branch-ribbon{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px;}
-@media(max-width:900px){[data-showcase="canvas"] .canvas-branch-ribbon{grid-template-columns:1fr;}}
-[data-showcase="canvas"] .canvas-branch-card{
-  position:relative;overflow:hidden;border-radius:var(--cv-radius);padding:18px 20px;
-  background:var(--cv-glass);border:1px solid var(--cv-border);box-shadow:var(--cv-glow);transition:transform .25s ease;
+[data-showcase="canvas"] .canvas-upload-head{
+  grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  margin-bottom:12px;padding:14px 18px;border-radius:18px;background:var(--cv-glass);
+  border:1px solid var(--cv-border);box-shadow:var(--cv-glow);backdrop-filter:blur(20px);
 }
-[data-showcase="canvas"] .canvas-branch-card:hover{transform:translateY(-3px);}
-[data-showcase="canvas"] .canvas-branch-card::before{content:'';position:absolute;inset:0 auto 0 0;width:4px;}
-[data-showcase="canvas"] .canvas-branch-card.b1::before{background:linear-gradient(180deg,#60a5fa,#2563eb);}
-[data-showcase="canvas"] .canvas-branch-card.b2::before{background:linear-gradient(180deg,#2dd4bf,#0d9488);}
-[data-showcase="canvas"] .canvas-branch-card.b3::before{background:linear-gradient(180deg,#c084fc,#7c3aed);}
-[data-showcase="canvas"] .canvas-branch-card .cb-name{font-size:13px;font-weight:800;color:var(--text-dim);}
-[data-showcase="canvas"] .canvas-branch-card .cb-val{font-family:Inter,Alexandria,sans-serif;font-size:28px;font-weight:900;margin:6px 0;color:#e0e7ff;}
-[data-showcase="canvas"] .canvas-branch-card .cb-meta{font-size:11px;color:var(--text-muted);font-weight:700;display:flex;gap:12px;flex-wrap:wrap;}
+[data-showcase="canvas"] .canvas-upload-head h2{font-size:16px;font-weight:900;color:#e0e7ff;}
+[data-showcase="canvas"] .canvas-upload-head p{font-size:12px;color:var(--text-dim);font-weight:600;margin-top:4px;}
+[data-showcase="canvas"] .canvas-upload-head .hint{font-size:11px;color:var(--teal-l);font-weight:800;padding:6px 12px;border-radius:999px;background:rgba(13,148,136,.12);border:1px solid rgba(13,148,136,.25);}
+[data-showcase="canvas"] .branch-bar{display:grid!important;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px;}
+@media(max-width:900px){[data-showcase="canvas"] .branch-bar{grid-template-columns:1fr!important;}}
+[data-showcase="canvas"] .branch-card{
+  background:var(--cv-glass)!important;border:1px solid var(--cv-border)!important;
+  box-shadow:var(--cv-glow)!important;border-radius:var(--cv-radius)!important;
+  backdrop-filter:blur(20px);padding:18px 20px!important;
+}
+[data-showcase="canvas"] .branch-card:hover{transform:translateY(-3px);border-color:rgba(96,165,250,.28)!important;}
+[data-showcase="canvas"] .branch-card.has-data{border-color:rgba(13,148,136,.35)!important;}
+[data-showcase="canvas"] .branch-info .name{font-size:15px;color:#e8eeff;}
+[data-showcase="canvas"] .branch-upload-btn{
+  background:linear-gradient(135deg,rgba(37,99,235,.35),rgba(13,148,136,.2))!important;
+  border:1px solid rgba(96,165,250,.35)!important;border-radius:12px!important;color:#e0e7ff!important;font-weight:800!important;
+}
+[data-showcase="canvas"] .branch-upload-btn:hover{box-shadow:0 8px 24px rgba(37,99,235,.25)!important;}
+[data-showcase="canvas"] .branch-upload-btn.reupload{background:rgba(217,119,6,.15)!important;border-color:rgba(217,119,6,.35)!important;color:var(--amber-l)!important;}
+[data-showcase="canvas"] .add-period-btn{
+  background:rgba(255,255,255,.05)!important;border:1px solid var(--cv-border)!important;
+  border-radius:12px!important;color:var(--text-dim)!important;font-weight:700!important;
+}
+[data-showcase="canvas"] .add-period-btn:hover{border-color:rgba(96,165,250,.35)!important;color:#c7d2fe!important;}
+[data-showcase="canvas"] .branch-periods .period-badge{border-radius:999px!important;}
 [data-showcase="canvas"] .summary-bar{
   border-radius:18px!important;margin-bottom:20px!important;background:var(--cv-glass)!important;
   border:1px solid var(--cv-border)!important;box-shadow:var(--cv-glow)!important;backdrop-filter:blur(20px)!important;
@@ -3066,6 +3081,14 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 <div class="wrap">
 <div class="loading-bar" id="loadingBar"></div>
 <div class="container">
+
+<div class="canvas-upload-head" id="canvasUploadHead">
+  <div>
+    <h2>📂 رفع ملفات الفروع</h2>
+    <p>ارفع تقارير Excel / CSV / PDF لكل فرع — البيانات تُسحب تلقائياً لكل أقسام الداشبورد</p>
+  </div>
+  <div class="hint">اسحب الملف وأفلته · أو اضغط رفع · + فترة للمقارنة الزمنية</div>
+</div>
 
 <div class="branch-bar">
   <div class="branch-card t1" data-branch="T1">
@@ -10824,24 +10847,6 @@ function initFxCanvas(){
   }
   frame();
 }
-function buildCanvasBranchRibbon(){
-  const host=document.querySelector('.container');if(!host||document.getElementById('canvasBranchRibbon'))return;
-  const ribbon=document.createElement('div');
-  ribbon.id='canvasBranchRibbon';ribbon.className='canvas-branch-ribbon';
-  const cls=['b1','b2','b3'];let html='';
-  BRANCHES.forEach((b,i)=>{
-    const d=STATE.data[b];if(!d)return;
-    html+=`<div class="canvas-branch-card ${cls[i]}" onclick="STATE.active='${b}';renderBranchPicker();renderActive();" style="cursor:pointer">
-      <div class="cb-name">${BRANCH_LABELS[b]}</div>
-      <div class="cb-val">${fmt(d.totalRows)}</div>
-      <div class="cb-meta"><span>👨‍⚕️ ${fmt(d.doctors.length)} طبيب</span><span>💊 ${fmt(d.drugs.length)} صنف</span><span>🧑 ${fmt(d.totalPatients)} مريض</span></div>
-    </div>`;
-  });
-  ribbon.innerHTML=html;
-  const bar=document.querySelector('.branch-bar');
-  if(bar) bar.insertAdjacentElement('afterend',ribbon);
-  else host.insertBefore(ribbon,host.firstChild);
-}
 function polishCanvasDashboard(){
   const ov=document.getElementById('overview-content');if(!ov)return;
   if(!ov.querySelector('.canvas-dash-footer')){
@@ -10876,11 +10881,9 @@ function initCanvasShowcase(){
       STATE.active='T1';
       if(typeof renderAll==='function') renderAll();
       else if(typeof renderActive==='function'){renderBranchPicker();renderActive();}
-      buildCanvasBranchRibbon();
       setTimeout(polishCanvasDashboard,400);
-      if(typeof toast==='function') toast('لوحة Canvas Premium جاهزة — تصميم داشبورد كامل','success');
+      if(typeof toast==='function') toast('ارفع ملفاتك أو استخدم البيانات التجريبية الحالية','success');
     }else{
-      buildCanvasBranchRibbon();
       polishCanvasDashboard();
     }
   }catch(e){console.error('Canvas showcase init:',e);}
