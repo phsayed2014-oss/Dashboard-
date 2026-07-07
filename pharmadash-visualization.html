@@ -2827,6 +2827,84 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 @media(max-width:480px){body{font-size:13px;}.kpi-value{font-size:26px;}.login-box{padding:var(--space-lg) var(--space-md);}}
 @media(prefers-reduced-motion:reduce){.feat-card:hover,.kpi:hover,.card:hover,.btn:hover{transform:none!important;}}
 
+/* ══ CANVAS PREMIUM SHOWCASE — داشبورد كامل بتصميم جمالي ══ */
+[data-showcase="canvas"]{
+  --cv-glass:rgba(16,22,42,.72);--cv-glass2:rgba(20,27,48,.85);
+  --cv-border:rgba(148,163,255,.14);
+  --cv-glow:0 0 0 1px rgba(96,165,250,.08),0 20px 50px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06);
+  --cv-radius:22px;
+}
+[data-showcase="canvas"] body{background:#050810;}
+[data-showcase="canvas"] #bgCanvas{opacity:.55;filter:saturate(1.2);}
+[data-showcase="canvas"] #fxCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.35;}
+[data-showcase="canvas"] .app-shell{position:relative;z-index:1;}
+[data-showcase="canvas"] .sidebar{
+  background:linear-gradient(180deg,rgba(8,12,24,.94),rgba(6,10,20,.88))!important;
+  backdrop-filter:blur(24px);border-left:1px solid rgba(96,165,250,.12)!important;
+  box-shadow:8px 0 40px rgba(0,0,0,.35);
+}
+[data-showcase="canvas"] .sb-nav-item.active{
+  background:linear-gradient(135deg,rgba(37,99,235,.35),rgba(13,148,136,.18))!important;
+  box-shadow:0 4px 20px rgba(37,99,235,.25),inset 0 1px 0 rgba(255,255,255,.08);
+}
+[data-showcase="canvas"] .main-area{background:linear-gradient(160deg,rgba(37,99,235,.04),transparent 40%,rgba(13,148,136,.03));}
+[data-showcase="canvas"] .new-topbar{
+  margin:16px 20px 0;border-radius:20px!important;background:var(--cv-glass)!important;
+  backdrop-filter:blur(28px)!important;border:1px solid var(--cv-border)!important;box-shadow:var(--cv-glow)!important;
+}
+[data-showcase="canvas"] .new-topbar .nb-title h1{
+  font-size:22px;background:linear-gradient(90deg,#e0e7ff,#93c5fd 45%,#5eead4);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+[data-showcase="canvas"] .container{padding:18px 20px 40px;max-width:1680px;}
+[data-showcase="canvas"] .branch-bar{display:none!important;}
+[data-showcase="canvas"] .canvas-branch-ribbon{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px;}
+@media(max-width:900px){[data-showcase="canvas"] .canvas-branch-ribbon{grid-template-columns:1fr;}}
+[data-showcase="canvas"] .canvas-branch-card{
+  position:relative;overflow:hidden;border-radius:var(--cv-radius);padding:18px 20px;
+  background:var(--cv-glass);border:1px solid var(--cv-border);box-shadow:var(--cv-glow);transition:transform .25s ease;
+}
+[data-showcase="canvas"] .canvas-branch-card:hover{transform:translateY(-3px);}
+[data-showcase="canvas"] .canvas-branch-card::before{content:'';position:absolute;inset:0 auto 0 0;width:4px;}
+[data-showcase="canvas"] .canvas-branch-card.b1::before{background:linear-gradient(180deg,#60a5fa,#2563eb);}
+[data-showcase="canvas"] .canvas-branch-card.b2::before{background:linear-gradient(180deg,#2dd4bf,#0d9488);}
+[data-showcase="canvas"] .canvas-branch-card.b3::before{background:linear-gradient(180deg,#c084fc,#7c3aed);}
+[data-showcase="canvas"] .canvas-branch-card .cb-name{font-size:13px;font-weight:800;color:var(--text-dim);}
+[data-showcase="canvas"] .canvas-branch-card .cb-val{font-family:Inter,Alexandria,sans-serif;font-size:28px;font-weight:900;margin:6px 0;color:#e0e7ff;}
+[data-showcase="canvas"] .canvas-branch-card .cb-meta{font-size:11px;color:var(--text-muted);font-weight:700;display:flex;gap:12px;flex-wrap:wrap;}
+[data-showcase="canvas"] .summary-bar{
+  border-radius:18px!important;margin-bottom:20px!important;background:var(--cv-glass)!important;
+  border:1px solid var(--cv-border)!important;box-shadow:var(--cv-glow)!important;backdrop-filter:blur(20px)!important;
+}
+[data-showcase="canvas"] .sb-val{font-size:20px!important;}
+[data-showcase="canvas"] #overview-content{display:grid;grid-template-columns:repeat(12,1fr);gap:18px;align-items:start;}
+[data-showcase="canvas"] #pdHero{
+  grid-column:1/-1;margin-bottom:0!important;border-radius:28px!important;padding:32px 34px!important;
+  background:radial-gradient(ellipse 80% 120% at 100% 0%,rgba(45,212,191,.18),transparent 55%),
+    radial-gradient(ellipse 60% 80% at 0% 100%,rgba(96,165,250,.2),transparent 50%),
+    linear-gradient(135deg,rgba(37,99,235,.22),rgba(10,14,30,.5) 50%,rgba(13,148,136,.15))!important;
+  border:1px solid rgba(96,165,250,.25)!important;box-shadow:0 30px 80px rgba(0,0,0,.4)!important;
+}
+[data-showcase="canvas"] .kpi-grid{grid-column:1/-1;grid-template-columns:repeat(6,1fr)!important;gap:14px!important;margin-bottom:0!important;}
+@media(max-width:1200px){[data-showcase="canvas"] .kpi-grid{grid-template-columns:repeat(3,1fr)!important;}}
+@media(max-width:640px){[data-showcase="canvas"] .kpi-grid{grid-template-columns:repeat(2,1fr)!important;}}
+[data-showcase="canvas"] .kpi{
+  border-radius:18px!important;background:var(--cv-glass2)!important;border:1px solid var(--cv-border)!important;
+  box-shadow:var(--cv-glow)!important;backdrop-filter:blur(16px);
+}
+[data-showcase="canvas"] .kpi:hover{transform:translateY(-4px);box-shadow:0 24px 48px rgba(37,99,235,.18),var(--cv-glow)!important;}
+[data-showcase="canvas"] .kpi-value{font-size:30px!important;color:#e8eeff!important;-webkit-text-fill-color:#e8eeff!important;}
+[data-showcase="canvas"] .card{
+  border-radius:var(--cv-radius)!important;background:var(--cv-glass)!important;border:1px solid var(--cv-border)!important;
+  box-shadow:var(--cv-glow)!important;backdrop-filter:blur(20px);margin-bottom:0!important;
+}
+[data-showcase="canvas"] .card:hover{border-color:rgba(96,165,250,.28)!important;transform:translateY(-2px);}
+[data-showcase="canvas"] .chart-box{height:300px!important;}
+[data-showcase="canvas"] #overview-content > .card{grid-column:1/-1;}
+[data-showcase="canvas"] #overview-content .grid-2{grid-column:1/-1;gap:18px!important;margin-bottom:0!important;}
+[data-showcase="canvas"] #overview-content > div[style*="justify-content:space-between"]{display:none!important;}
+[data-showcase="canvas"] .canvas-dash-footer{grid-column:1/-1;text-align:center;padding:16px;font-size:11px;color:var(--text-muted);font-weight:700;border-top:1px solid var(--cv-border);}
+
 </style>
 </head>
 <body>
@@ -2856,6 +2934,7 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 </div>
 <!-- ══════════════ END LOGIN ══════════════ -->
 <canvas id="bgCanvas"></canvas>
+<canvas id="fxCanvas"></canvas>
 <!-- Mobile overlay -->
 <div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
 
@@ -10723,8 +10802,68 @@ function generateShowcaseRows(scale){
   }
   return rows;
 }
+function initFxCanvas(){
+  const cv=document.getElementById('fxCanvas');if(!cv)return;
+  const ctx=cv.getContext('2d');let W,H,t=0;
+  function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+  resize();addEventListener('resize',resize);
+  function frame(){
+    t+=.004;ctx.clearRect(0,0,W,H);
+    const g=ctx.createLinearGradient(0,0,W,H);
+    g.addColorStop(0,'rgba(37,99,235,'+(0.03+Math.sin(t)*.01)+')');
+    g.addColorStop(.5,'rgba(13,148,136,'+(0.02+Math.cos(t*1.2)*.008)+')');
+    g.addColorStop(1,'rgba(124,58,237,'+(0.025+Math.sin(t*.8)*.01)+')');
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    for(let i=0;i<5;i++){
+      const x=W*(.2+i*.15)+Math.sin(t+i)*80,y=H*(.3+i*.1)+Math.cos(t*1.1+i)*60,r=180+i*40;
+      const rg=ctx.createRadialGradient(x,y,0,x,y,r);
+      rg.addColorStop(0,['rgba(96,165,250,.12)','rgba(45,212,191,.1)','rgba(167,139,250,.1)'][i%3]);
+      rg.addColorStop(1,'transparent');ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
+    }
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+function buildCanvasBranchRibbon(){
+  const host=document.querySelector('.container');if(!host||document.getElementById('canvasBranchRibbon'))return;
+  const ribbon=document.createElement('div');
+  ribbon.id='canvasBranchRibbon';ribbon.className='canvas-branch-ribbon';
+  const cls=['b1','b2','b3'];let html='';
+  BRANCHES.forEach((b,i)=>{
+    const d=STATE.data[b];if(!d)return;
+    html+=`<div class="canvas-branch-card ${cls[i]}" onclick="STATE.active='${b}';renderBranchPicker();renderActive();" style="cursor:pointer">
+      <div class="cb-name">${BRANCH_LABELS[b]}</div>
+      <div class="cb-val">${fmt(d.totalRows)}</div>
+      <div class="cb-meta"><span>👨‍⚕️ ${fmt(d.doctors.length)} طبيب</span><span>💊 ${fmt(d.drugs.length)} صنف</span><span>🧑 ${fmt(d.totalPatients)} مريض</span></div>
+    </div>`;
+  });
+  ribbon.innerHTML=html;
+  const bar=document.querySelector('.branch-bar');
+  if(bar) bar.insertAdjacentElement('afterend',ribbon);
+  else host.insertBefore(ribbon,host.firstChild);
+}
+function polishCanvasDashboard(){
+  const ov=document.getElementById('overview-content');if(!ov)return;
+  if(!ov.querySelector('.canvas-dash-footer')){
+    ov.insertAdjacentHTML('beforeend','<div class="canvas-dash-footer">PharmaDash Canvas Premium · لوحة تحكم كاملة · تصميم مستوحى من جماليات Canvas</div>');
+  }
+  document.querySelectorAll('#overview-content .card').forEach(c=>{
+    c.addEventListener('pointermove',e=>{
+      const r=c.getBoundingClientRect();
+      c.style.setProperty('--mx',(e.clientX-r.left)+'px');
+      c.style.setProperty('--my',(e.clientY-r.top)+'px');
+    });
+  });
+}
+function enableCanvasPremium(){
+  document.documentElement.setAttribute('data-showcase','canvas');
+  document.documentElement.removeAttribute('data-theme');
+  try{localStorage.setItem('rx-theme','dark');}catch(e){}
+  initFxCanvas();
+}
 function initCanvasShowcase(){
   try{
+    enableCanvasPremium();
     document.getElementById('loginScreen').style.display='none';
     sessionStorage.setItem('pharmdash_user',JSON.stringify({username:'demo',name:'د. السيد',role:'admin'}));
     if(!STATE.data.T1){
@@ -10737,9 +10876,21 @@ function initCanvasShowcase(){
       STATE.active='T1';
       if(typeof renderAll==='function') renderAll();
       else if(typeof renderActive==='function'){renderBranchPicker();renderActive();}
-      if(typeof toast==='function') toast('لوحة PharmaDash v3 جاهزة — بيانات تجريبية للعرض','success');
+      buildCanvasBranchRibbon();
+      setTimeout(polishCanvasDashboard,400);
+      if(typeof toast==='function') toast('لوحة Canvas Premium جاهزة — تصميم داشبورد كامل','success');
+    }else{
+      buildCanvasBranchRibbon();
+      polishCanvasDashboard();
     }
   }catch(e){console.error('Canvas showcase init:',e);}
+}
+const _origRenderOverview=typeof renderOverview==='function'?renderOverview:null;
+if(_origRenderOverview){
+  renderOverview=function(d){
+    _origRenderOverview(d);
+    if(document.documentElement.getAttribute('data-showcase')==='canvas') setTimeout(polishCanvasDashboard,120);
+  };
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initCanvasShowcase);
 else initCanvasShowcase();
