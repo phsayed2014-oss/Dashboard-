@@ -1,0 +1,25 @@
+# PharmaOps schedule — copy to config.yaml and edit paths
+inbox: pharmaops/data/inbox
+outbox: pharmaops/data/outbox
+alerts: pharmaops/data/alerts
+board: pharmaops/data/board
+
+branch_file_prefix:
+  T1: t1
+  T2: t2
+  T3: t3
+
+watchlist:
+  - XYLOMET
+  - REFLEX
+  - RIZER
+  - ORACURE
+  - INTIMO
+  - NOSTRIDERM
+  - JARDIANCE
+  - GLUCOPHAGE
+  - OMEPREX
+
+# Cron examples (run on your server):
+# daily:   0 7 * * *  cd /path/to/repo && python3 pharmaops/schedule/daily_loop.py
+# monthly: 0 8 1 * *  cd /path/to/repo && python3 pharmaops/schedule/monthly_board.py

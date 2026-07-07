@@ -1,0 +1,5 @@
+js/auth.config.js
+pharmaops/schedule/config.yaml
+__pycache__/
+*.pyc
+.pytest_cache/
