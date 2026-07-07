@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PharmaDash | لوحة التحليلات المرئية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=Inter:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#070a12;--card:#10162a;--card2:#141b30;
+  --border:rgba(255,255,255,.09);--text:#f0f4ff;--dim:#9aa7c4;--muted:#6b7795;
+  --teal:#14b8a6;--violet:#60a5fa;--rose:#ef4444;--amber:#f59e0b;--sky:#38bdf8;--purple:#a78bfa;
+  --r:16px;--shadow:0 24px 64px rgba(0,0,0,.55);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans Arabic','Inter',sans-serif;overflow-x:hidden}
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+.shell{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:28px 24px 48px}
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:28px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#2563eb,#14b8a6);display:grid;place-items:center;font-weight:900;font-size:18px;box-shadow:0 0 30px rgba(37,99,235,.35)}
+.brand h1{font-size:clamp(22px,3vw,32px);font-weight:900;letter-spacing:-.02em}
+.brand p{color:var(--dim);font-size:13px;margin-top:4px;font-weight:600}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn{border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);padding:10px 16px;border-radius:12px;font:inherit;font-weight:800;font-size:13px;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16)}
+.btn-primary{background:linear-gradient(135deg,#2563eb,#0d9488);border:none;box-shadow:0 8px 24px rgba(37,99,235,.35)}
+.hero{padding:22px 24px;border-radius:22px;background:linear-gradient(135deg,rgba(37,99,235,.18),rgba(13,148,136,.12));border:1px solid rgba(96,165,250,.22);margin-bottom:22px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;inset:auto -40px -60px auto;width:220px;height:220px;background:radial-gradient(circle,rgba(20,184,166,.35),transparent 70%);filter:blur(8px)}
+.hero-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;align-items:center}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr}}
+.hero h2{font-size:clamp(20px,2.5vw,28px);font-weight:900;margin-bottom:8px}
+.hero .sub{color:var(--dim);font-size:14px;line-height:1.7;max-width:620px}
+.gauge-wrap{display:flex;justify-content:center}
+.gauge{width:140px;height:140px}
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:22px}
+@media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:640px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.kpi::before{content:'';position:absolute;inset:0 auto 0 0;width:4px;background:var(--accent,linear-gradient(180deg,#2563eb,#14b8a6))}
+.kpi .label{font-size:11px;font-weight:800;color:var(--dim);margin-bottom:8px}
+.kpi .value{font-size:clamp(22px,2.2vw,30px);font-weight:900;font-family:Inter,sans-serif;line-height:1}
+.kpi .foot{font-size:11px;color:var(--muted);margin-top:8px;font-weight:700}
+.kpi .trend{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;margin-top:6px;padding:3px 8px;border-radius:999px}
+.trend.up{background:rgba(20,184,166,.15);color:var(--teal)}
+.trend.dn{background:rgba(239,68,68,.15);color:var(--rose)}
+.kpi canvas{margin-top:10px;width:100%!important;height:36px!important}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);position:relative}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px}
+.card-title{font-size:14px;font-weight:900;display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#14b8a6);box-shadow:0 0 10px rgba(37,99,235,.6)}
+.chart-box{position:relative;height:280px}
+.chart-box.tall{height:320px}
+.chart-box canvas{width:100%!important;height:100%!important}
+.heatmap{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px}
+.heat-cell{aspect-ratio:1;border-radius:8px;display:grid;place-items:center;font-size:10px;font-weight:800;color:rgba(255,255,255,.85)}
+.legend{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:11px;color:var(--dim);font-weight:700}
+.legend-bar{flex:1;height:8px;border-radius:999px;background:linear-gradient(90deg,#0f172a,#2563eb,#14b8a6,#f59e0b)}
+footer{margin-top:24px;text-align:center;color:var(--muted);font-size:12px;font-weight:600}
+#captureTarget{background:transparent}
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+<div class="shell" id="captureTarget">
+  <header>
+    <div class="brand">
+      <div class="logo">PD</div>
+      <div>
+        <h1>PharmaDash — لوحة التحليلات المرئية</h1>
+        <p>تصور تفاعلي لأداء الصيدليات · بيانات تجريبية · جاهز للتصدير</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn" onclick="window.print()">🖨️ طباعة</button>
+      <button class="btn btn-primary" id="downloadPng">⬇️ تحميل PNG</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <h2>نظرة شاملة على الوصفات والصرف</h2>
+        <p class="sub">لوحة مرئية تجمع مؤشرات الأداء الرئيسية، اتجاهات الكتابات، توزيع الأقسام، وأعلى الأطباء والأدوية — مصممة بأسلوب PharmaDash الطبي الحديث.</p>
+      </div>
+      <div class="gauge-wrap" id="gaugeHost"></div>
+    </div>
+  </section>
+
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><div class="card-title"><span class="dot"></span> اتجاه الكتابات الشهري</div></div>
+      <div class="chart-box tall"><canvas id="trendChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title"><span class="dot"></span> حالة الوصفات</div></div>
+      <div class="chart-box"><canvas id="statusChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><div class="card-title"><span class="dot"></span> أعلى 10 أطباء</div></div>
+      <div class="chart-box tall"><canvas id="doctorsChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title"><span class="dot"></span> أعلى 10 أدوية</div></div>
+      <div class="chart-box tall"><canvas id="drugsChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><div class="card-title"><span class="dot"></span> توزيع الأقسام</div></div>
+      <div class="chart-box"><canvas id="sectionsChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title"><span class="dot"></span> خريطة حرارية — نشاط الأسبوع</div></div>
+      <div id="heatmapHost"></div>
+      <div class="legend"><span>منخفض</span><div class="legend-bar"></div><span>مرتفع</span></div>
+    </div>
+  </div>
+
+  <footer>PharmaDash Canvas Visualization · تم الإنشاء {{DATE}} · ملف HTML مستقل قابل للتحميل والمشاركة</footer>
+</div>
+
+<script>
+const DATA = {
+  kpis: [
+    { label: 'إجمالي الكتابات', value: 48290, foot: 'كل الفروع', trend: 12.4, accent: '#2563eb', spark: [3200,3450,3100,3800,4100,3950,4200,4450] },
+    { label: 'عدد الأطباء', value: 1247, foot: 'أطباء نشطون', trend: 3.2, accent: '#14b8a6', spark: [980,1010,1050,1080,1120,1180,1210,1247] },
+    { label: 'الأدوية الفريدة', value: 3891, foot: 'صنف مختلف', trend: null, accent: '#a78bfa', spark: null },
+    { label: 'الأقسام', value: 42, foot: 'تخصص طبي', trend: null, accent: '#38bdf8', spark: null },
+    { label: 'المرضى', value: 28450, foot: 'مريض فريد', trend: 8.7, accent: '#f59e0b', spark: [21000,22500,23800,25100,26200,27100,27800,28450] },
+    { label: 'متوسط/طبيب', value: 39, foot: 'الأعلى: د. أحمد حسن', trend: -1.2, accent: '#ef4444', spark: null }
+  ],
+  dispenseRate: 87.3,
+  months: ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
+  prescriptions: [3200,3450,3100,3800,4100,3950,4200,4450,4300,4600,4750,4829],
+  status: { closed: 42180, new: 3840, canceled: 2270 },
+  doctors: [
+    ['د. أحمد حسن', 1840],['د. سارة محمود', 1620],['د. خالد العمري', 1490],
+    ['د. نورة السعيد', 1380],['د. عمر الفهد', 1290],['د. ليلى الزهراني', 1180],
+    ['د. يوسف القحطاني', 1090],['د. هدى الشمري', 980],['د. فهد الدوسري', 920],['د. ريم الحربي', 870]
+  ],
+  drugs: [
+    ['أموكسيسيلين', 4200],['باراسيتامول', 3980],['أوميبرازول', 3650],['ميتفورمين', 3420],
+    ['أتورفاستاتين', 3180],['سيتريزين', 2950],['أملوديبين', 2780],['إيبوبروفين', 2610],
+    ['لوسارتان', 2440],['فيتامين د', 2290]
+  ],
+  sections: [
+    ['باطنية', 28],['أطفال', 18],['قلب', 14],['جلدية', 11],
+    ['عظام', 9],['نساء', 8],['أنف وأذن', 6],['أخرى', 6]
+  ],
+  heatmap: [
+    [42,55,61,48,72,38,29],[58,64,70,52,68,44,31],[49,73,81,66,59,47,35],
+    [62,78,85,74,63,51,40],[71,82,90,79,68,55,42],[45,52,58,49,61,36,28],[38,44,50,41,53,32,24]
+  ]
+};
+
+document.querySelector('footer').innerHTML = document.querySelector('footer').innerHTML.replace('{{DATE}}', new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'}));
+
+function fmt(n){return Number(n).toLocaleString('ar-EG');}
+
+function gaugeSVG(pct){
+  const r=54,c=2*Math.PI*r,off=c*(1-pct/100);
+  return `<svg class="gauge" viewBox="0 0 140 140"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2563eb"/><stop offset="100%" stop-color="#14b8a6"/></linearGradient></defs><circle cx="70" cy="70" r="${r}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="12"/><circle cx="70" cy="70" r="${r}" fill="none" stroke="url(#g)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 70 70)"/><text x="70" y="66" text-anchor="middle" fill="#f0f4ff" font-size="26" font-weight="900" font-family="Inter">${pct}%</text><text x="70" y="88" text-anchor="middle" fill="#9aa7c4" font-size="11" font-weight="700" font-family="IBM Plex Sans Arabic">معدل الصرف</text></svg>`;
+}
+document.getElementById('gaugeHost').innerHTML = gaugeSVG(DATA.dispenseRate);
+
+function drawSpark(canvas, pts, color){
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width = canvas.offsetWidth * 2;
+  const H = canvas.height = 72;
+  ctx.scale(2,1);
+  const min = Math.min(...pts), max = Math.max(...pts), range = max-min||1;
+  const mapped = pts.map((v,i)=>({x:(i/(pts.length-1))*(W/2), y:H-((v-min)/range)*(H-14)-7}));
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,color+'66'); g.addColorStop(1,color+'08');
+  ctx.beginPath(); ctx.moveTo(mapped[0].x,H);
+  mapped.forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.lineTo(mapped[mapped.length-1].x,H); ctx.closePath();
+  ctx.fillStyle=g; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(mapped[0].x,mapped[0].y);
+  mapped.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.strokeStyle=color; ctx.lineWidth=2; ctx.stroke();
+}
+
+document.getElementById('kpiGrid').innerHTML = DATA.kpis.map((k,i)=>{
+  const trend = k.trend===null ? '' : `<div class="trend ${k.trend>=0?'up':'dn'}">${k.trend>=0?'↑':'↓'} ${Math.abs(k.trend)}%</div>`;
+  const spark = k.spark ? `<canvas id="spark${i}"></canvas>` : '';
+  return `<div class="kpi" style="--accent:${k.accent}"><div class="label">${k.label}</div><div class="value">${fmt(k.value)}</div>${trend}<div class="foot">${k.foot}</div>${spark}</div>`;
+}).join('');
+DATA.kpis.forEach((k,i)=>{ if(k.spark){ const c=document.getElementById('spark'+i); if(c) drawSpark(c,k.spark,k.accent); }});
+
+Chart.defaults.color = '#9aa7c4';
+Chart.defaults.borderColor = 'rgba(255,255,255,.06)';
+Chart.defaults.font.family = "'IBM Plex Sans Arabic','Inter',sans-serif";
+
+const gridColor = 'rgba(255,255,255,.06)';
+
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: DATA.months,
+    datasets: [{
+      label: 'الكتابات',
+      data: DATA.prescriptions,
+      borderColor: '#60a5fa',
+      backgroundColor: ctx => {
+        const g = ctx.chart.ctx.createLinearGradient(0,0,0,280);
+        g.addColorStop(0,'rgba(37,99,235,.35)'); g.addColorStop(1,'rgba(37,99,235,0)');
+        return g;
+      },
+      fill: true, tension: .42, pointRadius: 3, pointBackgroundColor: '#60a5fa', borderWidth: 3
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: gridColor } },
+      y: { grid: { color: gridColor }, ticks: { callback: v => fmt(v) } }
+    }
+  }
+});
+
+new Chart(document.getElementById('statusChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['مُغلقة (صُرفت)','جديدة','ملغاة'],
+    datasets: [{
+      data: [DATA.status.closed, DATA.status.new, DATA.status.canceled],
+      backgroundColor: ['#14b8a6','#38bdf8','#ef4444'],
+      borderWidth: 0, hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '68%',
+    plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true } } }
+  }
+});
+
+function horizBar(id, rows, colors){
+  new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: {
+      labels: rows.map(r=>r[0]),
+      datasets: [{ data: rows.map(r=>r[1]), backgroundColor: colors, borderRadius: 8, borderSkipped: false }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: gridColor }, ticks: { callback: v => fmt(v) } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+}
+const docColors = DATA.doctors.map((_,i)=>`hsla(${210+i*8},85%,${58-i*2}%,.85)`);
+const drugColors = DATA.drugs.map((_,i)=>`hsla(${165+i*6},70%,${48+i*1.5}%,.85)`);
+horizBar('doctorsChart', DATA.doctors, docColors);
+horizBar('drugsChart', DATA.drugs, drugColors);
+
+new Chart(document.getElementById('sectionsChart'), {
+  type: 'polarArea',
+  data: {
+    labels: DATA.sections.map(s=>s[0]),
+    datasets: [{
+      data: DATA.sections.map(s=>s[1]),
+      backgroundColor: ['#2563eb99','#14b8a699','#a78bfa99','#38bdf899','#f59e0b99','#ef444499','#22d3ee99','#94a3b899']
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+});
+
+(function renderHeatmap(){
+  const days = ['السبت','الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
+  const max = Math.max(...DATA.heatmap.flat());
+  const host = document.getElementById('heatmapHost');
+  let html = '<div class="heatmap">';
+  DATA.heatmap.forEach((row,ri)=>{
+    row.forEach((v,ci)=>{
+      const t = v/max;
+      const bg = `rgba(${Math.round(37+t*180)},${Math.round(99+t*85)},${Math.round(235-t*120)},${.25+t*.65})`;
+      html += `<div class="heat-cell" style="background:${bg}" title="${days[ci]} — ${fmt(v)}">${v}</div>`;
+    });
+  });
+  html += '</div>';
+  host.innerHTML = html;
+})();
+
+/* Animated particle background */
+(function(){
+  const c = document.getElementById('bgCanvas');
+  const ctx = c.getContext('2d');
+  let W,H,pts;
+  function resize(){ W=c.width=innerWidth; H=c.height=innerHeight; pts=Array.from({length:55},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:1+Math.random()*2})); }
+  resize(); addEventListener('resize',resize);
+  function frame(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0||p.x>W) p.vx*=-1;
+      if(p.y<0||p.y>H) p.vy*=-1;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(96,165,250,.55)'; ctx.fill();
+    });
+    for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++){
+      const a=pts[i],b=pts[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy);
+      if(d<140){ ctx.strokeStyle=`rgba(20,184,166,${.18*(1-d/140)})`; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
+    }
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+/* Download as PNG */
+document.getElementById('downloadPng').addEventListener('click', async () => {
+  const btn = document.getElementById('downloadPng');
+  btn.textContent = '⏳ جاري التصدير...';
+  try {
+    const { default: html2canvas } = await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm');
+    const canvas = await html2canvas(document.getElementById('captureTarget'), {
+      backgroundColor: '#070a12', scale: 2, useCORS: true, logging: false
+    });
+    const a = document.createElement('a');
+    a.download = 'pharmadash-dashboard-visualization.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  } catch(e) {
+    alert('تعذر التصدير تلقائياً — استخدم طباعة → حفظ PDF أو افتح الملف في المتصفح.');
+  }
+  btn.textContent = '⬇️ تحميل PNG';
+});
+</script>
+</body>
+</html>
