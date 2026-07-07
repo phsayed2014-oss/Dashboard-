@@ -334,27 +334,38 @@
       const buf=await file.arrayBuffer();
       const pdf=await pdfjsLib.getDocument({data:buf}).promise;
       const pageResults=[];
+      const allLines=[];
       for(let p=1;p<=pdf.numPages;p++){
         const page=await pdf.getPage(p);
         const pageData=await extractPageData(page);
+        allLines.push(...pageData.lines);
         const rows=parseRowsFromPage(pageData.lines,pageData.flatText);
         const scored=rowsToMetrics(rows);
-        pageResults.push({pageNo:p,...scored});
+        pageResults.push({pageNo:p,rows,...scored});
       }
-      pageResults.sort((a,b)=>(b.matched-a.matched)||(b.totalValue-a.totalValue));
-      const best=pageResults[0]||{pageNo:null,metrics:initBranchMetrics(),matched:0,totalValue:0,warnings:['لم يتم العثور على بيانات في الملف']};
-      const pref=pageResults.find(x=>x.pageNo===preferredPage);
-      let chosen=best;
+      let mergedRows=mergeRows(pageResults.flatMap(x=>x.rows||[]));
+      let scored=rowsToMetrics(mergedRows);
       const warnings=[];
-      if(pref && pref.matched>0){
-        chosen=pref;
-      }else{
-        if(!pref) warnings.push(`الصفحة ${preferredPage} غير موجودة (عدد الصفحات ${pdf.numPages})`);
-        else warnings.push(`الصفحة ${preferredPage} لا تحتوي منتجات مطابقة`);
-        if(best.pageNo) warnings.push(`تم استخدام الصفحة ${best.pageNo} تلقائياً`);
+      const pref=pageResults.find(x=>x.pageNo===preferredPage);
+      const best=pageResults.slice().sort((a,b)=>(b.matched-a.matched)||(b.totalValue-a.totalValue))[0];
+      if(scored.matched===0){
+        const fb=parsePrescriptionProductRows(allLines);
+        if(fb.length){
+          mergedRows=mergeRows(mergedRows.concat(fb));
+          scored=rowsToMetrics(mergedRows);
+          warnings.push('تم التحليل كملف كتابات (Medication Orders) — عدد الوصفات لكل منتج');
+        }
       }
-      if(chosen.matched===0) warnings.push('لم يتم العثور على منتجات مستهدفة في هذا الملف');
-      return {metrics:chosen.metrics,matched:chosen.matched,totalValue:chosen.totalValue,usedPage:chosen.pageNo,warnings};
+      if(pref && pref.matched>0 && pref.pageNo!==best?.pageNo){
+        /* preferred page ok */
+      }else if(pref && pref.matched===0 && best?.pageNo && best.pageNo!==preferredPage){
+        warnings.push(`الصفحة ${preferredPage} لا تحتوي منتجات مطابقة — تم دمج كل الصفحات (أفضل صفحة: ${best.pageNo})`);
+      }else if(!pref){
+        warnings.push(`الصفحة ${preferredPage} غير موجودة (عدد الصفحات ${pdf.numPages})`);
+      }
+      if(scored.matched===0) warnings.push('لم يتم العثور على منتجات مستهدفة في هذا الملف');
+      const usedPage=best?.pageNo||pref?.pageNo||null;
+      return {metrics:scored.metrics,matched:scored.matched,totalValue:scored.totalValue,usedPage,warnings};
     }
 
     async function extractPageData(page){
@@ -436,6 +447,33 @@
       cands.sort((a,b)=>(b.score-a.score)||(b.start-a.start));
       return cands[0].vals.slice(0,count);
     }
+    function extractInlineMetrics(preRaw,postRaw){
+      const preLat=toLatinDigits(preRaw);
+      const nameStart=preLat.search(/[A-Za-z]/);
+      const numPart=nameStart>0?preLat.slice(0,nameStart).trim():preLat.replace(/^(?:[\d,]+(?:\.\d+)?\s+)+/,'');
+      const preNums=(numPart.match(/[\d,]+(?:\.\d+)?/g)||[]);
+      const postNums=(toLatinDigits(postRaw).match(/[\d,]+(?:\.\d+)?/g)||[]);
+      let qty=0,val=0;
+      if(preNums.length){
+        const dec=preNums.find(x=>/[.,]/.test(x));
+        if(dec) val=num(dec);
+        const ints=preNums.filter(x=>/^\d+$/.test(x)).map(num).filter(x=>x>=0&&x<10000);
+        if(ints.length) qty=ints[ints.length-1];
+        if(!val && preNums.length) val=num(preNums[0]);
+      }
+      if(!qty||!val){
+        const ok=postNums.map(num).filter(x=>x>0&&x<100000);
+        if(!qty){
+          const pi=ok.filter(x=>x<10000&&Math.floor(x)===x);
+          if(pi.length) qty=pi[pi.length-1];
+        }
+        if(!val){
+          const pv=ok.find(x=>x!==Math.floor(x)||x>=10);
+          if(pv) val=pv;
+        }
+      }
+      return {qty,val};
+    }
     function parseInlineRows(lines){
       const codeRe=/([0-9٠-٩]\s*[-‐‑‒–—−]\s*[0-9٠-٩]{2}\s*[-‐‑‒–—−]\s*[0-9٠-٩]{3}\s*[-‐‑‒–—−]\s*[0-9٠-٩]{3})/;
       const out={};
@@ -446,21 +484,13 @@
         const code=normalizeCode(m[1]);
         if(!isDrugCode(code)) return;
         const idx=line.indexOf(m[0]);
-        const pre=toLatinDigits(line.slice(0,idx).trim()).replace(/^(?:[\d,]+(?:\.\d+)?\s+)+/,'').trim();
-        const post=toLatinDigits(line.slice(idx+m[0].length).trim());
-        const name=(pre.match(/[A-Za-z].*$/)||['—'])[0].trim();
-        const nums=post.match(/[\d,]+(?:\.\d+)?/g)||[];
-        let qty=0,qtyIdx=-1,val=0;
-        for(let i=0;i<nums.length;i++){ if(/^\d+$/.test(nums[i])){ qty=num(nums[i]); qtyIdx=i; break; } }
-        if(!qty && nums.length){ qty=num(nums[0]); qtyIdx=0; }
-        for(let i=0;i<nums.length;i++){
-          if(i===qtyIdx) continue;
-          if(/[.,]/.test(nums[i]) && num(nums[i])>0){ val=num(nums[i]); break; }
-        }
-        if(!val){
-          for(let i=Math.max(0,qtyIdx+1);i<nums.length;i++){ const v=num(nums[i]); if(v>0){ val=v; break; } }
-        }
+        const preRaw=line.slice(0,idx).trim();
+        const postRaw=line.slice(idx+m[0].length).trim();
+        const preLat=toLatinDigits(preRaw).replace(/^(?:[\d,]+(?:\.\d+)?\s+)+/,'').trim();
+        const name=(preLat.match(/[A-Za-z].*$/)||['—'])[0].trim();
+        const {qty,val}=extractInlineMetrics(preRaw,postRaw);
         if(!out[code]) out[code]={code,name,qtySold:0,saleValue:0};
+        if(name && out[code].name==='—') out[code].name=name;
         out[code].qtySold+=qty; out[code].saleValue+=val;
       });
       return Object.values(out);
@@ -474,19 +504,40 @@
         const re=new RegExp(`${a}\\s*-\\s*${b}\\s*-\\s*${c}\\s*-\\s*${d}`,'g');
         let m,best=null;
         while((m=re.exec(text))){
-          const after=text.slice(m.index+m[0].length,m.index+m[0].length+240);
-          const nums=(after.match(/[\d,]+(?:\.\d+)?/g)||[]);
-          let qty=0,qtyIdx=-1,val=0;
-          for(let i=0;i<nums.length;i++){ if(/^\d+$/.test(nums[i])){ qty=num(nums[i]); qtyIdx=i; break; } }
-          for(let i=0;i<nums.length;i++){
-            if(i===qtyIdx) continue;
-            const v=num(nums[i]);
-            if((/[.,]/.test(nums[i]) || v>=20) && v>0){ val=v; break; }
-          }
+          const before=text.slice(Math.max(0,m.index-180),m.index);
+          const after=text.slice(m.index+m[0].length,m.index+m[0].length+180);
+          const nums=[...(before.match(/[\d,]+(?:\.\d+)?/g)||[]),...(after.match(/[\d,]+(?:\.\d+)?/g)||[])];
+          let qty=0,val=0;
+          const dec=nums.find(x=>/[.,]/.test(x));
+          if(dec) val=num(dec);
+          const ints=nums.filter(x=>/^\d+$/.test(x)).map(num).filter(x=>x>=0&&x<10000);
+          if(ints.length) qty=ints[ints.length-1];
           const score=(qty>0?1:0)+(val>0?2:0);
           if(!best || score>best.score) best={qty,val,score};
         }
         if(best && (best.qty>0||best.val>0)) rows.push({code:p.code,name:p.name,qtySold:best.qty,saleValue:best.val});
+      });
+      return rows;
+    }
+    function parsePrescriptionProductRows(lines){
+      const rows=[];
+      lines.forEach(raw=>{
+        const line=String(raw||'').replace(/\s+/g,' ').trim();
+        if(!line || line.length<8) return;
+        const nline=norm(line);
+        if(/PATIENT NO|MEDICATION ORDERS|DOCTOR NAME|SECTION NAME|FROM DATE|TO DATE|PRINTING DATE|PAGE \d+ OF/i.test(nline)) return;
+        for(const p of PRODUCTS){
+          const aliases=(p.aliases||[]).concat([p.name]).map(norm).filter(Boolean);
+          const hit=aliases.some(a=>{
+            if(!a || a.length<3) return false;
+            if(p.id==='ph-centrozon') return nline.includes('CENTROZON') && !nline.includes('WOMEN') && !nline.includes('CENTROZON W');
+            if(p.id==='ph-centrozonw') return nline.includes('CENTROZON') && (nline.includes('WOMEN')||nline.includes('CENTROZON W'));
+            return nline.includes(a);
+          });
+          if(!hit) continue;
+          rows.push({code:p.code||'',name:p.name,qtySold:1,saleValue:0});
+          break;
+        }
       });
       return rows;
     }

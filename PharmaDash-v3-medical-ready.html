@@ -9858,6 +9858,7 @@ function ssTrackedProducts(){
       id:'pl:'+p.key,
       group:'Private Label',
       short:p.name,
+      key:p.key,
       name:p.name,
       code:plCodes[p.key]||'',
       tokens:[p.name,p.key,p.form]
@@ -9869,6 +9870,7 @@ function ssTrackedProducts(){
         id:'ph:'+p.key,
         group:'PureHerb',
         short:p.key,
+        key:p.key,
         name:p.name,
         code:p.code||'',
         tokens:[p.key,p.name]
@@ -10048,6 +10050,33 @@ function ssPickValueLines(lines,start,count){
   }
   return Array(count).fill(0);
 }
+function ssExtractInlineMetrics(preRaw,postRaw){
+  var preLat=ssToLatinDigits(preRaw);
+  var nameStart=preLat.search(/[A-Za-z]/);
+  var numPart=nameStart>0?preLat.slice(0,nameStart).trim():preLat.replace(/^(?:[\d,]+(?:\.\d+)?\s+)+/,'');
+  var preNums=(numPart.match(/[\d,]+(?:\.\d+)?/g)||[]);
+  var postNums=(ssToLatinDigits(postRaw).match(/[\d,]+(?:\.\d+)?/g)||[]);
+  var qty=0,value=0;
+  if(preNums.length){
+    var dec=preNums.find(function(x){ return /[.,]/.test(x); });
+    if(dec) value=ssNum(dec);
+    var ints=preNums.filter(function(x){ return /^\d+$/.test(x); }).map(ssNum).filter(function(x){ return x>=0&&x<10000; });
+    if(ints.length) qty=ints[ints.length-1];
+    if(!value && preNums.length) value=ssNum(preNums[0]);
+  }
+  if(!qty||!value){
+    var ok=postNums.map(ssNum).filter(function(x){ return x>0&&x<100000; });
+    if(!qty){
+      var pi=ok.filter(function(x){ return x<10000&&Math.floor(x)===x; });
+      if(pi.length) qty=pi[pi.length-1];
+    }
+    if(!value){
+      var pv=ok.find(function(x){ return x!==Math.floor(x)||x>=10; });
+      if(pv) value=pv;
+    }
+  }
+  return {qty:qty,value:value};
+}
 function ssParseInlineCodeRows(lines){
   var codeRe=/([0-9٠-٩]\s*[-‐‑‒–—−]\s*[0-9٠-٩]{2}\s*[-‐‑‒–—−]\s*[0-9٠-٩]{3}\s*[-‐‑‒–—−]\s*[0-9٠-٩]{3})/;
   var outMap={};
@@ -10060,36 +10089,89 @@ function ssParseInlineCodeRows(lines){
     if(!ssIsDrugCode(code)) return;
     var idx=line.indexOf(m[0]);
     if(idx<0) return;
-    var pre=line.slice(0,idx).trim();
-    var post=line.slice(idx+m[0].length).trim();
-    var preLat=ssToLatinDigits(pre).replace(/\s+/g,' ');
-    preLat=preLat.replace(/^(?:[\d,]+(?:\.\d+)?\s+)+/,'').trim();
+    var preRaw=line.slice(0,idx).trim();
+    var postRaw=line.slice(idx+m[0].length).trim();
+    var preLat=ssToLatinDigits(preRaw).replace(/^(?:[\d,]+(?:\.\d+)?\s+)+/,'').trim();
     var nameMatch=preLat.match(/[A-Za-z].*$/);
     var name=nameMatch?nameMatch[0].trim():'';
-    var rawNums=(ssToLatinDigits(post).match(/[\d,]+(?:\.\d+)?/g)||[]);
-    var qty=0,qtyIdx=-1,value=0;
-    for(var i=0;i<rawNums.length;i++){
-      if(/^\d+$/.test(rawNums[i])){ qty=ssNum(rawNums[i]); qtyIdx=i; break; }
-    }
-    if(!qty && rawNums.length){ qty=ssNum(rawNums[0]); qtyIdx=0; }
-    for(var j=0;j<rawNums.length;j++){
-      if(j===qtyIdx) continue;
-      if(/[.,]/.test(rawNums[j]) && ssNum(rawNums[j])>0){ value=ssNum(rawNums[j]); break; }
-    }
-    if(!value){
-      for(var k=Math.max(0,qtyIdx+1);k<rawNums.length;k++){
-        var v=ssNum(rawNums[k]); if(v>0){ value=v; break; }
-      }
-    }
+    var metrics=ssExtractInlineMetrics(preRaw,postRaw);
     if(!outMap[code]) outMap[code]={code:code,name:name||'—',qtySold:0,saleValue:0};
     if(name && outMap[code].name==='—') outMap[code].name=name;
-    outMap[code].qtySold += ssNum(qty);
-    outMap[code].saleValue += ssNum(value);
+    outMap[code].qtySold += ssNum(metrics.qty);
+    outMap[code].saleValue += ssNum(metrics.value);
   });
   return Object.values(outMap);
 }
-function ssParseSupplierPageText(text){
+function ssParseWindowRows(flatText){
+  var text=ssNorm(flatText).replace(/\s+/g,' ');
+  var rows=[];
+  var products=ssTrackedProducts();
+  products.forEach(function(p){
+    if(!p.code) return;
+    var parts=p.code.split('-');
+    var re=new RegExp(parts[0]+'\\s*-\\s*'+parts[1]+'\\s*-\\s*'+parts[2]+'\\s*-\\s*'+parts[3],'g');
+    var m,best=null;
+    while((m=re.exec(text))){
+      var before=text.slice(Math.max(0,m.index-180),m.index);
+      var after=text.slice(m.index+m[0].length,m.index+m[0].length+180);
+      var nums=(before.match(/[\d,]+(?:\.\d+)?/g)||[]).concat(after.match(/[\d,]+(?:\.\d+)?/g)||[]);
+      var qty=0,value=0;
+      var dec=nums.find(function(x){ return /[.,]/.test(x); });
+      if(dec) value=ssNum(dec);
+      var ints=nums.filter(function(x){ return /^\d+$/.test(x); }).map(ssNum).filter(function(x){ return x>=0&&x<10000; });
+      if(ints.length) qty=ints[ints.length-1];
+      var score=(qty>0?1:0)+(value>0?2:0);
+      if(!best || score>best.score) best={qty:qty,value:value,score:score};
+    }
+    if(best && (best.qty>0||best.value>0)) rows.push({code:p.code,name:p.name||p.short,qtySold:best.qty,saleValue:best.value});
+  });
+  return rows;
+}
+function ssParsePrescriptionProductRows(lines,products){
+  var rows=[];
+  lines.forEach(function(rawLine){
+    var line=String(rawLine||'').replace(/\s+/g,' ').trim();
+    if(!line || line.length<8) return;
+    var nline=ssNorm(line);
+    if(/PATIENT NO|MEDICATION ORDERS|DOCTOR NAME|SECTION NAME|FROM DATE|TO DATE|PRINTING DATE|PAGE \d+ OF/i.test(nline)) return;
+    for(var i=0;i<products.length;i++){
+      var p=products[i];
+      var tokens=(p.tokens||[]).concat([p.short,p.name]).filter(Boolean);
+      var hit=false;
+      for(var t=0;t<tokens.length;t++){
+        var tn=ssNorm(tokens[t]);
+        if(!tn || tn.length<3) continue;
+        if(p.key==='CENTROZON' || p.short==='CENTROZON'){
+          hit=nline.indexOf('CENTROZON')>-1 && nline.indexOf('WOMEN')<0 && nline.indexOf('CENTROZON W')<0;
+        }else if(p.key==='CENTROZON W' || p.short==='CENTROZON W'){
+          hit=nline.indexOf('CENTROZON')>-1 && (nline.indexOf('WOMEN')>-1 || nline.indexOf('CENTROZON W')>-1);
+        }else{
+          hit=nline.indexOf(tn)>-1;
+        }
+        if(hit) break;
+      }
+      if(!hit) continue;
+      rows.push({code:p.code||'',name:p.name||p.short,qtySold:1,saleValue:0});
+      break;
+    }
+  });
+  return rows;
+}
+function ssMergeSupplierRows(rows){
+  var map={};
+  (rows||[]).forEach(function(r){
+    var k=ssNormalizeCode(r.code)||ssNorm(r.name);
+    if(!k) return;
+    if(!map[k]) map[k]={code:ssNormalizeCode(r.code)||'',name:r.name||'—',qtySold:0,saleValue:0};
+    map[k].qtySold += ssNum(r.qtySold);
+    map[k].saleValue += ssNum(r.saleValue);
+  });
+  return Object.values(map);
+}
+function ssParseSupplierPageText(text,flatText){
   var lines=String(text||'').split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean);
+  var flat=flatText||lines.join(' ');
+  var rows=[];
   var block=ssLongestCodeBlock(lines);
   if(block.start>=0 && block.len){
     var codes=lines.slice(block.start,block.start+block.len).map(ssNormalizeCode);
@@ -10097,12 +10179,13 @@ function ssParseSupplierPageText(text){
     var qtyBlock=ssPickQtyLines(lines,block.start+block.len,codes.length);
     var qty=qtyBlock.values||Array(codes.length).fill(0);
     var val=ssPickValueLines(lines,qtyBlock.end||block.start+block.len,codes.length);
-    var rows=codes.map(function(code,i){
-      return {code:code,name:names[i]||'—',qtySold:ssNum(qty[i]),saleValue:ssNum(val[i])};
+    codes.forEach(function(code,i){
+      rows.push({code:code,name:names[i]||'—',qtySold:ssNum(qty[i]),saleValue:ssNum(val[i])});
     });
-    if(rows.length) return rows;
   }
-  return ssParseInlineCodeRows(lines);
+  ssParseInlineCodeRows(lines).forEach(function(r){ rows.push(r); });
+  ssParseWindowRows(flat).forEach(function(r){ rows.push(r); });
+  return ssMergeSupplierRows(rows);
 }
 function ssFindProductForRow(row,products){
   if(row.code){
@@ -10127,19 +10210,23 @@ async function ssExtractPageText(pdf,pageNo){
   var page=await pdf.getPage(pageNo);
   var c=await page.getTextContent();
   var lineMap={};
+  var allItems=[];
   c.items.forEach(function(it){
     var str=(it.str||'').trim();
     if(!str) return;
     var y=Math.round((it.transform&&it.transform[5]?it.transform[5]:0)/2)*2;
+    var x=it.transform&&it.transform[4]?it.transform[4]:0;
     if(!lineMap[y]) lineMap[y]=[];
-    lineMap[y].push({x:it.transform&&it.transform[4]?it.transform[4]:0,s:str});
+    lineMap[y].push({x:x,s:str});
+    allItems.push({x:x,y:y,s:str});
   });
   var lines=[];
   Object.keys(lineMap).map(Number).sort(function(a,b){ return b-a; }).forEach(function(y){
     var text=lineMap[y].sort(function(a,b){ return a.x-b.x; }).map(function(w){ return w.s; }).join(' ').replace(/\s+/g,' ').trim();
     if(text) lines.push(text);
   });
-  return {text:lines.join('\n'),lines:lines};
+  var flatText=allItems.sort(function(a,b){ return b.y-a.y||a.x-b.x; }).map(function(w){ return w.s; }).join(' ').replace(/\s+/g,' ').trim();
+  return {text:lines.join('\n'),lines:lines,flatText:flatText};
 }
 async function ssExtractSupplierRowsFromFile(file,pageNo,products){
   if(!window.pdfjsLib) window.pdfjsLib=window['pdfjs-dist/build/pdf'];
@@ -10147,9 +10234,11 @@ async function ssExtractSupplierRowsFromFile(file,pageNo,products){
   var buf=await file.arrayBuffer();
   var pdf=await pdfjsLib.getDocument({data:buf}).promise;
   var parsedPages=[];
+  var allLines=[];
   for(var p=1;p<=pdf.numPages;p++){
     var pageTxt=await ssExtractPageText(pdf,p);
-    var rows=ssParseSupplierPageText(pageTxt.text);
+    allLines=allLines.concat(pageTxt.lines||[]);
+    var rows=ssParseSupplierPageText(pageTxt.text,pageTxt.flatText);
     if(!rows.length) continue;
     var matched=0;
     rows.forEach(function(r){ if(ssFindProductForRow(r,products)) matched++; });
@@ -10161,38 +10250,47 @@ async function ssExtractSupplierRowsFromFile(file,pageNo,products){
     });
   }
 
-  var issues=[], chosen=null;
+  var issues=[], chosenRows=[];
   var preferredValid=pageNo && pageNo>=1 && pageNo<=pdf.numPages;
-  var preferred=preferredValid?parsedPages.find(function(x){ return x.pageNo===pageNo; }):null;
+  var preferred=parsedPages.find(function(x){ return x.pageNo===pageNo; })||null;
   var best=parsedPages.slice().sort(function(a,b){
     if(b.matched!==a.matched) return b.matched-a.matched;
     return b.rows.length-a.rows.length;
   })[0]||null;
 
-  if(preferred && preferred.matched>0){
-    chosen=preferred;
-  }else if(best){
-    chosen=best;
-    if(!preferredValid){
-      issues.push('الصفحة '+pageNo+' غير موجودة (عدد صفحات الملف: '+pdf.numPages+') — تم التحليل تلقائياً من صفحة '+chosen.pageNo);
-    }else if(!preferred){
-      issues.push('لا يوجد جدول واضح في الصفحة '+pageNo+' — تم التحليل تلقائياً من صفحة '+chosen.pageNo);
-    }else if(preferred.matched===0 && chosen.pageNo!==pageNo){
-      issues.push('لم يتم العثور على منتجات مستهدفة في الصفحة '+pageNo+' — تم التحليل تلقائياً من صفحة '+chosen.pageNo);
+  parsedPages.forEach(function(pg){ (pg.rows||[]).forEach(function(r){ chosenRows.push(r); }); });
+  chosenRows=ssMergeSupplierRows(chosenRows);
+  var matchedTotal=0;
+  chosenRows.forEach(function(r){ if(ssFindProductForRow(r,products)) matchedTotal++; });
+
+  if(matchedTotal===0){
+    var fbRows=ssParsePrescriptionProductRows(allLines,products);
+    if(fbRows.length){
+      chosenRows=ssMergeSupplierRows(chosenRows.concat(fbRows));
+      matchedTotal=0;
+      chosenRows.forEach(function(r){ if(ssFindProductForRow(r,products)) matchedTotal++; });
+      issues.push('تم التحليل كملف كتابات (Medication Orders) — عدد الوصفات لكل منتج');
     }
-  }else{
+  }
+
+  if(!parsedPages.length && matchedTotal===0){
     if(!preferredValid) issues.push('الصفحة '+pageNo+' غير موجودة (عدد صفحات الملف: '+pdf.numPages+')');
     issues.push('لم يتم العثور على جدول منتجات واضح في الملف');
+  }else if(preferred && preferred.matched===0 && best && best.pageNo!==pageNo){
+    issues.push('لم يتم العثور على منتجات مستهدفة في الصفحة '+pageNo+' — تم دمج كل الصفحات (أفضل صفحة: '+best.pageNo+')');
+  }else if(!preferredValid){
+    issues.push('الصفحة '+pageNo+' غير موجودة (عدد صفحات الملف: '+pdf.numPages+') — تم دمج كل الصفحات');
   }
-  if(chosen && chosen.matched===0){
+
+  if(matchedTotal===0 && !issues.some(function(x){ return x.indexOf('Medication Orders')>-1; })){
     issues.push('تم العثور على جدول بالملف لكن بدون تطابق واضح مع المنتجات المستهدفة');
   }
 
   return {
-    rows:chosen?chosen.rows:[],
-    reportRange:chosen?(chosen.reportRange||''):'',
+    rows:chosenRows,
+    reportRange:(best&&best.reportRange)||(preferred&&preferred.reportRange)||'',
     issues:issues,
-    usedPage:chosen?chosen.pageNo:null
+    usedPage:best?best.pageNo:(preferred?preferred.pageNo:null)
   };
 }
 async function ssImportPdf(filesByBranch,pageMap){
@@ -10501,6 +10599,17 @@ const PUREHERB_PRODUCTS = [
   {key:'BONEFRIEND',name:'BoneFriend Tablet 30Tab',code:'1-03-187-268'},
   {key:'ARGIGROW',name:'ArgiGrow Syrup 150ML',code:'1-03-186-083'}
 ];
+function phMatchDrugName(drugName,p){
+  var n=String(drugName||'').toUpperCase();
+  if(!n) return false;
+  if(p.key==='CENTROZON') return n.indexOf('CENTROZON')>-1 && n.indexOf('WOMEN')<0 && n.indexOf('CENTROZON W')<0;
+  if(p.key==='CENTROZON W') return n.indexOf('CENTROZON')>-1 && (n.indexOf('WOMEN')>-1 || n.indexOf('CENTROZON W')>-1);
+  if(p.key==='PURE OMEGA') return n.indexOf('PURE OMEGA')>-1 || n.indexOf('PURE OMEGA-3')>-1 || (n.indexOf('PURE')>-1 && n.indexOf('OMEGA')>-1);
+  if(p.code && n.indexOf(String(p.code).toUpperCase())>-1) return true;
+  if(n.indexOf(String(p.key).toUpperCase())>-1) return true;
+  if(p.name && n.indexOf(String(p.name).split(' ')[0].toUpperCase())>-1) return true;
+  return false;
+}
 
 function renderPureHerb(){
   const el = document.getElementById('pureherb-content');
@@ -10518,7 +10627,7 @@ function renderPureHerb(){
     const bd = STATE.data[b];
     if(!bd||!bd.drugs) return;
     PUREHERB_PRODUCTS.forEach(p=>{
-      const found = bd.drugs.filter(d=> d.name && (p.key==='CENTROZON' ? (d.name.toUpperCase().includes('CENTROZON') && !d.name.toUpperCase().includes('WOMEN')) : d.name.toUpperCase().includes(p.key.toUpperCase())));
+      const found = bd.drugs.filter(d=> phMatchDrugName(d.name,p));
       const cnt = found.reduce((s,x)=>s+(x.count||0),0);
       if(cnt>0){
         phData[p.key].total += cnt;
