@@ -4767,12 +4767,26 @@ function showPLShareCard(name){
     var pk = PRIVATE_LABEL[p].key;
     var c = d.perProduct[pk] || 0;
     if(!c) continue;
-    var perLine = '';
     chips += '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-radius:14px;background:' + _chipBg + ';border:1px solid ' + _chipBorder + ';margin-bottom:9px;">'
       + '<span style="font-family:\'Inter\',sans-serif;font-weight:800;font-size:24px;color:' + st.prodColors[pk] + ';min-width:36px;">' + c + '</span>'
       + '<span style="font-weight:900;font-size:18px;color:' + _chipName + ';text-align:center;flex:1;letter-spacing:.3px;">' + escapeHtml(PRIVATE_LABEL[p].name) + '</span>'
       + '<span style="width:12px;height:12px;border-radius:50%;background:' + st.prodColors[pk] + ';flex-shrink:0;"></span></div>';
   }
+  /* ── منتجات PureHerb ضمن نفس بطاقة المشاركة ── */
+  var ph = getPureHerbForDoctor(d.name);
+  var phColors = ['#7c3aed','#a855f7','#c084fc','#8b5cf6','#9333ea','#6d28d9','#a78bfa'];
+  var phChips = '';
+  for(var q=0;q<ph.items.length;q++){
+    var phc = phColors[q % phColors.length];
+    phChips += '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-radius:14px;background:' + _chipBg + ';border:1px solid ' + _chipBorder + ';margin-bottom:9px;">'
+      + '<span style="font-family:\'Inter\',sans-serif;font-weight:800;font-size:24px;color:' + phc + ';min-width:36px;">' + ph.items[q].count + '</span>'
+      + '<span style="font-weight:900;font-size:18px;color:' + _chipName + ';text-align:center;flex:1;letter-spacing:.3px;">' + escapeHtml(ph.items[q].name) + '</span>'
+      + '<span style="width:12px;height:12px;border-radius:50%;background:' + phc + ';flex-shrink:0;"></span></div>';
+  }
+  var phSection = ph.items.length
+    ? '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 10px;"><span style="height:1px;flex:1;background:' + _dashed + ';"></span><span style="font-size:11px;font-weight:800;letter-spacing:2px;color:#a855f7;font-family:\'Inter\',sans-serif;">PUREHERB</span><span style="height:1px;flex:1;background:' + _dashed + ';"></span></div>' + phChips
+    : '';
+  var grandTotal = (d.total || 0) + ph.total;
   var ov = document.createElement('div');
   ov.id = 'plShareOverlay';
   ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:' + _overlay + ';backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px;';
@@ -4784,9 +4798,10 @@ function showPLShareCard(name){
     + '<div style="font-size:20px;font-weight:900;color:' + _nameColor + ';margin-top:14px;line-height:1.5;text-align:center;">' + escapeHtml(d.name) + '</div>'
     + '<div style="font-size:12px;color:' + _secColor + ';margin-bottom:18px;text-align:center;">' + escapeHtml(d.section) + '</div>'
     + chips
+    + phSection
     + '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:14px;border-top:1px dashed ' + _dashed + ';">'
     + '<span style="font-weight:800;color:' + _totalLabel + ';font-size:13.5px;">إجمالي كتابات منتجاتنا</span>'
-    + '<span style="font-family:\'Inter\',sans-serif;font-weight:700;font-size:26px;color:#14b8a6;">' + fmt(d.total) + '</span></div>'
+    + '<span style="font-family:\'Inter\',sans-serif;font-weight:700;font-size:26px;color:#14b8a6;">' + fmt(grandTotal) + '</span></div>'
     + '<div style="text-align:center;margin-top:16px;font-size:12.5px;color:' + _thanksColor + ';">شكراً لثقتكم ودعمكم لمنتجاتنا 🌟</div>'
     + '<div style="text-align:center;margin-top:10px;font-size:9.5px;color:' + _dateColor + ';">التقرير الدوري لرئيس مجلس الادارة يوليو 2027</div>'
     + '</div>';
@@ -4795,6 +4810,32 @@ function showPLShareCard(name){
 function closePLShareCard(){
   var ov = document.getElementById('plShareOverlay');
   if(ov) ov.remove();
+}
+/* عدّ كتابات منتجات PureHerb لطبيب معيّن عبر كل الفروع المرفوعة (نفس نطاق NOSTRI) */
+function getPureHerbForDoctor(name){
+  var res = { items: [], total: 0 };
+  if(typeof PUREHERB_PRODUCTS === 'undefined') return res;
+  var counts = {};
+  PUREHERB_PRODUCTS.forEach(function(p){ counts[p.key] = 0; });
+  BRANCHES.forEach(function(b){
+    var d = STATE.data[b];
+    if(!d || !d.rows) return;
+    d.rows.forEach(function(r){
+      if(r.doctor !== name || !r.service) return;
+      var svc = r.service.toUpperCase();
+      PUREHERB_PRODUCTS.forEach(function(p){
+        var ku = p.key.toUpperCase();
+        var hit = (p.key === 'CENTROZON')
+          ? (svc.indexOf('CENTROZON') > -1 && svc.indexOf('WOMEN') === -1)
+          : (svc.indexOf(ku) > -1);
+        if(hit) counts[p.key]++;
+      });
+    });
+  });
+  PUREHERB_PRODUCTS.forEach(function(p){
+    if(counts[p.key] > 0){ res.items.push({ name: p.name, count: counts[p.key], key: p.key }); res.total += counts[p.key]; }
+  });
+  return res;
 }
 
 function renderPLDoctorsAgg(){
