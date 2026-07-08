@@ -2980,6 +2980,7 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
     <button class="btn" id="themeBtn" onclick="toggleTheme()" title="Dark / Light">☀️</button>
     <button class="btn" id="exportXlsxBtn">Excel</button>
     <button class="btn btn-success" id="shareBtn">مشاركة</button>
+    <button class="btn" onclick="clearSavedData()" title="مسح البيانات المحفوظة">مسح</button>
     <button class="btn" onclick="doLogout()" title="تسجيل الخروج" style="background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.25);color:var(--rose-l);">خروج</button>
   </div>
 </div>
@@ -3412,6 +3413,7 @@ async function handleFile(branch,file){
     await _upTick(branch,100);
     setTimeout(()=>_upHide(branch),500);
     renderAll();
+    saveData();
     toast('✓ '+BRANCH_LABELS[branch]+' — '+fmt(rows.length)+' وصفة');
   }catch(e){
     console.error(e);_upHide(branch);
@@ -7906,7 +7908,7 @@ async function handlePeriodFile(branch, label, file) {
     setTimeout(()=>_upHide(branch),500);
     renderPeriodBadges(branch);
     renderAll();
-    /* الحفظ ملغى */
+    saveData();
     toast('✓ "'+label+'" — '+BRANCH_LABELS[branch]+' ('+fmt(rows.length)+' وصفة)');
   } catch(e) {
     console.error(e);
@@ -7954,7 +7956,7 @@ function deletePeriod(branch, id) {
   if (!STATE.data[branch] && STATE.active === branch) {
     STATE.active = BRANCHES.find(b => STATE.data[b]) || null;
   }
-  /* الحفظ ملغى */
+  saveData();
   renderPeriodBadges(branch);
   // also update meta text
   const periods = STATE.periods[branch];
@@ -8857,7 +8859,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Check if already logged in this session
   if (sessionStorage.getItem('pharmdash_user')) {
     document.getElementById('loginScreen').style.display = 'none';
-    /* الاستعادة ملغاة */
+    /* استعادة البيانات تتم في معالج window.load عبر loadSavedData() */
   }
 });
 
@@ -8865,14 +8867,99 @@ document.addEventListener('DOMContentLoaded', () => {
    AUTO-SAVE TO localStorage
 ══════════════════════════════════════════ */
 /* ══════════════════════════════════════════
-   الحفظ/الاستعادة — مُلغى بناءً على طلب المستخدم
-   (كان يسبب خطأ مع الملفات الكبيرة جداً)
-   الدوال محتفظ بها كـ no-op حتى لا تنكسر أي استدعاءات
+   الحفظ/الاستعادة عبر IndexedDB
+   ── يخزّن الفترات (rows) + المتابعة اليومية للفرع النشط
+   ── IndexedDB يتحمّل الملفات الكبيرة (بلا حد 5MB الخاص بـ localStorage)
+   ── الحفظ مؤجَّل (debounced) لتفادي الكتابة المتكررة
 ══════════════════════════════════════════ */
-function saveData() { /* ملغى */ }
-function loadSavedData() { /* ملغى */ }
-function updateSavedBadge() { /* ملغى */ }
-function clearSavedData() { /* ملغى */ }
+const _IDB_NAME='pharmdash', _IDB_STORE='kv', _IDB_KEY='state';
+function _idbAvailable(){ try{ return typeof indexedDB!=='undefined' && indexedDB!==null; }catch(e){ return false; } }
+function _idbOpen(){
+  return new Promise((res,rej)=>{
+    const rq=indexedDB.open(_IDB_NAME,1);
+    rq.onupgradeneeded=()=>{ const db=rq.result; if(!db.objectStoreNames.contains(_IDB_STORE)) db.createObjectStore(_IDB_STORE); };
+    rq.onsuccess=()=>res(rq.result);
+    rq.onerror=()=>rej(rq.error);
+  });
+}
+function _idbPut(key,val){ return _idbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(_IDB_STORE,'readwrite'); tx.objectStore(_IDB_STORE).put(val,key); tx.oncomplete=()=>{db.close();res();}; tx.onerror=()=>{db.close();rej(tx.error);}; })); }
+function _idbGet(key){ return _idbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(_IDB_STORE,'readonly'); const r=tx.objectStore(_IDB_STORE).get(key); r.onsuccess=()=>{db.close();res(r.result);}; r.onerror=()=>{db.close();rej(r.error);}; })); }
+function _idbDelete(key){ return _idbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(_IDB_STORE,'readwrite'); tx.objectStore(_IDB_STORE).delete(key); tx.oncomplete=()=>{db.close();res();}; tx.onerror=()=>{db.close();rej(tx.error);}; })); }
+
+/* لقطة قابلة للتخزين: الصفوف الخام فقط (الـ aggregate يُعاد حسابه عند الاستعادة) */
+function _buildSnapshot(){
+  const snap={ v:1, active:STATE.active, periods:{}, dt:(typeof DT!=='undefined'&&DT.store)?DT.store:{} };
+  BRANCHES.forEach(b=>{
+    snap.periods[b]=(STATE.periods[b]||[]).map(p=>({ id:p.id, label:p.label, rows:p.rows, _main:!!p._main }));
+  });
+  return snap;
+}
+let _saveTimer=null;
+function saveData(){
+  if(!_idbAvailable()) return;
+  clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(()=>{
+    try{ _idbPut(_IDB_KEY,_buildSnapshot()).catch(e=>console.error('saveData',e)); }
+    catch(e){ console.error('saveData',e); }
+  },700);
+}
+/* استعادة واجهة كارت الفرع بعد تحميل الفترات */
+function _restoreBranchUI(branch){
+  const periods=STATE.periods[branch]||[];
+  const meta=document.getElementById('meta-'+branch);
+  const card=document.querySelector('.branch-card[data-branch="'+branch+'"]');
+  const btn=document.querySelector('[data-upload="'+branch+'"]');
+  if(!periods.length){ _resetBranchUI(branch); return; }
+  if(card) card.classList.add('has-data');
+  if(btn){ btn.textContent='🔄 إعادة'; btn.classList.add('reupload'); }
+  if(meta){
+    meta.className='meta status-loaded';
+    if(periods.length===1){ const total=(periods[0].rows||[]).length; meta.textContent='✓ '+fmt(total)+' وصفة · '+String(periods[0].label||'').slice(0,40); }
+    else { const total=periods.reduce((s,p)=>s+(p.rows||[]).length,0); meta.textContent='✓ '+periods.length+' فترة · '+fmt(total)+' وصفة'; }
+  }
+  if(typeof renderPeriodBadges==='function') renderPeriodBadges(branch);
+}
+function _resetBranchUI(branch){
+  const meta=document.getElementById('meta-'+branch);
+  const card=document.querySelector('.branch-card[data-branch="'+branch+'"]');
+  const btn=document.querySelector('[data-upload="'+branch+'"]');
+  if(meta){ meta.className='meta'; meta.textContent='لم يتم رفع ملف بعد'; }
+  if(card) card.classList.remove('has-data');
+  if(btn){ btn.textContent='رفع'; btn.classList.remove('reupload'); }
+  if(typeof renderPeriodBadges==='function') renderPeriodBadges(branch);
+}
+async function loadSavedData(){
+  if(!_idbAvailable()) return false;
+  let snap;
+  try{ snap=await _idbGet(_IDB_KEY); }catch(e){ console.error('loadSavedData',e); return false; }
+  if(!snap) return false;
+  let any=false;
+  try{
+    BRANCHES.forEach(b=>{
+      const ps=(snap.periods&&snap.periods[b])||[];
+      if(!ps.length) return;
+      STATE.periods[b]=ps.map(p=>({ id:p.id, label:p.label, rows:p.rows, _main:!!p._main, data:aggregate(p.rows||[]) }));
+      rebuildBranchFromPeriods(b);
+      _restoreBranchUI(b);
+      any=true;
+    });
+    if(snap.dt && typeof snap.dt==='object' && typeof DT!=='undefined') DT.store=snap.dt;
+    if(snap.active && STATE.data[snap.active]) STATE.active=snap.active;
+    else if(!STATE.active) STATE.active=BRANCHES.find(b=>STATE.data[b])||null;
+  }catch(e){ console.error('loadSavedData',e); }
+  return any || (snap.dt && Object.keys(snap.dt).length>0);
+}
+function updateSavedBadge() { /* لا يوجد شارة في الواجهة الحالية */ }
+function clearSavedData(){
+  try{ if(!confirm('مسح كل البيانات المحفوظة نهائياً؟ لا يمكن التراجع.')) return; }catch(e){}
+  if(_idbAvailable()) _idbDelete(_IDB_KEY).catch(e=>console.error('clearSavedData',e));
+  BRANCHES.forEach(b=>{ STATE.data[b]=null; STATE.periods[b]=[]; _resetBranchUI(b); });
+  if(typeof DT!=='undefined') DT.store={};
+  STATE.active=null;
+  clearTimeout(_saveTimer);
+  if(typeof renderAll==='function') renderAll();
+  toast('تم مسح البيانات المحفوظة');
+}
 
 /* ══════════════════════════════════════════
    SEND REPORT
@@ -8984,6 +9071,7 @@ async function dtHandleFile(file){
     if(!DT.store[ds]) DT.store[ds]={T1:null,T2:null,T3:null};
     DT.store[ds][branch]=dtProcessRows(rows);
     if(!DT.selDate) DT.selDate=ds;
+    saveData();
     renderDailyTrack();
     document.getElementById('dtDropZone').innerHTML='<div style="font-size:32px;margin-bottom:8px;">📄</div><div style="font-size:13px;font-weight:700;color:var(--violet-l);margin-bottom:4px;">اسحب الملف هنا أو اضغط للاختيار</div><div style="font-size:11px;color:var(--text-muted);">PDF · Excel · CSV — كتابات الأطباء</div>';
     res.innerHTML='✅ تم رفع '+BRANCH_LABELS[branch]+' — '+dtFmtAr(ds)+' ('+fmt(rows.length)+' كتابة)';
@@ -9148,7 +9236,7 @@ function dtRenderDay(ds){
         +'<div><div style="font-size:11px;font-weight:700;">'+x.docs+'</div><div style="font-size:10px;color:var(--text-muted);">طبيب</div></div>'
         +'<div><div style="font-size:11px;font-weight:700;">'+x.drugs+'</div><div style="font-size:10px;color:var(--text-muted);">صنف</div></div>'
         +'</div>'
-        +'<button onclick="DT.store[\''+ds+'\'][\''+b+'\']=null;renderDailyTrack()" style="margin-top:8px;padding:3px 8px;background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.2);border-radius:5px;color:var(--rose-l);font-size:10px;cursor:pointer;font-family:inherit;">✕ حذف</button>'
+        +'<button onclick="DT.store[\''+ds+'\'][\''+b+'\']=null;saveData();renderDailyTrack()" style="margin-top:8px;padding:3px 8px;background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.2);border-radius:5px;color:var(--rose-l);font-size:10px;cursor:pointer;font-family:inherit;">✕ حذف</button>'
         +'</div>';
     });
     html+='</div>';
@@ -9447,7 +9535,15 @@ DT.selDate=dtToday();
     setTimeout(function(){ s.classList.add('out'); setTimeout(function(){ s.remove(); }, 650); }, 1150);
   }catch(e){}
 })();
-window.addEventListener('load',()=>{renderFeatured();loadEmbedded();});
+window.addEventListener('load',async ()=>{
+  renderFeatured();
+  /* ملف مشاركة مضمّن له الأولوية على البيانات المحفوظة محلياً */
+  if(window.__EMBEDDED_RX__){ loadEmbedded(); return; }
+  try{
+    const restored=await loadSavedData();
+    if(restored){ renderAll(); toast('تم استرجاع البيانات المحفوظة'); }
+  }catch(e){ console.error('restore on load',e); }
+});
 window.addEventListener('error',e=>console.error('V8 Error:',e.error||e.message));
 
 
