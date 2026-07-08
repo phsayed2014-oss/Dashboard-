@@ -8809,11 +8809,17 @@ window.renderActive = function() {
 /* ══════════════════════════════════════════
    LOGIN SYSTEM
 ══════════════════════════════════════════ */
+/* كلمات المرور مخزّنة كـ SHA-256 (hex) حتى لا تظهر النصوص الصريحة في مصدر الصفحة.
+   ملاحظة: هذه بوابة عرض على جهة العميل فقط لملف HTML ثابت، وليست حماية خادم حقيقية. */
 const USERS = {
-  'elsayed':  { pass: 'pharma2026', name: 'Dr. Elsayed Hassan',  role: 'مدير تطوير الأعمال' },
-  'admin':    { pass: 'admin123',   name: 'Admin',               role: 'مدير النظام' },
-  'manager':  { pass: 'manager123', name: 'المدير',              role: 'مدير قطاع الصيدليات' },
+  'elsayed':  { hash: '0e8aea9b26ebdc3a3c2d02fd44dd58580cc9a02948f565286e8bf002927b6015', name: 'Dr. Elsayed Hassan',  role: 'مدير تطوير الأعمال' },
+  'admin':    { hash: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', name: 'Admin',               role: 'مدير النظام' },
+  'manager':  { hash: '866485796cfa8d7c0cf7111640205b83076433547577511d81f8030ae99ecea5', name: 'المدير',              role: 'مدير قطاع الصيدليات' },
 };
+async function _sha256Hex(s){
+  const buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return [...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
 
 
 function toggleTheme(){
@@ -8837,13 +8843,17 @@ function updateThemeIcon(){
   btn.title=isLight?'الوضع الداكن':'الوضع الفاتح';
 }
 
-function doLogin() {
+async function doLogin() {
   const u = document.getElementById('loginUser').value.trim().toLowerCase();
   const p = document.getElementById('loginPass').value;
   const err = document.getElementById('loginError');
-  if (USERS[u] && USERS[u].pass === p) {
+  const rec = USERS[u];
+  let ok = false;
+  if (rec) { try { ok = (await _sha256Hex(p)) === rec.hash; } catch (e) { console.error('login hash', e); ok = false; } }
+  if (ok) {
     err.classList.remove('show');
-    sessionStorage.setItem('pharmdash_user', JSON.stringify({ username: u, ...USERS[u] }));
+    /* لا نخزّن كلمة المرور — فقط بيانات العرض */
+    sessionStorage.setItem('pharmdash_user', JSON.stringify({ username: u, name: rec.name, role: rec.role }));
     const screen = document.getElementById('loginScreen');
     screen.style.transition = 'opacity .4s ease';
     screen.style.opacity = '0';
