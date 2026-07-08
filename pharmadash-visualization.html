@@ -2928,6 +2928,45 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 }
 [data-showcase="canvas"] .no-data h2,[data-showcase="canvas"] .pl-no-data h3{color:#e0e7ff!important;}
 
+/* Canvas Premium — light mode hardening */
+[data-showcase="canvas"][data-theme="light"] body{background:#eef3f9!important;}
+[data-showcase="canvas"][data-theme="light"] #bgCanvas{opacity:.12!important;filter:none!important;}
+[data-showcase="canvas"][data-theme="light"] #fxCanvas{opacity:.08!important;}
+[data-showcase="canvas"][data-theme="light"] .main-area{background:linear-gradient(160deg,rgba(2,132,199,.05),transparent 45%,rgba(13,148,136,.04));}
+[data-showcase="canvas"][data-theme="light"] .new-topbar,
+[data-showcase="canvas"][data-theme="light"] .canvas-upload-head,
+[data-showcase="canvas"][data-theme="light"] .summary-bar,
+[data-showcase="canvas"][data-theme="light"] .branch-card,
+[data-showcase="canvas"][data-theme="light"] .card{
+  background:rgba(255,255,255,.92)!important;
+  border-color:rgba(15,23,42,.10)!important;
+  box-shadow:0 8px 24px rgba(15,23,42,.08)!important;
+}
+[data-showcase="canvas"][data-theme="light"] .sidebar{
+  background:linear-gradient(180deg,#ffffff,#f7fbff)!important;
+  border-left:1px solid rgba(15,23,42,.10)!important;
+  box-shadow:4px 0 22px rgba(15,23,42,.06)!important;
+}
+[data-showcase="canvas"][data-theme="light"] .sb-nav-item{color:#334155!important;}
+[data-showcase="canvas"][data-theme="light"] .sb-nav-item:hover{background:rgba(2,132,199,.08)!important;color:#0f172a!important;}
+[data-showcase="canvas"][data-theme="light"] .sb-nav-item.active{
+  background:linear-gradient(135deg,rgba(2,132,199,.16),rgba(13,148,136,.10))!important;
+  color:#075985!important;border-color:rgba(2,132,199,.22)!important;
+}
+[data-showcase="canvas"][data-theme="light"] .new-topbar .nb-title h1{
+  background:linear-gradient(90deg,#0f172a,#0369a1 45%,#0d9488)!important;
+  -webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;
+}
+[data-showcase="canvas"][data-theme="light"] .branch-info .name,
+[data-showcase="canvas"][data-theme="light"] .card-title,
+[data-showcase="canvas"][data-theme="light"] .canvas-upload-head h2{color:#0f172a!important;}
+[data-showcase="canvas"][data-theme="light"] .kpi{background:rgba(255,255,255,.95)!important;}
+[data-showcase="canvas"][data-theme="light"] .kpi-value{color:#0f172a!important;-webkit-text-fill-color:#0f172a!important;}
+[data-showcase="canvas"][data-theme="light"] .no-data,[data-showcase="canvas"][data-theme="light"] .pl-no-data{
+  background:radial-gradient(ellipse at 50% 0%,rgba(2,132,199,.08),transparent 65%),rgba(255,255,255,.95)!important;
+  border-color:rgba(2,132,199,.18)!important;
+}
+
 </style>
 </head>
 <body>
