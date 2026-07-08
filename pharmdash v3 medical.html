@@ -4838,6 +4838,161 @@ function getPureHerbForDoctor(name){
   return res;
 }
 
+/* ════════ PureHerb — جدول الأطباء + بطاقة المشاركة (على نمط Private Label) ════════ */
+var PH_COLORS = ['#7c3aed','#a855f7','#c026d3','#9333ea','#8b5cf6','#6d28d9','#a78bfa'];
+function phColor(i){ return PH_COLORS[i % PH_COLORS.length]; }
+
+function renderPHDoctorsAgg(){
+  var box = document.getElementById('phDoctorsAgg');
+  if(!box) return;
+  var loaded = BRANCHES.filter(function(b){ return STATE.data[b]; });
+  if(!loaded.length){ box.innerHTML=''; return; }
+  /* تجميع: طبيب -> {name, section, perProduct:{key:count}, total} — أول منتج مطابق يفوز (نفس منطق PL) */
+  var docMap = new Map();
+  loaded.forEach(function(b){
+    var rows = STATE.data[b] ? STATE.data[b].rows : [];
+    rows.forEach(function(r){
+      if(!r.service || !r.doctor) return;
+      var svc = r.service.toLowerCase();
+      var matched = null;
+      for(var pi=0; pi<PUREHERB_PRODUCTS.length; pi++){
+        if(svc.indexOf(PUREHERB_PRODUCTS[pi].key.toLowerCase()) > -1){ matched = PUREHERB_PRODUCTS[pi]; break; }
+      }
+      if(!matched) return;
+      if(!docMap.has(r.doctor)) docMap.set(r.doctor, {name:r.doctor, section:r.section||'—', perProduct:{}, total:0});
+      var d = docMap.get(r.doctor);
+      d.perProduct[matched.key] = (d.perProduct[matched.key]||0) + 1;
+      d.total++;
+    });
+  });
+  var docs = [...docMap.values()].sort(function(a,b){ return b.total-a.total; });
+  window._phAgg = { docs: docs };
+  if(!docs.length){
+    box.innerHTML = '<div class="card"><div style="text-align:center;padding:30px;color:var(--text-muted);"><div style="font-size:36px;margin-bottom:10px;">📋</div><div>لا يوجد أطباء كتبوا أصناف PureHerb بعد</div></div></div>';
+    return;
+  }
+  var totalW = docs.reduce(function(s,d){ return s+d.total; },0);
+  var multi = docs.filter(function(d){ return Object.keys(d.perProduct).length>1; }).length;
+  var legend = PUREHERB_PRODUCTS.map(function(p,i){
+    return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--text-dim);"><span style="width:10px;height:10px;border-radius:3px;background:'+phColor(i)+';"></span>'+escapeHtml(p.name)+'</span>';
+  }).join('');
+  var headCols = PUREHERB_PRODUCTS.map(function(p,i){
+    return '<th style="text-align:center;min-width:62px;"><span style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;"><span style="width:8px;height:8px;border-radius:2px;background:'+phColor(i)+';"></span><span style="font-size:10px;">'+escapeHtml(p.name)+'</span></span></th>';
+  }).join('');
+  var prodOpts = PUREHERB_PRODUCTS.map(function(p){ return '<option value="'+escapeAttr(p.key)+'">'+escapeHtml(p.name)+'</option>'; }).join('');
+  box.innerHTML =
+    '<div class="card">'
+    + '<div class="card-head" style="flex-wrap:wrap;gap:10px;"><div class="card-title"><span class="dot" style="background:#7c3aed;"></span> الأطباء — أصناف PureHerb</div>'
+    + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'
+    + '<span class="price-tag">'+fmt(docs.length)+' طبيب</span>'
+    + '<span class="price-tag" style="color:#a855f7;background:rgba(124,58,237,.1);border-color:rgba(124,58,237,.25);">'+fmt(totalW)+' كتابة</span>'
+    + (multi?'<span class="price-tag" style="color:var(--violet-l);background:rgba(37,99,235,.1);border-color:rgba(37,99,235,.25);">'+multi+' يكتب أكثر من منتج</span>':'')
+    + '</div></div>'
+    + '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;padding:10px 14px;background:var(--bg-glass2);border-radius:var(--r-md);">'+legend+'</div>'
+    + '<div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">'
+    + '<input class="input" id="phAggSearch" placeholder="🔎 ابحث باسم الطبيب…" style="min-width:220px;flex:1;max-width:340px;" oninput="phAggApply()">'
+    + '<select class="select" id="phAggProd" style="min-width:175px;" onchange="phAggApply()"><option value="">كل المنتجات</option>'+prodOpts+'</select>'
+    + '<span id="phAggCount" style="font-size:11px;color:var(--text-dim);font-weight:700;"></span>'
+    + '</div>'
+    + '<div style="overflow-x:auto;"><table style="min-width:760px;"><thead><tr><th style="width:30px;">#</th><th>الطبيب</th>'+headCols+'<th style="text-align:center;">الإجمالي</th><th style="text-align:center;width:52px;">مشاركة</th></tr></thead><tbody id="phAggBody"></tbody></table></div>'
+    + '</div>';
+  phAggApply();
+}
+function phAggApply(){
+  var st = window._phAgg; if(!st) return;
+  var body = document.getElementById('phAggBody'); if(!body) return;
+  var qEl = document.getElementById('phAggSearch');
+  var pEl = document.getElementById('phAggProd');
+  var q = qEl ? qEl.value.trim().toLowerCase() : '';
+  var pk = pEl ? pEl.value : '';
+  var list = st.docs.filter(function(d){
+    if(q && d.name.toLowerCase().indexOf(q) === -1) return false;
+    if(pk && !(d.perProduct[pk] > 0)) return false;
+    return true;
+  });
+  if(pk){ list = list.slice().sort(function(a,b){ return (b.perProduct[pk]||0) - (a.perProduct[pk]||0); }); }
+  body.innerHTML = phAggRowsHTML(list, pk);
+  var cn = document.getElementById('phAggCount');
+  if(cn) cn.textContent = 'عرض ' + list.length + ' من ' + st.docs.length + ' طبيب';
+}
+function phAggRowsHTML(list, pkFilter){
+  if(!list.length) return '<tr><td colspan="12" style="text-align:center;padding:26px;color:var(--text-muted);">لا توجد نتائج مطابقة للفلتر</td></tr>';
+  var h = '';
+  for(var i=0;i<list.length;i++){
+    var d = list[i];
+    var rk = (i===0)?'gold':(i===1)?'silver':(i===2)?'bronze':'normal';
+    h += '<tr onclick="showDoctorMulti(\''+escapeAttr(d.name)+'\')" style="cursor:pointer;">'
+       + '<td><span class="rank '+rk+'">'+(i+1)+'</span></td>'
+       + '<td><div style="font-weight:700;font-size:12.5px;line-height:1.5;min-width:170px;max-width:280px;white-space:normal;word-break:break-word;">'+escapeHtml(d.name)+'</div>'
+       + '<div style="font-size:10px;color:var(--text-muted);">'+escapeHtml(d.section)+'</div></td>';
+    for(var p=0;p<PUREHERB_PRODUCTS.length;p++){
+      var key = PUREHERB_PRODUCTS[p].key;
+      var c = d.perProduct[key] || 0;
+      var col = phColor(p);
+      var dim = (pkFilter && pkFilter !== key) ? 'opacity:.35;' : '';
+      if(c>0){
+        h += '<td style="text-align:center;'+dim+'"><span style="display:inline-block;min-width:26px;padding:3px 8px;border-radius:8px;background:'+col+'22;color:'+col+';font-weight:800;font-size:12px;font-family:\'Inter\',\'Alexandria\',sans-serif;">'+c+'</span></td>';
+      } else {
+        h += '<td style="text-align:center;'+dim+'"><span style="color:var(--text-muted);opacity:.3;">·</span></td>';
+      }
+    }
+    h += '<td style="text-align:center;"><span class="num-font" style="font-size:15px;font-weight:900;color:#a855f7;">'+fmt(d.total)+'</span></td>'
+       + '<td style="text-align:center;"><button class="btn" style="padding:4px 11px;font-size:13px;" onclick="event.stopPropagation();showPHShareCard(\''+escapeAttr(d.name)+'\')">📤</button></td>'
+       + '</tr>';
+  }
+  return h;
+}
+function showPHShareCard(name){
+  var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  var _bg = isLight ? 'linear-gradient(150deg,#faf8ff,#ffffff 60%,#f5f0ff)' : 'linear-gradient(150deg,#1e1633,#100a26 60%,#180f2e)';
+  var _border = isLight ? 'rgba(124,58,237,.2)' : 'rgba(168,85,247,.35)';
+  var _shadow = isLight ? '0 30px 80px rgba(0,0,0,.12)' : '0 30px 80px rgba(0,0,0,.6)';
+  var _overlay = isLight ? 'rgba(255,255,255,.75)' : 'rgba(5,8,18,.82)';
+  var _nameColor = isLight ? '#0f172a' : '#fff';
+  var _secColor = isLight ? '#64748b' : '#8b95b5';
+  var _chipBg = isLight ? 'rgba(15,23,42,.04)' : 'rgba(255,255,255,.06)';
+  var _chipBorder = isLight ? 'rgba(15,23,42,.1)' : 'rgba(255,255,255,.12)';
+  var _chipName = isLight ? '#0f172a' : '#fff';
+  var _totalLabel = isLight ? '#334155' : '#cdd5f0';
+  var _thanksColor = isLight ? '#475569' : '#9aa7c4';
+  var _dateColor = isLight ? '#94a3b8' : '#6b7494';
+  var _closeBg = isLight ? 'rgba(15,23,42,.06)' : 'rgba(255,255,255,.08)';
+  var _closeColor = isLight ? '#475569' : '#cdd5f0';
+  var _dashed = isLight ? 'rgba(15,23,42,.12)' : 'rgba(255,255,255,.15)';
+  var section = '';
+  if(window._phAgg){ for(var si=0; si<window._phAgg.docs.length; si++){ if(window._phAgg.docs[si].name === name){ section = window._phAgg.docs[si].section; break; } } }
+  var ph = getPureHerbForDoctor(name);
+  if(!ph.items.length){ toast('لا توجد كتابات PureHerb لهذا الطبيب','error'); return; }
+  closePHShareCard();
+  var chips = '';
+  for(var q=0;q<ph.items.length;q++){
+    var pc = phColor(q);
+    chips += '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-radius:14px;background:'+_chipBg+';border:1px solid '+_chipBorder+';margin-bottom:9px;">'
+      + '<span style="font-family:\'Inter\',sans-serif;font-weight:800;font-size:24px;color:'+pc+';min-width:36px;">'+ph.items[q].count+'</span>'
+      + '<span style="font-weight:900;font-size:18px;color:'+_chipName+';text-align:center;flex:1;letter-spacing:.3px;">'+escapeHtml(ph.items[q].name)+'</span>'
+      + '<span style="width:12px;height:12px;border-radius:50%;background:'+pc+';flex-shrink:0;"></span></div>';
+  }
+  var ov = document.createElement('div');
+  ov.id = 'phShareOverlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:'+_overlay+';backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px;';
+  ov.onclick = function(e){ if(e.target === ov) closePHShareCard(); };
+  ov.innerHTML = '<div style="width:100%;max-width:430px;border-radius:22px;padding:26px 24px;background:'+_bg+';border:1px solid '+_border+';box-shadow:'+_shadow+';">'
+    + '<div style="position:relative;text-align:center;padding:2px 0 4px;">'
+    + '<span style="font-size:24px;font-weight:900;letter-spacing:4px;font-family:\'Inter\',sans-serif;background:linear-gradient(90deg,#a855f7,#7c3aed);-webkit-background-clip:text;background-clip:text;color:transparent;">PUREHERB</span>'
+    + '<button onclick="closePHShareCard()" style="position:absolute;left:0;top:50%;transform:translateY(-50%);border:none;background:'+_closeBg+';color:'+_closeColor+';border-radius:9px;padding:5px 12px;cursor:pointer;font-family:inherit;font-size:12px;">إغلاق ✕</button></div>'
+    + '<div style="font-size:20px;font-weight:900;color:'+_nameColor+';margin-top:14px;line-height:1.5;text-align:center;">'+escapeHtml(name)+'</div>'
+    + '<div style="font-size:12px;color:'+_secColor+';margin-bottom:18px;text-align:center;">'+escapeHtml(section)+'</div>'
+    + chips
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:14px;border-top:1px dashed '+_dashed+';">'
+    + '<span style="font-weight:800;color:'+_totalLabel+';font-size:13.5px;">إجمالي كتابات PureHerb</span>'
+    + '<span style="font-family:\'Inter\',sans-serif;font-weight:700;font-size:26px;color:#a855f7;">'+fmt(ph.total)+'</span></div>'
+    + '<div style="text-align:center;margin-top:16px;font-size:12.5px;color:'+_thanksColor+';">شكراً لثقتكم ودعمكم لمنتجاتنا 🌟</div>'
+    + '<div style="text-align:center;margin-top:10px;font-size:9.5px;color:'+_dateColor+';">التقرير الدوري لرئيس مجلس الادارة يوليو 2027</div>'
+    + '</div>';
+  document.body.appendChild(ov);
+}
+function closePHShareCard(){ var ov = document.getElementById('phShareOverlay'); if(ov) ov.remove(); }
+
 function renderPLDoctorsAgg(){
   const box = document.getElementById('plDoctorsAgg');
   if(!box) return;
@@ -9690,8 +9845,10 @@ function renderPureHerb(){
     html+='</div></div>';
   }
   html+='</div></div>';
+  html+='<div id="phDoctorsAgg" style="margin-top:20px;"></div>';
   el.innerHTML=html;
   renderPHTarget();
+  renderPHDoctorsAgg();
 }
 
 </script>
