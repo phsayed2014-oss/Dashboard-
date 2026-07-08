@@ -9643,7 +9643,7 @@ function renderPureHerb(){
     if(!bd||!bd.drugs) return;
     PUREHERB_PRODUCTS.forEach(p=>{
       const found = bd.drugs.filter(d=> d.name && (p.key==='CENTROZON' ? (d.name.toUpperCase().includes('CENTROZON') && !d.name.toUpperCase().includes('WOMEN')) : d.name.toUpperCase().includes(p.key.toUpperCase())));
-      const cnt = found.reduce((s,x)=>s+(x.count||0),0);
+      const cnt = found.reduce((s,x)=>s+(x.total||x.count||0),0);
       if(cnt>0){
         phData[p.key].total += cnt;
         phData[p.key].branches[b] = cnt;
