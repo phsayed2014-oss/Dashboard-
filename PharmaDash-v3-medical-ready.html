@@ -5144,8 +5144,9 @@ document.getElementById('shareBtn').onclick=()=>{
   showLoad();
   try{
     let html=SOURCE_TEMPLATE;
-    const payload={branches:{}};
+    const payload={branches:{},periods:{},dt:(typeof DT!=='undefined'&&DT.store)?DT.store:{}};
     BRANCHES.forEach(b=>{const d=STATE.data[b];if(d) payload.branches[b]={rows:d.rows,reportName:d.reportName,reportDate:d.reportDate};});
+    BRANCHES.forEach(b=>{payload.periods[b]=(STATE.periods[b]||[]).map(p=>({id:p.id,label:p.label,rows:p.rows,_main:!!p._main}));});
     const closeToken='<'+'/scr'+'ipt>',openToken='<scr'+'ipt id="embedded-rx-data">';
     const json=JSON.stringify(payload).split(closeToken).join('<\\/scr'+'ipt>');
     const tag=openToken+'window.__EMBEDDED_RX__='+json+';'+closeToken;
@@ -5161,7 +5162,21 @@ document.getElementById('shareBtn').onclick=()=>{
 
 function loadEmbedded(){
   if(!window.__EMBEDDED_RX__) return;const d=window.__EMBEDDED_RX__;
-  if(d.branches){BRANCHES.forEach(b=>{if(d.branches[b]&&d.branches[b].rows&&d.branches[b].rows.length){setBranchData(b,d.branches[b].rows,d.branches[b].reportName||BRANCH_LABELS[b],d.branches[b].reportDate||'');if(!STATE.active) STATE.active=b;}});}
+  /* الملفات الأحدث تحمل الفترات الكاملة؛ القديمة تحمل الصفوف الأساسية فقط */
+  if(d.periods && Object.keys(d.periods).length){
+    BRANCHES.forEach(b=>{
+      const ps=d.periods[b];
+      if(ps && ps.length){
+        STATE.periods[b]=ps.map(p=>({id:p.id,label:p.label,rows:p.rows,_main:!!p._main,data:aggregate(p.rows||[])}));
+        rebuildBranchFromPeriods(b);
+        _restoreBranchUI(b);
+        if(!STATE.active) STATE.active=b;
+      }
+    });
+  } else if(d.branches){
+    BRANCHES.forEach(b=>{if(d.branches[b]&&d.branches[b].rows&&d.branches[b].rows.length){setBranchData(b,d.branches[b].rows,d.branches[b].reportName||BRANCH_LABELS[b],d.branches[b].reportDate||'');if(!STATE.active) STATE.active=b;}});
+  }
+  if(d.dt && typeof d.dt==='object' && typeof DT!=='undefined') DT.store=d.dt;
   function tryRender(n){if(typeof Chart!=='undefined'){renderAll();}else if(n>0) setTimeout(()=>tryRender(n-1),200);else renderAll();}
   tryRender(25);
 }
