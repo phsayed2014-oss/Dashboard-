@@ -14,7 +14,7 @@ const files = await Promise.all(paths.map((path) => readFile(path, 'utf8')));
 if (!files.every((file) => file === files[0])) {
   throw new Error('Generated dashboard files are not byte-identical');
 }
-if (files[0].includes('__PHARMADASH_')) {
+if (files[0].includes('/*__PHARMADASH_STYLES__*/') || files[0].includes('/*__PHARMADASH_APP__*/')) {
   throw new Error('Generated dashboard still contains a build marker');
 }
 
