@@ -1,0 +1,40 @@
+{
+  "name": "pharmadash",
+  "version": "4.0.0",
+  "private": true,
+  "description": "Portable pharmacy analytics dashboard with a generated single-file release",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check:generated": "node scripts/check-generated.mjs",
+    "lint": "eslint src scripts tests",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "vitest run tests/unit",
+    "test:e2e": "playwright test",
+    "verify": "npm run build && npm run check:generated && npm run lint && npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phsayed2014-oss/dashboard-.git"
+  },
+  "keywords": [
+    "pharmacy",
+    "analytics",
+    "dashboard",
+    "rtl"
+  ],
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/phsayed2014-oss/dashboard-/issues"
+  },
+  "homepage": "https://github.com/phsayed2014-oss/dashboard-#readme",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.61.1",
+    "axe-core": "^4.12.1",
+    "esbuild": "^0.28.1",
+    "eslint": "^10.6.0",
+    "fake-indexeddb": "^6.2.5",
+    "vitest": "^4.1.10"
+  }
+}
