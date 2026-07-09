@@ -2827,6 +2827,216 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 @media(max-width:480px){body{font-size:13px;}.kpi-value{font-size:26px;}.login-box{padding:var(--space-lg) var(--space-md);}}
 @media(prefers-reduced-motion:reduce){.feat-card:hover,.kpi:hover,.card:hover,.btn:hover{transform:none!important;}}
 
+/* ══════════════════════════════════════════════════════════════════
+   ✦ WORLD-CLASS MEDICAL FINISH — v4  (CSS only · non-destructive)
+   Elevates PharmaDash to a premium global healthcare-grade aesthetic.
+   No class / id / markup / JS changed — pure visual layer.
+══════════════════════════════════════════════════════════════════ */
+:root{
+  --wc-teal:#0d9488;--wc-teal2:#14b8a6;--wc-blue:#2563eb;--wc-blue2:#3b82f6;
+  --wc-ink:#0b1220;
+  /* refined elevation system */
+  --wc-e1:0 1px 2px rgba(2,6,23,.35);
+  --wc-e2:0 10px 30px -12px rgba(2,6,23,.55);
+  --wc-e3:0 28px 60px -22px rgba(2,6,23,.7);
+  --wc-ring:0 0 0 4px rgba(20,184,166,.18);
+  --wc-radius:22px;
+}
+[data-theme="light"]{
+  --wc-e1:0 1px 2px rgba(15,23,42,.05);
+  --wc-e2:0 14px 32px -16px rgba(15,23,42,.16);
+  --wc-e3:0 30px 60px -24px rgba(15,23,42,.22);
+  --wc-ring:0 0 0 4px rgba(13,148,136,.15);
+}
+
+/* ── Atmosphere ─────────────────────────────────────────────── */
+body{
+  background:
+    radial-gradient(1150px 720px at 88% -10%, rgba(20,184,166,.12), transparent 58%),
+    radial-gradient(980px 640px at -5% 108%, rgba(37,99,235,.11), transparent 55%),
+    linear-gradient(180deg,#070b16 0%, #0a0f1e 55%, #0b1120 100%)!important;
+}
+[data-theme="light"] body{
+  background:
+    radial-gradient(1200px 760px at 86% -8%, rgba(13,148,136,.11), transparent 58%),
+    radial-gradient(1000px 680px at 2% 112%, rgba(37,99,235,.09), transparent 55%),
+    linear-gradient(180deg,#eef3f9 0%, #f4f8fc 42%, #eff4f9 100%)!important;
+}
+/* calm the busy auras — keep just a whisper */
+html::before,html::after{opacity:.14!important;}
+[data-theme="light"] html::before,[data-theme="light"] html::after{opacity:.10!important;}
+[data-theme="light"] #bgCanvas{opacity:.06!important;}
+body::before{opacity:.018!important;}
+::selection{background:rgba(20,184,166,.28);color:inherit;}
+[data-theme="light"] ::selection{background:rgba(13,148,136,.18);}
+
+/* refined scrollbars */
+*{scrollbar-width:thin;scrollbar-color:rgba(148,163,184,.4) transparent;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:99px;border:2px solid transparent;background-clip:content-box;}
+::-webkit-scrollbar-thumb:hover{background:rgba(148,163,184,.6);background-clip:content-box;}
+
+/* ── Sidebar — crisp clinical rail ──────────────────────────── */
+.sidebar{
+  background:linear-gradient(180deg,#050914,#070c1a)!important;
+  border-left:1px solid rgba(148,163,255,.08)!important;
+  box-shadow:-1px 0 0 rgba(255,255,255,.02) inset;
+}
+[data-theme="light"] .sidebar{
+  background:linear-gradient(180deg,#ffffff,#fbfdff)!important;
+  border-left:1px solid rgba(15,23,42,.06)!important;
+  box-shadow:-14px 0 40px -30px rgba(15,23,42,.35)!important;
+}
+.sb-logo-icon{
+  background:linear-gradient(135deg,var(--wc-teal),var(--wc-blue))!important;
+  box-shadow:0 8px 20px -6px rgba(13,148,136,.6),inset 0 1px 0 rgba(255,255,255,.35)!important;
+  border-radius:14px!important;
+}
+.sb-nav-item{border-radius:13px!important;font-weight:600!important;}
+.sb-nav-item.active{
+  background:linear-gradient(100deg,rgba(13,148,136,.20),rgba(37,99,235,.14))!important;
+  color:#eafffb!important;box-shadow:inset 0 0 0 1px rgba(20,184,166,.25)!important;
+}
+[data-theme="light"] .sb-nav-item.active{
+  background:linear-gradient(100deg,#ecfdf5,#eff6ff)!important;color:#0f766e!important;
+  box-shadow:inset 0 0 0 1px rgba(13,148,136,.22)!important;
+}
+.sb-nav-item.active .sb-ico{background:linear-gradient(135deg,var(--wc-teal),var(--wc-blue))!important;color:#fff!important;}
+.sb-nav-item.active::before{display:none!important;}
+
+/* ── Topbar — floating glass ────────────────────────────────── */
+.new-topbar{
+  background:rgba(9,14,26,.72)!important;
+  backdrop-filter:blur(22px) saturate(1.7)!important;-webkit-backdrop-filter:blur(22px) saturate(1.7)!important;
+  border-bottom:1px solid rgba(148,163,255,.10)!important;
+  box-shadow:0 18px 40px -30px rgba(0,0,0,.9)!important;
+}
+[data-theme="light"] .new-topbar{
+  background:rgba(255,255,255,.82)!important;
+  border-bottom:1px solid rgba(15,23,42,.07)!important;
+  box-shadow:0 12px 34px -26px rgba(15,23,42,.4)!important;
+}
+.nb-title h1{
+  background:linear-gradient(92deg,#5eead4,#60a5fa 60%,#5eead4)!important;background-size:220% auto!important;
+  -webkit-background-clip:text!important;background-clip:text!important;color:transparent!important;
+  animation:pdSheen 8s linear infinite!important;font-weight:800!important;letter-spacing:-.02em!important;
+}
+[data-theme="light"] .nb-title h1{background:linear-gradient(92deg,#0f766e,#2563eb 60%,#0f766e)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important;}
+.global-search{border-radius:999px!important;transition:box-shadow .2s,border-color .2s,background .2s!important;}
+.global-search:focus{box-shadow:var(--wc-ring)!important;}
+
+/* ── Cards — soft premium surfaces ──────────────────────────── */
+.card{
+  border-radius:var(--wc-radius)!important;
+  box-shadow:var(--wc-e1),var(--wc-e2)!important;
+  transition:transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s ease,border-color .2s ease!important;
+}
+.card:hover{transform:translateY(-3px)!important;box-shadow:var(--wc-e1),var(--wc-e3)!important;}
+[data-theme="light"] .card{
+  background:#ffffff!important;border:1px solid rgba(15,23,42,.06)!important;
+}
+[data-theme="light"] .card-head{background:transparent!important;border-bottom:1px solid rgba(15,23,42,.06)!important;}
+.card-title .dot{background:linear-gradient(135deg,var(--wc-teal),var(--wc-blue))!important;box-shadow:0 0 12px rgba(13,148,136,.55)!important;}
+
+/* ── KPI tiles — clinical stat cards ────────────────────────── */
+.kpi{border-radius:18px!important;box-shadow:var(--wc-e1),var(--wc-e2)!important;overflow:hidden!important;}
+.kpi::before{height:3px!important;background:linear-gradient(90deg,var(--wc-teal),var(--wc-teal2) 45%,var(--wc-blue2))!important;opacity:1!important;}
+.kpi:hover{transform:translateY(-3px)!important;box-shadow:var(--wc-e1),var(--wc-e3)!important;}
+[data-theme="light"] .kpi{background:#fff!important;border:1px solid rgba(15,23,42,.06)!important;}
+.kpi-ico{border-radius:12px!important;background:linear-gradient(135deg,var(--wc-teal),var(--wc-blue))!important;color:#fff!important;box-shadow:0 6px 16px -6px rgba(13,148,136,.7)!important;}
+.kpi-value{letter-spacing:-.03em!important;}
+
+/* ── Summary bar — glassy metric ribbon ─────────────────────── */
+.summary-bar{border-radius:18px!important;box-shadow:var(--wc-e1),var(--wc-e2)!important;}
+[data-theme="light"] .summary-bar{background:rgba(255,255,255,.92)!important;border:1px solid rgba(15,23,42,.06)!important;backdrop-filter:blur(8px);}
+
+/* ── Buttons — refined pills ────────────────────────────────── */
+.btn{border-radius:999px!important;font-weight:700!important;transition:transform .18s ease,box-shadow .25s ease,background .2s ease,border-color .2s!important;}
+.btn:hover{transform:translateY(-2px)!important;}
+.btn-success,.btn.primary,.btn.btn-primary{
+  background:linear-gradient(100deg,var(--wc-teal),var(--wc-blue))!important;border:none!important;color:#fff!important;
+  box-shadow:0 10px 24px -10px rgba(13,148,136,.75)!important;
+}
+.btn-success:hover,.btn.primary:hover,.btn.btn-primary:hover{box-shadow:0 14px 30px -10px rgba(37,99,235,.7)!important;}
+[data-theme="light"] .btn{background:rgba(15,23,42,.035)!important;border:1px solid rgba(15,23,42,.09)!important;color:#334155!important;}
+[data-theme="light"] .btn:hover{background:rgba(13,148,136,.08)!important;border-color:rgba(13,148,136,.28)!important;color:#0f766e!important;}
+[data-theme="light"] .btn-success{background:linear-gradient(100deg,var(--wc-teal),var(--wc-blue))!important;color:#fff!important;border:none!important;}
+
+/* ── Branch cards ───────────────────────────────────────────── */
+.branch-card{border-radius:16px!important;transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s ease,border-color .2s!important;}
+.branch-card:hover{transform:translateY(-3px)!important;box-shadow:var(--wc-e2)!important;}
+.branch-num{box-shadow:0 8px 20px -8px rgba(2,6,23,.6),inset 0 1px 0 rgba(255,255,255,.3)!important;}
+[data-theme="light"] .branch-bar{background:transparent!important;border:none!important;box-shadow:none!important;padding:0!important;}
+[data-theme="light"] .branch-card{background:#fff!important;border:1px solid rgba(15,23,42,.06)!important;box-shadow:var(--wc-e1),var(--wc-e2)!important;}
+
+/* ── Tables — clean clinical rows ───────────────────────────── */
+.table-wrap{border-radius:16px!important;overflow:hidden!important;}
+thead th{text-transform:uppercase!important;letter-spacing:.07em!important;font-weight:800!important;}
+[data-theme="light"] thead th{background:#f8fafc!important;color:#64748b!important;border-bottom:1px solid #e6ebf2!important;}
+tbody tr{transition:background .15s ease,box-shadow .15s ease!important;}
+tbody tr:hover{box-shadow:inset 3px 0 0 var(--wc-teal)!important;}
+[data-theme="light"] tbody tr:hover{background:#f0fdfa!important;}
+
+/* ── Hero — signature medical gradient panel ────────────────── */
+.pd-hero{
+  border-radius:26px!important;overflow:hidden!important;position:relative!important;
+  background:linear-gradient(120deg,rgba(13,148,136,.16),rgba(15,23,42,.35) 55%,rgba(37,99,235,.18))!important;
+  border:1px solid rgba(148,163,255,.14)!important;box-shadow:var(--wc-e2)!important;
+}
+[data-theme="light"] .pd-hero{
+  background:linear-gradient(120deg,#ecfdf5 0%,#ffffff 48%,#eff6ff 100%)!important;
+  border:1px solid rgba(13,148,136,.16)!important;box-shadow:var(--wc-e1),var(--wc-e2)!important;
+}
+.pd-hero::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(520px 300px at 12% 120%,rgba(20,184,166,.28),transparent 60%),radial-gradient(460px 260px at 92% -20%,rgba(37,99,235,.22),transparent 60%);
+  opacity:.9;
+}
+.pd-hero>*{position:relative;z-index:1;}
+
+/* ── Login — premium clinical entry ─────────────────────────── */
+[data-theme="light"] #loginScreen{background:linear-gradient(140deg,#e6fbf5 0%,#eef4fb 48%,#eafff6 100%)!important;}
+.login-box{border-radius:26px!important;box-shadow:var(--wc-e3)!important;}
+[data-theme="light"] .login-box{background:rgba(255,255,255,.92)!important;border:1px solid rgba(15,23,42,.07)!important;backdrop-filter:blur(10px);}
+.login-logo-icon{background:linear-gradient(135deg,var(--wc-teal),var(--wc-blue))!important;box-shadow:0 14px 34px -10px rgba(13,148,136,.7),inset 0 1px 0 rgba(255,255,255,.4)!important;border-radius:20px!important;}
+.login-btn{background:linear-gradient(100deg,var(--wc-teal),var(--wc-blue))!important;border:none!important;border-radius:14px!important;box-shadow:0 14px 30px -10px rgba(37,99,235,.6)!important;}
+.login-input:focus{box-shadow:var(--wc-ring)!important;}
+
+/* ── Inputs — soft focus rings ──────────────────────────────── */
+.input:focus,.select:focus,input:focus,select:focus,textarea:focus{box-shadow:var(--wc-ring)!important;}
+:focus-visible{outline:2px solid rgba(13,148,136,.55);outline-offset:2px;}
+
+/* ── Feature / opportunity cards — refined depth ────────────── */
+.feat-card{border-radius:18px!important;box-shadow:var(--wc-e1),var(--wc-e2)!important;}
+.feat-card:hover{box-shadow:var(--wc-e1),var(--wc-e3)!important;}
+
+/* ── Pills, tags, badges — rounded & tidy ───────────────────── */
+.tag,.pill,.b-pill,.branch-mini,.period-badge,.pd-chip{border-radius:999px!important;}
+
+/* ── Gradient stat cards — refined jewel tones (was fluorescent) ── */
+.card-gradient-red,.card-gradient-violet,.card-gradient-teal,.card-gradient-amber{
+  border-radius:18px!important;position:relative!important;overflow:hidden!important;
+  box-shadow:0 18px 38px -18px rgba(2,6,23,.55),inset 0 1px 0 rgba(255,255,255,.24)!important;
+}
+.card-gradient-red{background:linear-gradient(140deg,#be123c 0%,#ea580c 100%)!important;}
+.card-gradient-violet{background:linear-gradient(140deg,#1e40af 0%,#6d28d9 100%)!important;}
+.card-gradient-teal{background:linear-gradient(140deg,#0f766e 0%,#0369a1 100%)!important;}
+.card-gradient-amber{background:linear-gradient(140deg,#b45309 0%,#ea580c 100%)!important;}
+.card-gradient-red::after,.card-gradient-violet::after,.card-gradient-teal::after,.card-gradient-amber::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 90% at 88% 0%,rgba(255,255,255,.16),transparent 55%);
+}
+
+/* graceful entrance for panels already handled; refine easing */
+.panel.active{animation:fadeIn .3s cubic-bezier(.22,1,.36,1)!important;}
+
+@media(max-width:768px){
+  .card{border-radius:16px!important;}
+  .pd-hero{border-radius:18px!important;}
+}
+@media(prefers-reduced-motion:reduce){.nb-title h1{animation:none!important;}}
+/* ✦ END WORLD-CLASS MEDICAL FINISH v4 */
+
 </style>
 </head>
 <body>
@@ -2980,6 +3190,7 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
     <button class="btn" id="themeBtn" onclick="toggleTheme()" title="Dark / Light">☀️</button>
     <button class="btn" id="exportXlsxBtn">Excel</button>
     <button class="btn btn-success" id="shareBtn">مشاركة</button>
+    <button class="btn" onclick="clearSavedData()" title="مسح البيانات المحفوظة">مسح</button>
     <button class="btn" onclick="doLogout()" title="تسجيل الخروج" style="background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.25);color:var(--rose-l);">خروج</button>
   </div>
 </div>
@@ -3261,6 +3472,8 @@ const PRIVATE_LABEL=[
 const BRANCHES=['T1','T2','T3'];
 const BRANCH_LABELS={T1:'التعاون الأول',T2:'التعاون الثاني',T3:'التعاون الثالث'};
 const STATE={data:{T1:null,T2:null,T3:null},active:null,periods:{T1:[],T2:[],T3:[]}};
+/* التابات التي تجمع كل الفروع ولا تحتاج مُنتقي الفرع */
+const NO_BRANCH_TABS=['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','drugintel','targettrack','nearexpiry','plsales','pureherb','dailytrack','agedmeds'];
 let _pendingBranch=null,_pendingMode=null; /* upload state */
 const SOURCE_TEMPLATE=(function(){let h='<!DOCTYPE html>\n'+document.documentElement.outerHTML;const o='<scr'+'ipt id="embedded-rx-data">',c='<'+'/scr'+'ipt>';const i=h.indexOf(o);if(i>=0){const j=h.indexOf(c,i);if(j>=0) h=h.substring(0,i)+h.substring(j+c.length);}return h;})();
 
@@ -3410,6 +3623,7 @@ async function handleFile(branch,file){
     await _upTick(branch,100);
     setTimeout(()=>_upHide(branch),500);
     renderAll();
+    saveData();
     toast('✓ '+BRANCH_LABELS[branch]+' — '+fmt(rows.length)+' وصفة');
   }catch(e){
     console.error(e);_upHide(branch);
@@ -3543,15 +3757,7 @@ async function parsePDF(file){
   return rows;
 }
 
-document.getElementById('tabs').addEventListener('click',e=>{
-  const b=e.target.closest('.tab');if(!b) return;
-  window._activePanel=b.dataset.panel;
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');document.getElementById('panel-'+b.dataset.panel).classList.add('active');
-  document.getElementById('branchPickerCard').style.display=(b.dataset.panel==='featured'||b.dataset.panel==='targeted'||b.dataset.panel==='pareto'||b.dataset.panel==='loyalty'||b.dataset.panel==='basket'||b.dataset.panel==='trends'||b.dataset.panel==='drugintel'||b.dataset.panel==='targettrack'||b.dataset.panel==='nearexpiry'||b.dataset.panel==='dailytrack'||b.dataset.panel==='agedmeds')?'none':'block';
-  renderActive();
-});
+/* التنقل يتم عبر الشريط الجانبي (sidebarNav)؛ مستمعو #tabs القديمة أُزيلوا */
 
 function renderBranchPicker(){
   const box=document.getElementById('branchPicker');const loaded=BRANCHES.filter(b=>STATE.data[b]);
@@ -3781,8 +3987,7 @@ function renderAgedMeds() {
 function renderActive(){
   const at=window._activePanel||(document.querySelector('.tab.active')?.dataset.panel)||'overview';
   /* ── SECTION ROUTING: panels that don't need branch picker ── */
-  const noBranch=['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','drugintel','targettrack','nearexpiry','plsales','pureherb','dailytrack','agedmeds'];
-  document.getElementById('branchPickerCard').style.display=noBranch.includes(at)?'none':'block';
+  document.getElementById('branchPickerCard').style.display=NO_BRANCH_TABS.includes(at)?'none':'block';
 
   /* ── NO-BRANCH panels ── */
   if(at==='featured'){renderFeatured();return;} /* FIX: تجديد كل كروت القسم عند الفتح بما فيها الجدول المجمّع */
@@ -4772,12 +4977,26 @@ function showPLShareCard(name){
     var pk = PRIVATE_LABEL[p].key;
     var c = d.perProduct[pk] || 0;
     if(!c) continue;
-    var perLine = '';
     chips += '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-radius:14px;background:' + _chipBg + ';border:1px solid ' + _chipBorder + ';margin-bottom:9px;">'
       + '<span style="font-family:\'Inter\',sans-serif;font-weight:800;font-size:24px;color:' + st.prodColors[pk] + ';min-width:36px;">' + c + '</span>'
       + '<span style="font-weight:900;font-size:18px;color:' + _chipName + ';text-align:center;flex:1;letter-spacing:.3px;">' + escapeHtml(PRIVATE_LABEL[p].name) + '</span>'
       + '<span style="width:12px;height:12px;border-radius:50%;background:' + st.prodColors[pk] + ';flex-shrink:0;"></span></div>';
   }
+  /* ── منتجات PureHerb ضمن نفس بطاقة المشاركة ── */
+  var ph = getPureHerbForDoctor(d.name);
+  var phColors = ['#7c3aed','#a855f7','#c084fc','#8b5cf6','#9333ea','#6d28d9','#a78bfa'];
+  var phChips = '';
+  for(var q=0;q<ph.items.length;q++){
+    var phc = phColors[q % phColors.length];
+    phChips += '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-radius:14px;background:' + _chipBg + ';border:1px solid ' + _chipBorder + ';margin-bottom:9px;">'
+      + '<span style="font-family:\'Inter\',sans-serif;font-weight:800;font-size:24px;color:' + phc + ';min-width:36px;">' + ph.items[q].count + '</span>'
+      + '<span style="font-weight:900;font-size:18px;color:' + _chipName + ';text-align:center;flex:1;letter-spacing:.3px;">' + escapeHtml(ph.items[q].name) + '</span>'
+      + '<span style="width:12px;height:12px;border-radius:50%;background:' + phc + ';flex-shrink:0;"></span></div>';
+  }
+  var phSection = ph.items.length
+    ? '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 10px;"><span style="height:1px;flex:1;background:' + _dashed + ';"></span><span style="font-size:11px;font-weight:800;letter-spacing:2px;color:#a855f7;font-family:\'Inter\',sans-serif;">PUREHERB</span><span style="height:1px;flex:1;background:' + _dashed + ';"></span></div>' + phChips
+    : '';
+  var grandTotal = (d.total || 0) + ph.total;
   var ov = document.createElement('div');
   ov.id = 'plShareOverlay';
   ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:' + _overlay + ';backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px;';
@@ -4789,9 +5008,10 @@ function showPLShareCard(name){
     + '<div style="font-size:20px;font-weight:900;color:' + _nameColor + ';margin-top:14px;line-height:1.5;text-align:center;">' + escapeHtml(d.name) + '</div>'
     + '<div style="font-size:12px;color:' + _secColor + ';margin-bottom:18px;text-align:center;">' + escapeHtml(d.section) + '</div>'
     + chips
+    + phSection
     + '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:14px;border-top:1px dashed ' + _dashed + ';">'
     + '<span style="font-weight:800;color:' + _totalLabel + ';font-size:13.5px;">إجمالي كتابات منتجاتنا</span>'
-    + '<span style="font-family:\'Inter\',sans-serif;font-weight:700;font-size:26px;color:#14b8a6;">' + fmt(d.total) + '</span></div>'
+    + '<span style="font-family:\'Inter\',sans-serif;font-weight:700;font-size:26px;color:#14b8a6;">' + fmt(grandTotal) + '</span></div>'
     + '<div style="text-align:center;margin-top:16px;font-size:12.5px;color:' + _thanksColor + ';">شكراً لثقتكم ودعمكم لمنتجاتنا 🌟</div>'
     + '<div style="text-align:center;margin-top:10px;font-size:9.5px;color:' + _dateColor + ';">التقرير الدوري لرئيس مجلس الادارة يوليو 2027</div>'
     + '</div>';
@@ -4801,6 +5021,187 @@ function closePLShareCard(){
   var ov = document.getElementById('plShareOverlay');
   if(ov) ov.remove();
 }
+/* عدّ كتابات منتجات PureHerb لطبيب معيّن عبر كل الفروع المرفوعة (نفس نطاق NOSTRI) */
+function getPureHerbForDoctor(name){
+  var res = { items: [], total: 0 };
+  if(typeof PUREHERB_PRODUCTS === 'undefined') return res;
+  var counts = {};
+  PUREHERB_PRODUCTS.forEach(function(p){ counts[p.key] = 0; });
+  BRANCHES.forEach(function(b){
+    var d = STATE.data[b];
+    if(!d || !d.rows) return;
+    d.rows.forEach(function(r){
+      if(r.doctor !== name || !r.service) return;
+      var svc = r.service.toUpperCase();
+      PUREHERB_PRODUCTS.forEach(function(p){
+        var ku = p.key.toUpperCase();
+        var hit = (p.key === 'CENTROZON')
+          ? (svc.indexOf('CENTROZON') > -1 && svc.indexOf('WOMEN') === -1)
+          : (svc.indexOf(ku) > -1);
+        if(hit) counts[p.key]++;
+      });
+    });
+  });
+  PUREHERB_PRODUCTS.forEach(function(p){
+    if(counts[p.key] > 0){ res.items.push({ name: p.name, count: counts[p.key], key: p.key }); res.total += counts[p.key]; }
+  });
+  return res;
+}
+
+/* ════════ PureHerb — جدول الأطباء + بطاقة المشاركة (على نمط Private Label) ════════ */
+var PH_COLORS = ['#7c3aed','#a855f7','#c026d3','#9333ea','#8b5cf6','#6d28d9','#a78bfa'];
+function phColor(i){ return PH_COLORS[i % PH_COLORS.length]; }
+
+function renderPHDoctorsAgg(){
+  var box = document.getElementById('phDoctorsAgg');
+  if(!box) return;
+  var loaded = BRANCHES.filter(function(b){ return STATE.data[b]; });
+  if(!loaded.length){ box.innerHTML=''; return; }
+  /* تجميع: طبيب -> {name, section, perProduct:{key:count}, total} — أول منتج مطابق يفوز (نفس منطق PL) */
+  var docMap = new Map();
+  loaded.forEach(function(b){
+    var rows = STATE.data[b] ? STATE.data[b].rows : [];
+    rows.forEach(function(r){
+      if(!r.service || !r.doctor) return;
+      var svc = r.service.toLowerCase();
+      var matched = null;
+      for(var pi=0; pi<PUREHERB_PRODUCTS.length; pi++){
+        if(svc.indexOf(PUREHERB_PRODUCTS[pi].key.toLowerCase()) > -1){ matched = PUREHERB_PRODUCTS[pi]; break; }
+      }
+      if(!matched) return;
+      if(!docMap.has(r.doctor)) docMap.set(r.doctor, {name:r.doctor, section:r.section||'—', perProduct:{}, total:0});
+      var d = docMap.get(r.doctor);
+      d.perProduct[matched.key] = (d.perProduct[matched.key]||0) + 1;
+      d.total++;
+    });
+  });
+  var docs = [...docMap.values()].sort(function(a,b){ return b.total-a.total; });
+  window._phAgg = { docs: docs };
+  if(!docs.length){
+    box.innerHTML = '<div class="card"><div style="text-align:center;padding:30px;color:var(--text-muted);"><div style="font-size:36px;margin-bottom:10px;">📋</div><div>لا يوجد أطباء كتبوا أصناف PureHerb بعد</div></div></div>';
+    return;
+  }
+  var totalW = docs.reduce(function(s,d){ return s+d.total; },0);
+  var multi = docs.filter(function(d){ return Object.keys(d.perProduct).length>1; }).length;
+  var legend = PUREHERB_PRODUCTS.map(function(p,i){
+    return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--text-dim);"><span style="width:10px;height:10px;border-radius:3px;background:'+phColor(i)+';"></span>'+escapeHtml(p.name)+'</span>';
+  }).join('');
+  var headCols = PUREHERB_PRODUCTS.map(function(p,i){
+    return '<th style="text-align:center;min-width:62px;"><span style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;"><span style="width:8px;height:8px;border-radius:2px;background:'+phColor(i)+';"></span><span style="font-size:10px;">'+escapeHtml(p.name)+'</span></span></th>';
+  }).join('');
+  var prodOpts = PUREHERB_PRODUCTS.map(function(p){ return '<option value="'+escapeAttr(p.key)+'">'+escapeHtml(p.name)+'</option>'; }).join('');
+  box.innerHTML =
+    '<div class="card">'
+    + '<div class="card-head" style="flex-wrap:wrap;gap:10px;"><div class="card-title"><span class="dot" style="background:#7c3aed;"></span> الأطباء — أصناف PureHerb</div>'
+    + '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'
+    + '<span class="price-tag">'+fmt(docs.length)+' طبيب</span>'
+    + '<span class="price-tag" style="color:#a855f7;background:rgba(124,58,237,.1);border-color:rgba(124,58,237,.25);">'+fmt(totalW)+' كتابة</span>'
+    + (multi?'<span class="price-tag" style="color:var(--violet-l);background:rgba(37,99,235,.1);border-color:rgba(37,99,235,.25);">'+multi+' يكتب أكثر من منتج</span>':'')
+    + '</div></div>'
+    + '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;padding:10px 14px;background:var(--bg-glass2);border-radius:var(--r-md);">'+legend+'</div>'
+    + '<div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">'
+    + '<input class="input" id="phAggSearch" placeholder="🔎 ابحث باسم الطبيب…" style="min-width:220px;flex:1;max-width:340px;" oninput="phAggApply()">'
+    + '<select class="select" id="phAggProd" style="min-width:175px;" onchange="phAggApply()"><option value="">كل المنتجات</option>'+prodOpts+'</select>'
+    + '<span id="phAggCount" style="font-size:11px;color:var(--text-dim);font-weight:700;"></span>'
+    + '</div>'
+    + '<div style="overflow-x:auto;"><table style="min-width:760px;"><thead><tr><th style="width:30px;">#</th><th>الطبيب</th>'+headCols+'<th style="text-align:center;">الإجمالي</th><th style="text-align:center;width:52px;">مشاركة</th></tr></thead><tbody id="phAggBody"></tbody></table></div>'
+    + '</div>';
+  phAggApply();
+}
+function phAggApply(){
+  var st = window._phAgg; if(!st) return;
+  var body = document.getElementById('phAggBody'); if(!body) return;
+  var qEl = document.getElementById('phAggSearch');
+  var pEl = document.getElementById('phAggProd');
+  var q = qEl ? qEl.value.trim().toLowerCase() : '';
+  var pk = pEl ? pEl.value : '';
+  var list = st.docs.filter(function(d){
+    if(q && d.name.toLowerCase().indexOf(q) === -1) return false;
+    if(pk && !(d.perProduct[pk] > 0)) return false;
+    return true;
+  });
+  if(pk){ list = list.slice().sort(function(a,b){ return (b.perProduct[pk]||0) - (a.perProduct[pk]||0); }); }
+  body.innerHTML = phAggRowsHTML(list, pk);
+  var cn = document.getElementById('phAggCount');
+  if(cn) cn.textContent = 'عرض ' + list.length + ' من ' + st.docs.length + ' طبيب';
+}
+function phAggRowsHTML(list, pkFilter){
+  if(!list.length) return '<tr><td colspan="12" style="text-align:center;padding:26px;color:var(--text-muted);">لا توجد نتائج مطابقة للفلتر</td></tr>';
+  var h = '';
+  for(var i=0;i<list.length;i++){
+    var d = list[i];
+    var rk = (i===0)?'gold':(i===1)?'silver':(i===2)?'bronze':'normal';
+    h += '<tr onclick="showDoctorMulti(\''+escapeAttr(d.name)+'\')" style="cursor:pointer;">'
+       + '<td><span class="rank '+rk+'">'+(i+1)+'</span></td>'
+       + '<td><div style="font-weight:700;font-size:12.5px;line-height:1.5;min-width:170px;max-width:280px;white-space:normal;word-break:break-word;">'+escapeHtml(d.name)+'</div>'
+       + '<div style="font-size:10px;color:var(--text-muted);">'+escapeHtml(d.section)+'</div></td>';
+    for(var p=0;p<PUREHERB_PRODUCTS.length;p++){
+      var key = PUREHERB_PRODUCTS[p].key;
+      var c = d.perProduct[key] || 0;
+      var col = phColor(p);
+      var dim = (pkFilter && pkFilter !== key) ? 'opacity:.35;' : '';
+      if(c>0){
+        h += '<td style="text-align:center;'+dim+'"><span style="display:inline-block;min-width:26px;padding:3px 8px;border-radius:8px;background:'+col+'22;color:'+col+';font-weight:800;font-size:12px;font-family:\'Inter\',\'Alexandria\',sans-serif;">'+c+'</span></td>';
+      } else {
+        h += '<td style="text-align:center;'+dim+'"><span style="color:var(--text-muted);opacity:.3;">·</span></td>';
+      }
+    }
+    h += '<td style="text-align:center;"><span class="num-font" style="font-size:15px;font-weight:900;color:#a855f7;">'+fmt(d.total)+'</span></td>'
+       + '<td style="text-align:center;"><button class="btn" style="padding:4px 11px;font-size:13px;" onclick="event.stopPropagation();showPHShareCard(\''+escapeAttr(d.name)+'\')">📤</button></td>'
+       + '</tr>';
+  }
+  return h;
+}
+function showPHShareCard(name){
+  var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  var _bg = isLight ? 'linear-gradient(150deg,#faf8ff,#ffffff 60%,#f5f0ff)' : 'linear-gradient(150deg,#1e1633,#100a26 60%,#180f2e)';
+  var _border = isLight ? 'rgba(124,58,237,.2)' : 'rgba(168,85,247,.35)';
+  var _shadow = isLight ? '0 30px 80px rgba(0,0,0,.12)' : '0 30px 80px rgba(0,0,0,.6)';
+  var _overlay = isLight ? 'rgba(255,255,255,.75)' : 'rgba(5,8,18,.82)';
+  var _nameColor = isLight ? '#0f172a' : '#fff';
+  var _secColor = isLight ? '#64748b' : '#8b95b5';
+  var _chipBg = isLight ? 'rgba(15,23,42,.04)' : 'rgba(255,255,255,.06)';
+  var _chipBorder = isLight ? 'rgba(15,23,42,.1)' : 'rgba(255,255,255,.12)';
+  var _chipName = isLight ? '#0f172a' : '#fff';
+  var _totalLabel = isLight ? '#334155' : '#cdd5f0';
+  var _thanksColor = isLight ? '#475569' : '#9aa7c4';
+  var _dateColor = isLight ? '#94a3b8' : '#6b7494';
+  var _closeBg = isLight ? 'rgba(15,23,42,.06)' : 'rgba(255,255,255,.08)';
+  var _closeColor = isLight ? '#475569' : '#cdd5f0';
+  var _dashed = isLight ? 'rgba(15,23,42,.12)' : 'rgba(255,255,255,.15)';
+  var section = '';
+  if(window._phAgg){ for(var si=0; si<window._phAgg.docs.length; si++){ if(window._phAgg.docs[si].name === name){ section = window._phAgg.docs[si].section; break; } } }
+  var ph = getPureHerbForDoctor(name);
+  if(!ph.items.length){ toast('لا توجد كتابات PureHerb لهذا الطبيب','error'); return; }
+  closePHShareCard();
+  var chips = '';
+  for(var q=0;q<ph.items.length;q++){
+    var pc = phColor(q);
+    chips += '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-radius:14px;background:'+_chipBg+';border:1px solid '+_chipBorder+';margin-bottom:9px;">'
+      + '<span style="font-family:\'Inter\',sans-serif;font-weight:800;font-size:24px;color:'+pc+';min-width:36px;">'+ph.items[q].count+'</span>'
+      + '<span style="font-weight:900;font-size:18px;color:'+_chipName+';text-align:center;flex:1;letter-spacing:.3px;">'+escapeHtml(ph.items[q].name)+'</span>'
+      + '<span style="width:12px;height:12px;border-radius:50%;background:'+pc+';flex-shrink:0;"></span></div>';
+  }
+  var ov = document.createElement('div');
+  ov.id = 'phShareOverlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:'+_overlay+';backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px;';
+  ov.onclick = function(e){ if(e.target === ov) closePHShareCard(); };
+  ov.innerHTML = '<div style="width:100%;max-width:430px;border-radius:22px;padding:26px 24px;background:'+_bg+';border:1px solid '+_border+';box-shadow:'+_shadow+';">'
+    + '<div style="position:relative;text-align:center;padding:2px 0 4px;">'
+    + '<span style="font-size:24px;font-weight:900;letter-spacing:4px;font-family:\'Inter\',sans-serif;background:linear-gradient(90deg,#a855f7,#7c3aed);-webkit-background-clip:text;background-clip:text;color:transparent;">PUREHERB</span>'
+    + '<button onclick="closePHShareCard()" style="position:absolute;left:0;top:50%;transform:translateY(-50%);border:none;background:'+_closeBg+';color:'+_closeColor+';border-radius:9px;padding:5px 12px;cursor:pointer;font-family:inherit;font-size:12px;">إغلاق ✕</button></div>'
+    + '<div style="font-size:20px;font-weight:900;color:'+_nameColor+';margin-top:14px;line-height:1.5;text-align:center;">'+escapeHtml(name)+'</div>'
+    + '<div style="font-size:12px;color:'+_secColor+';margin-bottom:18px;text-align:center;">'+escapeHtml(section)+'</div>'
+    + chips
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:14px;border-top:1px dashed '+_dashed+';">'
+    + '<span style="font-weight:800;color:'+_totalLabel+';font-size:13.5px;">إجمالي كتابات PureHerb</span>'
+    + '<span style="font-family:\'Inter\',sans-serif;font-weight:700;font-size:26px;color:#a855f7;">'+fmt(ph.total)+'</span></div>'
+    + '<div style="text-align:center;margin-top:16px;font-size:12.5px;color:'+_thanksColor+';">شكراً لثقتكم ودعمكم لمنتجاتنا 🌟</div>'
+    + '<div style="text-align:center;margin-top:10px;font-size:9.5px;color:'+_dateColor+';">التقرير الدوري لرئيس مجلس الادارة يوليو 2027</div>'
+    + '</div>';
+  document.body.appendChild(ov);
+}
+function closePHShareCard(){ var ov = document.getElementById('phShareOverlay'); if(ov) ov.remove(); }
 
 function renderPLDoctorsAgg(){
   const box = document.getElementById('plDoctorsAgg');
@@ -5149,8 +5550,9 @@ document.getElementById('shareBtn').onclick=()=>{
   showLoad();
   try{
     let html=SOURCE_TEMPLATE;
-    const payload={branches:{}};
+    const payload={branches:{},periods:{},dt:(typeof DT!=='undefined'&&DT.store)?DT.store:{}};
     BRANCHES.forEach(b=>{const d=STATE.data[b];if(d) payload.branches[b]={rows:d.rows,reportName:d.reportName,reportDate:d.reportDate};});
+    BRANCHES.forEach(b=>{payload.periods[b]=(STATE.periods[b]||[]).map(p=>({id:p.id,label:p.label,rows:p.rows,_main:!!p._main}));});
     const closeToken='<'+'/scr'+'ipt>',openToken='<scr'+'ipt id="embedded-rx-data">';
     const json=JSON.stringify(payload).split(closeToken).join('<\\/scr'+'ipt>');
     const tag=openToken+'window.__EMBEDDED_RX__='+json+';'+closeToken;
@@ -5166,7 +5568,21 @@ document.getElementById('shareBtn').onclick=()=>{
 
 function loadEmbedded(){
   if(!window.__EMBEDDED_RX__) return;const d=window.__EMBEDDED_RX__;
-  if(d.branches){BRANCHES.forEach(b=>{if(d.branches[b]&&d.branches[b].rows&&d.branches[b].rows.length){setBranchData(b,d.branches[b].rows,d.branches[b].reportName||BRANCH_LABELS[b],d.branches[b].reportDate||'');if(!STATE.active) STATE.active=b;}});}
+  /* الملفات الأحدث تحمل الفترات الكاملة؛ القديمة تحمل الصفوف الأساسية فقط */
+  if(d.periods && Object.keys(d.periods).length){
+    BRANCHES.forEach(b=>{
+      const ps=d.periods[b];
+      if(ps && ps.length){
+        STATE.periods[b]=ps.map(p=>({id:p.id,label:p.label,rows:p.rows,_main:!!p._main,data:aggregate(p.rows||[])}));
+        rebuildBranchFromPeriods(b);
+        _restoreBranchUI(b);
+        if(!STATE.active) STATE.active=b;
+      }
+    });
+  } else if(d.branches){
+    BRANCHES.forEach(b=>{if(d.branches[b]&&d.branches[b].rows&&d.branches[b].rows.length){setBranchData(b,d.branches[b].rows,d.branches[b].reportName||BRANCH_LABELS[b],d.branches[b].reportDate||'');if(!STATE.active) STATE.active=b;}});
+  }
+  if(d.dt && typeof d.dt==='object' && typeof DT!=='undefined') DT.store=d.dt;
   function tryRender(n){if(typeof Chart!=='undefined'){renderAll();}else if(n>0) setTimeout(()=>tryRender(n-1),200);else renderAll();}
   tryRender(25);
 }
@@ -6206,308 +6622,7 @@ function renderBasket() {
 
 
 
-// ══════════════════════════════════════════
-// HOME — الصفحة الرئيسية الشاملة
-// تجمع كل المؤشرات من كل الفروع المرفوعة في مكان واحد
-// ══════════════════════════════════════════
-function renderHome() {
-  /* مدموجة مع "نظرة عامة" — إعادة توجيه آمن */
-  const ov = BRANCHES.filter(b=>STATE.data[b]);
-  if(ov.length){ window._activePanel='overview'; renderOverview(STATE.data[STATE.active]||STATE.data[ov[0]]); return; }
-  const container = document.getElementById('home-content');
-  if(!container) return;
-  const loaded = BRANCHES.filter(b => STATE.data[b]);
-
-  if (!loaded.length) {
-    container.innerHTML = `
-      <div class="card">
-        <div style="text-align:center;padding:60px 20px;">
-          <div style="font-size:56px;margin-bottom:16px;">🏠</div>
-          <h2 style="font-size:22px;font-weight:800;margin-bottom:10px;">مرحباً بك في PharmaDash</h2>
-          <p style="color:var(--text-dim);font-size:14px;line-height:1.7;max-width:480px;margin:0 auto 24px;">
-            منصة تحليل كتابات الأطباء. ارفع ملفات تقارير الفروع (PDF من نظام Oracle أو Excel) لبدء التحليل الشامل.
-          </p>
-          <div style="display:inline-flex;gap:10px;flex-wrap:wrap;justify-content:center;">
-            <div style="padding:10px 18px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:var(--r-md);font-size:13px;">
-              📄 يقبل تقارير Doctor's Medication Orders
-            </div>
-            <div style="padding:10px 18px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:var(--r-md);font-size:13px;">
-              📊 PDF · Excel · CSV
-            </div>
-          </div>
-        </div>
-      </div>`;
-    return;
-  }
-
-  // ── تجميع كل الفروع ──
-  let totalRows = 0, totalPatients = 0, totalOrders = 0;
-  const docAgg = new Map(), drugAgg = new Map(), secAgg = new Map();
-  const statusTotal = {};
-  const branchStats = [];
-  const plKeys = PRIVATE_LABEL.map(p => p.key.toLowerCase());
-  let plTotal = 0;
-
-  loaded.forEach(b => {
-    const d = STATE.data[b];
-    totalRows += d.totalRows || 0;
-    totalPatients += d.totalPatients || 0;
-    totalOrders += d.totalOrders || 0;
-
-    // status
-    if (d.statusCounts) Object.entries(d.statusCounts).forEach(([k, v]) => statusTotal[k] = (statusTotal[k] || 0) + v);
-
-    // branch-level summary
-    branchStats.push({
-      key: b, name: BRANCH_LABELS[b] || b,
-      total: d.totalRows || 0,
-      doctors: d.doctors.length,
-      drugs: d.drugs.length,
-      patients: d.totalPatients || 0
-    });
-
-    // doctors
-    d.doctors.forEach(doc => {
-      if (!docAgg.has(doc.name)) docAgg.set(doc.name,{ name: doc.name, section: doc.section || '—', total: 0 });
-      docAgg.get(doc.name).total += doc.total;
-    });
-    // drugs
-    d.drugs.forEach(dr => {
-      if (!drugAgg.has(dr.name)) drugAgg.set(dr.name,{ name: dr.name, total: 0 });
-      drugAgg.get(dr.name).total += dr.total;
-      if (plKeys.some(k => dr.name.toLowerCase().includes(k))) plTotal += dr.total;
-    });
-    // sections
-    d.sections.forEach(s => {
-      if (!secAgg.has(s.name)) secAgg.set(s.name,{ name: s.name, total: 0 });
-      secAgg.get(s.name).total += s.total;
-    });
-  });
-
-  const topDocs = [...docAgg.values()].sort((a, b) => b.total - a.total);
-  const topDrugs = [...drugAgg.values()].sort((a, b) => b.total - a.total);
-  const topSecs = [...secAgg.values()].sort((a, b) => b.total - a.total);
-  const grandTotal = topDocs.reduce((s, d) => s + d.total, 0);
-
-  // Status calculations
-  const closed = statusTotal['Closed'] || 0;
-  const canceled = statusTotal['Canceled'] || 0;
-  const newOrd = statusTotal['New'] || 0;
-  const conversionRate = (closed + canceled) > 0 ? (closed / (closed + canceled) * 100).toFixed(1) : '—';
-  const plPct = grandTotal > 0 ? (plTotal / grandTotal * 100).toFixed(1) : '0.0';
-
-  // ── Mini trend: حساب التغيّر مقابل الفترة السابقة (لو في فترتين) ──
-  let trendRx = null, trendDocs = null, trendPL = null;
-  const periodBranches = loaded.filter(b => (STATE.periods[b]||[]).length >= 2);
-  if (periodBranches.length) {
-    let baseRx=0, curRx=0, basePL=0, curPL=0;
-    const baseDocs=new Set(), curDocs=new Set();
-    periodBranches.forEach(b => {
-      const ps = STATE.periods[b];
-      // رتّب زمنياً: الأقدم = base (قبل)، الأحدث = current (بعد)
-      const scored = ps.map(p=>({p, s:periodDateScore(p.label)}));
-      const allDated = scored.every(x=>x.s>0);
-      let oldestP, newestP;
-      if(allDated){ const srt=[...scored].sort((a,b)=>a.s-b.s); oldestP=srt[0].p; newestP=srt[srt.length-1].p; }
-      else { oldestP=ps[0]; newestP=ps[ps.length-1]; }
-      const bp = oldestP.data, cp = newestP.data;
-      baseRx += bp.totalRows||0; curRx += cp.totalRows||0;
-      (bp.doctors||[]).forEach(d=>baseDocs.add(d.name));
-      (cp.doctors||[]).forEach(d=>curDocs.add(d.name));
-      (bp.drugs||[]).forEach(dr=>{ if(plKeys.some(k=>dr.name.toLowerCase().includes(k))) basePL+=dr.total; });
-      (cp.drugs||[]).forEach(dr=>{ if(plKeys.some(k=>dr.name.toLowerCase().includes(k))) curPL+=dr.total; });
-    });
-    if (baseRx>0) trendRx = ((curRx-baseRx)/baseRx*100);
-    if (baseDocs.size>0) trendDocs = ((curDocs.size-baseDocs.size)/baseDocs.size*100);
-    if (basePL>0) trendPL = ((curPL-basePL)/basePL*100);
-  }
-  // دالة مساعدة لعرض السهم
-  function miniTrend(v) {
-    if (v===null||v===undefined) return '';
-    const up = v>=0;
-    const color = up ? 'var(--teal-l)' : 'var(--rose-l)';
-    const arrow = up ? '↑' : '↓';
-    return `<span style="font-size:11px;font-weight:800;color:${color};margin-right:6px;">${arrow}${Math.abs(v).toFixed(0)}%</span>`;
-  }
-
-  // ── Status Strip ──
-  const lastUpdate = new Date().toLocaleString('ar-EG',{ hour:'2-digit', minute:'2-digit', day:'numeric', month:'short' });
-  const totalPeriods = loaded.reduce((s,b)=>s+(STATE.periods[b]||[]).length,0);
-
-  container.innerHTML = `
-    <!-- Status Strip -->
-    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px 18px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:14px;font-size:12px;">
-      <span style="display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--teal-l);">
-        <span style="width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal);"></span>
-        البيانات محمّلة
-      </span>
-      <span style="color:var(--text-muted);">|</span>
-      <span style="color:var(--text-dim);">🏪 ${loaded.length} ${loaded.length===1?'فرع':'فروع'}</span>
-      <span style="color:var(--text-dim);">👨‍⚕️ ${fmt(topDocs.length)} طبيب محلَّل</span>
-      ${totalPeriods?`<span style="color:var(--text-dim);">📅 ${fmt(totalPeriods)} فترة زمنية</span>`:''}
-      <span style="margin-right:auto;color:var(--text-muted);font-size:11px;">آخر تحديث: ${lastUpdate}</span>
-    </div>
-
-    <!-- ترويسة الترحيب -->
-    <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(37,99,235,.08),rgba(13,148,136,.04));">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-        <div>
-          <div style="font-size:20px;font-weight:900;font-family:'Inter','Alexandria',sans-serif;margin-bottom:4px;">لوحة القيادة الرئيسية</div>
-          <div style="font-size:13px;color:var(--text-dim);">نظرة شاملة على ${loaded.length} ${loaded.length === 1 ? 'فرع' : 'فروع'} · ${fmt(topDocs.length)} طبيب · ${fmt(topDrugs.length)} صنف دواء</div>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn-export" onclick="exportHomePDF()" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.3);border-radius:var(--r-md);color:var(--rose-l);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;">
-            📄 PDF
-          </button>
-          <button class="btn-export" onclick="exportHomeExcel()" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:rgba(13,148,136,.12);border:1px solid rgba(13,148,136,.3);border-radius:var(--r-md);color:var(--teal-l);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;">
-            📊 Excel
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- KPI الرئيسية -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px;">
-      ${[
-        { label: 'إجمالي الكتابات', val: fmt(grandTotal), icon: '📝', color: 'var(--violet-l)', bg: 'rgba(37,99,235,.1)', border: 'rgba(37,99,235,.25)', trend: trendRx },{ label: 'الأطباء', val: fmt(topDocs.length), icon: '👨‍⚕️', color: 'var(--teal-l)', bg: 'rgba(13,148,136,.1)', border: 'rgba(13,148,136,.25)', trend: trendDocs },{ label: 'الأصناف', val: fmt(topDrugs.length), icon: '💊', color: 'var(--sky-l)', bg: 'rgba(2,132,199,.1)', border: 'rgba(2,132,199,.25)' },{ label: 'المرضى', val: fmt(totalPatients), icon: '🧑‍🦱', color: 'var(--amber-l)', bg: 'rgba(217,119,6,.1)', border: 'rgba(217,119,6,.25)' },{ label: 'التخصصات', val: fmt(topSecs.length), icon: '🏥', color: '#7c3aed', bg: 'rgba(124,58,237,.1)', border: 'rgba(124,58,237,.25)' },{ label: 'نسبة Private Label', val: plPct + '%', icon: '⭐', color: '#db2777', bg: 'rgba(219,39,119,.1)', border: 'rgba(219,39,119,.25)', trend: trendPL },
-      ].map(k => `
-        <div style="background:${k.bg};border:1px solid ${k.border};border-radius:var(--r-lg);padding:16px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <div style="font-size:11px;font-weight:800;color:${k.color};letter-spacing:.3px;">${k.label}</div>
-            <div style="font-size:18px;">${k.icon}</div>
-          </div>
-          <div style="display:flex;align-items:baseline;">
-            <span style="font-size:26px;font-weight:900;font-family:'Inter','Alexandria',sans-serif;color:${k.color};">${k.val}</span>
-            ${k.trend!==null&&k.trend!==undefined?'<span style="margin-right:auto;">'+miniTrend(k.trend)+'</span>':''}
-          </div>
-        </div>`).join('')}
-    </div>
-
-    ${closed + canceled + newOrd > 0 ? `
-    <!-- تحليل حالة الوصفات -->
-    <div class="card" style="margin-bottom:16px;">
-      <div class="card-head"><div class="card-title"><span class="dot"></span> حالة الوصفات — Conversion Analysis</div></div>
-      <div class="grid-2" style="gap:16px;">
-        <div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
-            <div style="background:rgba(13,148,136,.1);border:1px solid rgba(13,148,136,.3);border-radius:var(--r-md);padding:14px;text-align:center;">
-              <div style="font-size:11px;font-weight:800;color:var(--teal-l);margin-bottom:6px;">✅ مُغلقة</div>
-              <div style="font-size:24px;font-weight:900;font-family:'Inter','Alexandria',sans-serif;color:var(--teal-l);">${fmt(closed)}</div>
-              <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">صُرفت فعلاً</div>
-            </div>
-            <div style="background:rgba(2,132,199,.1);border:1px solid rgba(2,132,199,.3);border-radius:var(--r-md);padding:14px;text-align:center;">
-              <div style="font-size:11px;font-weight:800;color:var(--sky-l);margin-bottom:6px;">🆕 جديدة</div>
-              <div style="font-size:24px;font-weight:900;font-family:'Inter','Alexandria',sans-serif;color:var(--sky-l);">${fmt(newOrd)}</div>
-              <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">قيد التنفيذ</div>
-            </div>
-            <div style="background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.3);border-radius:var(--r-md);padding:14px;text-align:center;">
-              <div style="font-size:11px;font-weight:800;color:var(--rose-l);margin-bottom:6px;">❌ ملغاة</div>
-              <div style="font-size:24px;font-weight:900;font-family:'Inter','Alexandria',sans-serif;color:var(--rose-l);">${fmt(canceled)}</div>
-              <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">لم تُصرف</div>
-            </div>
-          </div>
-          ${conversionRate !== '—' ? `
-          <div style="background:var(--bg-glass2);border:1px solid var(--border);border-radius:var(--r-md);padding:14px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-              <span style="font-size:12px;font-weight:700;color:var(--text-muted);">معدل التحويل (مُغلقة ÷ المنتهية)</span>
-              <span style="font-size:18px;font-weight:900;color:${parseFloat(conversionRate) >= 90 ? 'var(--teal-l)' : parseFloat(conversionRate) >= 75 ? 'var(--amber-l)' : 'var(--rose-l)'};">${conversionRate}%</span>
-            </div>
-            <div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden;">
-              <div style="height:100%;width:${conversionRate}%;background:${parseFloat(conversionRate) >= 90 ? 'var(--teal)' : parseFloat(conversionRate) >= 75 ? 'var(--amber)' : 'var(--rose)'};border-radius:4px;"></div>
-            </div>
-          </div>` : ''}
-        </div>
-        <div style="position:relative;height:200px;"><canvas id="homeStatusChart"></canvas></div>
-      </div>
-    </div>` : ''}
-
-    <!-- شبكة التحليلات -->
-    <div class="grid-2" style="gap:16px;margin-bottom:16px;">
-      <!-- أعلى الأطباء -->
-      <div class="card">
-        <div class="card-head"><div class="card-title"><span class="dot"></span> أعلى 8 أطباء</div>
-          <span style="font-size:11px;color:var(--text-muted);cursor:pointer;" onclick="sidebarNav(document.querySelector('[data-tab=doctors]'),'doctors')">عرض الكل ←</span>
-        </div>
-        ${topDocs.slice(0, 8).map((d, i) => `
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px;cursor:pointer;" onclick="showDoctorMulti('${escapeAttr(d.name)}')">
-            <span class="rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal'}">${i + 1}</span>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(d.name)}</div>
-              <div style="height:3px;background:var(--border);border-radius:2px;margin-top:3px;"><div style="height:100%;width:${(d.total / topDocs[0].total * 100).toFixed(0)}%;background:var(--gv);border-radius:2px;"></div></div>
-            </div>
-            <div style="font-size:13px;font-weight:900;font-family:'Inter','Alexandria',sans-serif;color:var(--violet-l);min-width:42px;text-align:left;">${fmt(d.total)}</div>
-          </div>`).join('')}
-      </div>
-
-      <!-- أعلى الأدوية -->
-      <div class="card">
-        <div class="card-head"><div class="card-title"><span class="dot"></span> أعلى 8 أدوية</div>
-          <span style="font-size:11px;color:var(--text-muted);cursor:pointer;" onclick="sidebarNav(document.querySelector('[data-tab=drugs]'),'drugs')">عرض الكل ←</span>
-        </div>
-        ${topDrugs.slice(0, 8).map((d, i) => `
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px;cursor:pointer;" onclick="showDrug('${escapeAttr(d.name)}')">
-            <span class="rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal'}">${i + 1}</span>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeAttr(d.name)}">${escapeHtml(d.name)}</div>
-              <div style="height:3px;background:var(--border);border-radius:2px;margin-top:3px;"><div style="height:100%;width:${(d.total / topDrugs[0].total * 100).toFixed(0)}%;background:var(--gt);border-radius:2px;"></div></div>
-            </div>
-            <div style="font-size:13px;font-weight:900;font-family:'Inter','Alexandria',sans-serif;color:var(--teal-l);min-width:42px;text-align:left;">${fmt(d.total)}</div>
-          </div>`).join('')}
-      </div>
-    </div>
-
-    <!-- التخصصات + الفروع -->
-    <div class="grid-2" style="gap:16px;">
-      <div class="card">
-        <div class="card-head"><div class="card-title"><span class="dot"></span> توزيع التخصصات</div></div>
-        <div style="position:relative;height:240px;"><canvas id="homeSecChart"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-head"><div class="card-title"><span class="dot"></span> ملخص الفروع</div></div>
-        ${branchStats.sort((a, b) => b.total - a.total).map(b => `
-          <div style="padding:12px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:8px;cursor:pointer;" onclick="STATE.active='${b.key}';sidebarNav(document.querySelector('[data-tab=overview]'),'overview');">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-              <div style="font-size:13px;font-weight:800;">${escapeHtml(b.name)}</div>
-              <div style="font-size:15px;font-weight:900;font-family:'Inter','Alexandria',sans-serif;color:var(--violet-l);">${fmt(b.total)}</div>
-            </div>
-            <div style="display:flex;gap:14px;font-size:11px;color:var(--text-dim);">
-              <span>👨‍⚕️ ${fmt(b.doctors)} طبيب</span>
-              <span>💊 ${fmt(b.drugs)} صنف</span>
-              <span>🧑‍🦱 ${fmt(b.patients)} مريض</span>
-            </div>
-          </div>`).join('')}
-      </div>
-    </div>`;
-
-  // ── الشارتات ──
-  setTimeout(() => {
-    const c = chartColors();
-
-    // Status doughnut
-    if (closed + canceled + newOrd > 0) {
-      destroyChart('homeStatusChart');
-      const ctxS = document.getElementById('homeStatusChart');
-      if (ctxS) {
-        charts['homeStatusChart'] = new Chart(ctxS,{
-          type: 'doughnut',
-          data: { labels: ['مُغلقة', 'جديدة', 'ملغاة'], datasets: [{ data: [closed, newOrd, canceled], backgroundColor: ['rgba(13,148,136,.8)', 'rgba(2,132,199,.8)', 'rgba(220,38,38,.8)'], borderWidth: 0, hoverOffset: 10 }] },
-          options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'bottom', labels: { color: c.text, font: { family: 'IBM Plex Sans Arabic', size: 11 }, boxWidth: 10, padding: 8 } }, tooltip: tt(c) } }
-        });
-      }
-    }
-
-    // Sections doughnut
-    destroyChart('homeSecChart');
-    const ctxSec = document.getElementById('homeSecChart');
-    if (ctxSec) {
-      charts['homeSecChart'] = new Chart(ctxSec,{
-        type: 'doughnut',
-        data: { labels: topSecs.slice(0, 8).map(s => s.name), datasets: [{ data: topSecs.slice(0, 8).map(s => s.total), backgroundColor: PALETTE.slice(0, 8), borderWidth: 0, hoverOffset: 10 }] },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'right', labels: { color: c.text, font: { family: 'IBM Plex Sans Arabic', size: 10 }, boxWidth: 10, padding: 6 } }, tooltip: tt(c) } }
-      });
-    }
-  }, 60);
-}
+/* renderHome() removed — merged into "نظرة عامة" (renderOverview) */
 
 // ── تصدير الصفحة الرئيسية ──
 function exportHomeExcel() {
@@ -8138,75 +8253,8 @@ function renderCompare() {
   container.innerHTML = html;
 }
 
-/* ══ UPGRADE: HOOK COMPARE INTO RENDERACTIVE ══ */
-/* ══ UPGRADE: EXPORT EXCEL ══ */
-document.getElementById('exportXlsxBtn').onclick = () => {
-  const loaded = BRANCHES.filter(b => STATE.data[b]);
-  if (!loaded.length) { toast('لا توجد بيانات للتصدير', 'error'); return; }
-  showLoad();
-  try {
-    const wb = XLSX.utils.book_new();
-    // Raw data sheet
-    const head = ['الفرع','الطبيب','القسم','الدواء','الحالة','رقم المريض','اسم المريض','رقم الأمر'];
-    const rows = [head];
-    loaded.forEach(b => STATE.data[b].rows.forEach(r => rows.push([BRANCH_LABELS[b],r.doctor,r.section,r.service,r.status,r.patient,r.patientName,r.orderNo])));
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'البيانات الكاملة');
-    // Doctors summary sheet
-    const docHead = ['الفرع','الطبيب','القسم','الكتابات','الأصناف','المرضى'];
-    const docRows = [docHead];
-    loaded.forEach(b => STATE.data[b].doctors.forEach(d => docRows.push([BRANCH_LABELS[b],d.name,d.section||'',d.total,d.uniqueDrugs,d.patients])));
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(docRows), 'ملخص الأطباء');
-    // Drugs summary sheet
-    const drugHead = ['الفرع','الدواء','الكتابات','الأطباء','المرضى'];
-    const drugRows = [drugHead];
-    loaded.forEach(b => STATE.data[b].drugs.forEach(d => drugRows.push([BRANCH_LABELS[b],d.name,d.total,d.doctorCount,d.patients])));
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(drugRows), 'ملخص الأدوية');
-    // Private label sheet
-    const plHead = ['المنتج','T1','T2','T3','الإجمالي'];
-    const plRows = [plHead];
-    PRIVATE_LABEL.forEach(prod => {
-      const q = prod.key.toLowerCase(); const bt = {T1:0,T2:0,T3:0};
-      loaded.forEach(b => STATE.data[b].drugs.filter(x=>x.name.toLowerCase().includes(q)).forEach(m=>bt[b]+=m.total));
-      plRows.push([prod.name, bt.T1, bt.T2, bt.T3, bt.T1+bt.T2+bt.T3]);
-    });
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(plRows), 'Private Label');
-    XLSX.writeFile(wb, 'تقرير-كتابات-الأطباء-'+new Date().toISOString().slice(0,10)+'.xlsx');
-    toast('تم التصدير إلى Excel ✓');
-  } catch(e) { toast('فشل التصدير: '+e.message, 'error'); }
-  finally { hideLoad(); }
-};
-
-/* ══ UPGRADE: PRINT ══ */
-var _pb=document.getElementById('printBtn');if(_pb)_pb.onclick = () => window.print();
-
-/* ══ UPGRADE: KEYBOARD SHORTCUTS ══ */
-document.addEventListener('keydown', e => {
-  // Ctrl/Cmd + K → global search focus
-  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-    e.preventDefault();
-    gSearch.focus(); gSearch.select();
-  }
-  // Ctrl/Cmd + P → print
-  if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
-    // let browser handle
-  }
-  // 1-8 → switch tabs
-  if (!e.ctrlKey && !e.metaKey && !e.altKey && document.activeElement.tagName !== 'INPUT') {
-    const tabs = [...document.querySelectorAll('.tab')];
-    const n = parseInt(e.key);
-    if (n >= 1 && n <= tabs.length) {
-      tabs[n-1].click();
-    }
-  }
-});
-
-/* ══ UPGRADE: COMPARE TAB IN BRANCH PICKER LOGIC ══ */
-document.getElementById('tabs').addEventListener('click', e => {
-  const b = e.target.closest('.tab'); if (!b) return;
-  const panel = b.dataset.panel;
-  const hidePicker = ['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','drugintel','targettrack','nearexpiry','plsales','pureherb','dailytrack','agedmeds'];
-  document.getElementById('branchPickerCard').style.display = hidePicker.includes(panel) ? 'none' : 'block';
-}, true);
+/* ملاحظة: مُصدِّر Excel واختصارات لوحة المفاتيح ومستمعو #tabs القديمة
+   كانت مُعرَّفة مرتين — أُبقيَت النسخة الموحّدة أدناه فقط (GODMODE V7). */
 
 /* ════════════════════════════════════════════════════
    MULTI-PERIOD SYSTEM
@@ -8220,27 +8268,7 @@ const PERIOD_COLORS = ['pc0','pc1','pc2','pc3','pc4'];
 /* _pending vars moved to top */
 
 
-/* ── Intercept the original upload buttons (replace mode) ── */
-BRANCHES.forEach(b => {
-  const btn = document.querySelector('[data-upload="'+b+'"]');
-  const inp = document.getElementById('file-'+b);
-  // replace original onclick
-  btn.onclick = () => { _pendingBranch = b; _pendingMode = 'replace'; inp.click(); };
-  inp.onchange = e => {
-    if (!e.target.files[0]) return;
-    const file = e.target.files[0];
-    inp.value = '';
-    if (_pendingMode === 'period') {
-      const label = inp._pendingLabel || 'فترة '+(STATE.periods[_pendingBranch].length+1);
-      inp._pendingLabel = null;
-      _pendingMode = null;
-      handlePeriodFile(_pendingBranch, label, file);
-    } else {
-      // replace = original behaviour
-      handleFile(b, file);
-    }
-  };
-});
+/* ── مستمعو الرفع (onclick/onchange + السحب والإفلات) مُعرَّفون مرة واحدة أعلى الملف ── */
 
 /* ── Add-period flow ── */
 function startAddPeriod(branch) {
@@ -8301,7 +8329,7 @@ async function handlePeriodFile(branch, label, file) {
     setTimeout(()=>_upHide(branch),500);
     renderPeriodBadges(branch);
     renderAll();
-    /* الحفظ ملغى */
+    saveData();
     toast('✓ "'+label+'" — '+BRANCH_LABELS[branch]+' ('+fmt(rows.length)+' وصفة)');
   } catch(e) {
     console.error(e);
@@ -8349,7 +8377,7 @@ function deletePeriod(branch, id) {
   if (!STATE.data[branch] && STATE.active === branch) {
     STATE.active = BRANCHES.find(b => STATE.data[b]) || null;
   }
-  /* الحفظ ملغى */
+  saveData();
   renderPeriodBadges(branch);
   // also update meta text
   const periods = STATE.periods[branch];
@@ -9120,7 +9148,7 @@ function sidebarNav(el, panel) {
   const panelEl = document.getElementById('panel-'+panel);
   if (panelEl) panelEl.classList.add('active');
   document.getElementById('branchPickerCard').style.display =
-    (['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','drugintel','targettrack','nearexpiry','plsales','pureherb','dailytrack','agedmeds'].includes(panel))?'none':'block';
+    (NO_BRANCH_TABS.includes(panel))?'none':'block';
   renderActive();
   try{ setTimeout(function(){ animateNums(document.getElementById('panel-'+panel)); }, 40); }catch(e){}
   // العودة لأعلى الصفحة عند تبديل القسم
@@ -9183,25 +9211,21 @@ window.renderActive = function() {
   updateSidebarBadges();
 };
 
-// Sync sidebar nav when top tabs are clicked (tabs hidden but still functional)
-document.getElementById('tabs').addEventListener('click', e => {
-  const b = e.target.closest('.tab');
-  if (!b) return;
-  const panel = b.dataset.panel;
-  document.querySelectorAll('.sb-nav-item').forEach(i => {
-    i.classList.toggle('active', i.dataset.tab === panel);
-  });
-});
-
 
 /* ══════════════════════════════════════════
    LOGIN SYSTEM
 ══════════════════════════════════════════ */
+/* كلمات المرور مخزّنة كـ SHA-256 (hex) حتى لا تظهر النصوص الصريحة في مصدر الصفحة.
+   ملاحظة: هذه بوابة عرض على جهة العميل فقط لملف HTML ثابت، وليست حماية خادم حقيقية. */
 const USERS = {
-  'elsayed':  { pass: 'pharma2026', name: 'Dr. Elsayed Hassan',  role: 'مدير تطوير الأعمال' },
-  'admin':    { pass: 'admin123',   name: 'Admin',               role: 'مدير النظام' },
-  'manager':  { pass: 'manager123', name: 'المدير',              role: 'مدير قطاع الصيدليات' },
+  'elsayed':  { hash: '0e8aea9b26ebdc3a3c2d02fd44dd58580cc9a02948f565286e8bf002927b6015', name: 'Dr. Elsayed Hassan',  role: 'مدير تطوير الأعمال' },
+  'admin':    { hash: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', name: 'Admin',               role: 'مدير النظام' },
+  'manager':  { hash: '866485796cfa8d7c0cf7111640205b83076433547577511d81f8030ae99ecea5', name: 'المدير',              role: 'مدير قطاع الصيدليات' },
 };
+async function _sha256Hex(s){
+  const buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return [...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
 
 
 function toggleTheme(){
@@ -9225,13 +9249,17 @@ function updateThemeIcon(){
   btn.title=isLight?'الوضع الداكن':'الوضع الفاتح';
 }
 
-function doLogin() {
+async function doLogin() {
   const u = document.getElementById('loginUser').value.trim().toLowerCase();
   const p = document.getElementById('loginPass').value;
   const err = document.getElementById('loginError');
-  if (USERS[u] && USERS[u].pass === p) {
+  const rec = USERS[u];
+  let ok = false;
+  if (rec) { try { ok = (await _sha256Hex(p)) === rec.hash; } catch (e) { console.error('login hash', e); ok = false; } }
+  if (ok) {
     err.classList.remove('show');
-    sessionStorage.setItem('pharmdash_user', JSON.stringify({ username: u, ...USERS[u] }));
+    /* لا نخزّن كلمة المرور — فقط بيانات العرض */
+    sessionStorage.setItem('pharmdash_user', JSON.stringify({ username: u, name: rec.name, role: rec.role }));
     const screen = document.getElementById('loginScreen');
     screen.style.transition = 'opacity .4s ease';
     screen.style.opacity = '0';
@@ -9262,7 +9290,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Check if already logged in this session
   if (sessionStorage.getItem('pharmdash_user')) {
     document.getElementById('loginScreen').style.display = 'none';
-    /* الاستعادة ملغاة */
+    /* استعادة البيانات تتم في معالج window.load عبر loadSavedData() */
   }
 });
 
@@ -9270,14 +9298,99 @@ document.addEventListener('DOMContentLoaded', () => {
    AUTO-SAVE TO localStorage
 ══════════════════════════════════════════ */
 /* ══════════════════════════════════════════
-   الحفظ/الاستعادة — مُلغى بناءً على طلب المستخدم
-   (كان يسبب خطأ مع الملفات الكبيرة جداً)
-   الدوال محتفظ بها كـ no-op حتى لا تنكسر أي استدعاءات
+   الحفظ/الاستعادة عبر IndexedDB
+   ── يخزّن الفترات (rows) + المتابعة اليومية للفرع النشط
+   ── IndexedDB يتحمّل الملفات الكبيرة (بلا حد 5MB الخاص بـ localStorage)
+   ── الحفظ مؤجَّل (debounced) لتفادي الكتابة المتكررة
 ══════════════════════════════════════════ */
-function saveData() { /* ملغى */ }
-function loadSavedData() { /* ملغى */ }
-function updateSavedBadge() { /* ملغى */ }
-function clearSavedData() { /* ملغى */ }
+const _IDB_NAME='pharmdash', _IDB_STORE='kv', _IDB_KEY='state';
+function _idbAvailable(){ try{ return typeof indexedDB!=='undefined' && indexedDB!==null; }catch(e){ return false; } }
+function _idbOpen(){
+  return new Promise((res,rej)=>{
+    const rq=indexedDB.open(_IDB_NAME,1);
+    rq.onupgradeneeded=()=>{ const db=rq.result; if(!db.objectStoreNames.contains(_IDB_STORE)) db.createObjectStore(_IDB_STORE); };
+    rq.onsuccess=()=>res(rq.result);
+    rq.onerror=()=>rej(rq.error);
+  });
+}
+function _idbPut(key,val){ return _idbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(_IDB_STORE,'readwrite'); tx.objectStore(_IDB_STORE).put(val,key); tx.oncomplete=()=>{db.close();res();}; tx.onerror=()=>{db.close();rej(tx.error);}; })); }
+function _idbGet(key){ return _idbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(_IDB_STORE,'readonly'); const r=tx.objectStore(_IDB_STORE).get(key); r.onsuccess=()=>{db.close();res(r.result);}; r.onerror=()=>{db.close();rej(r.error);}; })); }
+function _idbDelete(key){ return _idbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(_IDB_STORE,'readwrite'); tx.objectStore(_IDB_STORE).delete(key); tx.oncomplete=()=>{db.close();res();}; tx.onerror=()=>{db.close();rej(tx.error);}; })); }
+
+/* لقطة قابلة للتخزين: الصفوف الخام فقط (الـ aggregate يُعاد حسابه عند الاستعادة) */
+function _buildSnapshot(){
+  const snap={ v:1, active:STATE.active, periods:{}, dt:(typeof DT!=='undefined'&&DT.store)?DT.store:{} };
+  BRANCHES.forEach(b=>{
+    snap.periods[b]=(STATE.periods[b]||[]).map(p=>({ id:p.id, label:p.label, rows:p.rows, _main:!!p._main }));
+  });
+  return snap;
+}
+let _saveTimer=null;
+function saveData(){
+  if(!_idbAvailable()) return;
+  clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(()=>{
+    try{ _idbPut(_IDB_KEY,_buildSnapshot()).catch(e=>console.error('saveData',e)); }
+    catch(e){ console.error('saveData',e); }
+  },700);
+}
+/* استعادة واجهة كارت الفرع بعد تحميل الفترات */
+function _restoreBranchUI(branch){
+  const periods=STATE.periods[branch]||[];
+  const meta=document.getElementById('meta-'+branch);
+  const card=document.querySelector('.branch-card[data-branch="'+branch+'"]');
+  const btn=document.querySelector('[data-upload="'+branch+'"]');
+  if(!periods.length){ _resetBranchUI(branch); return; }
+  if(card) card.classList.add('has-data');
+  if(btn){ btn.textContent='🔄 إعادة'; btn.classList.add('reupload'); }
+  if(meta){
+    meta.className='meta status-loaded';
+    if(periods.length===1){ const total=(periods[0].rows||[]).length; meta.textContent='✓ '+fmt(total)+' وصفة · '+String(periods[0].label||'').slice(0,40); }
+    else { const total=periods.reduce((s,p)=>s+(p.rows||[]).length,0); meta.textContent='✓ '+periods.length+' فترة · '+fmt(total)+' وصفة'; }
+  }
+  if(typeof renderPeriodBadges==='function') renderPeriodBadges(branch);
+}
+function _resetBranchUI(branch){
+  const meta=document.getElementById('meta-'+branch);
+  const card=document.querySelector('.branch-card[data-branch="'+branch+'"]');
+  const btn=document.querySelector('[data-upload="'+branch+'"]');
+  if(meta){ meta.className='meta'; meta.textContent='لم يتم رفع ملف بعد'; }
+  if(card) card.classList.remove('has-data');
+  if(btn){ btn.textContent='رفع'; btn.classList.remove('reupload'); }
+  if(typeof renderPeriodBadges==='function') renderPeriodBadges(branch);
+}
+async function loadSavedData(){
+  if(!_idbAvailable()) return false;
+  let snap;
+  try{ snap=await _idbGet(_IDB_KEY); }catch(e){ console.error('loadSavedData',e); return false; }
+  if(!snap) return false;
+  let any=false;
+  try{
+    BRANCHES.forEach(b=>{
+      const ps=(snap.periods&&snap.periods[b])||[];
+      if(!ps.length) return;
+      STATE.periods[b]=ps.map(p=>({ id:p.id, label:p.label, rows:p.rows, _main:!!p._main, data:aggregate(p.rows||[]) }));
+      rebuildBranchFromPeriods(b);
+      _restoreBranchUI(b);
+      any=true;
+    });
+    if(snap.dt && typeof snap.dt==='object' && typeof DT!=='undefined') DT.store=snap.dt;
+    if(snap.active && STATE.data[snap.active]) STATE.active=snap.active;
+    else if(!STATE.active) STATE.active=BRANCHES.find(b=>STATE.data[b])||null;
+  }catch(e){ console.error('loadSavedData',e); }
+  return any || (snap.dt && Object.keys(snap.dt).length>0);
+}
+function updateSavedBadge() { /* لا يوجد شارة في الواجهة الحالية */ }
+function clearSavedData(){
+  try{ if(!confirm('مسح كل البيانات المحفوظة نهائياً؟ لا يمكن التراجع.')) return; }catch(e){}
+  if(_idbAvailable()) _idbDelete(_IDB_KEY).catch(e=>console.error('clearSavedData',e));
+  BRANCHES.forEach(b=>{ STATE.data[b]=null; STATE.periods[b]=[]; _resetBranchUI(b); });
+  if(typeof DT!=='undefined') DT.store={};
+  STATE.active=null;
+  clearTimeout(_saveTimer);
+  if(typeof renderAll==='function') renderAll();
+  toast('تم مسح البيانات المحفوظة');
+}
 
 /* ══════════════════════════════════════════
    SEND REPORT
@@ -9389,6 +9502,7 @@ async function dtHandleFile(file){
     if(!DT.store[ds]) DT.store[ds]={T1:null,T2:null,T3:null};
     DT.store[ds][branch]=dtProcessRows(rows);
     if(!DT.selDate) DT.selDate=ds;
+    saveData();
     renderDailyTrack();
     document.getElementById('dtDropZone').innerHTML='<div style="font-size:32px;margin-bottom:8px;">📄</div><div style="font-size:13px;font-weight:700;color:var(--violet-l);margin-bottom:4px;">اسحب الملف هنا أو اضغط للاختيار</div><div style="font-size:11px;color:var(--text-muted);">PDF · Excel · CSV — كتابات الأطباء</div>';
     res.innerHTML='✅ تم رفع '+BRANCH_LABELS[branch]+' — '+dtFmtAr(ds)+' ('+fmt(rows.length)+' كتابة)';
@@ -9553,7 +9667,7 @@ function dtRenderDay(ds){
         +'<div><div style="font-size:11px;font-weight:700;">'+x.docs+'</div><div style="font-size:10px;color:var(--text-muted);">طبيب</div></div>'
         +'<div><div style="font-size:11px;font-weight:700;">'+x.drugs+'</div><div style="font-size:10px;color:var(--text-muted);">صنف</div></div>'
         +'</div>'
-        +'<button onclick="DT.store[\''+ds+'\'][\''+b+'\']=null;renderDailyTrack()" style="margin-top:8px;padding:3px 8px;background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.2);border-radius:5px;color:var(--rose-l);font-size:10px;cursor:pointer;font-family:inherit;">✕ حذف</button>'
+        +'<button onclick="DT.store[\''+ds+'\'][\''+b+'\']=null;saveData();renderDailyTrack()" style="margin-top:8px;padding:3px 8px;background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.2);border-radius:5px;color:var(--rose-l);font-size:10px;cursor:pointer;font-family:inherit;">✕ حذف</button>'
         +'</div>';
     });
     html+='</div>';
@@ -9852,7 +9966,15 @@ DT.selDate=dtToday();
     setTimeout(function(){ s.classList.add('out'); setTimeout(function(){ s.remove(); }, 650); }, 1150);
   }catch(e){}
 })();
-window.addEventListener('load',()=>{renderFeatured();loadEmbedded();});
+window.addEventListener('load',async ()=>{
+  renderFeatured();
+  /* ملف مشاركة مضمّن له الأولوية على البيانات المحفوظة محلياً */
+  if(window.__EMBEDDED_RX__){ loadEmbedded(); return; }
+  try{
+    const restored=await loadSavedData();
+    if(restored){ renderAll(); toast('تم استرجاع البيانات المحفوظة'); }
+  }catch(e){ console.error('restore on load',e); }
+});
 window.addEventListener('error',e=>console.error('V8 Error:',e.error||e.message));
 
 
@@ -9886,7 +10008,7 @@ function renderPureHerb(){
     if(!bd||!bd.drugs) return;
     PUREHERB_PRODUCTS.forEach(p=>{
       const found = bd.drugs.filter(d=> d.name && (p.key==='CENTROZON' ? (d.name.toUpperCase().includes('CENTROZON') && !d.name.toUpperCase().includes('WOMEN')) : d.name.toUpperCase().includes(p.key.toUpperCase())));
-      const cnt = found.reduce((s,x)=>s+(x.count||0),0);
+      const cnt = found.reduce((s,x)=>s+(x.total||x.count||0),0);
       if(cnt>0){
         phData[p.key].total += cnt;
         phData[p.key].branches[b] = cnt;
@@ -9933,8 +10055,10 @@ function renderPureHerb(){
     html+='</div></div>';
   }
   html+='</div></div>';
+  html+='<div id="phDoctorsAgg" style="margin-top:20px;"></div>';
   el.innerHTML=html;
   renderPHTarget();
+  renderPHDoctorsAgg();
 }
 
 </script>
