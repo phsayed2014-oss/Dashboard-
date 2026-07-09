@@ -5611,7 +5611,7 @@ document.getElementById('shareBtn').onclick=()=>{
   showLoad();
   try{
     let html=redactCredentialsFromSharedTemplate(SOURCE_TEMPLATE);
-    const payload={v:2,privacy:{anonymized,createdAt:new Date().toISOString()},branches:{},periods:{},dt:sanitizeDailyStore((typeof DT!=='undefined'&&DT.store)?DT.store:{},anonymize)};
+    const payload={v:2,privacy:{anonymized:anonymize,createdAt:new Date().toISOString()},branches:{},periods:{},dt:sanitizeDailyStore((typeof DT!=='undefined'&&DT.store)?DT.store:{},anonymize)};
     BRANCHES.forEach(b=>{const d=STATE.data[b];if(d) payload.branches[b]={rows:sanitizeRowsForExport(d.rows,anonymize),reportName:d.reportName,reportDate:d.reportDate};});
     BRANCHES.forEach(b=>{payload.periods[b]=(STATE.periods[b]||[]).map(p=>({id:p.id,label:p.label,rows:sanitizeRowsForExport(p.rows,anonymize),_main:!!p._main}));});
     const closeToken='<'+'/scr'+'ipt>',openToken='<scr'+'ipt id="embedded-rx-data">';
