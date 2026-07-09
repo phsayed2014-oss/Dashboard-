@@ -214,3 +214,31 @@ test('seals saved snapshots and refuses tampered local data', async ({ page }) =
   const restored = await page.evaluate(() => STATE.data.T1);
   expect(restored).toBeNull();
 });
+
+test('paginates large tables and searches the cached index', async ({ page }) => {
+  await page.locator('#loginUser').fill('elsayed');
+  await page.locator('#loginPass').fill('pharma2026');
+  await page.locator('.login-btn').click();
+  await page.evaluate(() => {
+    const rows = Array.from({ length: 450 }, (_, index) => ({
+      doctor: `Doctor ${String(index).padStart(3, '0')}`,
+      service: `Drug ${index % 20}`,
+      section: 'GENERAL',
+      patient: `P${index}`,
+      patientName: '',
+      orderNo: `O${index}`,
+      status: 'Closed',
+    }));
+    setBranchData('T1', rows, 'large.csv', '');
+    STATE.active = 'T1';
+    renderAll();
+  });
+
+  await page.locator('[data-tab="doctors"]').click();
+  await expect(page.locator('#docTbl tr')).toHaveCount(200);
+  await page.locator('#docMore').click();
+  await expect(page.locator('#docTbl tr')).toHaveCount(400);
+  await page.locator('#docSearch').fill('Doctor 449');
+  await expect(page.locator('#docTbl tr')).toHaveCount(1);
+  await expect(page.locator('#docTbl')).toContainText('Doctor 449');
+});

@@ -335,6 +335,8 @@ body::before{
 .dq-metric b{display:block;font:800 14px Inter,Alexandria,sans-serif;color:var(--text);}
 .dq-metric span{font-size:9px;color:var(--text-muted);}
 .dq-warnings{margin:8px 0 0;padding:0 16px 0 0;font-size:10px;color:var(--amber-l);line-height:1.7;}
+.table-more{display:block;margin:12px auto 0;min-width:190px;}
+.table-more[hidden]{display:none;}
 @media(max-width:800px){.branch-bar{grid-template-columns:1fr}}
 .branch-card{
   background:var(--bg-glass);
