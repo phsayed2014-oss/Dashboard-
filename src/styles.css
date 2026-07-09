@@ -315,6 +315,19 @@ body::before{
    BRANCH BAR — Elegant Upload Cards
 ══════════════════════════════════════════ */
 .branch-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
+.data-quality-panel{margin:-8px 0 20px;padding:16px 18px;border:1px solid var(--border);border-radius:var(--r-lg);background:var(--bg-card);}
+.dq-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.dq-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:12px;}
+.dq-branch{padding:12px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--bg-glass2);}
+.dq-score{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:28px;padding:0 9px;border-radius:999px;font-weight:900;font-family:Inter,Alexandria,sans-serif;}
+.dq-score.good{color:var(--teal-l);background:rgba(13,148,136,.12);border:1px solid rgba(13,148,136,.3);}
+.dq-score.warn{color:var(--amber-l);background:rgba(217,119,6,.12);border:1px solid rgba(217,119,6,.3);}
+.dq-score.bad{color:var(--rose-l);background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.3);}
+.dq-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:9px;}
+.dq-metric{text-align:center;padding:7px 4px;border-radius:8px;background:var(--bg-glass);}
+.dq-metric b{display:block;font:800 14px Inter,Alexandria,sans-serif;color:var(--text);}
+.dq-metric span{font-size:9px;color:var(--text-muted);}
+.dq-warnings{margin:8px 0 0;padding:0 16px 0 0;font-size:10px;color:var(--amber-l);line-height:1.7;}
 @media(max-width:800px){.branch-bar{grid-template-columns:1fr}}
 .branch-card{
   background:var(--bg-glass);

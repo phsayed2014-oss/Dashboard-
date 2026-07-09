@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { readFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const sampleRows = [
   { doctor: 'Dr. Ahmed', service: 'REFLEX MASSAGE Emulgel 100ML', section: 'ORTHOPAEDIC', patient: 'P1', patientName: 'Patient 1', orderNo: 'O1', status: 'Closed' },
@@ -133,4 +135,54 @@ test('escapes uploaded text in printable visit cards', async ({ page }) => {
   expect(printed).not.toContain('<script>bad()');
   expect(printed).not.toContain('<iframe src=x>');
   expect(printed).toContain('&lt;img');
+});
+
+test('extracts a text PDF and shows its data-quality report', async ({ page }) => {
+  await page.locator('#loginUser').fill('elsayed');
+  await page.locator('#loginPass').fill('pharma2026');
+  await page.locator('.login-btn').click();
+
+  const temp = await mkdtemp(join(tmpdir(), 'pharmadash-pdf-'));
+  const pdfPath = join(temp, 'oracle-sample.pdf');
+  const pdfPage = await page.context().newPage();
+  try {
+    await pdfPage.setContent(`
+      <style>
+        @page { margin: 0; size: 1200px 800px; }
+        body { margin: 0; font: 14px Arial; }
+        span { position: absolute; white-space: nowrap; }
+      </style>
+      <span style="left:20px;top:40px">Patient No</span>
+      <span style="left:130px;top:40px">Patient Name</span>
+      <span style="left:360px;top:40px">Service Name</span>
+      <span style="left:680px;top:40px">Order No</span>
+      <span style="left:780px;top:40px">Status</span>
+      <span style="left:880px;top:40px">Doctor Name</span>
+      <span style="left:20px;top:100px">12345</span>
+      <span style="left:130px;top:100px">Patient One</span>
+      <span style="left:360px;top:100px">ZINCOLIVE Syrup 150ML</span>
+      <span style="left:680px;top:100px">O100</span>
+      <span style="left:780px;top:100px">Closed</span>
+      <span style="left:880px;top:100px">Dr Ahmed ORTHOPAEDIC</span>
+    `);
+    await pdfPage.pdf({ path: pdfPath, width: '1200px', height: '800px', printBackground: true });
+    await pdfPage.close();
+
+    await page.locator('#file-T1').setInputFiles(pdfPath);
+    await expect(page.locator('#meta-T1')).toContainText('1 وصفة');
+    await expect(page.locator('#dataQualityPanel')).toBeVisible();
+    await expect(page.locator('#dataQualityPanel')).toContainText('PDF');
+
+    const extracted = await page.evaluate(() => STATE.data.T1.rows[0]);
+    expect(extracted).toMatchObject({
+      patient: '12345',
+      service: 'ZINCOLIVE Syrup 150ML',
+      doctor: 'Dr Ahmed',
+      section: 'ORTHOPAEDIC',
+      status: 'Closed',
+    });
+  } finally {
+    await pdfPage.close().catch(() => {});
+    await rm(temp, { recursive: true, force: true });
+  }
 });

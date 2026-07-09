@@ -67,10 +67,16 @@
 const PRIVATE_LABEL=[
   {key:'reflex',    name:'Reflex',      form:'Massage Emulgel · 100ML',cls:'pp1'},{key:'rizer',     name:'Rizer',       form:'Apply Cream · 75ML',     cls:'pp2'},{key:'oracure',   name:'Oracure',     form:'Mouth Wash · 300ML',     cls:'pp3'},{key:'intimo',    name:'Intimo',      form:'Vaginal Wash · 250ML',   cls:'pp4'},{key:'nostriderm',name:'Nostriderm',  form:'Ointment · 50ML',        cls:'pp5'},{key:'nostricure',name:'Nostricure',  form:'Oral Gel · 30ML',        cls:'pp6'},
 ];
+function phraseMatch(value,phrase){
+  const text=PharmaCore.normalizeProductText(value),target=PharmaCore.normalizeProductText(phrase);
+  if(!text||!target)return false;
+  return (' '+text+' ').includes(' '+target+' ') || text.replace(/\s/g,'').includes(target.replace(/\s/g,''));
+}
+function findPrivateLabelProduct(service){return PRIVATE_LABEL.find(p=>phraseMatch(service,p.key))||null;}
 
 const BRANCHES=['T1','T2','T3'];
 const BRANCH_LABELS={T1:'التعاون الأول',T2:'التعاون الثاني',T3:'التعاون الثالث'};
-const STATE={data:{T1:null,T2:null,T3:null},active:null,periods:{T1:[],T2:[],T3:[]}};
+const STATE={data:{T1:null,T2:null,T3:null},active:null,periods:{T1:[],T2:[],T3:[]},quality:{T1:null,T2:null,T3:null}};
 /* التابات التي تجمع كل الفروع ولا تحتاج مُنتقي الفرع */
 const NO_BRANCH_TABS=['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','drugintel','targettrack','nearexpiry','plsales','pureherb','dailytrack','agedmeds'];
 let _pendingBranch=null,_pendingMode=null; /* upload state */
@@ -167,6 +173,8 @@ function patientIdentityKey(branch,patient){
   const id=PharmaCore.normalizeWhitespace(patient);
   return id?branch+'|'+id:'';
 }
+function entityKey(value){return PharmaCore.normalizeEntityKey(value);}
+function sameEntity(a,b){return entityKey(a)===entityKey(b);}
 function rankBadge(i){const c=i===0?'gold':(i===1?'silver':(i===2?'bronze':'normal'));return '<span class="rank '+c+'">'+(i+1)+'</span>';}
 function barRow(v,m){const p=m>0?(v*100/m):0;return '<div class="bar-cell"><div class="bar" style="width:'+p+'%;"></div><div class="v">'+p.toFixed(1)+'%</div></div>';}
 
@@ -228,7 +236,9 @@ async function handleFile(branch,file){
     setTimeout(()=>_upHide(branch),500);
     renderAll();
     saveData();
-    toast('✓ '+BRANCH_LABELS[branch]+' — '+fmt(rows.length)+' وصفة');
+    const q=STATE.quality[branch];
+    toast('✓ '+BRANCH_LABELS[branch]+' — '+fmt(rows.length)+' وصفة'+(q?' · جودة '+q.score+'%':''));
+    if(q&&q.warnings.length)setTimeout(()=>toast('راجع لوحة جودة البيانات: '+q.warnings[0],'warn'),900);
   }catch(e){
     console.error(e);_upHide(branch);
     toast(e.message||'فشل القراءة','error');
@@ -261,13 +271,14 @@ function _upHide(b){
 }
 function setBranchData(branch,rows,name,date){
   const d=aggregate(rows);d.rows=rows;d.reportName=name;d.reportDate=date;STATE.data[branch]=d;
+  STATE.quality[branch]=PharmaCore.assessRows(rows,rows._parseMeta||{});
   const meta=document.getElementById('meta-'+branch);meta.className='meta status-loaded';meta.textContent='✓ '+fmt(rows.length)+' وصفة · '+name.slice(0,40);
   document.querySelector('.branch-card[data-branch="'+branch+'"]').classList.add('has-data');
   const btn=document.querySelector('[data-upload="'+branch+'"]');btn.textContent='🔄 إعادة';btn.classList.add('reupload');
   /* sync periods */
   const lbl=name.replace(/\.[^.]+$/,'').slice(0,30)||'البيانات الرئيسية';
   const ei=STATE.periods[branch].findIndex(p=>p._main);
-  const en={id:Date.now(),label:lbl,rows,data:d,_main:true};
+  const en={id:Date.now(),label:lbl,rows,data:d,parseMeta:rows._parseMeta||null,_main:true};
   if(ei>=0) STATE.periods[branch][ei]=en; else STATE.periods[branch].unshift(en);
   /* مصدر الحقيقة واحد: كل اللوحات تعرض أحدث فترة زمنياً، لا آخر عملية رفع فقط. */
   if(typeof rebuildBranchFromPeriods==='function') rebuildBranchFromPeriods(branch);
@@ -278,33 +289,88 @@ function aggregate(rows){
   const docMap=new Map(),drugMap=new Map(),secMap=new Map();const patients=new Set();
   /* ── status tracking (Closed/New/Canceled) ── */
   const statusCounts={};const orders=new Set();
-  const normStatus=(s)=>{const u=(s||'').toUpperCase();if(u.includes('CLOS'))return'Closed';if(u.includes('CANC'))return'Canceled';if(u.includes('NEW'))return'New';if(u.includes('OPEN'))return'Opened';if(u.includes('PEND'))return'Pending';if(u.includes('ACTIV'))return'Active';return s||'غير محدد';};
   rows.forEach(r=>{
-    if(r.patient) patients.add(r.patient);
-    if(r.orderNo) orders.add(r.orderNo);
-    const st=normStatus(r.status);statusCounts[st]=(statusCounts[st]||0)+1;
-    if(r.doctor){let d=docMap.get(r.doctor);if(!d){d={name:r.doctor,section:r.section,total:0,drugs:new Map(),patients:new Set(),status:{}};docMap.set(r.doctor,d);}d.total++;if(r.section&&!d.section) d.section=r.section;if(r.service) d.drugs.set(r.service,(d.drugs.get(r.service)||0)+1);if(r.patient) d.patients.add(r.patient);d.status[st]=(d.status[st]||0)+1;}
-    if(r.service){let dr=drugMap.get(r.service);if(!dr){dr={name:r.service,total:0,doctors:new Map(),patients:new Map(),sections:new Map(),status:{}};drugMap.set(r.service,dr);}dr.total++;if(r.doctor) dr.doctors.set(r.doctor,(dr.doctors.get(r.doctor)||0)+1);if(r.patient) dr.patients.set(r.patient,(dr.patients.get(r.patient)||0)+1);if(r.section) dr.sections.set(r.section,(dr.sections.get(r.section)||0)+1);dr.status[st]=(dr.status[st]||0)+1;}
-    if(r.section){let s=secMap.get(r.section);if(!s){s={name:r.section,total:0,doctors:new Set(),drugs:new Set(),patients:new Set()};secMap.set(r.section,s);}s.total++;if(r.doctor) s.doctors.add(r.doctor);if(r.service) s.drugs.add(r.service);if(r.patient) s.patients.add(r.patient);}
+    const doctorKey=PharmaCore.normalizeEntityKey(r.doctor),drugKey=PharmaCore.normalizeEntityKey(r.service),sectionKey=PharmaCore.normalizeEntityKey(r.section),patientKey=PharmaCore.normalizeEntityKey(r.patient);
+    if(patientKey) patients.add(patientKey);
+    if(r.orderNo) orders.add(PharmaCore.normalizeEntityKey(r.orderNo));
+    const st=PharmaCore.normalizeStatus(r.status);statusCounts[st]=(statusCounts[st]||0)+1;
+    if(doctorKey){
+      let d=docMap.get(doctorKey);if(!d){d={name:r.doctor,section:r.section,total:0,drugs:new Map(),patients:new Set(),status:{}};docMap.set(doctorKey,d);}
+      d.total++;if(r.section&&!d.section)d.section=r.section;
+      if(drugKey){const item=d.drugs.get(drugKey)||{name:r.service,count:0};item.count++;d.drugs.set(drugKey,item);}
+      if(patientKey)d.patients.add(patientKey);d.status[st]=(d.status[st]||0)+1;
+    }
+    if(drugKey){
+      let dr=drugMap.get(drugKey);if(!dr){dr={name:r.service,total:0,doctors:new Map(),patients:new Map(),sections:new Map(),status:{}};drugMap.set(drugKey,dr);}
+      dr.total++;
+      if(doctorKey){const item=dr.doctors.get(doctorKey)||{name:r.doctor,count:0};item.count++;dr.doctors.set(doctorKey,item);}
+      if(patientKey)dr.patients.set(patientKey,(dr.patients.get(patientKey)||0)+1);
+      if(sectionKey){const item=dr.sections.get(sectionKey)||{name:r.section,count:0};item.count++;dr.sections.set(sectionKey,item);}
+      dr.status[st]=(dr.status[st]||0)+1;
+    }
+    if(sectionKey){
+      let s=secMap.get(sectionKey);if(!s){s={name:r.section,total:0,doctors:new Set(),drugs:new Set(),patients:new Set()};secMap.set(sectionKey,s);}
+      s.total++;if(doctorKey)s.doctors.add(doctorKey);if(drugKey)s.drugs.add(drugKey);if(patientKey)s.patients.add(patientKey);
+    }
   });
   return{
-    doctors:[...docMap.values()].map(d=>({name:d.name,section:d.section,total:d.total,uniqueDrugs:d.drugs.size,patients:d.patients.size,status:d.status,drugs:[...d.drugs.entries()].map(([n,c])=>({name:n,count:c})).sort((a,b)=>b.count-a.count)})).sort((a,b)=>b.total-a.total),
-    drugs:[...drugMap.values()].map(d=>({name:d.name,total:d.total,doctorCount:d.doctors.size,patients:d.patients.size,status:d.status,repeatPatients:[...d.patients.values()].filter(c=>c>1).length,sections:[...d.sections.entries()].map(([n,c])=>({name:n,count:c})).sort((a,b)=>b.count-a.count),doctors:[...d.doctors.entries()].map(([n,c])=>({name:n,count:c})).sort((a,b)=>b.count-a.count)})).sort((a,b)=>b.total-a.total),
+    doctors:[...docMap.values()].map(d=>({name:d.name,section:d.section,total:d.total,uniqueDrugs:d.drugs.size,patients:d.patients.size,status:d.status,drugs:[...d.drugs.values()].sort((a,b)=>b.count-a.count)})).sort((a,b)=>b.total-a.total),
+    drugs:[...drugMap.values()].map(d=>({name:d.name,total:d.total,doctorCount:d.doctors.size,patients:d.patients.size,status:d.status,repeatPatients:[...d.patients.values()].filter(c=>c>1).length,sections:[...d.sections.values()].sort((a,b)=>b.count-a.count),doctors:[...d.doctors.values()].sort((a,b)=>b.count-a.count)})).sort((a,b)=>b.total-a.total),
     sections:[...secMap.values()].map(s=>({name:s.name,total:s.total,doctors:s.doctors.size,drugs:s.drugs.size,patients:s.patients.size})).sort((a,b)=>b.total-a.total),
     totalRows:rows.length,totalPatients:patients.size,statusCounts,totalOrders:orders.size
   };
 }
-async function parseExcel(file){const buf=await file.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});const sh=wb.Sheets[wb.SheetNames[0]];return XLSX.utils.sheet_to_json(sh,{defval:'',raw:true}).map(normalizeRow).filter(Boolean);}
-async function parseCSV(file){const text=await file.text();const wb=XLSX.read(text,{type:'string'});const sh=wb.Sheets[wb.SheetNames[0]];return XLSX.utils.sheet_to_json(sh,{defval:''}).map(normalizeRow).filter(Boolean);}
-function normalizeRow(r){const map={};Object.keys(r).forEach(k=>map[k.replace(/\s+/g,'').toLowerCase()]=k);const get=(...keys)=>{for(const k of keys){const key=map[k.toLowerCase()];if(key!==undefined){const v=r[key];if(v!==''&&v!=null) return String(v).replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim();}}return'';};const doctor=get('doctorname','اسمالطبيب');const service=get('servicename','اسمالخدمة');const section=get('sectionname','اسمالقسم');const patient=get('patientno','رقمالمريض');const patientName=get('patientname','اسمالمريض');const orderNo=get('orderno','رقمالأمر');const status=get('status','الحالة');if(!doctor&&!service) return null;return{doctor,service,section,patient,patientName,orderNo,status};}
+function attachParseMeta(rows,meta){Object.defineProperty(rows,'_parseMeta',{value:meta,enumerable:false,configurable:true});return rows;}
+function normalizeParsedRows(rawRows,source){
+  const rows=(rawRows||[]).map(normalizeRow).filter(Boolean);
+  return attachParseMeta(rows,{source,sourceRows:(rawRows||[]).length,rejectedRows:Math.max(0,(rawRows||[]).length-rows.length)});
+}
+async function parseExcel(file){
+  const buf=await file.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});
+  if(!wb.SheetNames.length)throw new Error('ملف Excel لا يحتوي أوراقاً');
+  const sh=wb.Sheets[wb.SheetNames[0]];
+  return normalizeParsedRows(XLSX.utils.sheet_to_json(sh,{defval:'',raw:true}),'excel');
+}
+async function parseCSV(file){
+  const text=await file.text();const wb=XLSX.read(text,{type:'string'});
+  if(!wb.SheetNames.length)throw new Error('ملف CSV فارغ');
+  const sh=wb.Sheets[wb.SheetNames[0]];
+  return normalizeParsedRows(XLSX.utils.sheet_to_json(sh,{defval:''}),'csv');
+}
+function normalizeRow(r){return PharmaCore.normalizeRxRow(r);}
 async function parsePDF(file){
   if(!window.pdfjsLib) window.pdfjsLib=window['pdfjs-dist/build/pdf'];
+  if(!window.pdfjsLib)throw new Error('تعذر تحميل قارئ PDF — تحقق من الاتصال ثم أعد المحاولة');
   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   const buf=await file.arrayBuffer();
   const pdf=await pdfjsLib.getDocument({data:buf}).promise;
   const SEC_WORDS=['GASTROENTEROLOGY','ENDOCRINOLOGY','OPHTHALMOLOGY','OPTHALMOLOGY','RHEUMATOLOGY','PULMONOLOGY','PARACITIONER','DERMATOLOGY','ORTHOPAEDIC','PSYCHIATRY','OBSTETRICS','PAEDIATRIC','CARDIOLOGY','NEPHROLOGY','NEUROLOGY','ONCOLOGY','INTERNAL','UROLOGY','GENERAL','SURGERY','DENTAL','RADIOLOGY','GYNECOLOGY','MEDICINE','ENT'];
-  const COL_P=[0,75],COL_PN=[75,243],COL_SVC=[243,476],COL_ORD=[476,535],COL_ST=[535,596],COL_DS=[596,1200];
+  const DEFAULT_COLS={patient:[0,75],patientName:[75,243],service:[243,476],orderNo:[476,535],status:[535,596],doctorSection:[596,Infinity]};
   function g(ws,r){return ws.filter(w=>w.x>=r[0]&&w.x<r[1]).map(w=>w.s).join(' ').trim();}
+  function detectColumns(lines){
+    const aliases=[
+      ['patient',/PATIENT\s*(NO|NUMBER)|رقم\s*المريض/i],
+      ['patientName',/PATIENT\s*NAME|اسم\s*المريض/i],
+      ['service',/SERVICE\s*NAME|MEDICATION|اسم\s*(الخدمة|الدواء)/i],
+      ['orderNo',/ORDER\s*(NO|NUMBER)|رقم\s*(الأمر|الطلب)/i],
+      ['status',/STATUS|الحالة/i],
+      ['doctorSection',/DOCTOR\s*NAME|PHYSICIAN|اسم\s*الطبيب/i],
+    ];
+    for(const ws of lines){
+      const found=[];
+      aliases.forEach(([key,re])=>{const item=ws.find(w=>re.test(w.s));if(item)found.push({key,x:item.x});});
+      if(found.length<5)continue;
+      found.sort((a,b)=>a.x-b.x);
+      const out={};
+      found.forEach((item,i)=>{
+        const start=i===0?Math.min(0,item.x):item.x;
+        const end=i===found.length-1?Infinity:found[i+1].x;
+        out[item.key]=[start,end];
+      });
+      if(out.patient&&out.service&&out.doctorSection)return {...DEFAULT_COLS,...out};
+    }
+    return DEFAULT_COLS;
+  }
   function splitDS(txt){
     const words=txt.split(/\s+/);
     /* Pass 1: fused word e.g. AbdelmoneemGENERAL */
@@ -328,40 +394,35 @@ async function parsePDF(file){
     }
     return{doctor:txt.trim(),section:''};
   }
-  const rows=[];
+  const rows=[];let textItemCount=0,candidateRows=0,rejectedRows=0;
   for(let p=1;p<=pdf.numPages;p++){
     const page=await pdf.getPage(p);
     const c=await page.getTextContent();
+    textItemCount+=c.items.length;
     const lmap={};
     c.items.forEach(it=>{
       const y=Math.round(it.transform[5]/3)*3;
       if(!lmap[y]) lmap[y]=[];
       lmap[y].push({x:it.transform[4],s:it.str.trim()});
     });
-    Object.keys(lmap).map(Number).sort((a,b)=>b-a).forEach(y=>{
-      const ws=lmap[y].filter(w=>w.s).sort((a,b)=>a.x-b.x);
+    const lines=Object.keys(lmap).map(Number).sort((a,b)=>b-a).map(y=>lmap[y].filter(w=>w.s).sort((a,b)=>a.x-b.x)).filter(ws=>ws.length);
+    const cols=detectColumns(lines);
+    lines.forEach(ws=>{
       if(!ws.length) return;
-      const first=ws[0].s;
-      if(/Patient No|Medication Orders|From Date|To Date|Doctor Name/.test(ws.map(w=>w.s).join(' '))) return;
-      if(!/^\d{5,7}$/.test(first)) return;
-      const ds=splitDS(g(ws,COL_DS));
-      const row={patient:g(ws,COL_P),patientName:g(ws,COL_PN),service:g(ws,COL_SVC),
-                  orderNo:g(ws,COL_ORD),status:g(ws,COL_ST),doctor:ds.doctor,section:ds.section};
-      /* normalize section names */
-      if(row.section){
-        row.section=row.section.toUpperCase()
-          .replace('OPTHALMOLOGY','OPHTHALMOLOGY');
-      }
-      /* normalize status — تنظيف الحالة */
-      if(row.status){
-        const su=row.status.toUpperCase();
-        row.status = su.includes('CLOS')?'Closed' : su.includes('CANC')?'Canceled' : su.includes('NEW')?'New' : su.includes('OPEN')?'Opened' : su.includes('PEND')?'Pending' : row.status;
-      }
-      if(row.service||row.doctor) rows.push(row);
+      const lineText=ws.map(w=>w.s).join(' ');
+      if(/Patient\s*(No|Name)|Medication Orders|From Date|To Date|Doctor Name|Service Name|Order No/i.test(lineText)) return;
+      const patient=g(ws,cols.patient);
+      if(!/^[A-Z]?\d{4,12}$/i.test(patient.replace(/\s+/g,''))) return;
+      candidateRows++;
+      const ds=splitDS(g(ws,cols.doctorSection));
+      const row=normalizeRow({patient,patientName:g(ws,cols.patientName),service:g(ws,cols.service),
+                  orderNo:g(ws,cols.orderNo),status:g(ws,cols.status),doctor:ds.doctor,section:ds.section});
+      if(row)rows.push(row);else rejectedRows++;
     });
   }
-  if(!rows.length) throw new Error('لم أتمكن من تحليل الـ PDF — تأكد من أن الملف من Oracle Reports');
-  return rows;
+  if(!textItemCount)throw new Error('ملف PDF عبارة عن صور ممسوحة ولا يحتوي نصاً قابلاً للاستخراج. استخدم PDF نصي من Oracle أو شغّل OCR أولاً');
+  if(!rows.length) throw new Error('لم أتمكن من تحليل صفوف PDF — تأكد من وجود أعمدة Patient No وService Name وDoctor Name');
+  return attachParseMeta(rows,{source:'pdf',pages:pdf.numPages,sourceRows:candidateRows,rejectedRows});
 }
 
 /* التنقل يتم عبر الشريط الجانبي (sidebarNav)؛ مستمعو #tabs القديمة أُزيلوا */
@@ -372,8 +433,52 @@ function renderBranchPicker(){
   box.innerHTML=BRANCHES.map(b=>{const has=!!STATE.data[b],isActive=b===STATE.active;return '<button class="btn" data-pick="'+b+'" '+(has?'':'disabled')+' style="'+(isActive?'background:var(--grad-p);color:#fff;border-color:transparent;':'')+'">'+BRANCH_LABELS[b]+(has?' ✓':'')+'</button>';}).join('');
   box.querySelectorAll('[data-pick]').forEach(btn=>{btn.onclick=()=>{STATE.active=btn.dataset.pick;renderBranchPicker();renderActive();};});
 }
+function renderDataQualityPanel(){
+  const panel=document.getElementById('dataQualityPanel');if(!panel)return;
+  const branches=BRANCHES.filter(b=>STATE.data[b]&&STATE.quality[b]);
+  if(!branches.length){panel.hidden=true;panel.innerHTML='';return;}
+  panel.hidden=false;
+  const sourceLabels={pdf:'PDF',excel:'Excel',csv:'CSV',saved:'محفوظ',unknown:'غير محدد'};
+  panel.innerHTML=`
+    <div class="dq-head">
+      <div><div style="font-size:13px;font-weight:900;">جودة البيانات بعد الرفع</div><div style="font-size:10px;color:var(--text-muted);margin-top:3px;">راجع التحذيرات قبل مشاركة الأرقام أو اتخاذ قرار</div></div>
+      <button class="btn" type="button" onclick="downloadDataQualityReport()">تنزيل تقرير الجودة</button>
+    </div>
+    <div class="dq-grid">${branches.map(b=>{
+      const q=STATE.quality[b],cls=q.score>=90?'good':q.score>=70?'warn':'bad';
+      return `<article class="dq-branch">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <div><b style="font-size:12px;">${BRANCH_LABELS[b]}</b><div style="font-size:9px;color:var(--text-muted);margin-top:2px;">${sourceLabels[q.source]||escapeHtml(q.source)}${q.pages?' · '+q.pages+' صفحة':''}</div></div>
+          <span class="dq-score ${cls}" title="درجة اكتمال وجودة البيانات">${q.score}%</span>
+        </div>
+        <div class="dq-metrics">
+          <div class="dq-metric"><b>${fmt(q.acceptedRows)}</b><span>مقبول</span></div>
+          <div class="dq-metric"><b>${fmt(q.rejectedRows)}</b><span>مرفوض</span></div>
+          <div class="dq-metric"><b>${fmt(q.duplicates)}</b><span>مكرر</span></div>
+        </div>
+        ${q.warnings.length?`<ul class="dq-warnings">${q.warnings.slice(0,4).map(w=>`<li>${escapeHtml(w)}</li>`).join('')}</ul>`:'<div style="font-size:10px;color:var(--teal-l);margin-top:8px;">✓ لا توجد مشاكل رئيسية مكتشفة</div>'}
+        ${q.duplicates?`<button class="btn" type="button" style="margin-top:8px;width:100%;font-size:10px;" onclick="removeExactDuplicates('${b}')">إزالة التكرار التام (${fmt(q.duplicates)})</button>`:''}
+      </article>`;
+    }).join('')}</div>`;
+}
+function downloadDataQualityReport(){
+  const report={generatedAt:new Date().toISOString(),branches:{}};
+  BRANCHES.forEach(b=>{if(STATE.quality[b])report.branches[b]=STATE.quality[b];});
+  const blob=new Blob([JSON.stringify(report,null,2)],{type:'application/json;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pharmadash-data-quality-'+PharmaCore.localDateKey()+'.json';
+  document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(a.href);},1000);
+}
+function removeExactDuplicates(branch){
+  const latest=PharmaCore.selectPeriodRange(STATE.periods[branch]||[]).newest;if(!latest)return;
+  const result=PharmaCore.deduplicateExactRows(latest.rows||[]);if(!result.removed){toast('لا يوجد تكرار تام');return;}
+  if(!confirm('سيتم حذف '+result.removed+' صف مكرر تماماً من أحدث فترة في '+BRANCH_LABELS[branch]+'. متابعة؟'))return;
+  latest.rows=result.rows;latest.data=aggregate(result.rows);
+  rebuildBranchFromPeriods(branch);renderAll();saveData();
+  toast('تم حذف '+result.removed+' صف مكرر');
+}
 function renderAll(){
   renderBranchPicker();
+  renderDataQualityPanel();
   renderActive();
   renderFeatured();
   updateSummaryBar();
@@ -696,8 +801,7 @@ function injectOverviewHero(d){
     var pl = 0;
     for(var i=0;i<rows.length;i++){
       var s = rows[i].service; if(!s) continue;
-      var u = s.toLowerCase();
-      for(var j=0;j<PRIVATE_LABEL.length;j++){ if(u.indexOf(PRIVATE_LABEL[j].key) > -1){ pl++; break; } }
+      if(findPrivateLabelProduct(s))pl++;
     }
     var h = '<div class="pd-hero" id="pdHero">'
       + '<div class="pd-hero-hi">' + greet + '، د. السيد 👋</div>'
@@ -723,9 +827,9 @@ function renderOverviewCore(d){
   let globalTotal=0;
   loaded.forEach(b=>{
     const bd=STATE.data[b];globalTotal+=bd.totalRows;
-    bd.doctors.forEach(doc=>{let g=globalDocMap.get(doc.name)||{name:doc.name,total:0};g.total+=doc.total;globalDocMap.set(doc.name,g);});
-    bd.drugs.forEach(dr=>{let g=globalDrugMap.get(dr.name)||{name:dr.name,total:0};g.total+=dr.total;globalDrugMap.set(dr.name,g);});
-    bd.sections.forEach(s=>{let g=globalSecMap.get(s.name)||{name:s.name,total:0};g.total+=s.total;globalSecMap.set(s.name,g);});
+    bd.doctors.forEach(doc=>{const k=entityKey(doc.name);let g=globalDocMap.get(k)||{name:doc.name,total:0};g.total+=doc.total;globalDocMap.set(k,g);});
+    bd.drugs.forEach(dr=>{const k=entityKey(dr.name);let g=globalDrugMap.get(k)||{name:dr.name,total:0};g.total+=dr.total;globalDrugMap.set(k,g);});
+    bd.sections.forEach(s=>{const k=entityKey(s.name);let g=globalSecMap.get(k)||{name:s.name,total:0};g.total+=s.total;globalSecMap.set(k,g);});
     (bd.rows||[]).forEach(r=>{const k=patientIdentityKey(b,r.patient);if(k)globalPatientSet.add(k);});
   });
   const globalDocs=[...globalDocMap.values()].sort((a,b)=>b.total-a.total);
@@ -878,14 +982,14 @@ function renderOverviewCore(d){
   ══════════════════════════════════════════ */
   let focusPanel = '';
   (function(){
-    const plKeys = PRIVATE_LABEL.map(p=>p.key.toLowerCase());
     const dmap = new Map();
     const scopeBranches = isMulti ? loaded : [STATE.active||loaded[0]];
     scopeBranches.forEach(b=>{
       (STATE.data[b]?STATE.data[b].doctors:[]).forEach(doc=>{
-        if(!dmap.has(doc.name)) dmap.set(doc.name,{name:doc.name,section:doc.section||'—',total:0,pl:0});
-        const r=dmap.get(doc.name); r.total+=doc.total;
-        (doc.drugs||[]).forEach(dr=>{ if(plKeys.some(k=>dr.name.toLowerCase().includes(k))) r.pl+=dr.count; });
+        const key=entityKey(doc.name);
+        if(!dmap.has(key))dmap.set(key,{name:doc.name,section:doc.section||'—',total:0,pl:0});
+        const r=dmap.get(key);r.total+=doc.total;
+        (doc.drugs||[]).forEach(dr=>{if(findPrivateLabelProduct(dr.name))r.pl+=dr.count;});
       });
     });
     const allD=[...dmap.values()];
@@ -1018,7 +1122,7 @@ function renderDocDash(d){
   const sel=document.getElementById('docPicker');sel.onchange=()=>fillDocDash(d,sel.value);if(d.doctors.length) fillDocDash(d,d.doctors[0].name);
 }
 function fillDocDash(d,name){
-  const x=d.doctors.find(z=>z.name===name);if(!x) return;const top=x.drugs.slice(0,15);
+  const x=d.doctors.find(z=>sameEntity(z.name,name));if(!x) return;const top=x.drugs.slice(0,15);
   document.getElementById('docDashBody').innerHTML='<div class="detail-grid"><div class="detail-card"><div class="l">القسم</div><div class="v" style="font-size:18px;">'+escapeHtml(x.section||'—')+'</div></div><div class="detail-card"><div class="l">الكتابات</div><div class="v">'+fmt(x.total)+'</div></div><div class="detail-card"><div class="l">الأدوية</div><div class="v">'+fmt(x.uniqueDrugs)+'</div></div><div class="detail-card"><div class="l">المرضى</div><div class="v">'+fmt(x.patients)+'</div></div></div><div class="mini-head"><h3>أعلى 15 دواء يكتبه</h3></div><div class="table-wrap" style="max-height:380px;overflow-y:auto;"><table><thead><tr><th style="width:50px;">#</th><th>الدواء</th><th>الكتابات</th><th>النسبة</th></tr></thead><tbody>'+top.map((y,i)=>'<tr><td>'+rankBadge(i)+'</td><td>'+escapeHtml(y.name)+'</td><td class="num">'+fmt(y.count)+'</td><td class="num">'+pct(y.count,x.total).toFixed(1)+'%</td></tr>').join('')+'</tbody></table></div>';
 }
 function renderDrugDash(d){
@@ -1312,7 +1416,6 @@ function renderPLComparison(){
   const box = document.getElementById('plComparisonCard');
   if(!box) return;
 
-  const plKeys = PRIVATE_LABEL.map(p=>p.key.toLowerCase());
   const loaded = BRANCHES.filter(b=>STATE.data[b]);
 
   // الفروع اللي عندها فترتين (للمقارنة بالعدد)
@@ -1329,16 +1432,11 @@ function renderPLComparison(){
     branches.forEach(b=>{
       const periods = STATE.periods[b]||[]; if(periods.length<2) return;
       has=true;
-      const scored=periods.map(p=>({p,s:periodDateScore(p.label)}));
-      const allDated=scored.every(x=>x.s>0);
-      let oldest,newest;
-      if(allDated){const sorted=[...scored].sort((a,b)=>a.s-b.s);oldest=sorted[0].p;newest=sorted[sorted.length-1].p;}
-      else{oldest=periods[0];newest=periods[periods.length-1];}
+      const range=periodOldestNewest(periods),oldest=range.oldest,newest=range.newest;
       bL=oldest.label; aL=newest.label;
       PRIVATE_LABEL.forEach(p=>{
-        const k=p.key.toLowerCase();
-        prod[p.key].before+=(oldest.data.drugs||[]).filter(d=>d.name.toLowerCase().includes(k)).reduce((s,d)=>s+d.total,0);
-        prod[p.key].after+=(newest.data.drugs||[]).filter(d=>d.name.toLowerCase().includes(k)).reduce((s,d)=>s+d.total,0);
+        prod[p.key].before+=(oldest.data.drugs||[]).filter(d=>findPrivateLabelProduct(d.name)?.key===p.key).reduce((s,d)=>s+d.total,0);
+        prod[p.key].after+=(newest.data.drugs||[]).filter(d=>findPrivateLabelProduct(d.name)?.key===p.key).reduce((s,d)=>s+d.total,0);
       });
     });
     return {prod, beforeLabel:bL, afterLabel:aL, has};
@@ -1541,14 +1639,14 @@ function plAggRowsHTML(list, prodColors, pkFilter){
 function plLastPeriodLabel(docName, key){
   var lastInc = null, firstNZ = null;
   for(var bi=0;bi<BRANCHES.length;bi++){
-    var pers = (STATE.periods && STATE.periods[BRANCHES[bi]]) || [];
+    var pers = PharmaCore.sortPeriods((STATE.periods && STATE.periods[BRANCHES[bi]]) || []);
     var prev = 0;
     for(var i=0;i<pers.length;i++){
       var rows = pers[i].rows || [];
       var c = 0;
       for(var ri=0;ri<rows.length;ri++){
         var r = rows[ri];
-        if(r.doctor === docName && r.service && r.service.toLowerCase().indexOf(key) > -1) c++;
+        if(sameEntity(r.doctor,docName) && findPrivateLabelProduct(r.service)?.key===key)c++;
       }
       if(c > 0 && firstNZ === null) firstNZ = pers[i].label;
       if(c > prev) lastInc = pers[i].label;
@@ -1583,7 +1681,7 @@ function showPLShareCard(name){
   var _closeColor = isLight ? '#475569' : '#cdd5f0';
   var _dashed = isLight ? 'rgba(15,23,42,.12)' : 'rgba(255,255,255,.15)';
   var d = null;
-  for(var i=0;i<st.docs.length;i++){ if(st.docs[i].name === name){ d = st.docs[i]; break; } }
+  for(var i=0;i<st.docs.length;i++){ if(sameEntity(st.docs[i].name,name)){ d = st.docs[i]; break; } }
   if(!d) return;
   closePLShareCard();
   var chips = '';
@@ -1645,15 +1743,8 @@ function getPureHerbForDoctor(name){
     var d = STATE.data[b];
     if(!d || !d.rows) return;
     d.rows.forEach(function(r){
-      if(r.doctor !== name || !r.service) return;
-      var svc = r.service.toUpperCase();
-      PUREHERB_PRODUCTS.forEach(function(p){
-        var ku = p.key.toUpperCase();
-        var hit = (p.key === 'CENTROZON')
-          ? (svc.indexOf('CENTROZON') > -1 && svc.indexOf('WOMEN') === -1)
-          : (svc.indexOf(ku) > -1);
-        if(hit) counts[p.key]++;
-      });
+      if(!sameEntity(r.doctor,name)||!r.service)return;
+      var p=findPureHerbProduct(r.service);if(p)counts[p.key]++;
     });
   });
   PUREHERB_PRODUCTS.forEach(function(p){
@@ -1677,14 +1768,11 @@ function renderPHDoctorsAgg(){
     var rows = STATE.data[b] ? STATE.data[b].rows : [];
     rows.forEach(function(r){
       if(!r.service || !r.doctor) return;
-      var svc = r.service.toLowerCase();
-      var matched = null;
-      for(var pi=0; pi<PUREHERB_PRODUCTS.length; pi++){
-        if(svc.indexOf(PUREHERB_PRODUCTS[pi].key.toLowerCase()) > -1){ matched = PUREHERB_PRODUCTS[pi]; break; }
-      }
+      var matched=findPureHerbProduct(r.service);
       if(!matched) return;
-      if(!docMap.has(r.doctor)) docMap.set(r.doctor, {name:r.doctor, section:r.section||'—', perProduct:{}, total:0});
-      var d = docMap.get(r.doctor);
+      var doctorKey=entityKey(r.doctor);
+      if(!docMap.has(doctorKey))docMap.set(doctorKey,{name:r.doctor,section:r.section||'—',perProduct:{},total:0});
+      var d=docMap.get(doctorKey);
       d.perProduct[matched.key] = (d.perProduct[matched.key]||0) + 1;
       d.total++;
     });
@@ -1784,7 +1872,7 @@ function showPHShareCard(name){
   var _closeColor = isLight ? '#475569' : '#cdd5f0';
   var _dashed = isLight ? 'rgba(15,23,42,.12)' : 'rgba(255,255,255,.15)';
   var section = '';
-  if(window._phAgg){ for(var si=0; si<window._phAgg.docs.length; si++){ if(window._phAgg.docs[si].name === name){ section = window._phAgg.docs[si].section; break; } } }
+  if(window._phAgg){ for(var si=0; si<window._phAgg.docs.length; si++){ if(sameEntity(window._phAgg.docs[si].name,name)){ section = window._phAgg.docs[si].section; break; } } }
   var ph = getPureHerbForDoctor(name);
   if(!ph.items.length){ toast('لا توجد كتابات PureHerb لهذا الطبيب','error'); return; }
   closePHShareCard();
@@ -1823,7 +1911,6 @@ function renderPLDoctorsAgg(){
   const loaded = BRANCHES.filter(b=>STATE.data[b]);
   if(!loaded.length){ box.innerHTML=''; return; }
 
-  const plKeys = PRIVATE_LABEL.map(p=>p.key.toLowerCase());
   /* FIX: توحيد النطاق مع باقي قسم PL — كل الفروع المرفوعة دائماً (كان يفلتر خفيةً على الفرع النشط) */
   const scopeBranches = loaded;
 
@@ -1833,13 +1920,13 @@ function renderPLDoctorsAgg(){
     const rows = STATE.data[b] ? STATE.data[b].rows : [];
     rows.forEach(r=>{
       if(!r.service || !r.doctor) return;
-      const svc = r.service.toLowerCase();
-      const matched = PRIVATE_LABEL.find(p=>svc.includes(p.key.toLowerCase()));
+      const matched=findPrivateLabelProduct(r.service);
       if(!matched) return;
-      if(!docMap.has(r.doctor)){
-        docMap.set(r.doctor,{name:r.doctor, section:r.section||'—', perProduct:{}, total:0});
+      const doctorKey=entityKey(r.doctor);
+      if(!docMap.has(doctorKey)){
+        docMap.set(doctorKey,{name:r.doctor, section:r.section||'—', perProduct:{}, total:0});
       }
-      const d = docMap.get(r.doctor);
+      const d = docMap.get(doctorKey);
       d.perProduct[matched.key] = (d.perProduct[matched.key]||0) + 1;
       d.total++;
     });
@@ -1936,22 +2023,21 @@ function updateFeaturedGrid(){
     grid.innerHTML='<div class="pl-no-data" style="grid-column:1/-1"><span class="nd-ico">↑</span><h3>لم يتم رفع أي ملف بعد</h3><p>ارفع ملف لفرع واحد على الأقل من الأعلى لبدء التحليل</p></div>';return;
   }
   grid.innerHTML=PRIVATE_LABEL.map((prod,i)=>{
-    const ql=prod.key.toLowerCase();
     const docMap=new Map(),matchedNames=new Set(),branchTotals={T1:0,T2:0,T3:0},patientSet=new Set();
     let topDrugName='',topDrugTotal=0;
     loaded.forEach(b=>{
       const d=STATE.data[b];
-      const matched=d.drugs.filter(x=>x.name.toLowerCase().includes(ql));
+      const matched=d.drugs.filter(x=>findPrivateLabelProduct(x.name)?.key===prod.key);
       matched.forEach(m=>{
-        matchedNames.add(m.name);branchTotals[b]+=m.total;
+        matchedNames.add(entityKey(m.name));branchTotals[b]+=m.total;
         if(m.total>topDrugTotal){topDrugTotal=m.total;topDrugName=m.name;}
         m.doctors.forEach(dr=>{
-          let rec=docMap.get(dr.name);
-          if(!rec){const doc=d.doctors.find(z=>z.name===dr.name);rec={name:dr.name,section:doc?doc.section:'',total:0,byBranch:{T1:0,T2:0,T3:0}};docMap.set(dr.name,rec);}
+          const doctorKey=entityKey(dr.name);let rec=docMap.get(doctorKey);
+          if(!rec){const doc=d.doctors.find(z=>sameEntity(z.name,dr.name));rec={name:dr.name,section:doc?doc.section:'',total:0,byBranch:{T1:0,T2:0,T3:0}};docMap.set(doctorKey,rec);}
           rec.total+=dr.count;rec.byBranch[b]+=dr.count;
         });
       });
-      d.rows.forEach(r=>{if(r.service&&r.service.toLowerCase().includes(ql)&&r.patient) patientSet.add(r.patient);});
+      d.rows.forEach(r=>{if(findPrivateLabelProduct(r.service)?.key===prod.key){const k=patientIdentityKey(b,r.patient);if(k)patientSet.add(k);}});
     });
     if(!matchedNames.size){
       return `<div class="feat-card c${i+1}"><div class="feat-head"><div class="feat-num">${i+1}</div><div style="flex:1"><div class="feat-title">${escapeHtml(prod.name)}</div><div class="feat-sub">${escapeHtml(prod.form)}</div></div></div><div class="feat-empty">🚫 لا توجد وصفات في البيانات المرفوعة</div></div>`;
@@ -1974,18 +2060,17 @@ function updateFeaturedGrid(){
     // Compute grand totals across all 6 products
     let gtAll = 0, gtT1 = 0, gtT2 = 0, gtT3 = 0, gtDocs = new Set(), gtPats = new Set();
     PRIVATE_LABEL.forEach(prod => {
-      const q = prod.key.toLowerCase();
       loaded.forEach(b => {
         const d = STATE.data[b];
-        d.drugs.filter(x => x.name.toLowerCase().includes(q)).forEach(m => {
+        d.drugs.filter(x=>findPrivateLabelProduct(x.name)?.key===prod.key).forEach(m => {
           if(b==='T1') gtT1 += m.total;
           else if(b==='T2') gtT2 += m.total;
           else if(b==='T3') gtT3 += m.total;
           gtAll += m.total;
-          m.doctors.forEach(dr => gtDocs.add(dr.name));
+          m.doctors.forEach(dr => gtDocs.add(entityKey(dr.name)));
         });
-        d.rows.filter(r => r.service && r.service.toLowerCase().includes(q)).forEach(r => {
-          if(r.patient) gtPats.add(b+'_'+r.patient);
+        d.rows.filter(r=>findPrivateLabelProduct(r.service)?.key===prod.key).forEach(r => {
+          const k=patientIdentityKey(b,r.patient);if(k)gtPats.add(k);
         });
       });
     });
@@ -2030,12 +2115,12 @@ function updateFeaturedGrid(){
 
 function showDoctorMulti(name){
   const blocks=[];let combined={total:0,drugs:new Map()};
-  BRANCHES.forEach(b=>{const d=STATE.data[b];if(!d) return;const doc=d.doctors.find(x=>x.name===name);if(!doc) return;combined.total+=doc.total;doc.drugs.forEach(x=>combined.drugs.set(x.name,(combined.drugs.get(x.name)||0)+x.count));blocks.push({b,doc});});
+  BRANCHES.forEach(b=>{const d=STATE.data[b];if(!d)return;const doc=d.doctors.find(x=>sameEntity(x.name,name));if(!doc)return;combined.total+=doc.total;doc.drugs.forEach(x=>{const k=entityKey(x.name),item=combined.drugs.get(k)||{name:x.name,count:0};item.count+=x.count;combined.drugs.set(k,item);});blocks.push({b,doc});});
   if(!blocks.length) return;
   const sec=blocks[0].doc.section||'—';
-  const drugsSorted=[...combined.drugs.entries()].map(([n,c])=>({name:n,count:c})).sort((a,b)=>b.count-a.count);
+  const drugsSorted=[...combined.drugs.values()].sort((a,b)=>b.count-a.count);
   const patientKeys=new Set();
-  blocks.forEach(x=>(STATE.data[x.b].rows||[]).forEach(r=>{if(r.doctor===name){const k=patientIdentityKey(x.b,r.patient);if(k)patientKeys.add(k);}}));
+  blocks.forEach(x=>(STATE.data[x.b].rows||[]).forEach(r=>{if(sameEntity(r.doctor,name)){const k=patientIdentityKey(x.b,r.patient);if(k)patientKeys.add(k);}}));
   const totalPats=patientKeys.size;
   const initials=name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
   const avatarColors=['var(--gv)','var(--gt)','var(--ga)','var(--gp)','var(--gs)'];
@@ -2045,7 +2130,7 @@ function showDoctorMulti(name){
 
   // Period sparkline data
   const firstBranch=blocks[0]?.b;
-  const sparkPts=PharmaCore.sortPeriods(STATE.periods[firstBranch]||[]).map(p=>{const doc=p.data.doctors.find(x=>x.name===name);return doc?doc.total:0;});
+  const sparkPts=PharmaCore.sortPeriods(STATE.periods[firstBranch]||[]).map(p=>{const doc=p.data.doctors.find(x=>sameEntity(x.name,name));return doc?doc.total:0;});
   const hasSpark=sparkPts.length>=2;
 
   // Branch comparison pills
@@ -2138,11 +2223,11 @@ function showDoctorMulti(name){
 }
 
 function showDoctor(name){
-  if(!STATE.active) return;const d=STATE.data[STATE.active];if(!d) return;const x=d.doctors.find(z=>z.name===name);if(!x) return;
+  if(!STATE.active) return;const d=STATE.data[STATE.active];if(!d) return;const x=d.doctors.find(z=>sameEntity(z.name,name));if(!x) return;
   showDoctorMulti(name); // use enhanced modal
 }
 function showDrug(name){
-  if(!STATE.active) return;const d=STATE.data[STATE.active];if(!d) return;const x=d.drugs.find(z=>z.name===name);if(!x) return;
+  if(!STATE.active) return;const d=STATE.data[STATE.active];if(!d) return;const x=d.drugs.find(z=>sameEntity(z.name,name));if(!x) return;
   modalBody.innerHTML='<h2 style="font-size:22px;margin-bottom:6px;font-family:Inter,Alexandria,sans-serif">💊 '+escapeHtml(x.name)+' <span class="tag '+STATE.active.toLowerCase()+'" style="font-size:11px;">'+BRANCH_LABELS[STATE.active]+'</span></h2><div class="detail-grid" style="margin-top:16px"><div class="detail-card"><div class="l">الكتابات</div><div class="v">'+fmt(x.total)+'</div></div><div class="detail-card"><div class="l">الأطباء</div><div class="v">'+fmt(x.doctorCount)+'</div></div><div class="detail-card"><div class="l">المرضى</div><div class="v">'+fmt(x.patients)+'</div></div><div class="detail-card"><div class="l">النسبة</div><div class="v">'+pct(x.total,d.totalRows).toFixed(1)+'%</div></div></div><div class="mini-head"><h3>أعلى الأطباء</h3></div><div class="table-wrap" style="max-height:300px;overflow-y:auto;"><table><thead><tr><th style="width:50px;">#</th><th>الطبيب</th><th>الكتابات</th><th>النسبة</th></tr></thead><tbody>'+x.doctors.slice(0,30).map((y,i)=>'<tr class="clickable" data-doc="'+escapeAttr(y.name)+'"><td>'+rankBadge(i)+'</td><td>'+escapeHtml(y.name)+'</td><td class="num">'+fmt(y.count)+'</td><td class="num">'+pct(y.count,x.total).toFixed(1)+'%</td></tr>').join('')+'</tbody></table></div>';
   modalBody.querySelectorAll('tr[data-doc]').forEach(tr=>tr.onclick=()=>{modalBg.classList.remove('show');setTimeout(()=>showDoctor(tr.dataset.doc),150);});
   modalBg.classList.add('show');
@@ -2202,7 +2287,7 @@ document.getElementById('shareBtn').onclick=()=>{
     let html=redactCredentialsFromSharedTemplate(SOURCE_TEMPLATE);
     const payload={v:2,privacy:{anonymized:anonymize,createdAt:new Date().toISOString()},branches:{},periods:{},dt:sanitizeDailyStore((typeof DT!=='undefined'&&DT.store)?DT.store:{},anonymize)};
     BRANCHES.forEach(b=>{const d=STATE.data[b];if(d) payload.branches[b]={rows:sanitizeRowsForExport(d.rows,anonymize),reportName:d.reportName,reportDate:d.reportDate};});
-    BRANCHES.forEach(b=>{payload.periods[b]=(STATE.periods[b]||[]).map(p=>({id:p.id,label:p.label,rows:sanitizeRowsForExport(p.rows,anonymize),_main:!!p._main}));});
+    BRANCHES.forEach(b=>{payload.periods[b]=(STATE.periods[b]||[]).map(p=>({id:p.id,label:p.label,rows:sanitizeRowsForExport(p.rows,anonymize),parseMeta:p.parseMeta||null,_main:!!p._main}));});
     const closeToken='<'+'/scr'+'ipt>',openToken='<scr'+'ipt id="embedded-rx-data">';
     const json=JSON.stringify(payload).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');
     const tag=openToken+'window.__PHARMADASH_SHARED__=true;window.__EMBEDDED_RX__='+json+';'+closeToken;
@@ -2223,7 +2308,7 @@ function loadEmbedded(){
     BRANCHES.forEach(b=>{
       const ps=d.periods[b];
       if(ps && ps.length){
-        STATE.periods[b]=ps.map(p=>({id:p.id,label:p.label,rows:p.rows,_main:!!p._main,data:aggregate(p.rows||[])}));
+        STATE.periods[b]=ps.map(p=>({id:p.id,label:p.label,rows:p.rows,parseMeta:p.parseMeta||null,_main:!!p._main,data:aggregate(p.rows||[])}));
         rebuildBranchFromPeriods(b);
         _restoreBranchUI(b);
         if(!STATE.active) STATE.active=b;
@@ -2725,27 +2810,24 @@ function renderLoyalty() {
   const docAgg = new Map();
   loaded.forEach(b => {
     STATE.data[b].doctors.forEach(d => {
-      if (!docAgg.has(d.name)) {
-        docAgg.set(d.name,{ name: d.name, section: d.section||'—', total: 0, branches: new Set(), drugs: new Map() });
+      const doctorKey=entityKey(d.name);
+      if (!docAgg.has(doctorKey)) {
+        docAgg.set(doctorKey,{ name: d.name, section: d.section||'—', total: 0, branches: new Set(), drugs: new Map() });
       }
-      const rec = docAgg.get(d.name);
+      const rec=docAgg.get(doctorKey);
       rec.total += d.total;
       rec.branches.add(b);
-      d.drugs.forEach(dr => rec.drugs.set(dr.name, (rec.drugs.get(dr.name)||0) + dr.count));
+      d.drugs.forEach(dr=>{const k=entityKey(dr.name),item=rec.drugs.get(k)||{name:dr.name,count:0};item.count+=dr.count;rec.drugs.set(k,item);});
     });
   });
 
   // ── حساب نسبة وعدد كتابات Private Label لكل طبيب ──
-  const plKeys = PRIVATE_LABEL.map(p => p.key.toLowerCase());
-
   const allDocs = [...docAgg.values()].map(d => {
-    const drugList = [...d.drugs.entries()]
-      .map(([n, c]) => ({ name: n, count: c }))
-      .sort((a, b) => b.count - a.count);
+    const drugList=[...d.drugs.values()].sort((a,b)=>b.count-a.count);
 
     // فصل أدوية PL عن باقي الأدوية
-    const plDrugs    = drugList.filter(dr => plKeys.some(k => dr.name.toLowerCase().includes(k)));
-    const otherDrugs = drugList.filter(dr => !plKeys.some(k => dr.name.toLowerCase().includes(k)));
+    const plDrugs=drugList.filter(dr=>findPrivateLabelProduct(dr.name));
+    const otherDrugs=drugList.filter(dr=>!findPrivateLabelProduct(dr.name));
     const plTotal    = plDrugs.reduce((s, dr) => s + dr.count, 0);
     const plPct      = d.total > 0 ? (plTotal / d.total * 100) : 0;
     const plCount    = plDrugs.length; // عدد أصناف PL مختلفة
@@ -3321,7 +3403,6 @@ function renderDrugIntel() {
 
   // ── تجميع الأدوية من كل الفروع ──
   const drugAgg = new Map();
-  const plKeys = PRIVATE_LABEL.map(p => p.key.toLowerCase());
   loaded.forEach(b => {
     STATE.data[b].drugs.forEach(dr => {
       if (!drugAgg.has(dr.name)) {
@@ -3349,8 +3430,7 @@ function renderDrugIntel() {
     const docCount = d.doctors.size;
     const topDoctor = [...d.doctors.entries()].sort((a, b) => b[1] - a[1])[0];
     const topSection = [...d.sections.entries()].sort((a, b) => b[1] - a[1])[0];
-    const isPL = plKeys.some(k => d.name.toLowerCase().includes(k));
-    const plInfo = isPL ? PRIVATE_LABEL.find(p => d.name.toLowerCase().includes(p.key.toLowerCase())) : null;
+    const plInfo=findPrivateLabelProduct(d.name),isPL=!!plInfo;
     return {
       name: d.name, total: d.total, docCount, closed, canceled, newO, rejectionRate,
       patients: d.patientCounts.size, repeatPatients: [...d.patientCounts.values()].filter(c=>c>1).length, isPL, plName: plInfo ? plInfo.name : null,
@@ -3399,7 +3479,7 @@ function renderDrugIntel() {
           <div style="display:flex;flex-wrap:wrap;gap:7px;">
             ${(() => {
               return PRIVATE_LABEL.map(p => {
-                const found = allDrugs.find(d => d.name.toLowerCase().includes(p.key.toLowerCase()));
+                const found = allDrugs.find(d=>findPrivateLabelProduct(d.name)?.key===p.key);
                 const cnt = found ? found.total : 0;
                 const active = cnt > 0;
                 return `<button onclick="${active ? `showDrugDeepDive('${escapeAttr(found.name)}')` : ''}"
@@ -3745,7 +3825,6 @@ function buildTargetTrack() {
   const result = document.getElementById('tt-result');
   if (!pBase || !pCur) return;
 
-  const plKeys = PRIVATE_LABEL.map(p => p.key.toLowerCase());
   const filter = window._ttFilter || 'all';
 
   // دالة: تجمع صرف صنف مستهدف في فترة معينة
@@ -3766,7 +3845,7 @@ function buildTargetTrack() {
     const cur = countInPeriod(pCur.data, prod.name);
     const change = cur.total - base.total;
     const changePct = base.total > 0 ? (change / base.total * 100) : (cur.total > 0 ? 100 : 0);
-    const isPL = plKeys.some(k => prod.short.toLowerCase().includes(k) || prod.name.toLowerCase().includes(k));
+    const isPL=!!findPrivateLabelProduct(prod.short)||!!findPrivateLabelProduct(prod.name);
     // أطباء جدد بدأوا يكتبوه
     const newDoctors = [...cur.doctors].filter(d => !base.doctors.has(d));
     const lostDoctors = [...base.doctors].filter(d => !cur.doctors.has(d));
@@ -4090,14 +4169,14 @@ function renderVisitCard(d){
 }
 function fillVisitCard(d, name){
   var x = null, rank = 0;
-  for(var i=0;i<d.doctors.length;i++){ if(d.doctors[i].name === name){ x = d.doctors[i]; rank = i+1; break; } }
+  for(var i=0;i<d.doctors.length;i++){ if(sameEntity(d.doctors[i].name,name)){ x = d.doctors[i]; rank = i+1; break; } }
   if(!x) return;
-  var rows = (d.rows || []).filter(function(r){ return r.doctor === name; });
+  var rows=(d.rows||[]).filter(function(r){return sameEntity(r.doctor,name);});
   // PL لكل منتج
   var plRows = [], plTotal = 0;
   for(var pi=0;pi<PRIVATE_LABEL.length;pi++){
     var pk = PRIVATE_LABEL[pi]; var cnt = 0;
-    for(var ri=0;ri<rows.length;ri++){ var s = rows[ri].service; if(s && s.toLowerCase().indexOf(pk.key) > -1) cnt++; }
+    for(var ri=0;ri<rows.length;ri++){if(findPrivateLabelProduct(rows[ri].service)?.key===pk.key)cnt++;}
     if(cnt > 0){ plRows.push({name: pk.name, form: pk.form, count: cnt}); plTotal += cnt; }
   }
   // فرص البدائل لهذا الطبيب
@@ -4106,8 +4185,7 @@ function fillVisitCard(d, name){
     var pl = COMP_MAP[ci]; var m = {}; var tot = 0;
     for(var rj=0;rj<rows.length;rj++){
       var svc = rows[rj].service; if(!svc) continue;
-      var isPL = false;
-      for(var pj=0;pj<PRIVATE_LABEL.length;pj++){ if(svc.toLowerCase().indexOf(PRIVATE_LABEL[pj].key) > -1){ isPL = true; break; } }
+      var isPL=!!findPrivateLabelProduct(svc);
       if(!isPL && compIsMatch(pl, svc)){ m[svc] = (m[svc]||0)+1; tot++; }
     }
     if(tot > 0){
@@ -4468,10 +4546,11 @@ function renderTrends() {
   const docAgg = new Map();
   loaded.forEach(b => {
     STATE.data[b].doctors.forEach(doc => {
-      if (!docAgg.has(doc.name)) {
-        docAgg.set(doc.name,{ name: doc.name, section: doc.section || '—', total: 0, branches: new Map(), drugs: new Map() });
+      const doctorKey=entityKey(doc.name);
+      if (!docAgg.has(doctorKey)) {
+        docAgg.set(doctorKey,{ name: doc.name, section: doc.section || '—', total: 0, branches: new Map(), drugs: new Map() });
       }
-      const r = docAgg.get(doc.name);
+      const r=docAgg.get(doctorKey);
       r.total += doc.total;
       r.branches.set(b, (r.branches.get(b) || 0) + doc.total);
       doc.drugs.forEach(dr => r.drugs.set(dr.name, (r.drugs.get(dr.name) || 0) + dr.count));
@@ -4480,14 +4559,13 @@ function renderTrends() {
 
   const allDocs = [...docAgg.values()];
   const avgTotal = allDocs.length ? allDocs.reduce((s, d) => s + d.total, 0) / allDocs.length : 0;
-  const plKeys = PRIVATE_LABEL.map(p => p.key.toLowerCase());
 
   // ── حساب مؤشرات السلوك لكل طبيب ──
   const analyzed = allDocs.map(d => {
     const diversityScore = d.drugs.size;
     const volumeRatio    = avgTotal > 0 ? (d.total / avgTotal) : 0;
     const branchSpread   = d.branches.size;
-    const plDrugs        = [...d.drugs.entries()].filter(([n]) => plKeys.some(k => n.toLowerCase().includes(k)));
+    const plDrugs=[...d.drugs.entries()].filter(([n])=>findPrivateLabelProduct(n));
     const plTotal        = plDrugs.reduce((s, [_, c]) => s + c, 0);
     const plPct          = d.total > 0 ? (plTotal / d.total * 100) : 0;
 
@@ -4975,7 +5053,7 @@ async function handlePeriodFile(branch, label, file) {
     if (!rows || !rows.length) throw new Error('الملف لا يحتوي على بيانات');
     const id = Date.now();
     const agg = aggregate(rows);
-    STATE.periods[branch].push({ id, label, rows, data: agg });
+    STATE.periods[branch].push({ id, label, rows, data: agg, parseMeta: rows._parseMeta||null });
     await _upTick(branch,90);
     rebuildBranchFromPeriods(branch);
     if (!STATE.active) STATE.active = branch;
@@ -5004,6 +5082,7 @@ function rebuildBranchFromPeriods(branch) {
   d.reportName = latest.label;
   d.reportDate = '';
   STATE.data[branch] = d;
+  STATE.quality[branch] = PharmaCore.assessRows(latest.rows || [],latest.parseMeta||{source:'saved'});
 }
 
 /* ── Render period badges inside branch card ── */
@@ -5430,8 +5509,8 @@ document.getElementById('exportXlsxBtn').onclick = () => {
     const plh=['المنتج','T1','T2','T3','الإجمالي'];
     const pld=[plh];
     PRIVATE_LABEL.forEach(prod=>{
-      const q=prod.key.toLowerCase();const bt={T1:0,T2:0,T3:0};
-      loaded.forEach(b=>STATE.data[b].drugs.filter(x=>x.name.toLowerCase().includes(q)).forEach(m=>bt[b]+=m.total));
+      const bt={T1:0,T2:0,T3:0};
+      loaded.forEach(b=>STATE.data[b].drugs.filter(x=>findPrivateLabelProduct(x.name)?.key===prod.key).forEach(m=>bt[b]+=m.total));
       pld.push([exportCell(prod.name),bt.T1,bt.T2,bt.T3,bt.T1+bt.T2+bt.T3]);
     });
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pld),'Private Label');
@@ -5848,7 +5927,7 @@ async function unlockStoredData(){
 }
 function lockInMemoryData(){
   _dataUnlocked=false;
-  BRANCHES.forEach(b=>{STATE.data[b]=null;STATE.periods[b]=[];if(typeof _resetBranchUI==='function')_resetBranchUI(b);});
+  BRANCHES.forEach(b=>{STATE.data[b]=null;STATE.periods[b]=[];STATE.quality[b]=null;if(typeof _resetBranchUI==='function')_resetBranchUI(b);});
   STATE.active=null;
   if(typeof DT!=='undefined')DT.store={};
   Object.keys(charts||{}).forEach(destroyChart);
@@ -5960,9 +6039,9 @@ function _idbDelete(key){ return _idbOpen().then(db=>new Promise((res,rej)=>{ co
 
 /* لقطة قابلة للتخزين: الصفوف الخام فقط (الـ aggregate يُعاد حسابه عند الاستعادة) */
 function _buildSnapshot(){
-  const snap={ v:1, active:STATE.active, periods:{}, dt:(typeof DT!=='undefined'&&DT.store)?DT.store:{} };
+  const snap={ v:2, active:STATE.active, periods:{}, dt:(typeof DT!=='undefined'&&DT.store)?DT.store:{} };
   BRANCHES.forEach(b=>{
-    snap.periods[b]=(STATE.periods[b]||[]).map(p=>({ id:p.id, label:p.label, rows:p.rows, _main:!!p._main }));
+    snap.periods[b]=(STATE.periods[b]||[]).map(p=>({ id:p.id, label:p.label, rows:p.rows, parseMeta:p.parseMeta||null, _main:!!p._main }));
   });
   return snap;
 }
@@ -6010,7 +6089,7 @@ async function loadSavedData(){
     BRANCHES.forEach(b=>{
       const ps=(snap.periods&&snap.periods[b])||[];
       if(!ps.length) return;
-      STATE.periods[b]=ps.map(p=>({ id:p.id, label:p.label, rows:p.rows, _main:!!p._main, data:aggregate(p.rows||[]) }));
+      STATE.periods[b]=ps.map(p=>({ id:p.id, label:p.label, rows:p.rows, parseMeta:p.parseMeta||null, _main:!!p._main, data:aggregate(p.rows||[]) }));
       rebuildBranchFromPeriods(b);
       _restoreBranchUI(b);
       any=true;
@@ -6025,7 +6104,7 @@ function updateSavedBadge() { /* لا يوجد شارة في الواجهة ال
 function clearSavedData(){
   try{ if(!confirm('مسح كل البيانات المحفوظة نهائياً؟ لا يمكن التراجع.')) return; }catch(e){}
   if(_idbAvailable()) _idbDelete(_IDB_KEY).catch(e=>console.error('clearSavedData',e));
-  BRANCHES.forEach(b=>{ STATE.data[b]=null; STATE.periods[b]=[]; _resetBranchUI(b); });
+  BRANCHES.forEach(b=>{ STATE.data[b]=null; STATE.periods[b]=[]; STATE.quality[b]=null; _resetBranchUI(b); });
   if(typeof DT!=='undefined') DT.store={};
   STATE.active=null;
   clearTimeout(_saveTimer);
@@ -6621,14 +6700,21 @@ window.addEventListener('error',e=>console.error('V8 Error:',e.error||e.message)
 // SECTION — أصناف PureHerb
 // ══════════════════════════════════
 const PUREHERB_PRODUCTS = [
-  {key:'PURE OMEGA',name:'Pure Omega-3 Syrup 240ML',code:'1-03-186-084'},
-  {key:'PUREFEEL',name:'PureFeel Tablet 30Tab',code:'1-03-187-269'},
-  {key:'CENTROZON W',name:'Centrozon Women 30Tab',code:'1-03-187-267'},
-  {key:'CENTROZON',name:'Centrozon Tablet 30Tab',code:'1-03-187-270'},
-  {key:'ZINCOLIVE',name:'Zincolive Syrup 150ML',code:'1-03-186-085'},
-  {key:'BONEFRIEND',name:'BoneFriend Tablet 30Tab',code:'1-03-187-268'},
-  {key:'ARGIGROW',name:'ArgiGrow Syrup 150ML',code:'1-03-186-083'}
+  {key:'PURE OMEGA',aliases:['PURE OMEGA','PUREOMEGA','PURE OMEGA 3'],name:'Pure Omega-3 Syrup 240ML',code:'1-03-186-084'},
+  {key:'PUREFEEL',aliases:['PUREFEEL','PURE FEEL'],name:'PureFeel Tablet 30Tab',code:'1-03-187-269'},
+  {key:'CENTROZON W',aliases:['CENTROZON WOMEN','CENTROZON W'],name:'Centrozon Women 30Tab',code:'1-03-187-267'},
+  {key:'CENTROZON',aliases:['CENTROZON'],exclude:['WOMEN'],name:'Centrozon Tablet 30Tab',code:'1-03-187-270'},
+  {key:'ZINCOLIVE',aliases:['ZINCOLIVE','ZINC OLIVE'],name:'Zincolive Syrup 150ML',code:'1-03-186-085'},
+  {key:'BONEFRIEND',aliases:['BONEFRIEND','BONE FRIEND'],name:'BoneFriend Tablet 30Tab',code:'1-03-187-268'},
+  {key:'ARGIGROW',aliases:['ARGIGROW','ARGI GROW'],name:'ArgiGrow Syrup 150ML',code:'1-03-186-083'}
 ];
+function findPureHerbProduct(service){
+  const text=PharmaCore.normalizeProductText(service);if(!text)return null;
+  return PUREHERB_PRODUCTS.find(p=>{
+    if((p.exclude||[]).some(x=>phraseMatch(text,x)))return false;
+    return (p.aliases||[p.key]).some(x=>phraseMatch(text,x));
+  })||null;
+}
 
 function renderPureHerb(){
   const el = document.getElementById('pureherb-content');
@@ -6646,7 +6732,7 @@ function renderPureHerb(){
     const bd = STATE.data[b];
     if(!bd||!bd.drugs) return;
     PUREHERB_PRODUCTS.forEach(p=>{
-      const found = bd.drugs.filter(d=> d.name && (p.key==='CENTROZON' ? (d.name.toUpperCase().includes('CENTROZON') && !d.name.toUpperCase().includes('WOMEN')) : d.name.toUpperCase().includes(p.key.toUpperCase())));
+      const found = bd.drugs.filter(d=>findPureHerbProduct(d.name)?.key===p.key);
       const cnt = found.reduce((s,x)=>s+(x.total||x.count||0),0);
       if(cnt>0){
         phData[p.key].total += cnt;

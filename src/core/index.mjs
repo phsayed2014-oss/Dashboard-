@@ -38,6 +38,120 @@ export function normalizeStatus(value) {
   return normalizeWhitespace(value) || 'غير محدد';
 }
 
+const RX_COLUMN_ALIASES = {
+  doctor: ['doctor', 'doctorname', 'physician', 'physicianname', 'اسم الطبيب', 'اسمالطبيب', 'الطبيب'],
+  service: ['service', 'servicename', 'medication', 'medicationname', 'drug', 'drugname', 'اسم الخدمة', 'اسمالخدمة', 'الدواء', 'الصنف'],
+  section: ['section', 'sectionname', 'specialty', 'speciality', 'department', 'اسم القسم', 'اسمالقسم', 'القسم', 'التخصص'],
+  patient: ['patient', 'patientno', 'patientnumber', 'mrn', 'رقم المريض', 'رقمالمريض'],
+  patientName: ['patientname', 'اسم المريض', 'اسمالمريض'],
+  orderNo: ['orderno', 'ordernumber', 'orderid', 'رقم الامر', 'رقمالامر', 'رقم الأمر', 'رقمالأمر'],
+  status: ['status', 'orderstatus', 'الحالة', 'حالة الطلب'],
+};
+
+function headerKey(value) {
+  return normalizeEntityKey(value).replace(/[^A-Z0-9\u0600-\u06FF]/g, '');
+}
+
+const RX_ALIAS_KEYS = Object.fromEntries(
+  Object.entries(RX_COLUMN_ALIASES).map(([field, aliases]) => [
+    field,
+    new Set([field, ...aliases].map(headerKey)),
+  ]),
+);
+
+export function normalizeRxRow(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const values = new Map(Object.entries(raw).map(([key, value]) => [headerKey(key), value]));
+  const read = (field) => {
+    for (const alias of RX_ALIAS_KEYS[field]) {
+      if (!values.has(alias)) continue;
+      const value = normalizeWhitespace(values.get(alias));
+      if (value) return value;
+    }
+    return '';
+  };
+
+  const row = {
+    doctor: read('doctor'),
+    service: read('service'),
+    section: read('section').replace(/OPTHALMOLOGY/gi, 'OPHTHALMOLOGY'),
+    patient: read('patient'),
+    patientName: read('patientName'),
+    orderNo: read('orderNo'),
+    status: normalizeStatus(read('status')),
+  };
+  return row.doctor || row.service ? row : null;
+}
+
+export function rowFingerprint(row) {
+  return ['doctor', 'service', 'section', 'patient', 'patientName', 'orderNo', 'status']
+    .map((field) => normalizeEntityKey(row?.[field]))
+    .join('\u001F');
+}
+
+export function deduplicateExactRows(rows) {
+  const seen = new Set();
+  const unique = [];
+  for (const row of rows || []) {
+    const fingerprint = rowFingerprint(row);
+    if (seen.has(fingerprint)) continue;
+    seen.add(fingerprint);
+    unique.push(row);
+  }
+  return { rows: unique, removed: Math.max(0, (rows || []).length - unique.length) };
+}
+
+export function assessRows(rows, meta = {}) {
+  const list = rows || [];
+  const missing = { doctor: 0, service: 0, section: 0, patient: 0, patientName: 0, orderNo: 0, status: 0 };
+  const fingerprints = new Set();
+  let duplicates = 0;
+  let unknownStatuses = 0;
+
+  for (const row of list) {
+    for (const field of Object.keys(missing)) {
+      if (!normalizeWhitespace(row?.[field]) || (field === 'status' && row.status === 'غير محدد')) missing[field] += 1;
+    }
+    const fingerprint = rowFingerprint(row);
+    if (fingerprints.has(fingerprint)) duplicates += 1;
+    else fingerprints.add(fingerprint);
+    if (!['Closed', 'Canceled', 'New', 'Opened', 'Pending', 'Active'].includes(row?.status)) unknownStatuses += 1;
+  }
+
+  const sourceRows = Number(meta.sourceRows ?? list.length);
+  const rejectedRows = Number(meta.rejectedRows ?? Math.max(0, sourceRows - list.length));
+  const denominator = Math.max(1, sourceRows);
+  const penalty =
+    (rejectedRows / denominator) * 30
+    + (missing.doctor / denominator) * 20
+    + (missing.service / denominator) * 25
+    + (missing.section / denominator) * 8
+    + (missing.patient / denominator) * 5
+    + (missing.status / denominator) * 5
+    + (duplicates / denominator) * 7;
+  const score = Math.max(0, Math.round(100 - penalty));
+  const warnings = [];
+  if (rejectedRows) warnings.push(`${rejectedRows} صف لم يحتوِ طبيبًا أو دواء`);
+  if (missing.doctor) warnings.push(`${missing.doctor} صف بدون طبيب`);
+  if (missing.service) warnings.push(`${missing.service} صف بدون دواء`);
+  if (missing.section) warnings.push(`${missing.section} صف بدون تخصص`);
+  if (duplicates) warnings.push(`${duplicates} صف مكرر تمامًا`);
+  if (unknownStatuses) warnings.push(`${unknownStatuses} حالة غير قياسية`);
+
+  return {
+    source: meta.source || 'unknown',
+    pages: Number(meta.pages || 0),
+    sourceRows,
+    acceptedRows: list.length,
+    rejectedRows,
+    missing,
+    duplicates,
+    unknownStatuses,
+    score,
+    warnings,
+  };
+}
+
 const MONTHS = new Map([
   ['يناير', 1], ['JANUARY', 1], ['JAN', 1],
   ['فبراير', 2], ['FEBRUARY', 2], ['FEB', 2],

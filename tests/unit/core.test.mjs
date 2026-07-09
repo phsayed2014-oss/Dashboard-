@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   escapeSpreadsheetFormula,
+  assessRows,
+  deduplicateExactRows,
   localDateKey,
   matchesCatalogProduct,
   normalizeEntityKey,
+  normalizeRxRow,
   normalizeStatus,
   periodDateScore,
   sanitizeExportRow,
@@ -20,6 +23,24 @@ describe('normalization', () => {
     expect(normalizeStatus('CLOSED')).toBe('Closed');
     expect(normalizeStatus('ملغى')).toBe('Canceled');
     expect(normalizeStatus('جديد')).toBe('New');
+  });
+
+  it('maps common English and Arabic report headers into one row model', () => {
+    expect(normalizeRxRow({
+      'اسم الطبيب': ' د. أحمد ',
+      'اسم الخدمة': ' Drug A ',
+      'اسم القسم': 'OPTHALMOLOGY',
+      'رقم المريض': 12345,
+      'الحالة': 'مغلق',
+    })).toEqual({
+      doctor: 'د. أحمد',
+      service: 'Drug A',
+      section: 'OPHTHALMOLOGY',
+      patient: '12345',
+      patientName: '',
+      orderNo: '',
+      status: 'Closed',
+    });
   });
 });
 
@@ -101,6 +122,22 @@ describe('snapshot validation', () => {
       },
     };
     expect(validateSnapshot(snapshot).valid).toBe(false);
+  });
+});
+
+describe('data quality', () => {
+  it('reports missing fields and exact duplicate rows without deleting automatically', () => {
+    const row = normalizeRxRow({ doctorName: 'Dr A', serviceName: 'Drug A', patientNo: '1', status: 'Closed' });
+    const quality = assessRows([row, { ...row }], { source: 'pdf', sourceRows: 3, rejectedRows: 1, pages: 2 });
+    expect(quality).toMatchObject({
+      source: 'pdf',
+      pages: 2,
+      acceptedRows: 2,
+      rejectedRows: 1,
+      duplicates: 1,
+    });
+    expect(quality.warnings.length).toBeGreaterThan(0);
+    expect(deduplicateExactRows([row, { ...row }])).toEqual({ rows: [row], removed: 1 });
   });
 });
 
