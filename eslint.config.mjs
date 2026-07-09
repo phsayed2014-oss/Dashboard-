@@ -20,10 +20,29 @@ export default [
         Buffer: 'readonly',
         console: 'readonly',
         process: 'readonly',
+        URL: 'readonly',
       },
     },
     rules: {
       'no-console': 'off',
+    },
+  },
+  {
+    files: ['tests/e2e/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        indexedDB: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        setBranchData: 'readonly',
+        STATE: 'readonly',
+        renderAll: 'readonly',
+        _idbPut: 'readonly',
+        _idbGet: 'readonly',
+        _IDB_KEY: 'readonly',
+        _buildSnapshot: 'readonly',
+        PharmaCore: 'readonly',
+      },
     },
   },
 ];
