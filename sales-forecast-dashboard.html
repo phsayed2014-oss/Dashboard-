@@ -278,6 +278,12 @@ body::before{
 .product-bar .pb-hint{font-size:12px;color:var(--text-muted);font-weight:600;margin-inline-start:auto}
 @media(max-width:768px){ .product-bar .pb-hint{display:none} }
 
+/* All-products aggregate mode */
+.all-banner{display:none;background:linear-gradient(135deg,rgba(168,85,247,0.14),rgba(14,165,233,0.10));border:1px solid rgba(168,85,247,0.3);color:var(--text);border-radius:12px;padding:12px 18px;font-size:13px;font-weight:700;margin-bottom:24px}
+body.all-mode .all-banner{display:block}
+body.all-mode .entry-form{opacity:.5;pointer-events:none}
+body.all-mode .pharma-editor > .btn{display:none}
+
 /* Pharmacy comparison */
 .pharma-compare{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px}
 .pharma-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:8px}
@@ -365,8 +371,9 @@ body::before{
     <button class="btn ghost sm" onclick="addProduct()">➕ منتج جديد</button>
     <button class="btn ghost sm" onclick="renameProduct()">✏️ إعادة تسمية</button>
     <button class="btn ghost sm" onclick="deleteProduct()">🗑️ حذف</button>
-    <span class="pb-hint">كل منتج له تارجت ومبيعات وصيدليات مستقلة</span>
+    <span class="pb-hint">اختر «كل المنتجات» لعرض مجمّع، أو منتجاً واحداً للتعديل</span>
   </div>
+  <div class="all-banner" id="allBanner">🌐 وضع العرض المجمّع — كل الأرقام حاصل جمع المنتجات الستة (للعرض فقط؛ اختر منتجاً محدداً للتعديل)</div>
 
   <!-- Setup Panel -->
   <div class="setup-panel">
@@ -673,11 +680,14 @@ function saveState(){
 // ═══════════════════════════════════════════════════════════════
 // MULTI-PRODUCT
 // ═══════════════════════════════════════════════════════════════
+const ALL_ID = '__all__';
+function isAllMode(){ return STATE.activeProduct === ALL_ID; }
+
 // كتابة حقول المنتج النشِط من نسخة العمل إلى المخزن
 function commitActiveProduct(){
   if(!STATE.products) STATE.products = {};
   const id = STATE.activeProduct;
-  if(!id) return;
+  if(!id || id === ALL_ID) return;   // وضع "الكل" مجمّع للعرض فقط — لا يُكتب
   const existing = STATE.products[id] || {};
   const p = { name: existing.name || 'منتج' };
   PRODUCT_FIELDS.forEach(f => p[f] = STATE[f]);
@@ -729,27 +739,72 @@ function ensureProducts(){
     STATE.products = buildDefaultProducts();
     STATE.activeProduct = PL_PRODUCTS[0].key;
   }
-  if(!STATE.activeProduct || !STATE.products[STATE.activeProduct]){
+  if(!STATE.activeProduct || (STATE.activeProduct !== ALL_ID && !STATE.products[STATE.activeProduct])){
     STATE.activeProduct = Object.keys(STATE.products)[0];
   }
   // توحيد شكل الصيدليات لكل المنتجات (٣ شهور)
   Object.values(STATE.products).forEach(pr => { pr.pharmacies = (pr.pharmacies||[]).map(normalizePharmacy); });
-  loadActiveProduct();
+  if(isAllMode()) populateAggregate(); else loadActiveProduct();
+}
+
+// حساب العرض المجمّع لكل المنتجات
+function buildAggregate(){
+  const entries = {}, phByName = {}, archive = {};
+  let target = 0, prevMonthSales = 0, priceSum = 0, priceN = 0;
+  Object.values(STATE.products).forEach(pr => {
+    target += Number(pr.target) || 0;
+    prevMonthSales += Number(pr.prevMonthSales) || 0;
+    if(pr.avgPrice){ priceSum += Number(pr.avgPrice); priceN++; }
+    Object.entries(pr.entries || {}).forEach(([d,e])=>{
+      if(!entries[d]) entries[d] = { qty:0, amount:0 };
+      entries[d].qty += Number(e.qty) || 0;
+      entries[d].amount += Number(e.amount) || 0;
+    });
+    (pr.pharmacies || []).forEach(ph=>{
+      const key = ((ph.name||'').trim()) || ('#'+ph.id);
+      if(!phByName[key]) phByName[key] = { name:ph.name||key, months:[{sales:0,rx:0},{sales:0,rx:0},{sales:0,rx:0}] };
+      (ph.months||[]).forEach((m,i)=>{ if(i<3){ phByName[key].months[i].sales += Number(m.sales)||0; phByName[key].months[i].rx += Number(m.rx)||0; } });
+    });
+    Object.entries(pr.archive || {}).forEach(([mo,a])=>{
+      if(!archive[mo]) archive[mo] = { target:0, achieved:0, realistic:0, qty:0 };
+      archive[mo].target += a.target||0; archive[mo].achieved += a.achieved||0;
+      archive[mo].realistic += a.realistic||0; archive[mo].qty += a.qty||0;
+    });
+  });
+  const pharmacies = Object.values(phByName).map((p,i)=>({ id:i+1, name:p.name, months:p.months }));
+  return { target, prevMonthSales, avgPrice: priceN?Math.round(priceSum/priceN):58, entries, pharmacies, archive };
+}
+function populateAggregate(){
+  const a = buildAggregate();
+  STATE.target = a.target; STATE.avgPrice = a.avgPrice; STATE.prevMonthSales = a.prevMonthSales;
+  STATE.entries = a.entries; STATE.pharmacies = a.pharmacies; STATE.archive = a.archive;
+}
+
+// تفعيل/تعطيل عناصر التعديل حسب وضع الكل
+function applyAllModeUI(){
+  const all = isAllMode();
+  document.body.classList.toggle('all-mode', all);
+  ['targetInput','avgPriceInput','prevMonthSales','entryDate','entryQty','entryAmount'].forEach(id=>{
+    const e = document.getElementById(id); if(e) e.disabled = all;
+  });
+  const saveBtn = document.querySelector('.entry-form .btn.teal'); if(saveBtn) saveBtn.disabled = all;
 }
 
 function renderProductSelector(){
   const sel = document.getElementById('productSelect');
   if(!sel) return;
-  sel.innerHTML = Object.entries(STATE.products)
+  const allOpt = `<option value="${ALL_ID}" ${isAllMode()?'selected':''}>🌐 كل المنتجات (مجمّع)</option>`;
+  sel.innerHTML = allOpt + Object.entries(STATE.products)
     .map(([id,p]) => `<option value="${id}" ${id===STATE.activeProduct?'selected':''}>${p.name||id}</option>`)
     .join('');
 }
 
 function switchProduct(id){
   if(id === STATE.activeProduct) return;
-  commitActiveProduct();
+  commitActiveProduct();               // احفظ المنتج الحالي (يُتجاهل لو كنا في وضع الكل)
   STATE.activeProduct = id;
-  loadActiveProduct();
+  if(id === ALL_ID) populateAggregate(); else loadActiveProduct();
+  applyAllModeUI();
   syncSetupUI();
   renderProductSelector();
   render();
@@ -774,6 +829,7 @@ function addProduct(){
 }
 
 function renameProduct(){
+  if(isAllMode()){ alert('اختر منتجاً محدداً لإعادة التسمية.'); return; }
   const p = STATE.products[STATE.activeProduct];
   if(!p) return;
   const name = prompt('اسم المنتج:', p.name);
@@ -784,6 +840,7 @@ function renameProduct(){
 }
 
 function deleteProduct(){
+  if(isAllMode()){ alert('اختر منتجاً محدداً لحذفه.'); return; }
   if(Object.keys(STATE.products).length <= 1){ alert('لا يمكن حذف المنتج الوحيد.'); return; }
   const p = STATE.products[STATE.activeProduct];
   if(!confirm(`حذف المنتج «${p.name}» وكل بياناته نهائياً؟`)) return;
@@ -1156,9 +1213,9 @@ function renderTable(c){
       <td>${fmtNum(e.qty)}</td>
       <td><strong>${fmtNum(e.amount, 0)} ريال</strong></td>
       <td style="color:var(--text-dim)">${fmtNum(cumulative, 0)}</td>
-      <td style="white-space:nowrap">
+      <td style="white-space:nowrap">${isAllMode() ? '' : `
         <button class="btn ghost sm" onclick="editEntry('${e.date}')" title="تعديل">✏️</button>
-        <button class="btn rose sm" onclick="deleteEntry('${e.date}')" title="حذف">🗑</button>
+        <button class="btn rose sm" onclick="deleteEntry('${e.date}')" title="حذف">🗑</button>`}
       </td>
     </tr>`;
   }).join('');
@@ -1293,19 +1350,21 @@ function renderPharmacies(){
       <th>بيع</th><th>كتابات</th>
     </tr>`;
   }
-  // Editor rows
+  // Editor rows (read-only in aggregate/all mode)
+  const ro = isAllMode() ? 'disabled' : '';
   const tb = document.getElementById('pharmaTableBody');
-  const cell = (id,mi,field,val)=>`<td><input type="number" value="${val}" onchange="updatePharmacyMonth(${id},${mi},'${field}',this.value)"></td>`;
+  const cell = (id,mi,field,val)=>`<td><input type="number" value="${val}" ${ro} onchange="updatePharmacyMonth(${id},${mi},'${field}',this.value)"></td>`;
   tb.innerHTML = list.map(p=>`<tr>
-    <td style="min-width:120px"><input value="${p.name||''}" onchange="updatePharmacy(${p.id},'name',this.value)"></td>
+    <td style="min-width:120px"><input value="${p.name||''}" ${ro} onchange="updatePharmacy(${p.id},'name',this.value)"></td>
     ${cell(p.id,0,'sales',p.months[0].sales)}${cell(p.id,0,'rx',p.months[0].rx)}
     ${cell(p.id,1,'sales',p.months[1].sales)}${cell(p.id,1,'rx',p.months[1].rx)}
     ${cell(p.id,2,'sales',p.months[2].sales)}${cell(p.id,2,'rx',p.months[2].rx)}
-    <td><button class="btn rose sm" onclick="removePharmacy(${p.id})">🗑</button></td>
+    <td>${isAllMode() ? '' : `<button class="btn rose sm" onclick="removePharmacy(${p.id})">🗑</button>`}</td>
   </tr>`).join('') || '<tr><td colspan="8" class="empty-state">لا توجد صيدليات</td></tr>';
 }
 
 function addPharmacy(){
+  if(isAllMode()){ alert('اختر منتجاً محدداً لإضافة صيدلية.'); return; }
   if(!STATE.pharmacies) STATE.pharmacies = [];
   const id = STATE.pharmacies.reduce((m,p)=>Math.max(m,p.id),0)+1;
   STATE.pharmacies.push({ id, name:'صيدلية جديدة', months:[{sales:0,rx:0},{sales:0,rx:0},{sales:0,rx:0}] });
@@ -1313,11 +1372,13 @@ function addPharmacy(){
   renderPharmacies();
 }
 function removePharmacy(id){
+  if(isAllMode()) return;
   STATE.pharmacies = (STATE.pharmacies||[]).filter(p=>p.id!==id);
   saveState();
   renderPharmacies();
 }
 function updatePharmacy(id, field, value){
+  if(isAllMode()) return;
   const p = (STATE.pharmacies||[]).find(x=>x.id===id);
   if(!p) return;
   p[field] = value;
@@ -1325,6 +1386,7 @@ function updatePharmacy(id, field, value){
   renderPharmacies();
 }
 function updatePharmacyMonth(id, monthIdx, field, value){
+  if(isAllMode()) return;
   const p = (STATE.pharmacies||[]).find(x=>x.id===id);
   if(!p || !p.months[monthIdx]) return;
   p.months[monthIdx][field] = parseFloat(value)||0;
@@ -1336,6 +1398,7 @@ function updatePharmacyMonth(id, monthIdx, field, value){
 // MONTHLY ARCHIVE / TREND
 // ═══════════════════════════════════════════════════════════════
 function archiveMonth(){
+  if(isAllMode()){ alert('اختر منتجاً محدداً لحفظ لقطته.'); return; }
   const c = calculate();
   if(!STATE.archive) STATE.archive = {};
   STATE.archive[STATE.month] = {
@@ -1504,6 +1567,7 @@ function renderChart(c){
 // ENTRY MANAGEMENT
 // ═══════════════════════════════════════════════════════════════
 function addEntry(){
+  if(isAllMode()){ alert('اختر منتجاً محدداً لإضافة مبيعات.'); return; }
   const date = document.getElementById('entryDate').value;
   const qty = parseFloat(document.getElementById('entryQty').value) || 0;
   let amount = parseFloat(document.getElementById('entryAmount').value) || 0;
@@ -1539,6 +1603,7 @@ function addEntry(){
 }
 
 function deleteEntry(date){
+  if(isAllMode()) return;
   if(!confirm('حذف هذا اليوم؟')) return;
   delete STATE.entries[date];
   saveState();
@@ -1547,6 +1612,7 @@ function deleteEntry(date){
 
 // تحميل يوم مسجَّل إلى النموذج لتعديله
 function editEntry(date){
+  if(isAllMode()) return;
   const e = STATE.entries[date];
   if(!e) return;
   document.getElementById('entryDate').value = date;
@@ -1636,7 +1702,8 @@ function clearHolidays(){
 
 // تصفير مبيعات الشهر الحالي فقط (مع الاحتفاظ بالإعدادات)
 function resetAll(){
-  if(!confirm('سيتم حذف كل الأيام المسجّلة لهذا الشهر. هل أنت متأكد؟')) return;
+  if(isAllMode()){ alert('اختر منتجاً محدداً لتصفير بياناته.'); return; }
+  if(!confirm(`سيتم حذف كل الأيام المسجّلة لمنتج «${STATE.products[STATE.activeProduct].name}». هل أنت متأكد؟`)) return;
   STATE.entries = {};
   saveState();
   render();
@@ -1687,6 +1754,7 @@ function importData(event){
         ensureProducts();
         syncSetupUI();
         renderProductSelector();
+        applyAllModeUI();
         render();
         saveState();
         alert('تم الاستيراد بنجاح');
@@ -1725,6 +1793,7 @@ function init(){
   preloadIfEmpty();
   syncSetupUI();
   renderProductSelector();
+  applyAllModeUI();
   attachSetupHandlers();
 
   // Default entry date = today (if in month) else first day of month
