@@ -162,6 +162,11 @@ modalBg.addEventListener('click',e=>{if(e.target===modalBg) modalBg.classList.re
 document.addEventListener('keydown',e=>{if(e.key==='Escape') modalBg.classList.remove('show');});
 function escapeHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function escapeAttr(s){return escapeHtml(s).replace(/'/g,'&#39;');}
+/* أرقام المرضى قد تتكرر بين أنظمة الفروع؛ لذلك الهوية المجمعة = الفرع + الرقم. */
+function patientIdentityKey(branch,patient){
+  const id=PharmaCore.normalizeWhitespace(patient);
+  return id?branch+'|'+id:'';
+}
 function rankBadge(i){const c=i===0?'gold':(i===1?'silver':(i===2?'bronze':'normal'));return '<span class="rank '+c+'">'+(i+1)+'</span>';}
 function barRow(v,m){const p=m>0?(v*100/m):0;return '<div class="bar-cell"><div class="bar" style="width:'+p+'%;"></div><div class="v">'+p.toFixed(1)+'%</div></div>';}
 
@@ -264,6 +269,9 @@ function setBranchData(branch,rows,name,date){
   const ei=STATE.periods[branch].findIndex(p=>p._main);
   const en={id:Date.now(),label:lbl,rows,data:d,_main:true};
   if(ei>=0) STATE.periods[branch][ei]=en; else STATE.periods[branch].unshift(en);
+  /* مصدر الحقيقة واحد: كل اللوحات تعرض أحدث فترة زمنياً، لا آخر عملية رفع فقط. */
+  if(typeof rebuildBranchFromPeriods==='function') rebuildBranchFromPeriods(branch);
+  if(typeof _restoreBranchUI==='function') _restoreBranchUI(branch);
   if(typeof renderPeriodBadges==='function') renderPeriodBadges(branch);
 }
 function aggregate(rows){
@@ -711,13 +719,14 @@ function renderOverviewCore(d){
 
   /* ── Global aggregate across all branches ── */
   const loaded=BRANCHES.filter(b=>STATE.data[b]);
-  const globalDocMap=new Map(),globalDrugMap=new Map(),globalSecMap=new Map();
+  const globalDocMap=new Map(),globalDrugMap=new Map(),globalSecMap=new Map(),globalPatientSet=new Set();
   let globalTotal=0;
   loaded.forEach(b=>{
     const bd=STATE.data[b];globalTotal+=bd.totalRows;
     bd.doctors.forEach(doc=>{let g=globalDocMap.get(doc.name)||{name:doc.name,total:0};g.total+=doc.total;globalDocMap.set(doc.name,g);});
     bd.drugs.forEach(dr=>{let g=globalDrugMap.get(dr.name)||{name:dr.name,total:0};g.total+=dr.total;globalDrugMap.set(dr.name,g);});
     bd.sections.forEach(s=>{let g=globalSecMap.get(s.name)||{name:s.name,total:0};g.total+=s.total;globalSecMap.set(s.name,g);});
+    (bd.rows||[]).forEach(r=>{const k=patientIdentityKey(b,r.patient);if(k)globalPatientSet.add(k);});
   });
   const globalDocs=[...globalDocMap.values()].sort((a,b)=>b.total-a.total);
   const globalDrugs=[...globalDrugMap.values()].sort((a,b)=>b.total-a.total);
@@ -727,8 +736,9 @@ function renderOverviewCore(d){
   /* ── Trend: compare across periods ── */
   const firstBranch=loaded[0]||null;
   function getPeriodTrend(branch,fn){
-    const p=STATE.periods[branch]||[];if(p.length<2)return null;
-    const a=fn(p[0].data),b2=fn(p[p.length-1].data);
+    const range=periodOldestNewest(STATE.periods[branch]||[]);
+    if(!range.oldest||!range.newest||range.oldest===range.newest)return null;
+    const a=fn(range.oldest.data),b2=fn(range.newest.data);
     return a>0?((b2-a)/a*100).toFixed(1):null;
   }
   function trendBadge(val){
@@ -738,7 +748,7 @@ function renderOverviewCore(d){
   }
 
   /* ── Sparkline data ── */
-  function sparkPts(branch,fn){const p=STATE.periods[branch]||[];return p.length>=2?p.map(x=>fn(x.data)):[];}
+  function sparkPts(branch,fn){const p=PharmaCore.sortPeriods(STATE.periods[branch]||[]);return p.length>=2?p.map(x=>fn(x.data)):[];}
   const sp1=firstBranch?sparkPts(firstBranch,x=>x.totalRows):[];
   const sp2=firstBranch?sparkPts(firstBranch,x=>x.doctors.length):[];
 
@@ -749,7 +759,7 @@ function renderOverviewCore(d){
   const items=[
     {cls:'k1',ico:'Rx',label:'إجمالي الكتابات',val:fmt(isMulti?globalTotal:d.totalRows),foot:isMulti?'كل الفروع':BRANCH_LABELS[STATE.active],
       trend:firstBranch?getPeriodTrend(firstBranch,x=>x.totalRows):null,spark:'sp-1'},{cls:'k2',ico:'Dr',label:'عدد الأطباء',val:fmt(isMulti?globalDocMap.size:d.doctors.length),foot:'أطباء كتبوا وصفات',
-      trend:firstBranch?getPeriodTrend(firstBranch,x=>x.doctors.length):null,spark:'sp-2'},{cls:'k3',ico:'Md',label:'الأدوية الفريدة',val:fmt(isMulti?globalDrugMap.size:d.drugs.length),foot:'صنف مختلف',trend:null,spark:null},{cls:'k4',ico:'Dp',label:'الأقسام',val:fmt(isMulti?globalSecMap.size:d.sections.length),foot:'قسم/تخصص',trend:null,spark:null},{cls:'k5',ico:'Pt',label:'المرضى',val:fmt(d.totalPatients),foot:'مريض فريد',trend:null,spark:null},{cls:'k6',ico:'Av',label:'متوسط/طبيب',val:fmt(avg),foot:top?'الأعلى: '+top.name.slice(0,22):'—',trend:null,spark:null}
+      trend:firstBranch?getPeriodTrend(firstBranch,x=>x.doctors.length):null,spark:'sp-2'},{cls:'k3',ico:'Md',label:'الأدوية الفريدة',val:fmt(isMulti?globalDrugMap.size:d.drugs.length),foot:'صنف مختلف',trend:null,spark:null},{cls:'k4',ico:'Dp',label:'الأقسام',val:fmt(isMulti?globalSecMap.size:d.sections.length),foot:'قسم/تخصص',trend:null,spark:null},{cls:'k5',ico:'Pt',label:'المرضى',val:fmt(isMulti?globalPatientSet.size:d.totalPatients),foot:isMulti?'مريض/فرع فريد':'مريض فريد',trend:null,spark:null},{cls:'k6',ico:'Av',label:'متوسط/طبيب',val:fmt(avg),foot:top?'الأعلى: '+top.name.slice(0,22):'—',trend:null,spark:null}
   ];
 
   const kpis='<div class="kpi-grid">'+items.map(it=>`
@@ -781,9 +791,8 @@ function renderOverviewCore(d){
     const _sb = isMulti ? loaded[0] : (STATE.active || loaded[0]);
     const _ps = STATE.periods[_sb] || [];
     if (_ps.length) {
-      const _sc = _ps.map(p=>({l:p.label,s:periodDateScore(p.label)}));
-      const _allD = _sc.every(x=>x.s>0);
-      _shownPeriod = _allD ? _sc.reduce((a,b)=>b.s>a.s?b:a).l : _ps[_ps.length-1].label;
+      const _range = periodOldestNewest(_ps);
+      _shownPeriod = _range.newest ? _range.newest.label : '';
     }
   }
   // dropdown اختيار الفرع المعروض
@@ -1549,6 +1558,12 @@ function plLastPeriodLabel(docName, key){
   return lastInc || firstNZ;
 }
 
+function currentReportPeriodLabel(){
+  const branches=STATE.active&&STATE.data[STATE.active]?[STATE.active]:BRANCHES.filter(b=>STATE.data[b]);
+  const labels=branches.map(b=>periodOldestNewest(STATE.periods[b]||[]).newest).filter(Boolean);
+  if(labels.length) return labels.map(p=>p.label).filter((v,i,a)=>a.indexOf(v)===i).join(' · ');
+  return new Date().toLocaleDateString('ar-EG',{month:'long',year:'numeric'});
+}
 function showPLShareCard(name){
   var st = window._plAgg; if(!st) return;
   var isLight = document.documentElement.getAttribute('data-theme') === 'light';
@@ -1612,7 +1627,7 @@ function showPLShareCard(name){
     + '<span style="font-weight:800;color:' + _totalLabel + ';font-size:13.5px;">إجمالي كتابات منتجاتنا</span>'
     + '<span style="font-family:\'Inter\',sans-serif;font-weight:700;font-size:26px;color:#14b8a6;">' + fmt(grandTotal) + '</span></div>'
     + '<div style="text-align:center;margin-top:16px;font-size:12.5px;color:' + _thanksColor + ';">شكراً لثقتكم ودعمكم لمنتجاتنا 🌟</div>'
-    + '<div style="text-align:center;margin-top:10px;font-size:9.5px;color:' + _dateColor + ';">التقرير الدوري لرئيس مجلس الادارة يوليو 2027</div>'
+    + '<div style="text-align:center;margin-top:10px;font-size:9.5px;color:' + _dateColor + ';">التقرير الدوري لرئيس مجلس الإدارة — ' + escapeHtml(currentReportPeriodLabel()) + '</div>'
     + '</div>';
   document.body.appendChild(ov);
 }
@@ -1796,7 +1811,7 @@ function showPHShareCard(name){
     + '<span style="font-weight:800;color:'+_totalLabel+';font-size:13.5px;">إجمالي كتابات PureHerb</span>'
     + '<span style="font-family:\'Inter\',sans-serif;font-weight:700;font-size:26px;color:#a855f7;">'+fmt(ph.total)+'</span></div>'
     + '<div style="text-align:center;margin-top:16px;font-size:12.5px;color:'+_thanksColor+';">شكراً لثقتكم ودعمكم لمنتجاتنا 🌟</div>'
-    + '<div style="text-align:center;margin-top:10px;font-size:9.5px;color:'+_dateColor+';">التقرير الدوري لرئيس مجلس الادارة يوليو 2027</div>'
+    + '<div style="text-align:center;margin-top:10px;font-size:9.5px;color:'+_dateColor+';">التقرير الدوري لرئيس مجلس الإدارة — '+escapeHtml(currentReportPeriodLabel())+'</div>'
     + '</div>';
   document.body.appendChild(ov);
 }
@@ -2019,8 +2034,9 @@ function showDoctorMulti(name){
   if(!blocks.length) return;
   const sec=blocks[0].doc.section||'—';
   const drugsSorted=[...combined.drugs.entries()].map(([n,c])=>({name:n,count:c})).sort((a,b)=>b.count-a.count);
-  const totalDrugs=blocks.reduce((s,x)=>s+x.doc.uniqueDrugs,0);
-  const totalPats=blocks.reduce((s,x)=>s+x.doc.patients,0);
+  const patientKeys=new Set();
+  blocks.forEach(x=>(STATE.data[x.b].rows||[]).forEach(r=>{if(r.doctor===name){const k=patientIdentityKey(x.b,r.patient);if(k)patientKeys.add(k);}}));
+  const totalPats=patientKeys.size;
   const initials=name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
   const avatarColors=['var(--gv)','var(--gt)','var(--ga)','var(--gp)','var(--gs)'];
   const avatarCol=avatarColors[name.length%5];
@@ -2029,7 +2045,7 @@ function showDoctorMulti(name){
 
   // Period sparkline data
   const firstBranch=blocks[0]?.b;
-  const sparkPts=(STATE.periods[firstBranch]||[]).map(p=>{const doc=p.data.doctors.find(x=>x.name===name);return doc?doc.total:0;});
+  const sparkPts=PharmaCore.sortPeriods(STATE.periods[firstBranch]||[]).map(p=>{const doc=p.data.doctors.find(x=>x.name===name);return doc?doc.total:0;});
   const hasSpark=sparkPts.length>=2;
 
   // Branch comparison pills
@@ -2132,33 +2148,68 @@ function showDrug(name){
   modalBg.classList.add('show');
 }
 
+function getExportPrivacyMode(){
+  const el=document.getElementById('exportPrivacyMode');
+  return el&&el.value==='full'?'full':'anonymized';
+}
+function confirmSensitiveExport(kind){
+  if(getExportPrivacyMode()!=='full') return true;
+  return confirm('تحذير خصوصية: '+kind+' سيحتوي أسماء وأرقام المرضى وأرقام الطلبات. هل أنت متأكد أن الوجهة آمنة ومصرّح لها؟');
+}
+function sanitizeRowsForExport(rows,anonymize){
+  return (rows||[]).map(r=>PharmaCore.sanitizeExportRow(r,{anonymize}));
+}
+function sanitizeDailyStore(store,anonymize){
+  const out={};
+  Object.keys(store||{}).forEach(date=>{
+    out[date]={T1:null,T2:null,T3:null};
+    BRANCHES.forEach(b=>{
+      const entry=store[date]&&store[date][b];
+      if(entry) out[date][b]={...entry,rows:sanitizeRowsForExport(entry.rows,anonymize)};
+    });
+  });
+  return out;
+}
+function redactCredentialsFromSharedTemplate(html){
+  const start=html.indexOf('const USERS = {');
+  if(start<0) return html;
+  const end=html.indexOf('\n};',start);
+  if(end<0) return html;
+  return html.substring(0,start)+'const USERS = {}; /* credentials intentionally removed from shared file */'+html.substring(end+3);
+}
+function exportCell(value){return PharmaCore.escapeSpreadsheetFormula(value==null?'':String(value));}
+
 var _eb=document.getElementById('exportBtn');if(_eb)_eb.onclick=()=>{
   const loaded=BRANCHES.filter(b=>STATE.data[b]);
   if(!loaded.length){toast('لا توجد بيانات للتصدير','error');return;}
+  if(!confirmSensitiveExport('ملف CSV')) return;
+  const anonymize=getExportPrivacyMode()!=='full';
   const head=['الفرع','الطبيب','القسم','الدواء','الحالة','رقم المريض','اسم المريض','رقم الأمر'];
   const lines=[head.join(',')];
-  loaded.forEach(b=>{STATE.data[b].rows.forEach(r=>{lines.push([BRANCH_LABELS[b],r.doctor,r.section,r.service,r.status,r.patient,r.patientName,r.orderNo].map(v=>'"'+(v||'').toString().replace(/"/g,'""')+'"').join(','));});});
+  loaded.forEach(b=>{sanitizeRowsForExport(STATE.data[b].rows,anonymize).forEach(r=>{lines.push([BRANCH_LABELS[b],r.doctor,r.section,r.service,r.status,r.patient,r.patientName,r.orderNo].map(v=>'"'+exportCell(v).replace(/"/g,'""')+'"').join(','));});});
   const blob=new Blob(['\uFEFF'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rx-export-'+new Date().toISOString().slice(0,10)+'.csv';
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rx-export-'+(anonymize?'anonymized-':'')+PharmaCore.localDateKey()+'.csv';
   document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(a.href);},1000);toast('تم التصدير');
 };
 
 document.getElementById('shareBtn').onclick=()=>{
   const loaded=BRANCHES.filter(b=>STATE.data[b]);
   if(!loaded.length){toast('لا توجد بيانات للمشاركة','error');return;}
+  if(!confirmSensitiveExport('ملف المشاركة')) return;
+  const anonymize=getExportPrivacyMode()!=='full';
   showLoad();
   try{
-    let html=SOURCE_TEMPLATE;
-    const payload={branches:{},periods:{},dt:(typeof DT!=='undefined'&&DT.store)?DT.store:{}};
-    BRANCHES.forEach(b=>{const d=STATE.data[b];if(d) payload.branches[b]={rows:d.rows,reportName:d.reportName,reportDate:d.reportDate};});
-    BRANCHES.forEach(b=>{payload.periods[b]=(STATE.periods[b]||[]).map(p=>({id:p.id,label:p.label,rows:p.rows,_main:!!p._main}));});
+    let html=redactCredentialsFromSharedTemplate(SOURCE_TEMPLATE);
+    const payload={v:2,privacy:{anonymized,createdAt:new Date().toISOString()},branches:{},periods:{},dt:sanitizeDailyStore((typeof DT!=='undefined'&&DT.store)?DT.store:{},anonymize)};
+    BRANCHES.forEach(b=>{const d=STATE.data[b];if(d) payload.branches[b]={rows:sanitizeRowsForExport(d.rows,anonymize),reportName:d.reportName,reportDate:d.reportDate};});
+    BRANCHES.forEach(b=>{payload.periods[b]=(STATE.periods[b]||[]).map(p=>({id:p.id,label:p.label,rows:sanitizeRowsForExport(p.rows,anonymize),_main:!!p._main}));});
     const closeToken='<'+'/scr'+'ipt>',openToken='<scr'+'ipt id="embedded-rx-data">';
-    const json=JSON.stringify(payload).split(closeToken).join('<\\/scr'+'ipt>');
-    const tag=openToken+'window.__EMBEDDED_RX__='+json+';'+closeToken;
+    const json=JSON.stringify(payload).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');
+    const tag=openToken+'window.__PHARMADASH_SHARED__=true;window.__EMBEDDED_RX__='+json+';'+closeToken;
     const bodyOpen=html.indexOf('<body>');if(bodyOpen<0) throw new Error('body missing');
     html=html.substring(0,bodyOpen+6)+'\n'+tag+'\n'+html.substring(bodyOpen+6);
     const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rx-dashboard-share-'+new Date().toISOString().slice(0,10)+'.html';
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rx-dashboard-share-'+(anonymize?'anonymized-':'')+PharmaCore.localDateKey()+'.html';
     document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(a.href);},1000);
     toast('تم إنشاء ملف المشاركة!');
   }catch(e){console.error(e);toast('فشل المشاركة: '+(e.message||''),'error');}
@@ -2189,14 +2240,11 @@ function loadEmbedded(){
 /* ══ TARGETED PRODUCTS DATA ══ */
 /* Exact product match: compare first 25 normalized chars of drug name vs product name */
 function normalizeDrug(s) {
-  return s.trim().replace(/\s+/g,' ').toUpperCase();
+  return PharmaCore.normalizeProductText(s);
 }
 function matchesTarget(drugName, prodFullName) {
-  const dn = normalizeDrug(drugName);
-  const pn = normalizeDrug(prodFullName);
-  const keyLen = Math.min(25, pn.length);
-  const pnKey = pn.substring(0, keyLen);
-  return dn.startsWith(pnKey);
+  const product = (typeof TARGET_PRODUCTS!=='undefined' && TARGET_PRODUCTS.find(p=>p.name===prodFullName)) || {name:prodFullName};
+  return PharmaCore.matchesCatalogProduct(drugName,product);
 }
 const TARGET_PRODUCTS = [{"id": "1-06-059-014", "name": "ARTIZ 10 mg/tablet, 30 TABLET/BOX", "short": "ARTIZ"},{"id": "1-01-187-061", "name": "GLOCLAV Tablet 625MG/1Tablet, 20Tablet/Box", "short": "GLOCLAV"},{"id": "1-01-184-097", "name": "AZI-ONCE 200 mg/5 ml Suspention, 22.5 ML/BOTT", "short": "AZI-ONCE"},{"id": "1-14-166-032", "name": "INTIMO Vaginal Wash 250 ML / CONTAINER", "short": "INTIMO"},{"id": "1-04-020-032", "name": "OMEPREX Capsule 20MG/1Capsule, 28Capsule/Box", "short": "OMEPREX"},{"id": "2-09-031-483", "name": "RIZER apply Cream, 75 ML/TUBE", "short": "RIZER"},{"id": "1-01-020-084", "name": "ZENCIN 250 mg/tablet, 6 TABLET/BOX", "short": "ZENCIN"},{"id": "1-05-028-002", "name": "JARDIANCE Coated tablet 25MG/1Tablet, 30Tablet/", "short": "JARDIANCE"},{"id": "1-05-187-164", "name": "GLUCOPHAGE Tablet 500MG/1Tablet, 50Tablet/Bo", "short": "GLUCOPHAGE"},{"id": "1-04-187-113", "name": "EZORA 20 mg/capsule, 28 CAPSULE/BOX", "short": "EZORA"},{"id": "1-05-028-001", "name": "JARDIANCE Coated tablet 10MG/1Tablet, 30Tablet/", "short": "JARDIANCE"},{"id": "1-05-187-386", "name": "FORMIT XR 750 mg/tablet, 60 TABLET/BOX", "short": "FORMIT"},{"id": "1-09-118-050", "name": "NOSTRIDERM  Ointment , 50 ML/TUBE", "short": "NOSTRIDERM"},{"id": "1-01-187-073", "name": "KLAVOX Tablet 625MG/1Tablet, 20Tablet/Box", "short": "KLAVOX"},{"id": "1-09-113-008", "name": "AVALON SALINOSE 0.9 ml/spray, 30 ML/CONTA", "short": "AVALON"},{"id": "1-04-020-010", "name": "EMILOK Capsule 20MG/1Capsule, 14Capsule/Box", "short": "EMILOK"},{"id": "1-01-184-096", "name": "AZI-ONCE 200 mg/5 ml Suspention, 30 ML/BOTTL", "short": "AZI-ONCE"},{"id": "1-01-187-028", "name": "CIPROMAX Tablet 500MG/1Tablet, 10Tablet/Box", "short": "CIPROMAX"},{"id": "1-06-049-027", "name": "AVALON SALINOSE BABY 0.9 ml/drop, 20 ML/B", "short": "AVALON"},{"id": "1-02-066-034", "name": "REFLEX MASSAGE Emulgel, 100 ML/TUBE", "short": "REFLEX"},{"id": "1-05-020-004", "name": "AMLOPINE Capsule 10MG/1Capsule, 30Capsule/Bo", "short": "AMLOPINE"},{"id": "1-05-020-005", "name": "AMLOPINE Capsule 5MG/1Capsule, 30Capsule/Box", "short": "AMLOPINE"},{"id": "1-01-184-042", "name": "HYMOX FORTE SUSPENTION 250MG/5ML, 100M", "short": "HYMOX"},{"id": "1-07-020-010", "name": "OMNIC Capsule 0.4MG/1Tablet, 30Tablet/Box", "short": "OMNIC"},{"id": "1-02-187-006", "name": "ADOL Tablet 500MG/1Tablet, 24Tablet/Box", "short": "ADOL"},{"id": "1-05-059-004", "name": "ASTATIN Film coated tablet 20MG/1Tablet, 30Tablet", "short": "ASTATIN"},{"id": "1-06-186-099", "name": "ZYRTEC Syrup 1MG/1ML, 75ML/Bottle", "short": "ZYRTEC"},{"id": "1-02-036-003", "name": "VOLTIC  tablet 50MG/1Tablet, 20Tablet/Box", "short": "VOLTIC"},{"id": "1-06-187-016", "name": "CLARA Tablet 10MG/1Tablet, 10Tablet/Box", "short": "CLARA"},{"id": "1-05-187-135", "name": "GLIM Tablet 2MG/1Tablet, 30Tablet/Box", "short": "GLIM"},{"id": "1-05-187-029", "name": "ATORLIP Tablet 10MG/1Tablet, 30Tablet/Box", "short": "ATORLIP"},{"id": "1-09-113-005", "name": "SALINOSE PLUS NASAL SPRAY 0.9ML/1Spray,", "short": "SALINOSE"},{"id": "1-05-187-024", "name": "ASPICARD Tablet 81MG/1Tablet, 120Tablet/Box", "short": "ASPICARD"},{"id": "1-05-059-081", "name": "TOVAST Film coated tablet 20MG/1Tablet, 30Tablet/", "short": "TOVAST"},{"id": "1-06-186-220", "name": "TRIOPAN  Syrup, 100 ML/BOTTLE", "short": "TRIOPAN"},{"id": "1-05-187-030", "name": "ATORLIP Tablet 20MG/1Tablet, 30Tablet/Box", "short": "ATORLIP"},{"id": "1-04-020-041", "name": "RISEK Capsule 20MG/1Capsule, 14Capsule/Box", "short": "RISEK"},{"id": "1-04-020-061", "name": "ACILOC 40 mg/capsule, 14 CAPSULE/BOX", "short": "ACILOC"},{"id": "1-04-020-069", "name": "ACILOC 40 mg/capsule, 28 CAPSULE/BOX", "short": "ACILOC"},{"id": "1-05-187-312", "name": "FORMIT XR Tablet 750MG/1Tablet, 30Tablet/BOX", "short": "FORMIT"},{"id": "1-09-066-046", "name": "NOSTRICURE  Oral Gel, 30 ML/TUBE", "short": "NOSTRICURE"},{"id": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOT", "short": "ZETRON"},{"id": "1-05-059-108", "name": "ROSALUS 20 mg/tablet, 28 TABLET/BOX", "short": "ROSALUS"},{"id": "1-06-110-012", "name": "XYLOMET PED Nasal drops 0.05%/1Drop, 15ML/C", "short": "XYLOMET"},{"id": "1-01-184-072", "name": "WINEX SUSPENTION 100MG/5ML, 60ML/Bottle", "short": "WINEX"},{"id": "1-01-020-039", "name": "JUVAMOX Capsule 500MG/1Capsule, 20Capsule/Bo", "short": "JUVAMOX"},{"id": "1-02-187-197", "name": "SAPOFEN 400 mg/tablet, 30 TABLET/BOX", "short": "SAPOFEN"},{"id": "1-04-187-074", "name": "VERINE SR CAP 200MG/1Capsule, 30Capsule/Box", "short": "VERINE"},{"id": "1-03-187-182", "name": "BIOCAL D 500 mg/tablet, 60 TABLET/BOX", "short": "BIOCAL"},{"id": "1-06-187-087", "name": "RINA EXTRA 122.5 mg/ 30 TABLET/BOX", "short": "RINA"},{"id": "1-01-187-071", "name": "KLAVOX Tablet 1000MG/1Tablet, 14Tablet/Box", "short": "KLAVOX"},{"id": "1-05-059-118", "name": "SORTIVA 50 mg/tablet, 30 TABLET/BOX", "short": "SORTIVA"},{"id": "1-02-187-035", "name": "DICLOMAX Tablet 50MG/1Tablet, 20Tablet/Box", "short": "DICLOMAX"},{"id": "1-05-059-114", "name": "CRESTOR 20 mg/tablet, 28 TABLET/Box", "short": "CRESTOR"},{"id": "1-06-113-043", "name": "CORTRIEF 1 mg/applicator Nasal Spray, APPLICAT", "short": "CORTRIEF"},{"id": "1-05-187-101", "name": "DIOVAN Tablet 80MG/1Tablet, 28Tablet/Box", "short": "DIOVAN"},{"id": "1-06-186-020", "name": "DEFADOL Syrup 160MG/5ML, 145ML/Bottle", "short": "DEFADOL"},{"id": "1-01-020-065", "name": "ZETRON Capsule 250MG/1Capsule, 6Capsule/Box", "short": "ZETRON"},{"id": "1-01-187-056", "name": "FLAZOL Tablet 500MG/1Tablet, 20Tablet/Box", "short": "FLAZOL"},{"id": "1-01-059-003", "name": "AZIMAC Film coated tablet 250MG/1Tablet, 6Tablet", "short": "AZIMAC"},{"id": "1-03-020-192", "name": "TERA-D 50000 mg/capsule, 20 CAPSULE/BOX", "short": "TERA-D"},{"id": "1-02-131-004", "name": "ROXONIN patch 100MG/1PATCH, 7PATCH/BOX", "short": "ROXONIN"},{"id": "1-02-184-002", "name": "PROF SUSPENTION 100MG/5ML, 110ML/Bottle", "short": "PROF"},{"id": "1-06-186-017", "name": "CLARA Syrup 5MG/5ML, 100ML/Bottle", "short": "CLARA"},{"id": "1-06-113-028", "name": "RHINASE NASAL SPRAY 0.05%/1Applicator, 1Ap", "short": "RHINASE"},{"id": "1-05-059-107", "name": "ROSALUS 10 mg/tablet, 28 TABLET/BOX", "short": "ROSALUS"},{"id": "1-02-187-042", "name": "FAST-FLAM Tablet 50MG/1Tablet, 20Tablet/Box", "short": "FAST-FLAM"},{"id": "1-05-187-213", "name": "METFOR Tablet 500MG/1Tablet, 50Tablet/Box", "short": "METFOR"},{"id": "1-01-059-041", "name": "KLARE 500 mg/tablet, 14 TABLET/BOX", "short": "KLARE"},{"id": "1-04-184-013", "name": "DOMPY 0.1 mg/ml Suspention, 200 ML/BOTTLE", "short": "DOMPY"},{"id": "1-05-187-009", "name": "AMARYL Tablet 2MG/1Tablet, 30Tablet/Box", "short": "AMARYL"},{"id": "1-06-186-112", "name": "KAFOSED 5 mg/ml Syrup, 100 ML/BOTTLE", "short": "KAFOSED"},{"id": "1-04-020-033", "name": "OMEPREX Capsule 20MG/1Tablet, 14Tablet/Box", "short": "OMEPREX"},{"id": "1-02-187-169", "name": "PANADREX 500 mg/tablet, 48 TABLET/BOX", "short": "PANADREX"},{"id": "1-03-020-234", "name": "SALMON OIL OMEGA-3 FORTE (1000 mg/capsule", "short": "SALMON"},{"id": "1-05-187-286", "name": "TOVAST Tablet 10MG/1Tablet, 30Tablet/Box", "short": "TOVAST"},{"id": "1-05-187-075", "name": "CONCOR Tablet 5MG/1Tablet, 30Tablet/Box", "short": "CONCOR"},{"id": "1-01-184-049", "name": "KLAVOX SUSPENTION 156MG/5ML, 100ML/Bot", "short": "KLAVOX"},{"id": "1-14-086-036", "name": "INHIXA 40 mg/syringe Injection, 1 SYRINGE/BOX", "short": "INHIXA"},{"id": "1-02-187-192", "name": "VOLTIC D 50 mg/tablet, 20 TABLET/BOX", "short": "VOLTIC"},{"id": "1-03-187-122", "name": "VITAGLOBIN Tablet /1Tablet, 30Tablet/Box", "short": "VITAGLOBIN"},{"id": "1-06-110-011", "name": "XYLOMET adult Nasal drops 0.1%/1Drop, 15ML/Co", "short": "XYLOMET"},{"id": "1-06-118-029", "name": "AVALON AVOCOM 0.1 %/apply Ointment , 50 GM", "short": "AVALON"},{"id": "1-01-187-138", "name": "FLAGYL 500 mg/tablet, 14 TABLET/BOX", "short": "FLAGYL"},{"id": "1-04-187-063", "name": "SCOPINAL Tablet 10MG/1Tablet, 20Tablet/Box", "short": "SCOPINAL"},{"id": "1-06-031-011", "name": "CORTIDERM Cream 1%/1APPLY, 30 GM/Tube", "short": "CORTIDERM"},{"id": "1-09-031-141", "name": "FUCICORT Cream 2/0.1%/1APPLY, 30GM/Tube", "short": "FUCICORT"},{"id": "1-09-031-133", "name": "FUSIDERM 2 %/apply Cream, 30 GM/TUBE", "short": "FUSIDERM"},{"id": "1-06-059-010", "name": "LEVOZAL Film coated tablet 5MG/1Tablet, 20Tablet", "short": "LEVOZAL"},{"id": "1-01-184-056", "name": "MEGAMOX SUSPENTION 156MG/5ML, 100ML/B", "short": "MEGAMOX"},{"id": "1-05-187-359", "name": "CLAZ MR 60 mg/tablet, 30 TABLET/BOX", "short": "CLAZ"},{"id": "1-05-187-090", "name": "DAONIL Tablet 5MG/1Tablet, 30Tablet/Box", "short": "DAONIL"},{"id": "1-06-186-021", "name": "DEFONASE Syrup 5/50MG/1ML, 100ML/Bottle", "short": "DEFONASE"},{"id": "1-02-020-053", "name": "COXICEL 200 mg/capsule, 30 CAPSULE/BOX", "short": "COXICEL"},{"id": "1-06-187-084", "name": "ZERTAZINE 10 mg/tablet, 20 TABLET/BOX", "short": "ZERTAZINE"},{"id": "1-02-044-003", "name": "PRODEIN PLUS tablet, 20 TABLET/BOX", "short": "PRODEIN"},{"id": "1-06-179-002", "name": "FEVADOL Suppository 100MG/1Suppository, 10Supp", "short": "FEVADOL"},{"id": "1-06-186-229", "name": "DEFADOL 160 mg/5 ml Syrup, 100 ML/BOTTLE", "short": "DEFADOL"},{"id": "1-01-186-004", "name": "FLAZOL Syrup 125MG/5ML, 120ML/Bottle", "short": "FLAZOL"},{"id": "1-03-049-006", "name": "BLUM D 3000 iu/drop, 20 ML/BOTTEL", "short": "BLUM"},{"id": "1-03-136-003", "name": "ORS powder 245MG/1Sachet, 10sachet/Box", "short": "ORS"},{"id": "1-04-186-024", "name": "LAXILOSE 0.67 mg/ml Syrup, 300 ML/BOTTLE", "short": "LAXILOSE"},{"id": "1-06-186-115", "name": "HISTOP 2 mg/5 ml Syrup, 100 ML/BOTTLE", "short": "HISTOP"},{"id": "1-02-186-007", "name": "PROFINAL Syrup 100MG/5ML, 110ML/Bottle", "short": "PROFINAL"},{"id": "1-06-186-085", "name": "SOLVEX Syrup 0.8MG/1ML, 100ML/Bottle", "short": "SOLVEX"},{"id": "1-06-110-015", "name": "DECOZAL PEDIA 0.05 %/drop, 10 ML/CONTAINE", "short": "DECOZAL"},{"id": "1-03-020-021", "name": "PRIMA VIT D Capsule 50000MG/1Capsule, 30Caps", "short": "PRIMA"},{"id": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE", "short": "ZETRON"},{"id": "1-05-059-028", "name": "IVARIN Film coated tablet 10MG/1Tablet, 30Tablet/Box", "short": "IVARIN"},{"id": "1-06-113-044", "name": "SALINOSE PLUS JET applicator Nasal Spray, 75 ML/CONT", "short": "SALINOSE PLUS JET"},{"id": "1-05-187-038", "name": "BETASERC Tablet 8MG/1Tablet, 100Tablet/Box", "short": "BETASERC"},{"id": "1-03-187-212", "name": "CENTRUM LUTEIN Tablet, 100 TABLET/BOX", "short": "CENTRUM LUTEIN"},{"id": "1-03-020-218", "name": "ARKOCAPS AZINC OPTIMAL Capsule, 60 CAPSULE/BOX", "short": "ARKOCAPS AZINC"},{"id": "1-02-059-020", "name": "UXORATE 120 mg/tablet, 28 TABLET/BOX", "short": "UXORATE"},{"id": "1-03-044-038", "name": "BIOFAR - VITAMIN C 1000 MG EFFERVESCENT TABLET, 20 TABLET/BOX", "short": "BIOFAR VIT-C"}];
 
@@ -2554,30 +2602,33 @@ function renderSpecialty() {
     return;
   }
 
-  // Aggregate by section
+  // Aggregate by section using Sets so the same entity is not counted twice across branches.
   const secMap = new Map();
-  loaded.forEach(b => {
-    STATE.data[b].sections.forEach(s => {
-      const ex = secMap.get(s.name);
-      if (!ex) secMap.set(s.name,{ name: s.name, total: s.total, doctors: s.doctors, drugs: s.drugs, patients: s.patients });
-      else { ex.total += s.total; ex.doctors += s.doctors; ex.drugs += s.drugs; ex.patients += s.patients; }
-    });
-  });
-
-  const allSecs = [...secMap.values()].sort((a, b) => b.total - a.total);
-  const grandTotal = allSecs.reduce((s, x) => s + x.total, 0);
-
-  // Top drugs per specialty
   const secDrugsMap = new Map();
   loaded.forEach(b => {
-    const d = STATE.data[b];
-    d.doctors.forEach(doc => {
-      if (!doc.section) return;
-      if (!secDrugsMap.has(doc.section)) secDrugsMap.set(doc.section, new Map());
-      const sMap = secDrugsMap.get(doc.section);
-      doc.drugs.forEach(drug => sMap.set(drug.name, (sMap.get(drug.name) || 0) + drug.count));
+    (STATE.data[b].rows||[]).forEach(r=>{
+      if(!r.section)return;
+      const sectionKey=PharmaCore.normalizeEntityKey(r.section);
+      let ex=secMap.get(sectionKey);
+      if(!ex){ex={name:r.section,total:0,doctorSet:new Set(),drugSet:new Set(),patientSet:new Set()};secMap.set(sectionKey,ex);}
+      ex.total++;
+      if(r.doctor)ex.doctorSet.add(PharmaCore.normalizeEntityKey(r.doctor));
+      if(r.service)ex.drugSet.add(PharmaCore.normalizeEntityKey(r.service));
+      const patientKey=patientIdentityKey(b,r.patient);if(patientKey)ex.patientSet.add(patientKey);
+      if(r.service){
+        if(!secDrugsMap.has(sectionKey))secDrugsMap.set(sectionKey,new Map());
+        const drugMap=secDrugsMap.get(sectionKey);
+        const drugKey=PharmaCore.normalizeEntityKey(r.service);
+        const current=drugMap.get(drugKey)||{name:r.service,count:0};
+        current.count++;drugMap.set(drugKey,current);
+      }
     });
   });
+
+  const allSecs = [...secMap.entries()].map(([key,s])=>({
+    key,name:s.name,total:s.total,doctors:s.doctorSet.size,drugs:s.drugSet.size,patients:s.patientSet.size
+  })).sort((a, b) => b.total - a.total);
+  const grandTotal = allSecs.reduce((s, x) => s + x.total, 0);
 
   container.innerHTML = `
     <div class="card" style="margin-bottom:16px;">
@@ -2602,8 +2653,8 @@ function renderSpecialty() {
           <tbody>
             ${allSecs.map((s, i) => {
               const avg = s.doctors ? Math.round(s.total / s.doctors) : 0;
-              const topDrug = secDrugsMap.get(s.name) ?
-                [...secDrugsMap.get(s.name).entries()].sort((a, b) => b[1] - a[1])[0]?.[0] : '—';
+              const topDrug = secDrugsMap.get(s.key) ?
+                [...secDrugsMap.get(s.key).values()].sort((a, b) => b.count - a.count)[0]?.name : '—';
               const barW = grandTotal ? (s.total / grandTotal * 100).toFixed(1) : 0;
               return `<tr>
                 <td>${rankBadge(i)}</td>
@@ -3242,7 +3293,7 @@ function exportHomeExcel() {
   const drugRows = [...drugAgg.entries()].sort((a, b) => b[1] - a[1]).map(([name, total], i) => ({ 'الترتيب': i + 1, 'الدواء': name, 'الكتابات': total }));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(drugRows), 'الأدوية');
 
-  const date = new Date().toISOString().slice(0, 10);
+  const date = PharmaCore.localDateKey();
   XLSX.writeFile(wb, `PharmaDash-ملخص-${date}.xlsx`);
   toast('تم تحميل ملف Excel');
 }
@@ -3274,16 +3325,18 @@ function renderDrugIntel() {
   loaded.forEach(b => {
     STATE.data[b].drugs.forEach(dr => {
       if (!drugAgg.has(dr.name)) {
-        drugAgg.set(dr.name,{ name: dr.name, total: 0, doctors: new Map(), sections: new Map(), status: {}, patients: 0, repeatPatients: 0, branches: new Map() });
+        drugAgg.set(dr.name,{ name: dr.name, total: 0, doctors: new Map(), sections: new Map(), status: {}, patientCounts: new Map(), branches: new Map() });
       }
       const x = drugAgg.get(dr.name);
       x.total += dr.total;
-      x.patients += dr.patients || 0;
-      x.repeatPatients += dr.repeatPatients || 0;
       x.branches.set(b, (x.branches.get(b) || 0) + dr.total);
       (dr.doctors || []).forEach(doc => x.doctors.set(doc.name, (x.doctors.get(doc.name) || 0) + doc.count));
       (dr.sections || []).forEach(s => x.sections.set(s.name, (x.sections.get(s.name) || 0) + s.count));
       if (dr.status) Object.entries(dr.status).forEach(([k, v]) => x.status[k] = (x.status[k] || 0) + v);
+    });
+    (STATE.data[b].rows||[]).forEach(r=>{
+      const x=drugAgg.get(r.service);if(!x)return;
+      const key=patientIdentityKey(b,r.patient);if(key)x.patientCounts.set(key,(x.patientCounts.get(key)||0)+1);
     });
   });
 
@@ -3300,7 +3353,7 @@ function renderDrugIntel() {
     const plInfo = isPL ? PRIVATE_LABEL.find(p => d.name.toLowerCase().includes(p.key.toLowerCase())) : null;
     return {
       name: d.name, total: d.total, docCount, closed, canceled, newO, rejectionRate,
-      patients: d.patients, repeatPatients: d.repeatPatients, isPL, plName: plInfo ? plInfo.name : null,
+      patients: d.patientCounts.size, repeatPatients: [...d.patientCounts.values()].filter(c=>c>1).length, isPL, plName: plInfo ? plInfo.name : null,
       topDoctor: topDoctor ? topDoctor[0] : '—',
       topSection: topSection ? topSection[0] : '—',
       branches: [...d.branches.entries()].map(([n, c]) => ({ name: BRANCH_LABELS[n] || n, count: c })).sort((a, b) => b.count - a.count),
@@ -3574,7 +3627,7 @@ function renderTargetTrack() {
   const container = document.getElementById('targettrack-content');
 
   // الفروع اللي عندها فترتين أو أكثر
-  const eligible = BRANCHES.filter(b => STATE.periods[b] && STATE.periods[b].length >= 1);
+  const eligible = BRANCHES.filter(b => STATE.periods[b] && STATE.periods[b].length >= 2);
 
   if (!eligible.length) {
     container.innerHTML = `
@@ -3639,7 +3692,7 @@ function renderTargetTrack() {
 
   function refreshTT() {
     const b = document.getElementById('tt-branch').value;
-    const periods = STATE.periods[b];
+    const periods = PharmaCore.sortPeriods(STATE.periods[b]);
     const opts = periods.map((p, i) => `<option value="${i}">${escapeHtml(p.label)} (${fmt((p.rows || []).length)})</option>`).join('');
     document.getElementById('tt-base').innerHTML = opts;
     document.getElementById('tt-current').innerHTML = opts;
@@ -3682,7 +3735,7 @@ function buildTargetTrack() {
   const branchEl = document.getElementById('tt-branch');
   if (!branchEl) return;
   const branch = branchEl.value;
-  const periods = STATE.periods[branch];
+  const periods = PharmaCore.sortPeriods(STATE.periods[branch]);
   if (!periods || !periods.length) return;
 
   const iBase = parseInt(document.getElementById('tt-base').value);
@@ -4125,7 +4178,9 @@ function printVisitCard(){
   if(!v){ toast('اختر طبيباً أولاً','warn'); return; }
   var w = window.open('', '_blank');
   if(!w){ toast('اسمح بالنوافذ المنبثقة للطباعة','warn'); return; }
-  var h = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>بطاقة زيارة — ' + v.x.name + '</title>';
+  try{w.opener=null;}catch(e){}
+  var safeName=escapeHtml(v.x.name),safeSection=escapeHtml(v.x.section||'—'),safeBranch=escapeHtml(v.branch||'');
+  var h = '<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>بطاقة زيارة — ' + safeName + '</title>';
   h += '<style>body{font-family:Tahoma,Arial,sans-serif;color:#111;padding:28px;max-width:760px;margin:0 auto;font-size:13px;line-height:1.7;}'
      + 'h1{font-size:20px;margin:0 0 2px;} .sub{color:#555;font-size:12px;margin-bottom:14px;}'
      + '.kpis{display:flex;gap:10px;margin:14px 0;} .k{flex:1;border:1px solid #ddd;border-radius:10px;padding:10px;text-align:center;}'
@@ -4137,8 +4192,8 @@ function printVisitCard(){
      + '.foot{margin-top:24px;font-size:11px;color:#888;text-align:center;border-top:1px solid #ddd;padding-top:8px;}'
      + '@media print{body{padding:8px;}}'
      + '</style></head><body>';
-  h += '<h1>🪪 بطاقة زيارة: ' + v.x.name + '</h1>';
-  h += '<div class="sub">' + (v.x.section || '—') + ' · ' + v.branch + ' · الترتيب #' + v.rank + ' من ' + v.total + ' · ' + new Date().toLocaleDateString('en-GB') + '</div>';
+  h += '<h1>🪪 بطاقة زيارة: ' + safeName + '</h1>';
+  h += '<div class="sub">' + safeSection + ' · ' + safeBranch + ' · الترتيب #' + fmt(v.rank) + ' من ' + fmt(v.total) + ' · ' + new Date().toLocaleDateString('en-GB') + '</div>';
   h += '<div class="kpis"><div class="k"><div class="l">الكتابات</div><div class="v">' + fmt(v.x.total) + '</div></div>'
      + '<div class="k"><div class="l">أدوية مختلفة</div><div class="v">' + fmt(v.x.uniqueDrugs) + '</div></div>'
      + '<div class="k"><div class="l">المرضى</div><div class="v">' + fmt(v.x.patients) + '</div></div>'
@@ -4146,7 +4201,7 @@ function printVisitCard(){
   h += '<h2>⭐ تاريخه مع منتجاتنا</h2>';
   if(v.plRows.length){
     h += '<table><tr><th>المنتج</th><th>الكتابات</th></tr>';
-    for(var i=0;i<v.plRows.length;i++){ h += '<tr><td>' + v.plRows[i].name + '</td><td>' + v.plRows[i].count + '</td></tr>'; }
+    for(var i=0;i<v.plRows.length;i++){ h += '<tr><td>' + escapeHtml(v.plRows[i].name) + '</td><td>' + fmt(v.plRows[i].count) + '</td></tr>'; }
     h += '</table>';
   } else { h += '<div class="warn">لم يكتب أي منتج Private Label — فرصة أولى</div>'; }
   h += '<h2>⚔️ نقاط الحوار — بدائل يكتبها</h2>';
@@ -4154,12 +4209,12 @@ function printVisitCard(){
     for(var j=0;j<v.opps.length;j++){
       var o = v.opps[j];
       var tops = '';
-      for(var t=0;t<o.top.length;t++){ tops += o.top[t].n + ' (' + o.top[t].c + ')' + (t<o.top.length-1?' · ':''); }
-      h += '<div class="opp"><b>' + o.name + '</b> — ' + o.tot + ' كتابة بديلة<br>أعلاها: ' + tops + '<br><span class="pitch">→ اعرض التحويل لمنتجنا</span></div>';
+      for(var t=0;t<o.top.length;t++){ tops += escapeHtml(o.top[t].n) + ' (' + fmt(o.top[t].c) + ')' + (t<o.top.length-1?' · ':''); }
+      h += '<div class="opp"><b>' + escapeHtml(o.name) + '</b> — ' + fmt(o.tot) + ' كتابة بديلة<br>أعلاها: ' + tops + '<br><span class="pitch">→ اعرض التحويل لمنتجنا</span></div>';
     }
   } else { h += '<div>لا يكتب بدائل معروفة</div>'; }
   h += '<h2>💊 أعلى أدويته</h2><table><tr><th>#</th><th>الدواء</th><th>الكتابات</th></tr>';
-  for(var k=0;k<v.topDrugs.length;k++){ h += '<tr><td>' + (k+1) + '</td><td>' + v.topDrugs[k].name + '</td><td>' + v.topDrugs[k].count + '</td></tr>'; }
+  for(var k=0;k<v.topDrugs.length;k++){ h += '<tr><td>' + (k+1) + '</td><td>' + escapeHtml(v.topDrugs[k].name) + '</td><td>' + fmt(v.topDrugs[k].count) + '</td></tr>'; }
   h += '</table>';
   h += '<div class="foot"> — PharmaDash</div>';
   h += '</body></html>';
@@ -4177,12 +4232,12 @@ const NEAR_EXPIRY_DATA = [{"code": "1-03-187-229", "name": "BLUM-D 50000 iu/tabl
 function renderNearExpiry(){
   const c = document.getElementById('nearexpiry-content');
   if(!c) return;
-  const today = new Date();
+  const today = new Date();today.setHours(0,0,0,0);
   const data = NEAR_EXPIRY_DATA;
   
   // Classify urgency
   function getUrgency(dateStr){
-    const d = new Date(dateStr);
+    const d = dtParseLocal(dateStr);
     const diff = Math.ceil((d - today) / (1000*60*60*24));
     if(diff < 0) return {level:'expired', label:'منتهي ❌', color:'#ef4444', bg:'rgba(239,68,68,.12)', days:diff};
     if(diff <= 30) return {level:'critical', label:'حرج (أقل من شهر)', color:'#dc2626', bg:'rgba(220,38,38,.12)', days:diff};
@@ -4943,14 +4998,7 @@ function rebuildBranchFromPeriods(branch) {
   if (!periods.length) { STATE.data[branch] = null; return; }
   /* البيانات الرئيسية المعروضة في كل الداشبورد = أحدث فترة فقط (مش مجموع كل الفترات)
      الفترات الكاملة تبقى محفوظة في STATE.periods للمقارنة الزمنية فقط */
-  let latest = periods[0];
-  if (periods.length > 1) {
-    // اختر الأحدث زمنياً حسب اسم الفترة؛ لو مفيش تاريخ، خُذ آخر مرفوعة
-    const scored = periods.map(p => ({ p, score: periodDateScore(p.label) }));
-    const allDated = scored.every(x => x.score > 0);
-    if (allDated) latest = scored.reduce((a, b) => b.score > a.score ? b : a).p;
-    else latest = periods[periods.length - 1];
-  }
+  const latest = PharmaCore.selectPeriodRange(periods).newest || periods[periods.length - 1];
   const d = aggregate(latest.rows || []);
   d.rows       = latest.rows || [];
   d.reportName = latest.label;
@@ -4999,62 +5047,24 @@ function deletePeriod(branch, id) {
 ════════════════════════════════════════════════════ */
 /* يستخرج ترتيب زمني من اسم الفترة (شهر/سنة) — للترتيب التلقائي الصحيح */
 function periodDateScore(label){
-  if(!label) return 0;
-  const s = String(label).toLowerCase();
-  const months = {
-    'يناير':1,'janu':1,'jan':1,'1':1,'01':1,
-    'فبراير':2,'febr':2,'feb':2,'2':2,'02':2,
-    'مارس':3,'march':3,'mar':3,'3':3,'03':3,
-    'ابريل':4,'أبريل':4,'april':4,'apr':4,'4':4,'04':4,
-    'مايو':5,'may':5,'5':5,'05':5,
-    'يونيو':6,'يونيه':6,'june':6,'jun':6,'6':6,'06':6,
-    'يوليو':7,'يوليه':7,'july':7,'jul':7,'7':7,'07':7,
-    'اغسطس':8,'أغسطس':8,'augu':8,'aug':8,'8':8,'08':8,
-    'سبتمبر':9,'septe':9,'sep':9,'9':9,'09':9,
-    'اكتوبر':10,'أكتوبر':10,'octo':10,'oct':10,'10':10,
-    'نوفمبر':11,'novem':11,'nov':11,'11':11,
-    'ديسمبر':12,'decem':12,'dec':12,'12':12,
-  };
-  // سنة
-  let year = 0;
-  const ym = s.match(/(20\d{2})/);
-  if(ym) year = parseInt(ym[1]);
-  // شهر — افحص الأسماء النصية أولاً (الأطول قبل الأقصر) قبل الأرقام المنفردة
-  let month = 0;
-  const nameKeys = Object.keys(months).filter(k=>!/^\d+$/.test(k)).sort((a,b)=>b.length-a.length);
-  for(const k of nameKeys){ if(s.includes(k)){ month = months[k]; break; } }
-  // صيغة تاريخ رقمية مثل 2026-05 أو 5-2026 (لها الأولوية لأنها صريحة)
-  const numDate = s.match(/(\d{1,2})[\/\-](20\d{2})/) || s.match(/(20\d{2})[\/\-](\d{1,2})/);
-  if(numDate){
-    const a=parseInt(numDate[1]), b=parseInt(numDate[2]);
-    if(a>12){ year=a; month=b; } else { month=a; year=b; }
-  } else if(month===0){
-    // رقم شهر منفرد مع حدود (مثل "شهر 5" أو "م5") — تجنّب التقاط أرقام السنة
-    const numM = s.replace(/20\d{2}/g,'').match(/(?:^|[^\d])(\d{1,2})(?:[^\d]|$)/);
-    if(numM){ const mm=parseInt(numM[1]); if(mm>=1&&mm<=12) month=mm; }
-  }
-  return year*100 + month;
+  return PharmaCore.periodDateScore(label);
 }
 
 /* يرجّع أقدم وأحدث فترة مرتّبتين زمنياً (للمقارنات الصحيحة) */
 function periodOldestNewest(periods){
-  if(!periods || !periods.length) return {oldest:null, newest:null};
-  if(periods.length===1) return {oldest:periods[0], newest:periods[0]};
-  const scored = periods.map(p=>({p, s:periodDateScore(p.label)}));
-  const allDated = scored.every(x=>x.s>0);
-  if(allDated){ const srt=[...scored].sort((a,b)=>a.s-b.s); return {oldest:srt[0].p, newest:srt[srt.length-1].p}; }
-  return {oldest:periods[0], newest:periods[periods.length-1]};
+  const range=PharmaCore.selectPeriodRange(periods);
+  return {oldest:range.oldest,newest:range.newest};
 }
 
 function renderTimeComp() {
   const container = document.getElementById('timecomp-content');
-  const anyData = BRANCHES.some(b => STATE.periods[b].length >= 1);
+  const anyData = BRANCHES.some(b => STATE.periods[b].length >= 2);
   if (!anyData) {
     container.innerHTML = `<div class="card"><div class="pl-no-data"><span class="nd-ico">📅</span><h3>ارفع فترتين على الأقل</h3><p>اضغط "+ فترة" في أي فرع لإضافة فترة زمنية للمقارنة</p></div></div>`;
     return;
   }
 
-  const eligibleBranches = BRANCHES.filter(b => STATE.periods[b].length >= 1);
+  const eligibleBranches = BRANCHES.filter(b => STATE.periods[b].length >= 2);
   const branchOpts = eligibleBranches.map(b =>
     `<option value="${b}">${BRANCH_LABELS[b]} (${STATE.periods[b].length} فترة)</option>`).join('');
 
@@ -5396,23 +5406,25 @@ var _pb=document.getElementById('printBtn');if(_pb)_pb.onclick = () => window.pr
 document.getElementById('exportXlsxBtn').onclick = () => {
   const loaded=BRANCHES.filter(b=>STATE.data[b]);
   if(!loaded.length){toast('لا توجد بيانات للتصدير','error');return;}
+  if(!confirmSensitiveExport('ملف Excel')) return;
+  const anonymize=getExportPrivacyMode()!=='full';
   showLoad();
   try{
     const wb=XLSX.utils.book_new();
     // Raw data
     const head=['الفرع','الطبيب','القسم','الدواء','الحالة','رقم المريض','اسم المريض','رقم الأمر'];
     const rows=[head];
-    loaded.forEach(b=>STATE.data[b].rows.forEach(r=>rows.push([BRANCH_LABELS[b],r.doctor,r.section,r.service,r.status,r.patient,r.patientName,r.orderNo])));
+    loaded.forEach(b=>sanitizeRowsForExport(STATE.data[b].rows,anonymize).forEach(r=>rows.push([BRANCH_LABELS[b],r.doctor,r.section,r.service,r.status,r.patient,r.patientName,r.orderNo].map(exportCell))));
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'البيانات');
     // Doctors
     const dh=['الفرع','الطبيب','القسم','الكتابات','الأصناف','المرضى'];
     const dr=[dh];
-    loaded.forEach(b=>STATE.data[b].doctors.forEach(d=>dr.push([BRANCH_LABELS[b],d.name,d.section||'',d.total,d.uniqueDrugs,d.patients])));
+    loaded.forEach(b=>STATE.data[b].doctors.forEach(d=>dr.push([BRANCH_LABELS[b],exportCell(d.name),exportCell(d.section||''),d.total,d.uniqueDrugs,d.patients])));
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(dr),'الأطباء');
     // Drugs
     const drh=['الفرع','الدواء','الكتابات','الأطباء','المرضى'];
     const dru=[drh];
-    loaded.forEach(b=>STATE.data[b].drugs.forEach(d=>dru.push([BRANCH_LABELS[b],d.name,d.total,d.doctorCount,d.patients])));
+    loaded.forEach(b=>STATE.data[b].drugs.forEach(d=>dru.push([BRANCH_LABELS[b],exportCell(d.name),d.total,d.doctorCount,d.patients])));
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(dru),'الأدوية');
     // Private Label
     const plh=['المنتج','T1','T2','T3','الإجمالي'];
@@ -5420,10 +5432,10 @@ document.getElementById('exportXlsxBtn').onclick = () => {
     PRIVATE_LABEL.forEach(prod=>{
       const q=prod.key.toLowerCase();const bt={T1:0,T2:0,T3:0};
       loaded.forEach(b=>STATE.data[b].drugs.filter(x=>x.name.toLowerCase().includes(q)).forEach(m=>bt[b]+=m.total));
-      pld.push([prod.name,bt.T1,bt.T2,bt.T3,bt.T1+bt.T2+bt.T3]);
+      pld.push([exportCell(prod.name),bt.T1,bt.T2,bt.T3,bt.T1+bt.T2+bt.T3]);
     });
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pld),'Private Label');
-    XLSX.writeFile(wb,'تقرير-كتابات-'+new Date().toISOString().slice(0,10)+'.xlsx');
+    XLSX.writeFile(wb,'تقرير-كتابات-'+(anonymize?'مجهول-':'')+PharmaCore.localDateKey()+'.xlsx');
     toast('تم التصدير إلى Excel ✓');
   }catch(e){toast('فشل التصدير: '+e.message,'error');}
   finally{hideLoad();}
@@ -5825,6 +5837,23 @@ async function _sha256Hex(s){
   const buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
   return [...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,'0')).join('');
 }
+let _dataUnlocked=false,_loginFailures=0,_loginLockedUntil=0;
+async function unlockStoredData(){
+  if(_dataUnlocked) return;
+  _dataUnlocked=true;
+  try{
+    const restored=await loadSavedData();
+    if(restored){renderAll();toast('تم استرجاع البيانات المحفوظة');}
+  }catch(e){_dataUnlocked=false;console.error('restore after login',e);toast('تعذر استرجاع البيانات المحفوظة','error');}
+}
+function lockInMemoryData(){
+  _dataUnlocked=false;
+  BRANCHES.forEach(b=>{STATE.data[b]=null;STATE.periods[b]=[];if(typeof _resetBranchUI==='function')_resetBranchUI(b);});
+  STATE.active=null;
+  if(typeof DT!=='undefined')DT.store={};
+  Object.keys(charts||{}).forEach(destroyChart);
+  renderAll();
+}
 
 
 function toggleTheme(){
@@ -5853,9 +5882,17 @@ async function doLogin() {
   const p = document.getElementById('loginPass').value;
   const err = document.getElementById('loginError');
   const rec = USERS[u];
+  if(Date.now()<_loginLockedUntil){
+    const seconds=Math.ceil((_loginLockedUntil-Date.now())/1000);
+    err.textContent='محاولات كثيرة. حاول بعد '+seconds+' ثانية';
+    err.classList.add('show');
+    return;
+  }
   let ok = false;
   if (rec) { try { ok = (await _sha256Hex(p)) === rec.hash; } catch (e) { console.error('login hash', e); ok = false; } }
   if (ok) {
+    _loginFailures=0;_loginLockedUntil=0;
+    err.textContent='اسم المستخدم أو كلمة المرور غير صحيحة';
     err.classList.remove('show');
     /* لا نخزّن كلمة المرور — فقط بيانات العرض */
     sessionStorage.setItem('pharmdash_user', JSON.stringify({ username: u, name: rec.name, role: rec.role }));
@@ -5863,7 +5900,11 @@ async function doLogin() {
     screen.style.transition = 'opacity .4s ease';
     screen.style.opacity = '0';
     setTimeout(() => { screen.style.display = 'none'; }, 400);
+    unlockStoredData();
   } else {
+    _loginFailures++;
+    if(_loginFailures>=5){_loginLockedUntil=Date.now()+30000;_loginFailures=0;err.textContent='محاولات كثيرة. تم الإيقاف 30 ثانية';}
+    else err.textContent='اسم المستخدم أو كلمة المرور غير صحيحة';
     err.classList.add('show');
     document.getElementById('loginPass').value = '';
     document.getElementById('loginPass').focus();
@@ -5872,6 +5913,7 @@ async function doLogin() {
 
 function doLogout() {
   sessionStorage.removeItem('pharmdash_user');
+  lockInMemoryData();
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
   const screen = document.getElementById('loginScreen');
@@ -5887,7 +5929,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   });
   // Check if already logged in this session
-  if (sessionStorage.getItem('pharmdash_user')) {
+  if (window.__PHARMADASH_SHARED__ || sessionStorage.getItem('pharmdash_user')) {
     document.getElementById('loginScreen').style.display = 'none';
     /* استعادة البيانات تتم في معالج window.load عبر loadSavedData() */
   }
@@ -6005,20 +6047,21 @@ function clearSavedData(){
 var DT = { store: {}, view: 'daily', selDate: null, selWeek: null, selMonth: null };
 
 /* ── helpers ── */
-function dtDateStr(d){ var dt=d||new Date(); return dt.toISOString().slice(0,10); }
+function dtDateStr(d){ return PharmaCore.localDateKey(d||new Date()); }
 function dtToday(){ return dtDateStr(new Date()); }
+function dtParseLocal(ds){var p=String(ds||'').split('-').map(Number);return new Date(p[0],(p[1]||1)-1,p[2]||1);}
 function dtFmtAr(ds){
   if(!ds) return '—';
   var p=ds.split('-'), mo=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   return p[2]+' '+mo[+p[1]-1]+' '+p[0];
 }
 function dtDayName(ds){
-  return ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'][new Date(ds).getDay()];
+  return ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'][dtParseLocal(ds).getDay()];
 }
 function dtWeekKey(ds){
-  var dt=new Date(ds), day=dt.getDay(), sw=new Date(dt);
+  var dt=dtParseLocal(ds), day=dt.getDay(), sw=new Date(dt);
   sw.setDate(dt.getDate()-day);
-  return sw.toISOString().slice(0,10);
+  return dtDateStr(sw);
 }
 function dtMonthKey(ds){ return ds.slice(0,7); }
 function dtAllDates(){ return Object.keys(DT.store).filter(d=>{ var x=DT.store[d]; return x&&(x.T1||x.T2||x.T3); }).sort(); }
@@ -6311,13 +6354,13 @@ function dtRenderWeekly(dates){
   var html='';
   Object.keys(weeks).sort().reverse().forEach(function(wk){
     var wds=weeks[wk];
-    var we=new Date(wk); we.setDate(we.getDate()+6);
+    var we=dtParseLocal(wk); we.setDate(we.getDate()+6);
     var tot={T1:0,T2:0,T3:0,all:0};
     wds.forEach(function(d){ var day=DT.store[d]||{}; ['T1','T2','T3'].forEach(function(b){ if(day[b]&&day[b].loaded){ var c=(day[b].rows||[]).length; tot[b]+=c; tot.all+=c; } }); });
     var maxB=Math.max(tot.T1,tot.T2,tot.T3)||1;
     html+='<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);padding:16px;margin-bottom:14px;">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">'
-      +'<div><div style="font-size:13px;font-weight:800;">📆 '+dtFmtAr(wk)+' — '+dtFmtAr(we.toISOString().slice(0,10))+'</div>'
+      +'<div><div style="font-size:13px;font-weight:800;">📆 '+dtFmtAr(wk)+' — '+dtFmtAr(dtDateStr(we))+'</div>'
       +'<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">'+wds.length+' أيام · '+fmt(tot.all)+' كتابة إجمالي</div></div>'
       +'<div style="font-size:20px;font-weight:900;color:var(--teal);">'+fmt(tot.all)+'</div></div>'
       +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">';
@@ -6568,11 +6611,8 @@ DT.selDate=dtToday();
 window.addEventListener('load',async ()=>{
   renderFeatured();
   /* ملف مشاركة مضمّن له الأولوية على البيانات المحفوظة محلياً */
-  if(window.__EMBEDDED_RX__){ loadEmbedded(); return; }
-  try{
-    const restored=await loadSavedData();
-    if(restored){ renderAll(); toast('تم استرجاع البيانات المحفوظة'); }
-  }catch(e){ console.error('restore on load',e); }
+  if(window.__EMBEDDED_RX__){_dataUnlocked=true;loadEmbedded();return;}
+  if(sessionStorage.getItem('pharmdash_user')) await unlockStoredData();
 });
 window.addEventListener('error',e=>console.error('V8 Error:',e.error||e.message));
 

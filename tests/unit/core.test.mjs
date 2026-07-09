@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   escapeSpreadsheetFormula,
   localDateKey,
+  matchesCatalogProduct,
   normalizeEntityKey,
   normalizeStatus,
   periodDateScore,
@@ -60,6 +61,20 @@ describe('privacy and export safety', () => {
       patientName: '',
       orderNo: '',
     });
+  });
+});
+
+describe('catalog product matching', () => {
+  it('separates products with the same brand but different strengths or packs', () => {
+    const tablet10 = { short: 'JARDIANCE', name: 'JARDIANCE Coated tablet 10MG/1Tablet, 30Tablet' };
+    const tablet25 = { short: 'JARDIANCE', name: 'JARDIANCE Coated tablet 25MG/1Tablet, 30Tablet' };
+    expect(matchesCatalogProduct('JARDIANCE COATED TABLET 10MG 1 TABLET 30 TABLET', tablet10)).toBe(true);
+    expect(matchesCatalogProduct('JARDIANCE COATED TABLET 10MG 1 TABLET 30 TABLET', tablet25)).toBe(false);
+
+    const bottle225 = { short: 'AZI-ONCE', name: 'AZI-ONCE 200 mg/5 ml Suspension, 22.5 ML/BOTT' };
+    const bottle30 = { short: 'AZI-ONCE', name: 'AZI-ONCE 200 mg/5 ml Suspension, 30 ML/BOTT' };
+    expect(matchesCatalogProduct('AZI ONCE 200 MG 5 ML SUSPENSION 22.5 ML', bottle225)).toBe(true);
+    expect(matchesCatalogProduct('AZI ONCE 200 MG 5 ML SUSPENSION 22.5 ML', bottle30)).toBe(false);
   });
 });
 

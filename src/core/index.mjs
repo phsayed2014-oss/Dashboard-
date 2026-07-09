@@ -128,6 +128,33 @@ export function sanitizeExportRow(row, { anonymize = false } = {}) {
   return safe;
 }
 
+export function normalizeProductText(value) {
+  return normalizeEntityKey(value)
+    .replace(/[^A-Z0-9\u0600-\u06FF.]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function numericTokens(value) {
+  return [...normalizeProductText(value).matchAll(/\b\d+(?:\.\d+)?\b/g)]
+    .map((match) => String(Number(match[0])))
+    .filter((token, index, all) => all.indexOf(token) === index);
+}
+
+export function matchesCatalogProduct(drugName, product) {
+  const drug = normalizeProductText(drugName);
+  const canonical = normalizeProductText(product?.name || product || '');
+  const short = normalizeProductText(product?.short || canonical.split(' ')[0] || '');
+  if (!drug || !canonical || !short) return false;
+
+  const brandTokens = short.split(' ').filter(Boolean);
+  if (!brandTokens.every((token) => drug.split(' ').includes(token))) return false;
+
+  const expectedNumbers = numericTokens(canonical);
+  const actualNumbers = new Set(numericTokens(drug));
+  return expectedNumbers.every((token) => actualNumbers.has(token));
+}
+
 export function validateRxRow(row) {
   if (!row || typeof row !== 'object' || Array.isArray(row)) return false;
   return ['doctor', 'service', 'section', 'patient', 'patientName', 'orderNo', 'status']
