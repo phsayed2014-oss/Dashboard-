@@ -262,6 +262,22 @@ body::before{
 /* Quick actions */
 .quick-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 
+/* Per-branch daily entry */
+.entry-form2{background:var(--bg-base);padding:18px;border-radius:14px;border:1px solid var(--border)}
+.entry-branches-head{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:10px;margin:14px 0 8px;font-size:12px;color:var(--text-dim);font-weight:800;padding:0 4px}
+.entry-branch-row{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px}
+.entry-branch-row .eb-name{font-size:13px;font-weight:800;display:flex;align-items:center;gap:8px}
+.entry-branch-row .eb-name .pc-dot{width:9px;height:9px;border-radius:3px;background:var(--violet-l)}
+.entry-branch-row input{background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:9px;font-family:'Tajawal';font-weight:700;font-size:14px;outline:none}
+.entry-branch-row input:focus{border-color:var(--violet)}
+.entry-total-row{margin:12px 0;font-size:13px;color:var(--text-dim);font-weight:700;padding:10px 14px;background:var(--bg-card);border:1px dashed var(--border);border-radius:10px}
+.entry-total-row b{color:var(--teal-l);font-size:15px}
+.days-table .brk{font-size:10px;color:var(--text-muted);font-weight:600;margin-top:3px;line-height:1.5}
+@media(max-width:640px){
+  .entry-branches-head,.entry-branch-row{grid-template-columns:1fr 1fr;}
+  .entry-branches-head span:first-child,.entry-branch-row .eb-name{grid-column:span 2}
+}
+
 /* Product bar */
 .product-bar{
   display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:24px;
@@ -281,7 +297,7 @@ body::before{
 /* All-products aggregate mode */
 .all-banner{display:none;background:linear-gradient(135deg,rgba(168,85,247,0.14),rgba(14,165,233,0.10));border:1px solid rgba(168,85,247,0.3);color:var(--text);border-radius:12px;padding:12px 18px;font-size:13px;font-weight:700;margin-bottom:24px}
 body.all-mode .all-banner{display:block}
-body.all-mode .entry-form{opacity:.5;pointer-events:none}
+body.all-mode .entry-form2{opacity:.5;pointer-events:none}
 body.all-mode .pharma-editor > .btn{display:none}
 
 /* Pharmacy comparison */
@@ -334,7 +350,7 @@ body.all-mode .pharma-editor > .btn{display:none}
   body::before{display:none}
   html,body{background:#fff;color:#111}
   .app{max-width:100%;padding:0}
-  .quick-actions,.entry-form,.days-table td:last-child,.days-table th:last-child{display:none}
+  .quick-actions,.entry-form2,.days-table td:last-child,.days-table th:last-child{display:none}
   .topbar,.setup-panel,.kpi,.target-progress,.scenario,.comparison,.entry-section,.chart-section,.insight-box,.pharma-compare,.pharma-card{
     background:#fff !important;border:1px solid #ddd !important;box-shadow:none !important;color:#111 !important;
   }
@@ -556,7 +572,7 @@ body.all-mode .pharma-editor > .btn{display:none}
 
     <!-- Editable data table -->
     <details class="pharma-editor" open>
-      <summary>✏️ إدخال أرقام الصيدليات (٣ شهور) — البيع والكتابات لكل شهر</summary>
+      <summary>✏️ إدخال يدوي: إجمالي البيع وإجمالي الكتابات لكل صيدلية عبر ٣ شهور</summary>
       <div class="days-table-wrap" style="margin-top:14px">
         <table class="days-table pharma-table">
           <thead id="pharmaTableHead"></thead>
@@ -564,6 +580,7 @@ body.all-mode .pharma-editor > .btn{display:none}
         </table>
       </div>
       <button class="btn ghost sm" style="margin-top:12px" onclick="addPharmacy()">➕ إضافة صيدلية</button>
+      <button class="btn ghost sm" style="margin-top:12px" onclick="copyBranchesToAll()">📋 نسخ الفروع لباقي المنتجات</button>
     </details>
   </div>
 
@@ -578,21 +595,20 @@ body.all-mode .pharma-editor > .btn{display:none}
 
   <!-- Entry -->
   <div class="entry-section">
-    <h2>➕ إضافة مبيعات اليوم</h2>
-    <div class="entry-form">
-      <div class="field">
+    <h2>➕ إضافة مبيعات اليوم (لكل فرع)</h2>
+    <div class="entry-form2">
+      <div class="field" style="max-width:220px">
         <label>التاريخ</label>
         <input type="date" id="entryDate">
       </div>
-      <div class="field">
-        <label>الكمية (حبة)</label>
-        <input type="number" id="entryQty" min="0" placeholder="مثلاً 25">
+      <div class="entry-branches-head">
+        <span>الفرع</span><span>عدد الحبات</span><span>المبلغ (ريال)</span>
       </div>
-      <div class="field">
-        <label>المبلغ (ريال)</label>
-        <input type="number" id="entryAmount" min="0" step="0.01" placeholder="مثلاً 1450">
+      <div id="entryBranches"></div>
+      <div class="entry-total-row">
+        الإجمالي اليومي: <b id="entryTotalQty">0</b> حبة · <b id="entryTotalAmount">0</b> ريال
       </div>
-      <button class="btn teal" onclick="addEntry()">💾 حفظ</button>
+      <button class="btn teal" onclick="addEntry()">💾 حفظ اليوم</button>
     </div>
 
     <!-- Table -->
@@ -757,9 +773,10 @@ function buildAggregate(){
     prevMonthSales += Number(pr.prevMonthSales) || 0;
     if(pr.avgPrice){ priceSum += Number(pr.avgPrice); priceN++; }
     Object.entries(pr.entries || {}).forEach(([d,e])=>{
-      if(!entries[d]) entries[d] = { qty:0, amount:0 };
-      entries[d].qty += Number(e.qty) || 0;
-      entries[d].amount += Number(e.amount) || 0;
+      const t = entryTotal(e);
+      if(!entries[d]) entries[d] = { branches:{ __agg__:{ qty:0, amount:0 } } };
+      entries[d].branches.__agg__.qty += t.qty;
+      entries[d].branches.__agg__.amount += t.amount;
     });
     (pr.pharmacies || []).forEach(ph=>{
       const key = ((ph.name||'').trim()) || ('#'+ph.id);
@@ -785,10 +802,10 @@ function populateAggregate(){
 function applyAllModeUI(){
   const all = isAllMode();
   document.body.classList.toggle('all-mode', all);
-  ['targetInput','avgPriceInput','prevMonthSales','entryDate','entryQty','entryAmount'].forEach(id=>{
+  ['targetInput','avgPriceInput','prevMonthSales','entryDate'].forEach(id=>{
     const e = document.getElementById(id); if(e) e.disabled = all;
   });
-  const saveBtn = document.querySelector('.entry-form .btn.teal'); if(saveBtn) saveBtn.disabled = all;
+  const saveBtn = document.querySelector('.entry-form2 .btn.teal'); if(saveBtn) saveBtn.disabled = all;
 }
 
 function renderProductSelector(){
@@ -904,6 +921,27 @@ function fmtNum(n, dec=0){
   return Number(n).toLocaleString('en-US', {minimumFractionDigits:dec, maximumFractionDigits:dec});
 }
 
+// إجمالي يوم واحد = مجموع الفروع. يدعم الشكل الجديد {branches:{..}} والقديم {qty,amount}
+function entryTotal(e){
+  if(!e) return { qty:0, amount:0 };
+  if(e.branches){
+    let q=0, a=0;
+    Object.values(e.branches).forEach(b=>{ q += Number(b.qty)||0; a += Number(b.amount)||0; });
+    return { qty:q, amount:a };
+  }
+  return { qty:Number(e.qty)||0, amount:Number(e.amount)||0 };
+}
+// مفتاح الفرع للإدخال اليومي (id الصيدلية) أو إجمالي واحد إن لم توجد فروع
+function entryBranchKeys(){
+  const phs = STATE.pharmacies || [];
+  return phs.length ? phs.map(p=>String(p.id)) : ['__total__'];
+}
+function branchName(key){
+  if(key === '__total__' || key === '__agg__') return 'إجمالي';
+  const p = (STATE.pharmacies||[]).find(x=>String(x.id)===String(key));
+  return p ? (p.name||'صيدلية') : 'إجمالي';
+}
+
 // ═══════════════════════════════════════════════════════════════
 // CORE CALCULATIONS
 // ═══════════════════════════════════════════════════════════════
@@ -912,12 +950,13 @@ function calculate(){
   const today = getToday();
   const todayDay = (today.startsWith(STATE.month)) ? Number(today.split('-')[2]) : 999;
 
-  // Collect entries within month
+  // Collect entries within month (per-branch entries summed to a daily total)
   const monthEntries = [];
   info.days.forEach(d=>{
     const e = STATE.entries[d.date];
     if(e){
-      monthEntries.push({...d, qty: e.qty||0, amount: e.amount||0});
+      const t = entryTotal(e);
+      monthEntries.push({...d, qty: t.qty, amount: t.amount, branches: e.branches || null});
     }
   });
 
@@ -1116,6 +1155,9 @@ function render(){
   // Table
   renderTable(c);
 
+  // Per-branch daily entry form
+  renderEntryBranches();
+
   // Pharmacy comparison + archive trend
   renderPharmacies();
   renderArchive();
@@ -1207,11 +1249,19 @@ function renderTable(c){
     const badge = e.isHoliday
       ? '<span class="day-badge badge-holiday">إجازة</span>'
       : (e.isFriday ? '<span class="day-badge badge-friday">جمعة</span>' : '<span class="day-badge badge-work">عمل</span>');
+    // تفصيل الفروع (إن وجد)
+    let brk = '';
+    if(e.branches){
+      const parts = Object.entries(e.branches)
+        .filter(([k,v])=>(v.qty||v.amount))
+        .map(([k,v])=>`${branchName(k)}: ${fmtNum(v.qty)}ح/${fmtNum(v.amount,0)}ر`);
+      if(parts.length) brk = `<div class="brk">${parts.join(' · ')}</div>`;
+    }
     return `<tr class="${cls}">
       <td>${e.dayName}</td>
       <td>${e.day} ${c.info.monthLabel}</td>
       <td>${badge}</td>
-      <td>${fmtNum(e.qty)}</td>
+      <td>${fmtNum(e.qty)}${brk}</td>
       <td><strong>${fmtNum(e.amount, 0)} ريال</strong></td>
       <td style="color:var(--text-dim)">${fmtNum(cumulative, 0)}</td>
       <td style="white-space:nowrap">${isAllMode() ? '' : `
@@ -1381,12 +1431,36 @@ function addPharmacy(){
   STATE.pharmacies.push({ id, name:'صيدلية جديدة', months:[{sales:0,rx:0},{sales:0,rx:0},{sales:0,rx:0}] });
   saveState();
   renderPharmacies();
+  renderEntryBranches();   // الفرع الجديد يظهر في الإدخال اليومي
 }
 function removePharmacy(id){
   if(isAllMode()) return;
   STATE.pharmacies = (STATE.pharmacies||[]).filter(p=>p.id!==id);
   saveState();
   renderPharmacies();
+  renderEntryBranches();
+}
+// نسخ أسماء فروع المنتج الحالي (بأرقام صفرية) إلى باقي المنتجات التي لا تحتويها
+function copyBranchesToAll(){
+  if(isAllMode()){ alert('اختر منتجاً محدداً أولاً.'); return; }
+  const src = STATE.pharmacies || [];
+  if(!src.length){ alert('لا توجد فروع في هذا المنتج لنسخها.'); return; }
+  if(!confirm('نسخ أسماء فروع هذا المنتج (بأرقام صفرية) إلى باقي المنتجات التي لا تحتويها؟')) return;
+  commitActiveProduct();
+  Object.entries(STATE.products).forEach(([id,pr])=>{
+    if(id === STATE.activeProduct) return;
+    pr.pharmacies = pr.pharmacies || [];
+    const names = new Set(pr.pharmacies.map(p=>(p.name||'').trim()));
+    let nextId = pr.pharmacies.reduce((m,p)=>Math.max(m,p.id),0)+1;
+    src.forEach(s=>{
+      const nm = (s.name||'').trim();
+      if(nm && !names.has(nm)){
+        pr.pharmacies.push({ id:nextId++, name:s.name, months:[{sales:0,rx:0},{sales:0,rx:0},{sales:0,rx:0}] });
+      }
+    });
+  });
+  saveState();
+  alert('تم نسخ الفروع لباقي المنتجات.');
 }
 function updatePharmacy(id, field, value){
   if(isAllMode()) return;
@@ -1465,7 +1539,7 @@ function renderChart(c){
   const labels = c.info.days.map(d=>d.day);
   const actualData = c.info.days.map(d=>{
     const e = STATE.entries[d.date];
-    return e ? e.amount : null;
+    return e ? entryTotal(e).amount : null;
   });
 
   // Build forecast line (only future days, starting from last actual)
@@ -1577,35 +1651,66 @@ function renderChart(c){
 // ═══════════════════════════════════════════════════════════════
 // ENTRY MANAGEMENT
 // ═══════════════════════════════════════════════════════════════
+// بناء صفوف الإدخال اليومي لكل فرع (يُعاد بناؤه فقط عند تغيّر مجموعة الفروع)
+function renderEntryBranches(){
+  const wrap = document.getElementById('entryBranches');
+  if(!wrap) return;
+  const keys = entryBranchKeys();
+  const sig = (isAllMode()?'ALL|':'') + keys.map(k=>k+':'+branchName(k)).join('|');
+  if(wrap.dataset.sig === sig) return;   // لم تتغيّر الفروع — أبقِ ما كتبه المستخدم
+  wrap.dataset.sig = sig;
+  const ro = isAllMode() ? 'disabled' : '';
+  wrap.innerHTML = keys.map(k=>`
+    <div class="entry-branch-row">
+      <span class="eb-name"><span class="pc-dot"></span>${branchName(k)}</span>
+      <input type="number" inputmode="numeric" min="0" id="qty_${k}" placeholder="حبات" ${ro} oninput="updateEntryTotalPreview()">
+      <input type="number" inputmode="decimal" min="0" step="0.01" id="amt_${k}" placeholder="مبلغ" ${ro} oninput="updateEntryTotalPreview()">
+    </div>`).join('');
+  updateEntryTotalPreview();
+}
+
+// معاينة الإجمالي اليومي أثناء الكتابة
+function updateEntryTotalPreview(){
+  let q=0, a=0;
+  entryBranchKeys().forEach(k=>{
+    q += parseFloat((document.getElementById('qty_'+k)||{}).value)||0;
+    a += parseFloat((document.getElementById('amt_'+k)||{}).value)||0;
+  });
+  const qEl=document.getElementById('entryTotalQty'), aEl=document.getElementById('entryTotalAmount');
+  if(qEl) qEl.textContent = fmtNum(q);
+  if(aEl) aEl.textContent = fmtNum(a,0);
+}
+
 function addEntry(){
   if(isAllMode()){ alert('اختر منتجاً محدداً لإضافة مبيعات.'); return; }
   const date = document.getElementById('entryDate').value;
-  const qty = parseFloat(document.getElementById('entryQty').value) || 0;
-  let amount = parseFloat(document.getElementById('entryAmount').value) || 0;
-
   if(!date){ alert('من فضلك اختر التاريخ'); return; }
-  if(qty <= 0 && amount <= 0){ alert('من فضلك أدخل الكمية أو المبلغ'); return; }
 
-  // إن أُدخلت الكمية دون المبلغ نحسب المبلغ تلقائياً من متوسط سعر الحبة
-  if(amount <= 0 && qty > 0 && STATE.avgPrice > 0){
-    amount = qty * STATE.avgPrice;
-  }
+  const keys = entryBranchKeys();
+  const branches = {};
+  let totalQty = 0, totalAmount = 0;
+  keys.forEach(k=>{
+    const qty = parseFloat((document.getElementById('qty_'+k)||{}).value) || 0;
+    let amount = parseFloat((document.getElementById('amt_'+k)||{}).value) || 0;
+    // إن أُدخلت الحبات دون المبلغ نحسبه من متوسط السعر
+    if(amount <= 0 && qty > 0 && STATE.avgPrice > 0) amount = qty * STATE.avgPrice;
+    if(qty > 0 || amount > 0){ branches[k] = { qty, amount }; totalQty += qty; totalAmount += amount; }
+  });
 
-  // تنبيه إن كان اليوم مسجّلاً مسبقاً (سيُستبدل)
+  if(totalQty <= 0 && totalAmount <= 0){ alert('من فضلك أدخل الحبات أو المبلغ لفرع واحد على الأقل'); return; }
   if(STATE.entries[date] && !confirm('هذا اليوم مسجّل مسبقاً — سيتم استبدال قيمته. متابعة؟')) return;
+  if(!date.startsWith(STATE.month) && !confirm('التاريخ خارج الشهر المختار. تريد المتابعة؟')) return;
 
-  // Ensure date is in current month
-  if(!date.startsWith(STATE.month)){
-    if(!confirm('التاريخ خارج الشهر المختار. تريد المتابعة؟')) return;
-  }
-
-  STATE.entries[date] = { qty, amount };
+  STATE.entries[date] = { branches };
   saveState();
   render();
 
   // Clear inputs
-  document.getElementById('entryQty').value = '';
-  document.getElementById('entryAmount').value = '';
+  keys.forEach(k=>{
+    const q=document.getElementById('qty_'+k), a=document.getElementById('amt_'+k);
+    if(q) q.value=''; if(a) a.value='';
+  });
+  updateEntryTotalPreview();
 
   // Suggest next date
   const next = new Date(date);
@@ -1627,10 +1732,17 @@ function editEntry(date){
   const e = STATE.entries[date];
   if(!e) return;
   document.getElementById('entryDate').value = date;
-  document.getElementById('entryQty').value = e.qty || '';
-  document.getElementById('entryAmount').value = e.amount || '';
+  const keys = entryBranchKeys();
+  const b = e.branches || null;
+  keys.forEach((k,i)=>{
+    const q=document.getElementById('qty_'+k), a=document.getElementById('amt_'+k);
+    let qv='', av='';
+    if(b && b[k]){ qv=b[k].qty||''; av=b[k].amount||''; }
+    else if(!b && i===0){ qv=e.qty||''; av=e.amount||''; } // توافق مع الشكل القديم
+    if(q) q.value=qv; if(a) a.value=av;
+  });
+  updateEntryTotalPreview();
   document.getElementById('entryDate').scrollIntoView({behavior:'smooth', block:'center'});
-  document.getElementById('entryQty').focus();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1737,13 +1849,18 @@ function exportData(){
 
 function exportCSV(){
   const info = getMonthInfo(STATE.month);
-  const rows = [['التاريخ','اليوم','النوع','الكمية (حبة)','المبلغ (ريال)']];
-  let cum = 0;
+  const rows = [['التاريخ','اليوم','النوع','الفرع','الحبات','المبلغ (ريال)']];
   info.days.forEach(d=>{
     const e = STATE.entries[d.date];
     if(!e) return;
     const type = d.isHoliday?'إجازة':(d.isFriday?'جمعة':'عمل');
-    rows.push([d.date, d.dayName, type, e.qty||0, e.amount||0]);
+    if(e.branches){
+      Object.entries(e.branches).forEach(([k,v])=>{
+        if(v.qty||v.amount) rows.push([d.date, d.dayName, type, branchName(k), v.qty||0, v.amount||0]);
+      });
+    } else {
+      rows.push([d.date, d.dayName, type, 'إجمالي', e.qty||0, e.amount||0]);
+    }
   });
   // ﻿ = BOM حتى يفتح Excel العربية بشكل صحيح
   const csv = '﻿' + rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\r\n');
@@ -1786,12 +1903,19 @@ function preloadIfEmpty(){
   // بيانات تجريبية تُزرع مرة واحدة فقط عند أول استخدام (لا تعود بعد التصفير)
   if(localStorage.getItem('sales_seeded_v2')) return;
   if(Object.keys(STATE.entries).length === 0){
-    // بيانات تجريبية في أوائل الشهر الحالي
+    // بيانات تجريبية في أوائل الشهر الحالي موزّعة على الفروع
     const m = STATE.month;
+    const phs = STATE.pharmacies || [];
+    const mkDay = (perBranch)=>{
+      const branches = {};
+      if(phs.length){ phs.forEach((ph,i)=>{ if(perBranch[i]) branches[ph.id] = perBranch[i]; }); }
+      else { branches['__total__'] = perBranch.reduce((s,b)=>({qty:s.qty+b.qty,amount:s.amount+b.amount}),{qty:0,amount:0}); }
+      return { branches };
+    };
     STATE.entries = {
-      [`${m}-01`]: { qty: 32, amount: 1950 },
-      [`${m}-02`]: { qty: 32, amount: 1950 },
-      [`${m}-03`]: { qty: 33, amount: 1955 }
+      [`${m}-01`]: mkDay([{qty:12,amount:720},{qty:8,amount:480},{qty:12,amount:750}]),
+      [`${m}-02`]: mkDay([{qty:13,amount:780},{qty:7,amount:420},{qty:12,amount:750}]),
+      [`${m}-03`]: mkDay([{qty:14,amount:840},{qty:9,amount:540},{qty:10,amount:575}])
     };
     saveState();
   }
@@ -1817,12 +1941,13 @@ function init(){
   const today = getToday();
   document.getElementById('entryDate').value = today.startsWith(STATE.month) ? today : (STATE.month + '-01');
 
-  // حفظ سريع بالضغط على Enter داخل حقول الإدخال
-  ['entryDate','entryQty','entryAmount'].forEach(id=>{
-    document.getElementById(id).addEventListener('keydown', (ev)=>{
-      if(ev.key === 'Enter'){ ev.preventDefault(); addEntry(); }
+  // حفظ سريع بالضغط على Enter داخل التاريخ أو أي حقل فرع (تفويض الحدث)
+  const entrySection = document.querySelector('.entry-form2');
+  if(entrySection){
+    entrySection.addEventListener('keydown', (ev)=>{
+      if(ev.key === 'Enter' && ev.target.tagName === 'INPUT'){ ev.preventDefault(); addEntry(); }
     });
-  });
+  }
 
   render();
 }
