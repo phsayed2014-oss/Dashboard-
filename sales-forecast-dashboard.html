@@ -636,7 +636,8 @@ body.all-mode .pharma-editor > .btn{display:none}
 // ═══════════════════════════════════════════════════════════════
 const STATE = {
   // ── إعدادات مشتركة بين كل المنتجات ──
-  month: '2026-06',
+  month: '2026-06',           // يُضبط تلقائياً على الشهر الحالي ما لم يختر المستخدم شهراً
+  monthTouched: false,        // يصبح true بمجرد أن يغيّر المستخدم الشهر يدوياً
   holidays: [],
   fridayMode: 'reduced',
   forecastMode: 'weighted',   // 'simple' متوسط بسيط | 'weighted' مرجّح لأحدث الأيام
@@ -1628,6 +1629,7 @@ function editEntry(date){
 function attachSetupHandlers(){
   document.getElementById('monthInput').addEventListener('change', (e)=>{
     STATE.month = e.target.value;
+    STATE.monthTouched = true;   // احترم اختيار المستخدم ولا تُعِده تلقائياً
     saveState();
     render();
     // Set today's date in entry if in current month
@@ -1774,10 +1776,12 @@ function preloadIfEmpty(){
   // بيانات تجريبية تُزرع مرة واحدة فقط عند أول استخدام (لا تعود بعد التصفير)
   if(localStorage.getItem('sales_seeded_v2')) return;
   if(Object.keys(STATE.entries).length === 0){
+    // بيانات تجريبية في أوائل الشهر الحالي
+    const m = STATE.month;
     STATE.entries = {
-      '2026-06-01': { qty: 32, amount: 1950 },
-      '2026-06-02': { qty: 32, amount: 1950 },
-      '2026-06-03': { qty: 33, amount: 1955 }
+      [`${m}-01`]: { qty: 32, amount: 1950 },
+      [`${m}-02`]: { qty: 32, amount: 1950 },
+      [`${m}-03`]: { qty: 33, amount: 1955 }
     };
     saveState();
   }
@@ -1790,7 +1794,10 @@ function preloadIfEmpty(){
 function init(){
   loadState();
   ensureProducts();
+  // افتراضياً افتح على الشهر الحالي ما لم يكن المستخدم قد اختار شهراً بنفسه
+  if(!STATE.monthTouched){ STATE.month = getToday().slice(0,7); }
   preloadIfEmpty();
+  saveState();
   syncSetupUI();
   renderProductSelector();
   applyAllModeUI();
