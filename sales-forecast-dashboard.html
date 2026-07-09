@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>متابعة المبيعات والتوقع | Dr.Elsayed Hassan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg-void:#050811;
+  --bg-base:#0a0f1c;
+  --bg-card:#0f1626;
+  --bg-card2:#141c30;
+  --bg-elevated:#1a2440;
+  --border:rgba(255,255,255,0.08);
+  --border-h:rgba(255,255,255,0.16);
+  --text:#e8ecf4;
+  --text-dim:#8b97b8;
+  --text-muted:#525d80;
+  --violet:#6366f1;
+  --violet-l:#818cf8;
+  --teal:#00c9a7;
+  --teal-l:#34d399;
+  --rose:#f43f5e;
+  --rose-l:#fb7185;
+  --amber:#f59e0b;
+  --amber-l:#fbbf24;
+  --sky:#0ea5e9;
+  --sky-l:#38bdf8;
+  --purple:#a855f7;
+  --gv:linear-gradient(135deg,#6366f1,#818cf8);
+  --gt:linear-gradient(135deg,#00c9a7,#34d399);
+  --gr:linear-gradient(135deg,#f43f5e,#fb7185);
+  --ga:linear-gradient(135deg,#f59e0b,#fbbf24);
+  --gs:linear-gradient(135deg,#0ea5e9,#38bdf8);
+  --gp:linear-gradient(135deg,#a855f7,#c084fc);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:'Tajawal','Cairo',sans-serif;background:var(--bg-void);color:var(--text);direction:rtl;min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+body::before{
+  content:'';position:fixed;inset:0;z-index:-1;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(99,102,241,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(0,201,167,0.10) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(244,63,94,0.06) 0%, transparent 60%);
+}
+
+.app{max-width:1400px;margin:0 auto;padding:24px}
+
+/* Header */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;
+  background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(0,201,167,0.05));
+  border:1px solid var(--border);border-radius:20px;padding:18px 24px;
+  backdrop-filter:blur(20px);
+}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-icon{
+  width:48px;height:48px;border-radius:14px;background:var(--gv);
+  display:grid;place-items:center;font-size:24px;
+  box-shadow:0 8px 24px rgba(99,102,241,0.35);
+  animation:float 4s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.brand-text h1{font-size:20px;font-weight:900;font-family:'Cairo',sans-serif;background:linear-gradient(135deg,#fff,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.brand-text p{font-size:12px;color:var(--text-dim);font-weight:600}
+.month-badge{
+  background:var(--bg-elevated);border:1px solid var(--border);
+  padding:10px 18px;border-radius:12px;display:flex;align-items:center;gap:10px;
+  font-size:13px;font-weight:700;
+}
+.month-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 12px var(--teal);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+/* Setup panel */
+.setup-panel{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px;
+}
+.setup-panel h2{font-size:16px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--text)}
+.setup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;color:var(--text-dim);font-weight:700}
+.field input,.field select{
+  background:var(--bg-base);border:1px solid var(--border);
+  color:var(--text);padding:11px 14px;border-radius:10px;
+  font-family:'Tajawal',sans-serif;font-size:14px;font-weight:600;
+  outline:none;transition:all .2s;
+}
+.field input:focus,.field select:focus{border-color:var(--violet);box-shadow:0 0 0 3px rgba(99,102,241,0.15)}
+.field input[type="date"]{color-scheme:dark}
+
+/* KPI Cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px}
+.kpi{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:18px;padding:20px;
+  position:relative;overflow:hidden;transition:all .3s;
+}
+.kpi:hover{transform:translateY(-3px);border-color:var(--border-h)}
+.kpi::before{content:'';position:absolute;top:0;right:0;width:100%;height:3px;background:var(--gv)}
+.kpi.teal::before{background:var(--gt)}
+.kpi.rose::before{background:var(--gr)}
+.kpi.amber::before{background:var(--ga)}
+.kpi.sky::before{background:var(--gs)}
+.kpi.purple::before{background:var(--gp)}
+.kpi-label{font-size:12px;color:var(--text-dim);font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.kpi-icon{width:32px;height:32px;border-radius:9px;background:rgba(99,102,241,0.12);color:var(--violet-l);display:grid;place-items:center;font-size:16px;float:left}
+.kpi.teal .kpi-icon{background:rgba(0,201,167,0.12);color:var(--teal-l)}
+.kpi.rose .kpi-icon{background:rgba(244,63,94,0.12);color:var(--rose-l)}
+.kpi.amber .kpi-icon{background:rgba(245,158,11,0.12);color:var(--amber-l)}
+.kpi.sky .kpi-icon{background:rgba(14,165,233,0.12);color:var(--sky-l)}
+.kpi.purple .kpi-icon{background:rgba(168,85,247,0.12);color:#c084fc}
+.kpi-value{font-size:28px;font-weight:900;font-family:'Cairo',sans-serif;line-height:1.1;margin-bottom:6px}
+.kpi-sub{font-size:11px;color:var(--text-muted);font-weight:600}
+.kpi-delta{font-size:12px;font-weight:800;margin-top:6px;display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px}
+.delta-up{background:rgba(0,201,167,0.12);color:var(--teal-l)}
+.delta-down{background:rgba(244,63,94,0.12);color:var(--rose-l)}
+
+/* Progress bar */
+.target-progress{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px;
+}
+.progress-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.progress-head h3{font-size:15px;font-weight:800}
+.progress-head .pct{font-size:24px;font-weight:900;font-family:'Cairo',sans-serif;background:var(--gt);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.progress-bar{
+  height:14px;background:var(--bg-base);border-radius:8px;overflow:hidden;position:relative;
+  border:1px solid var(--border);
+}
+.progress-fill{
+  height:100%;background:var(--gt);border-radius:8px;transition:width 1s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 0 16px rgba(0,201,167,0.4);
+  position:relative;
+}
+.progress-fill::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);
+  animation:shimmer 2s linear infinite;
+}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.progress-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim);font-weight:700;margin-top:10px}
+
+/* Scenarios */
+.scenarios{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px;
+}
+.scenario{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:18px;padding:22px;
+  position:relative;transition:all .3s;
+}
+.scenario:hover{transform:translateY(-3px);border-color:var(--border-h)}
+.scenario.recommended{
+  border-color:var(--teal);
+  box-shadow:0 0 0 1px var(--teal),0 12px 32px rgba(0,201,167,0.15);
+}
+.scenario.recommended::before{
+  content:'⭐ الواقعي';position:absolute;top:-12px;right:18px;
+  background:var(--gt);color:#000;font-size:11px;font-weight:900;padding:4px 12px;border-radius:99px;
+}
+.scenario-icon{font-size:30px;margin-bottom:10px;display:block}
+.scenario h4{font-size:14px;color:var(--text-dim);font-weight:700;margin-bottom:6px}
+.scenario .amount{font-size:32px;font-weight:900;font-family:'Cairo',sans-serif;line-height:1;margin-bottom:6px}
+.scenario .qty{font-size:13px;color:var(--text-dim);font-weight:600;margin-bottom:14px}
+.scenario .pct-target{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);font-weight:700;padding-top:12px;border-top:1px dashed var(--border)}
+.scenario .pct-target b{font-size:14px;color:var(--text)}
+
+/* Daily entry */
+.entry-section{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px;
+}
+.entry-section h2{font-size:16px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.entry-form{
+  display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;
+  background:var(--bg-base);padding:18px;border-radius:14px;border:1px solid var(--border);
+}
+.btn{
+  background:var(--gv);color:#fff;border:none;padding:11px 22px;border-radius:10px;
+  font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;cursor:pointer;
+  transition:all .2s;display:inline-flex;align-items:center;gap:8px;justify-content:center;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(99,102,241,0.35)}
+.btn.teal{background:var(--gt);color:#000}
+.btn.rose{background:var(--gr)}
+.btn.ghost{background:var(--bg-elevated);color:var(--text-dim);border:1px solid var(--border)}
+.btn.ghost:hover{color:var(--text);border-color:var(--border-h)}
+.btn.sm{padding:7px 12px;font-size:12px;border-radius:8px}
+
+/* Days table */
+.days-table-wrap{overflow-x:auto;margin-top:18px;border-radius:14px;border:1px solid var(--border)}
+.days-table{width:100%;border-collapse:collapse;font-size:13px}
+.days-table thead{background:var(--bg-elevated)}
+.days-table th{padding:12px 14px;text-align:right;color:var(--text-dim);font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border)}
+.days-table td{padding:12px 14px;border-bottom:1px solid var(--border);font-weight:600}
+.days-table tr:last-child td{border-bottom:none}
+.days-table tr:hover{background:var(--bg-base)}
+.days-table tr.friday{background:rgba(244,63,94,0.05)}
+.days-table tr.holiday{background:rgba(245,158,11,0.06)}
+.day-badge{font-size:10px;padding:3px 7px;border-radius:5px;font-weight:800}
+.badge-work{background:rgba(0,201,167,0.12);color:var(--teal-l)}
+.badge-friday{background:rgba(244,63,94,0.12);color:var(--rose-l)}
+.badge-holiday{background:rgba(245,158,11,0.15);color:var(--amber-l)}
+.empty-state{padding:40px;text-align:center;color:var(--text-muted)}
+.empty-state .icon{font-size:48px;margin-bottom:10px;opacity:0.4}
+
+/* Chart */
+.chart-section{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px;
+}
+.chart-section h2{font-size:16px;font-weight:800;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.chart-box{height:340px;position:relative}
+
+/* Insight box */
+.insight-box{
+  background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(0,201,167,0.05));
+  border:1px solid rgba(99,102,241,0.2);border-radius:16px;padding:18px;margin-top:18px;
+}
+.insight-box .insight-title{font-size:13px;font-weight:800;color:var(--violet-l);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.insight-box .insight-text{font-size:14px;line-height:1.8;color:var(--text)}
+.insight-box .insight-text strong{color:var(--teal-l);font-weight:800}
+
+/* Comparison */
+.comparison{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px;
+}
+.comparison h2{font-size:16px;font-weight:800;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.compare-card{
+  background:var(--bg-base);border:1px solid var(--border);border-radius:12px;padding:16px;
+}
+.compare-card .label{font-size:11px;color:var(--text-dim);font-weight:700;margin-bottom:8px}
+.compare-card .val{font-size:22px;font-weight:900;font-family:'Cairo',sans-serif}
+.compare-card .change{font-size:12px;font-weight:800;margin-top:6px}
+
+/* Footer */
+.footer{text-align:center;padding:24px;color:var(--text-muted);font-size:12px;font-weight:600;margin-top:24px}
+.footer b{color:var(--violet-l)}
+
+/* Responsive */
+@media(max-width:768px){
+  .app{padding:16px}
+  .topbar{flex-direction:column;align-items:stretch;gap:12px;padding:14px}
+  .brand-text h1{font-size:17px}
+  .entry-form{grid-template-columns:1fr 1fr;gap:10px}
+  .entry-form .btn{grid-column:span 2}
+  .kpi-value{font-size:24px}
+  .scenario .amount{font-size:26px}
+}
+
+/* Alert pill */
+.alert-pill{
+  display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;
+  font-size:12px;font-weight:800;margin-top:10px;
+}
+.alert-pill.warn{background:rgba(245,158,11,0.12);color:var(--amber-l);border:1px solid rgba(245,158,11,0.3)}
+.alert-pill.good{background:rgba(0,201,167,0.12);color:var(--teal-l);border:1px solid rgba(0,201,167,0.3)}
+.alert-pill.bad{background:rgba(244,63,94,0.12);color:var(--rose-l);border:1px solid rgba(244,63,94,0.3)}
+
+/* Quick actions */
+.quick-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+
+/* Print / PDF */
+@media print{
+  body::before{display:none}
+  html,body{background:#fff;color:#111}
+  .app{max-width:100%;padding:0}
+  .quick-actions,.entry-form,.days-table td:last-child,.days-table th:last-child{display:none}
+  .topbar,.setup-panel,.kpi,.target-progress,.scenario,.comparison,.entry-section,.chart-section,.insight-box{
+    background:#fff !important;border:1px solid #ddd !important;box-shadow:none !important;color:#111 !important;
+  }
+  .kpi-value,.scenario .amount,.brand-text h1,.progress-head .pct{-webkit-text-fill-color:#111 !important;color:#111 !important;background:none !important}
+  .days-table th,.days-table td{color:#111 !important}
+  @page{margin:1cm}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">📊</div>
+      <div class="brand-text">
+        <h1>متابعة المبيعات والتوقع</h1>
+        <p>إدارة الـ Private Label · Dr.Elsayed Hassan</p>
+      </div>
+    </div>
+    <div class="month-badge">
+      <div class="dot"></div>
+      <span id="currentMonthLabel">يونيو 2026</span>
+    </div>
+  </div>
+
+  <!-- Setup Panel -->
+  <div class="setup-panel">
+    <h2>⚙️ إعدادات الشهر</h2>
+    <div class="setup-grid">
+      <div class="field">
+        <label>الشهر</label>
+        <input type="month" id="monthInput" value="2026-06">
+      </div>
+      <div class="field">
+        <label>التارجت (ريال)</label>
+        <input type="number" id="targetInput" value="60000" min="0">
+      </div>
+      <div class="field">
+        <label>متوسط سعر الحبة (ريال)</label>
+        <input type="number" id="avgPriceInput" value="58" min="0" step="0.5">
+      </div>
+      <div class="field">
+        <label>أيام إجازة (مفصولة بفاصلة)</label>
+        <input type="text" id="holidaysInput" placeholder="مثال: 25,26,27,28,29">
+      </div>
+      <div class="field">
+        <label>أعتبر الجمعة عطلة؟</label>
+        <select id="fridayMode">
+          <option value="zero">عطلة (0 إنتاج)</option>
+          <option value="reduced" selected>إنتاج منخفض (20%)</option>
+          <option value="normal">يوم عادي</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>الشهر السابق - المبيعات (ريال)</label>
+        <input type="number" id="prevMonthSales" value="35550" min="0">
+      </div>
+    </div>
+    <div class="quick-actions">
+      <button class="btn ghost sm" onclick="applyEidPreset()">🌙 إجازة عيد (5 أيام آخر الشهر)</button>
+      <button class="btn ghost sm" onclick="clearHolidays()">🗑️ مسح الإجازات</button>
+      <button class="btn ghost sm" onclick="exportData()">💾 تصدير البيانات</button>
+      <button class="btn ghost sm" onclick="document.getElementById('importFile').click()">📥 استيراد</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      <button class="btn ghost sm" onclick="window.print()">🖨️ طباعة / PDF</button>
+      <button class="btn ghost sm" onclick="resetAll()">♻️ تصفير الشهر</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-label">المحقق حتى الآن</div>
+      <div class="kpi-value" id="kpiAchieved">0 ريال</div>
+      <div class="kpi-sub" id="kpiAchievedQty">0 حبة</div>
+    </div>
+    <div class="kpi teal">
+      <div class="kpi-icon">📈</div>
+      <div class="kpi-label">المعدل اليومي (أيام العمل)</div>
+      <div class="kpi-value" id="kpiAvgDaily">0 ريال</div>
+      <div class="kpi-sub" id="kpiAvgDailyQty">0 حبة/يوم</div>
+    </div>
+    <div class="kpi amber">
+      <div class="kpi-icon">📅</div>
+      <div class="kpi-label">أيام العمل المتبقية</div>
+      <div class="kpi-value" id="kpiRemainingDays">0</div>
+      <div class="kpi-sub" id="kpiRemainingDetails">من أصل 0</div>
+    </div>
+    <div class="kpi rose">
+      <div class="kpi-icon">🎯</div>
+      <div class="kpi-label">المطلوب يومياً للتارجت</div>
+      <div class="kpi-value" id="kpiNeededDaily">0 ريال</div>
+      <div class="kpi-sub" id="kpiNeededFeasibility">0 حبة/يوم</div>
+    </div>
+  </div>
+
+  <!-- Target progress -->
+  <div class="target-progress">
+    <div class="progress-head">
+      <h3>🎯 التقدم نحو التارجت</h3>
+      <div class="pct" id="progressPct">0%</div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="progress-meta">
+      <span>المحقق: <b id="progressAchieved">0</b> ريال</span>
+      <span>التارجت: <b id="progressTarget">60,000</b> ريال</span>
+    </div>
+    <div id="progressAlert"></div>
+  </div>
+
+  <!-- Forecast scenarios -->
+  <div class="scenarios">
+    <div class="scenario">
+      <span class="scenario-icon">🛡️</span>
+      <h4>السيناريو المتحفظ</h4>
+      <div class="amount" id="scConservativeAmount">0 ريال</div>
+      <div class="qty" id="scConservativeQty">0 حبة · افتراض تباطؤ</div>
+      <div class="pct-target">
+        <span>من التارجت</span>
+        <b id="scConservativePct">0%</b>
+      </div>
+    </div>
+    <div class="scenario recommended">
+      <span class="scenario-icon">📊</span>
+      <h4>السيناريو الواقعي</h4>
+      <div class="amount" id="scRealisticAmount">0 ريال</div>
+      <div class="qty" id="scRealisticQty">0 حبة · بنفس المعدل الحالي</div>
+      <div class="pct-target">
+        <span>من التارجت</span>
+        <b id="scRealisticPct">0%</b>
+      </div>
+    </div>
+    <div class="scenario">
+      <span class="scenario-icon">🚀</span>
+      <h4>السيناريو الطموح</h4>
+      <div class="amount" id="scAmbitiousAmount">0 ريال</div>
+      <div class="qty" id="scAmbitiousQty">0 حبة · +20% فوق المعدل</div>
+      <div class="pct-target">
+        <span>من التارجت</span>
+        <b id="scAmbitiousPct">0%</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Insight -->
+  <div class="insight-box" id="insightBox" style="display:none">
+    <div class="insight-title">💡 ملاحظات وتحليل</div>
+    <div class="insight-text" id="insightText"></div>
+  </div>
+
+  <!-- Comparison -->
+  <div class="comparison">
+    <h2>📊 المقارنة مع الشهر السابق</h2>
+    <div class="compare-grid">
+      <div class="compare-card">
+        <div class="label">الشهر السابق</div>
+        <div class="val" id="compPrev">0 ريال</div>
+      </div>
+      <div class="compare-card">
+        <div class="label">الشهر الحالي (المتوقع)</div>
+        <div class="val" id="compCurrent">0 ريال</div>
+        <div class="change" id="compChange">—</div>
+      </div>
+      <div class="compare-card">
+        <div class="label">الفرق المتوقع</div>
+        <div class="val" id="compDiff">0 ريال</div>
+      </div>
+      <div class="compare-card">
+        <div class="label">النمو الفعلي حتى الآن</div>
+        <div class="val" id="compActualGrowth">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Entry -->
+  <div class="entry-section">
+    <h2>➕ إضافة مبيعات اليوم</h2>
+    <div class="entry-form">
+      <div class="field">
+        <label>التاريخ</label>
+        <input type="date" id="entryDate">
+      </div>
+      <div class="field">
+        <label>الكمية (حبة)</label>
+        <input type="number" id="entryQty" min="0" placeholder="مثلاً 25">
+      </div>
+      <div class="field">
+        <label>المبلغ (ريال)</label>
+        <input type="number" id="entryAmount" min="0" step="0.01" placeholder="مثلاً 1450">
+      </div>
+      <button class="btn teal" onclick="addEntry()">💾 حفظ</button>
+    </div>
+
+    <!-- Table -->
+    <div class="days-table-wrap">
+      <table class="days-table">
+        <thead>
+          <tr>
+            <th>اليوم</th>
+            <th>التاريخ</th>
+            <th>النوع</th>
+            <th>الكمية</th>
+            <th>المبلغ</th>
+            <th>تراكمي</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="daysTableBody">
+          <tr><td colspan="7" class="empty-state"><div class="icon">📋</div>لم يتم إضافة أي يوم بعد. ابدأ بإضافة مبيعات اليوم.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-section">
+    <h2>📈 مسار المبيعات اليومية</h2>
+    <div class="chart-box">
+      <canvas id="dailyChart"></canvas>
+    </div>
+  </div>
+
+  <div class="footer">
+    البيانات تُحفظ تلقائياً على الجهاز · صُمم بواسطة <b>Dr.Elsayed Hassan</b>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+const STATE = {
+  month: '2026-06',
+  target: 60000,
+  avgPrice: 58,
+  holidays: [],
+  fridayMode: 'reduced',
+  prevMonthSales: 35550,
+  entries: {} // {date: {qty, amount}}
+};
+
+const STORAGE_KEY = 'sales_forecast_v1';
+
+// ═══════════════════════════════════════════════════════════════
+// PERSISTENCE
+// ═══════════════════════════════════════════════════════════════
+function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); }catch(e){ console.warn('Save failed', e); }
+}
+function loadState(){
+  try{
+    const s = localStorage.getItem(STORAGE_KEY);
+    if(s){
+      const loaded = JSON.parse(s);
+      Object.assign(STATE, loaded);
+    }
+  }catch(e){ console.warn('Load failed', e); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DATE HELPERS
+// ═══════════════════════════════════════════════════════════════
+const AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+const AR_DAYS = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+
+function getMonthInfo(monthStr){
+  const [y,m] = monthStr.split('-').map(Number);
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const today = getToday();
+  const days = [];
+  for(let d=1; d<=daysInMonth; d++){
+    const dt = new Date(y, m-1, d);
+    const dow = dt.getDay(); // 0=Sun, 5=Fri
+    const isFriday = dow === 5;
+    const isHoliday = STATE.holidays.includes(d);
+    const dateStr = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    days.push({
+      day:d, date:dateStr, dow, dayName:AR_DAYS[dow],
+      isFriday, isHoliday,
+      isPast: dateStr < today,      // يوم انقضى بالفعل
+      isToday: dateStr === today,   // اليوم الحالي
+      isFuture: dateStr > today,    // يوم قادم
+      isWorkDay: !isHoliday && (!isFriday || STATE.fridayMode==='normal'),
+      monthLabel: `${AR_MONTHS[m-1]} ${y}`
+    });
+  }
+  return { year:y, month:m, daysInMonth, days, monthLabel: `${AR_MONTHS[m-1]} ${y}` };
+}
+
+// التاريخ المحلي (وليس UTC) حتى لا تختلف الأيام في التوقيت السعودي
+function getToday(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function fmtNum(n, dec=0){
+  if(n==null || isNaN(n)) return '0';
+  return Number(n).toLocaleString('en-US', {minimumFractionDigits:dec, maximumFractionDigits:dec});
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CORE CALCULATIONS
+// ═══════════════════════════════════════════════════════════════
+function calculate(){
+  const info = getMonthInfo(STATE.month);
+  const today = getToday();
+  const todayDay = (today.startsWith(STATE.month)) ? Number(today.split('-')[2]) : 999;
+
+  // Collect entries within month
+  const monthEntries = [];
+  info.days.forEach(d=>{
+    const e = STATE.entries[d.date];
+    if(e){
+      monthEntries.push({...d, qty: e.qty||0, amount: e.amount||0});
+    }
+  });
+
+  // Achieved totals
+  const achievedAmount = monthEntries.reduce((s,e)=>s+e.amount, 0);
+  const achievedQty = monthEntries.reduce((s,e)=>s+e.qty, 0);
+  const daysWithData = monthEntries.length;
+
+  // Calc avg daily — only on entered work days (exclude Fridays if not normal mode + holidays)
+  const enteredWorkDays = monthEntries.filter(e=>e.isWorkDay);
+  const enteredWorkDaysCount = enteredWorkDays.length;
+  const workDayAmount = enteredWorkDays.reduce((s,e)=>s+e.amount, 0);
+  const workDayQty = enteredWorkDays.reduce((s,e)=>s+e.qty, 0);
+  const avgDailyAmount = enteredWorkDaysCount > 0 ? workDayAmount / enteredWorkDaysCount : 0;
+  const avgDailyQty = enteredWorkDaysCount > 0 ? workDayQty / enteredWorkDaysCount : 0;
+
+  // If no work days entered but there are entries, use overall avg
+  const fallbackAvg = daysWithData>0 ? achievedAmount/daysWithData : 0;
+  const fallbackAvgQty = daysWithData>0 ? achievedQty/daysWithData : 0;
+  const effectiveAvg = avgDailyAmount > 0 ? avgDailyAmount : fallbackAvg;
+  const effectiveAvgQty = avgDailyQty > 0 ? avgDailyQty : fallbackAvgQty;
+
+  // Friday factor
+  const fridayFactor = STATE.fridayMode==='zero' ? 0 : (STATE.fridayMode==='reduced' ? 0.20 : 1.0);
+
+  // الأيام المتبقية = أيام لم تُسجَّل بعد ولم تنقضِ (اليوم الحالي + المستقبل فقط)
+  // بهذا لا نُسقط توقعاً على أيام فائتة بلا بيانات فيتضخّم التوقع
+  const enteredDays = new Set(Object.keys(STATE.entries));
+  const remaining = info.days.filter(d => !enteredDays.has(d.date) && !d.isPast);
+
+  const remainingWorkDays = remaining.filter(d => d.isWorkDay).length;
+  const remainingFridays = remaining.filter(d => d.isFriday && !d.isHoliday).length;
+  const remainingHolidays = remaining.filter(d => d.isHoliday).length;
+
+  // أيام عمل انقضت بلا تسجيل (فرص فائتة) — للتنبيه فقط
+  const missedWorkDays = info.days.filter(d => !enteredDays.has(d.date) && d.isPast && d.isWorkDay).length;
+
+  // === SCENARIOS ===
+  // Realistic: at current avg
+  const realisticAdd = (remainingWorkDays * effectiveAvg) + (remainingFridays * effectiveAvg * fridayFactor);
+  const realisticTotal = achievedAmount + realisticAdd;
+  const realisticQty = achievedQty + (remainingWorkDays * effectiveAvgQty) + (remainingFridays * effectiveAvgQty * fridayFactor);
+
+  // Conservative: 80% of current
+  const conservativeAdd = (remainingWorkDays * effectiveAvg * 0.80) + (remainingFridays * effectiveAvg * 0.10);
+  const conservativeTotal = achievedAmount + conservativeAdd;
+  const conservativeQty = achievedQty + (remainingWorkDays * effectiveAvgQty * 0.80) + (remainingFridays * effectiveAvgQty * 0.10);
+
+  // Ambitious: 120% of current
+  const ambitiousAdd = (remainingWorkDays * effectiveAvg * 1.20) + (remainingFridays * effectiveAvg * fridayFactor * 1.2);
+  const ambitiousTotal = achievedAmount + ambitiousAdd;
+  const ambitiousQty = achievedQty + (remainingWorkDays * effectiveAvgQty * 1.20) + (remainingFridays * effectiveAvgQty * fridayFactor * 1.2);
+
+  // Total work days in month
+  const totalWorkDays = info.days.filter(d=>d.isWorkDay).length;
+  const totalFridays = info.days.filter(d=>d.isFriday && !d.isHoliday).length;
+
+  // Needed daily for target
+  const remaining_to_target = STATE.target - achievedAmount;
+  const remainingCapacity = remainingWorkDays + remainingFridays * fridayFactor;
+  const neededDaily = remainingCapacity > 0 ? remaining_to_target / remainingCapacity : 0;
+  const neededQty = STATE.avgPrice > 0 ? neededDaily / STATE.avgPrice : 0;
+
+  // Progress
+  const progressPct = STATE.target > 0 ? (achievedAmount / STATE.target) * 100 : 0;
+
+  return {
+    info, today, todayDay,
+    achievedAmount, achievedQty, daysWithData,
+    avgDailyAmount: effectiveAvg, avgDailyQty: effectiveAvgQty,
+    enteredWorkDaysCount,
+    remainingWorkDays, remainingFridays, remainingHolidays, missedWorkDays,
+    totalWorkDays, totalFridays,
+    realisticTotal, realisticQty,
+    conservativeTotal, conservativeQty,
+    ambitiousTotal, ambitiousQty,
+    neededDaily, neededQty, progressPct,
+    fridayFactor, monthEntries
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════
+function render(){
+  const c = calculate();
+  document.getElementById('currentMonthLabel').textContent = c.info.monthLabel;
+
+  // KPIs
+  document.getElementById('kpiAchieved').textContent = fmtNum(c.achievedAmount) + ' ريال';
+  document.getElementById('kpiAchievedQty').textContent = fmtNum(c.achievedQty) + ' حبة · ' + c.daysWithData + ' يوم مسجل';
+
+  document.getElementById('kpiAvgDaily').textContent = fmtNum(c.avgDailyAmount, 0) + ' ريال';
+  document.getElementById('kpiAvgDailyQty').textContent = c.avgDailyQty.toFixed(1) + ' حبة/يوم عمل';
+
+  document.getElementById('kpiRemainingDays').textContent = c.remainingWorkDays + (c.remainingFridays > 0 ? ` + ${c.remainingFridays}ج` : '');
+  document.getElementById('kpiRemainingDetails').innerHTML = `من أصل ${c.totalWorkDays} يوم عمل · ${c.remainingHolidays} إجازة`
+    + (c.missedWorkDays > 0 ? ` · <span style="color:var(--rose-l)">${c.missedWorkDays} يوم بلا تسجيل</span>` : '');
+
+  document.getElementById('kpiNeededDaily').textContent = fmtNum(Math.max(0,c.neededDaily), 0) + ' ريال';
+  const feasibilityFactor = c.avgDailyAmount > 0 ? (c.neededDaily / c.avgDailyAmount) : 0;
+  let feasMsg = c.neededQty.toFixed(1) + ' حبة/يوم';
+  if(c.avgDailyAmount > 0){
+    if(feasibilityFactor <= 1.0) feasMsg += ' ✅ ممكن';
+    else if(feasibilityFactor <= 1.3) feasMsg += ' 💪 يحتاج جهد';
+    else if(feasibilityFactor <= 1.7) feasMsg += ' ⚡ تحدٍ كبير';
+    else feasMsg += ' ⚠️ صعب جداً';
+  }
+  document.getElementById('kpiNeededFeasibility').textContent = feasMsg;
+
+  // Progress
+  document.getElementById('progressPct').textContent = c.progressPct.toFixed(1) + '%';
+  document.getElementById('progressFill').style.width = Math.min(100, c.progressPct) + '%';
+  document.getElementById('progressAchieved').textContent = fmtNum(c.achievedAmount);
+  document.getElementById('progressTarget').textContent = fmtNum(STATE.target);
+
+  // Progress alert
+  const palertEl = document.getElementById('progressAlert');
+  if(c.daysWithData === 0){
+    palertEl.innerHTML = '';
+  } else if(c.realisticTotal >= STATE.target){
+    palertEl.innerHTML = '<div class="alert-pill good">🎉 على المسار الصحيح — التارجت متوقع تحقيقه</div>';
+  } else if(c.ambitiousTotal >= STATE.target){
+    palertEl.innerHTML = '<div class="alert-pill warn">💪 التارجت ممكن لكن يحتاج جهد إضافي</div>';
+  } else {
+    const gap = STATE.target - c.realisticTotal;
+    palertEl.innerHTML = `<div class="alert-pill bad">⚠️ فجوة متوقعة: ${fmtNum(gap, 0)} ريال — راجع الاستراتيجية</div>`;
+  }
+
+  // Scenarios
+  document.getElementById('scConservativeAmount').textContent = fmtNum(c.conservativeTotal, 0) + ' ريال';
+  document.getElementById('scConservativeQty').textContent = fmtNum(c.conservativeQty, 0) + ' حبة · افتراض تباطؤ (-20%)';
+  document.getElementById('scConservativePct').textContent = STATE.target>0 ? ((c.conservativeTotal/STATE.target)*100).toFixed(0)+'%' : '—';
+
+  document.getElementById('scRealisticAmount').textContent = fmtNum(c.realisticTotal, 0) + ' ريال';
+  document.getElementById('scRealisticQty').textContent = fmtNum(c.realisticQty, 0) + ' حبة · بنفس المعدل الحالي';
+  document.getElementById('scRealisticPct').textContent = STATE.target>0 ? ((c.realisticTotal/STATE.target)*100).toFixed(0)+'%' : '—';
+
+  document.getElementById('scAmbitiousAmount').textContent = fmtNum(c.ambitiousTotal, 0) + ' ريال';
+  document.getElementById('scAmbitiousQty').textContent = fmtNum(c.ambitiousQty, 0) + ' حبة · +20% فوق المعدل';
+  document.getElementById('scAmbitiousPct').textContent = STATE.target>0 ? ((c.ambitiousTotal/STATE.target)*100).toFixed(0)+'%' : '—';
+
+  // Insight
+  renderInsight(c);
+
+  // Comparison
+  document.getElementById('compPrev').textContent = fmtNum(STATE.prevMonthSales, 0) + ' ريال';
+  document.getElementById('compCurrent').textContent = fmtNum(c.realisticTotal, 0) + ' ريال';
+  const growthExpected = STATE.prevMonthSales > 0 ? ((c.realisticTotal - STATE.prevMonthSales) / STATE.prevMonthSales * 100) : 0;
+  const compChangeEl = document.getElementById('compChange');
+  compChangeEl.textContent = (growthExpected >= 0 ? '⬆ +' : '⬇ ') + growthExpected.toFixed(1) + '%';
+  compChangeEl.className = 'change ' + (growthExpected >= 0 ? 'delta-up' : 'delta-down');
+  compChangeEl.style.padding = '2px 8px';
+  compChangeEl.style.borderRadius = '6px';
+  compChangeEl.style.display = 'inline-block';
+  document.getElementById('compDiff').textContent = fmtNum(c.realisticTotal - STATE.prevMonthSales, 0) + ' ريال';
+
+  // Actual growth (achieved so far vs prev)
+  const actualGrowthEl = document.getElementById('compActualGrowth');
+  if(c.daysWithData > 0 && STATE.prevMonthSales > 0){
+    const actualGrowth = ((c.achievedAmount - STATE.prevMonthSales) / STATE.prevMonthSales * 100);
+    actualGrowthEl.textContent = (actualGrowth >= 0 ? '+' : '') + actualGrowth.toFixed(1) + '%';
+    actualGrowthEl.style.color = actualGrowth >= 0 ? 'var(--teal-l)' : 'var(--rose-l)';
+  } else {
+    actualGrowthEl.textContent = '—';
+  }
+
+  // Table
+  renderTable(c);
+
+  // Chart
+  renderChart(c);
+}
+
+function renderInsight(c){
+  const box = document.getElementById('insightBox');
+  if(c.daysWithData === 0){
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'block';
+  const lines = [];
+
+  // 1. Trend vs prev month
+  if(STATE.prevMonthSales > 0 && c.avgDailyAmount > 0){
+    // Estimate prev avg
+    const prevAvg = STATE.prevMonthSales / (c.totalWorkDays || 22);
+    const growth = ((c.avgDailyAmount - prevAvg) / prevAvg * 100);
+    if(growth > 10){
+      lines.push(`📈 معدلك اليومي <strong>${c.avgDailyAmount.toFixed(0)} ريال</strong> — أعلى بـ <strong>${growth.toFixed(0)}%</strong> عن متوسط الشهر السابق. أداء قوي.`);
+    } else if(growth > -10){
+      lines.push(`➖ معدلك اليومي قريب من معدل الشهر السابق (${growth>=0?'+':''}${growth.toFixed(0)}%).`);
+    } else {
+      lines.push(`📉 معدلك اليومي أقل بـ <strong>${Math.abs(growth).toFixed(0)}%</strong> عن الشهر السابق — يحتاج مراجعة.`);
+    }
+  }
+
+  // 2. Target feasibility
+  if(c.realisticTotal >= STATE.target){
+    lines.push(`🎯 بناءً على المعدل الحالي، أنت <strong>متجاوز التارجت</strong> بمقدار ${fmtNum(c.realisticTotal-STATE.target,0)} ريال.`);
+  } else {
+    const gap = STATE.target - c.realisticTotal;
+    const factor = c.avgDailyAmount > 0 ? (c.neededDaily/c.avgDailyAmount).toFixed(1) : 0;
+    lines.push(`🎯 الفجوة المتوقعة عن التارجت: <strong>${fmtNum(gap,0)} ريال</strong>. يحتاج رفع المعدل اليومي ${factor}× للوصول.`);
+  }
+
+  // 3. Remaining capacity
+  if(c.remainingWorkDays > 0){
+    const remCapacity = c.remainingWorkDays * c.avgDailyAmount + c.remainingFridays * c.avgDailyAmount * c.fridayFactor;
+    lines.push(`📅 متبقي <strong>${c.remainingWorkDays} يوم عمل</strong> + ${c.remainingFridays} جمعة. السعة المتوقعة: <strong>${fmtNum(remCapacity,0)} ريال</strong>.`);
+  }
+
+  // 4. Best & worst day
+  if(c.monthEntries.length >= 3){
+    const sortedDays = [...c.monthEntries].sort((a,b)=>b.amount-a.amount);
+    const bestDay = sortedDays[0];
+    const worstDay = sortedDays[sortedDays.length-1];
+    lines.push(`🏆 أعلى يوم: <strong>${bestDay.day} ${c.info.monthLabel}</strong> (${bestDay.dayName}) بـ <strong>${fmtNum(bestDay.amount,0)} ريال</strong> · أضعف يوم: ${worstDay.day} (${worstDay.dayName}) بـ ${fmtNum(worstDay.amount,0)} ريال.`);
+  }
+
+  // 5. أداء أيام الأسبوع (أي أيام الأسبوع تبيع أكثر)
+  if(c.monthEntries.length >= 5){
+    const byDow = {};
+    c.monthEntries.forEach(e=>{
+      if(!byDow[e.dow]) byDow[e.dow] = {sum:0, n:0};
+      byDow[e.dow].sum += e.amount; byDow[e.dow].n++;
+    });
+    const dowAvgs = Object.entries(byDow).map(([dow,v])=>({dow:+dow, avg:v.sum/v.n})).sort((a,b)=>b.avg-a.avg);
+    if(dowAvgs.length >= 2){
+      const top = dowAvgs[0], low = dowAvgs[dowAvgs.length-1];
+      lines.push(`📆 أقوى أيام الأسبوع لديك: <strong>${AR_DAYS[top.dow]}</strong> (متوسط ${fmtNum(top.avg,0)} ريال)، وأضعفها ${AR_DAYS[low.dow]} (${fmtNum(low.avg,0)} ريال). ركّز حملاتك في الأيام القوية.`);
+    }
+  }
+
+  // 6. تنبيه أيام العمل الفائتة بلا تسجيل
+  if(c.missedWorkDays > 0){
+    lines.push(`⏳ يوجد <strong>${c.missedWorkDays} يوم عمل</strong> انقضى دون تسجيل مبيعات — سجّلها لتقدير أدق أو اعتبرها فرصاً فائتة.`);
+  }
+
+  document.getElementById('insightText').innerHTML = lines.join('<br><br>');
+}
+
+function renderTable(c){
+  const tbody = document.getElementById('daysTableBody');
+  if(c.monthEntries.length === 0){
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="icon">📋</div>لم يتم إضافة أي يوم بعد. ابدأ بإضافة مبيعات اليوم.</td></tr>';
+    return;
+  }
+  // Sort by date asc
+  const sorted = [...c.monthEntries].sort((a,b)=>a.day-b.day);
+  let cumulative = 0;
+  const rows = sorted.map(e=>{
+    cumulative += e.amount;
+    const cls = e.isHoliday ? 'holiday' : (e.isFriday ? 'friday' : '');
+    const badge = e.isHoliday
+      ? '<span class="day-badge badge-holiday">إجازة</span>'
+      : (e.isFriday ? '<span class="day-badge badge-friday">جمعة</span>' : '<span class="day-badge badge-work">عمل</span>');
+    return `<tr class="${cls}">
+      <td>${e.dayName}</td>
+      <td>${e.day} ${c.info.monthLabel}</td>
+      <td>${badge}</td>
+      <td>${fmtNum(e.qty)}</td>
+      <td><strong>${fmtNum(e.amount, 0)} ريال</strong></td>
+      <td style="color:var(--text-dim)">${fmtNum(cumulative, 0)}</td>
+      <td style="white-space:nowrap">
+        <button class="btn ghost sm" onclick="editEntry('${e.date}')" title="تعديل">✏️</button>
+        <button class="btn rose sm" onclick="deleteEntry('${e.date}')" title="حذف">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+  tbody.innerHTML = rows;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CHART
+// ═══════════════════════════════════════════════════════════════
+let chartInstance = null;
+function renderChart(c){
+  // إن تعذّر تحميل مكتبة الرسم (وضع بدون إنترنت) نعرض رسالة بدل تعطّل الصفحة
+  if(typeof Chart === 'undefined'){
+    const box = document.querySelector('.chart-box');
+    if(box) box.innerHTML = '<div class="empty-state"><div class="icon">📡</div>تعذّر تحميل مكتبة الرسم — تحقق من اتصال الإنترنت لعرض المخطط.</div>';
+    return;
+  }
+  const ctx = document.getElementById('dailyChart').getContext('2d');
+  if(chartInstance) chartInstance.destroy();
+
+  const labels = c.info.days.map(d=>d.day);
+  const actualData = c.info.days.map(d=>{
+    const e = STATE.entries[d.date];
+    return e ? e.amount : null;
+  });
+
+  // Build forecast line (only future days, starting from last actual)
+  const enteredDates = new Set(Object.keys(STATE.entries));
+  const forecastData = c.info.days.map(d=>{
+    if(enteredDates.has(d.date)) return null;
+    if(d.isPast) return null;            // لا نرسم توقعاً على أيام فائتة
+    if(!c.avgDailyAmount) return null;
+    if(d.isHoliday) return 0;
+    if(d.isFriday) return c.avgDailyAmount * c.fridayFactor;
+    return c.avgDailyAmount;
+  });
+
+  // Target daily line
+  const targetDaily = c.totalWorkDays > 0 ? STATE.target / c.totalWorkDays : 0;
+  const targetLine = c.info.days.map(d=>{
+    if(d.isHoliday) return 0;
+    if(d.isFriday) return targetDaily * c.fridayFactor;
+    return targetDaily;
+  });
+
+  chartInstance = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {
+          label:'الفعلي',
+          data:actualData,
+          borderColor:'#00c9a7',
+          backgroundColor:'rgba(0,201,167,0.15)',
+          borderWidth:3,
+          tension:0.35,
+          pointRadius:5,
+          pointBackgroundColor:'#00c9a7',
+          pointBorderColor:'#fff',
+          pointBorderWidth:2,
+          fill:true,
+          spanGaps:false
+        },
+        {
+          label:'التوقع',
+          data:forecastData,
+          borderColor:'#818cf8',
+          backgroundColor:'rgba(99,102,241,0.08)',
+          borderWidth:2,
+          borderDash:[6,4],
+          tension:0.3,
+          pointRadius:3,
+          pointBackgroundColor:'#818cf8',
+          fill:false,
+          spanGaps:false
+        },
+        {
+          label:'المطلوب للتارجت',
+          data:targetLine,
+          borderColor:'#f59e0b',
+          backgroundColor:'transparent',
+          borderWidth:2,
+          borderDash:[3,3],
+          tension:0,
+          pointRadius:0,
+          fill:false
+        }
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{ intersect:false, mode:'index' },
+      plugins:{
+        legend:{
+          labels:{ color:'#e8ecf4', font:{family:'Tajawal', size:13, weight:'700'}, padding:14, usePointStyle:true, pointStyle:'circle' }
+        },
+        tooltip:{
+          backgroundColor:'rgba(15,22,38,0.95)',
+          titleColor:'#fff',
+          bodyColor:'#e8ecf4',
+          borderColor:'rgba(255,255,255,0.1)',
+          borderWidth:1,
+          padding:12,
+          titleFont:{family:'Tajawal',weight:'800',size:13},
+          bodyFont:{family:'Tajawal',weight:'600',size:12},
+          callbacks:{
+            title:(items)=>`اليوم ${items[0].label} ${c.info.monthLabel}`,
+            label:(item)=>{
+              const v = item.raw;
+              if(v===null) return null;
+              return `${item.dataset.label}: ${fmtNum(v, 0)} ريال`;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{
+          ticks:{ color:'#8b97b8', font:{family:'Tajawal', weight:'600'} },
+          grid:{ color:'rgba(255,255,255,0.04)' }
+        },
+        y:{
+          ticks:{ color:'#8b97b8', font:{family:'Tajawal', weight:'600'}, callback:(v)=>fmtNum(v,0) },
+          grid:{ color:'rgba(255,255,255,0.04)' },
+          beginAtZero:true
+        }
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ENTRY MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+function addEntry(){
+  const date = document.getElementById('entryDate').value;
+  const qty = parseFloat(document.getElementById('entryQty').value) || 0;
+  let amount = parseFloat(document.getElementById('entryAmount').value) || 0;
+
+  if(!date){ alert('من فضلك اختر التاريخ'); return; }
+  if(qty <= 0 && amount <= 0){ alert('من فضلك أدخل الكمية أو المبلغ'); return; }
+
+  // إن أُدخلت الكمية دون المبلغ نحسب المبلغ تلقائياً من متوسط سعر الحبة
+  if(amount <= 0 && qty > 0 && STATE.avgPrice > 0){
+    amount = qty * STATE.avgPrice;
+  }
+
+  // تنبيه إن كان اليوم مسجّلاً مسبقاً (سيُستبدل)
+  if(STATE.entries[date] && !confirm('هذا اليوم مسجّل مسبقاً — سيتم استبدال قيمته. متابعة؟')) return;
+
+  // Ensure date is in current month
+  if(!date.startsWith(STATE.month)){
+    if(!confirm('التاريخ خارج الشهر المختار. تريد المتابعة؟')) return;
+  }
+
+  STATE.entries[date] = { qty, amount };
+  saveState();
+  render();
+
+  // Clear inputs
+  document.getElementById('entryQty').value = '';
+  document.getElementById('entryAmount').value = '';
+
+  // Suggest next date
+  const next = new Date(date);
+  next.setDate(next.getDate()+1);
+  document.getElementById('entryDate').value = next.toISOString().slice(0,10);
+}
+
+function deleteEntry(date){
+  if(!confirm('حذف هذا اليوم؟')) return;
+  delete STATE.entries[date];
+  saveState();
+  render();
+}
+
+// تحميل يوم مسجَّل إلى النموذج لتعديله
+function editEntry(date){
+  const e = STATE.entries[date];
+  if(!e) return;
+  document.getElementById('entryDate').value = date;
+  document.getElementById('entryQty').value = e.qty || '';
+  document.getElementById('entryAmount').value = e.amount || '';
+  document.getElementById('entryDate').scrollIntoView({behavior:'smooth', block:'center'});
+  document.getElementById('entryQty').focus();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SETUP HANDLERS
+// ═══════════════════════════════════════════════════════════════
+function attachSetupHandlers(){
+  document.getElementById('monthInput').addEventListener('change', (e)=>{
+    STATE.month = e.target.value;
+    saveState();
+    render();
+    // Set today's date in entry if in current month
+    const today = getToday();
+    if(today.startsWith(STATE.month)){
+      document.getElementById('entryDate').value = today;
+    } else {
+      document.getElementById('entryDate').value = STATE.month + '-01';
+    }
+  });
+  document.getElementById('targetInput').addEventListener('input', (e)=>{
+    STATE.target = parseFloat(e.target.value) || 0;
+    saveState();
+    render();
+  });
+  document.getElementById('avgPriceInput').addEventListener('input', (e)=>{
+    STATE.avgPrice = parseFloat(e.target.value) || 0;
+    saveState();
+    render();
+  });
+  document.getElementById('holidaysInput').addEventListener('change', (e)=>{
+    STATE.holidays = e.target.value.split(',').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n) && n>=1 && n<=31);
+    saveState();
+    render();
+  });
+  document.getElementById('fridayMode').addEventListener('change', (e)=>{
+    STATE.fridayMode = e.target.value;
+    saveState();
+    render();
+  });
+  document.getElementById('prevMonthSales').addEventListener('input', (e)=>{
+    STATE.prevMonthSales = parseFloat(e.target.value) || 0;
+    saveState();
+    render();
+  });
+}
+
+function syncSetupUI(){
+  document.getElementById('monthInput').value = STATE.month;
+  document.getElementById('targetInput').value = STATE.target;
+  document.getElementById('avgPriceInput').value = STATE.avgPrice;
+  document.getElementById('holidaysInput').value = STATE.holidays.join(',');
+  document.getElementById('fridayMode').value = STATE.fridayMode;
+  document.getElementById('prevMonthSales').value = STATE.prevMonthSales;
+}
+
+function applyEidPreset(){
+  // Last 5 days of current month
+  const info = getMonthInfo(STATE.month);
+  const last5 = [];
+  for(let i=4; i>=0; i--){
+    last5.push(info.daysInMonth - i);
+  }
+  STATE.holidays = last5;
+  document.getElementById('holidaysInput').value = last5.join(',');
+  saveState();
+  render();
+}
+
+function clearHolidays(){
+  STATE.holidays = [];
+  document.getElementById('holidaysInput').value = '';
+  saveState();
+  render();
+}
+
+// تصفير مبيعات الشهر الحالي فقط (مع الاحتفاظ بالإعدادات)
+function resetAll(){
+  if(!confirm('سيتم حذف كل الأيام المسجّلة لهذا الشهر. هل أنت متأكد؟')) return;
+  STATE.entries = {};
+  saveState();
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════════════
+function exportData(){
+  const data = JSON.stringify(STATE, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `sales-${STATE.month}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      const data = JSON.parse(e.target.result);
+      if(confirm('استيراد سيستبدل البيانات الحالية. تريد المتابعة؟')){
+        Object.assign(STATE, data);
+        saveState();
+        syncSetupUI();
+        render();
+        alert('تم الاستيراد بنجاح');
+      }
+    } catch(err){
+      alert('ملف غير صالح: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PRE-LOAD JUNE 2026 DATA (current context)
+// ═══════════════════════════════════════════════════════════════
+function preloadIfEmpty(){
+  // بيانات تجريبية تُزرع مرة واحدة فقط عند أول استخدام (لا تعود بعد التصفير)
+  if(localStorage.getItem('sales_seeded')) return;
+  if(Object.keys(STATE.entries).length === 0){
+    STATE.entries = {
+      '2026-06-01': { qty: 32, amount: 1950 },
+      '2026-06-02': { qty: 32, amount: 1950 },
+      '2026-06-03': { qty: 33, amount: 1955 }
+    };
+    saveState();
+  }
+  localStorage.setItem('sales_seeded', '1');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+function init(){
+  loadState();
+  preloadIfEmpty();
+  syncSetupUI();
+  attachSetupHandlers();
+
+  // Default entry date = today (if in month) else first day of month
+  const today = getToday();
+  document.getElementById('entryDate').value = today.startsWith(STATE.month) ? today : (STATE.month + '-01');
+
+  // حفظ سريع بالضغط على Enter داخل حقول الإدخال
+  ['entryDate','entryQty','entryAmount'].forEach(id=>{
+    document.getElementById(id).addEventListener('keydown', (ev)=>{
+      if(ev.key === 'Enter'){ ev.preventDefault(); addEntry(); }
+    });
+  });
+
+  render();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
