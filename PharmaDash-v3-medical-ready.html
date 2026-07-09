@@ -3368,7 +3368,7 @@ var PharmaCore = (() => {
     return normalizeEntityKey(value).replace(/[^A-Z0-9\u0600-\u06FF.]+/g, " ").replace(/\s+/g, " ").trim();
   }
   function numericTokens(value) {
-    return [...normalizeProductText(value).matchAll(/\b\d+(?:\.\d+)?\b/g)].map((match) => String(Number(match[0]))).filter((token, index, all) => all.indexOf(token) === index);
+    return [...normalizeProductText(value).matchAll(/\d+(?:\.\d+)?/g)].map((match) => String(Number(match[0]))).filter((token, index, all) => all.indexOf(token) === index);
   }
   function matchesCatalogProduct(drugName, product) {
     const drug = normalizeProductText(drugName);

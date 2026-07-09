@@ -136,7 +136,7 @@ export function normalizeProductText(value) {
 }
 
 function numericTokens(value) {
-  return [...normalizeProductText(value).matchAll(/\b\d+(?:\.\d+)?\b/g)]
+  return [...normalizeProductText(value).matchAll(/\d+(?:\.\d+)?/g)]
     .map((match) => String(Number(match[0])))
     .filter((token, index, all) => all.indexOf(token) === index);
 }
