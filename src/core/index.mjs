@@ -3,13 +3,17 @@ export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 export const MAX_UPLOAD_ROWS = 500_000;
 
 const ARABIC_DIACRITICS = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g;
-const CONTROL_CHARS = new RegExp('[\\u0000-\\u001F\\u007F-\\u009F]', 'g');
+function stripControlCharacters(value) {
+  return [...value].map((character) => {
+    const code = character.codePointAt(0);
+    return code <= 31 || (code >= 127 && code <= 159) ? ' ' : character;
+  }).join('');
+}
 
 export function normalizeWhitespace(value) {
-  return String(value ?? '')
-    .normalize('NFKC')
-    .replace(/\u00A0/g, ' ')
-    .replace(CONTROL_CHARS, ' ')
+  return stripControlCharacters(
+    String(value ?? '').normalize('NFKC').replace(/\u00A0/g, ' '),
+  )
     .replace(/\s+/g, ' ')
     .trim();
 }
