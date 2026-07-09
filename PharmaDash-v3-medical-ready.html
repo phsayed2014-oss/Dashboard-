@@ -2883,8 +2883,6 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
     </div>
     <div class="sb-nav-item" data-tab="dailytrack" onclick="sidebarNav(this,'dailytrack')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><polyline points="8 14 11 17 16 12"/></svg></span>      <span>متابعة يومية</span>
     </div>
-    <div class="sb-nav-item" data-tab="plmanual" onclick="sidebarNav(this,'plmanual')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="m7 15 4-4 3 2 5-6"/><circle cx="7" cy="15" r="1"/><circle cx="11" cy="11" r="1"/><circle cx="14" cy="13" r="1"/><circle cx="19" cy="7" r="1"/></svg></span>      <span>مبيعات Private Label</span>
-    </div>
 
     <!-- ═══ المستهدفات ═══ -->
     <div class="sb-sec-label">المستهدفات</div>
@@ -3165,7 +3163,6 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 <div class="panel" id="panel-drugintel"><div id="drugintel-content"></div></div>
 
 <div class="panel" id="panel-dailytrack"><div id="dailytrack-content"></div></div>
-<div class="panel" id="panel-plmanual"><div id="plmanual-content"></div></div>
 <div class="panel" id="panel-trends"><div id="trends-content"></div></div>
 <div class="panel" id="panel-agedmeds"><div id="agedmeds-content"></div></div>
 
@@ -3784,7 +3781,7 @@ function renderAgedMeds() {
 function renderActive(){
   const at=window._activePanel||(document.querySelector('.tab.active')?.dataset.panel)||'overview';
   /* ── SECTION ROUTING: panels that don't need branch picker ── */
-  const noBranch=['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','drugintel','targettrack','nearexpiry','plsales','pureherb','dailytrack','plmanual','agedmeds'];
+  const noBranch=['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','drugintel','targettrack','nearexpiry','plsales','pureherb','dailytrack','agedmeds'];
   document.getElementById('branchPickerCard').style.display=noBranch.includes(at)?'none':'block';
 
   /* ── NO-BRANCH panels ── */
@@ -3807,7 +3804,6 @@ function renderActive(){
   if(at==='plsales'){renderPLSales();return;}
     if(at==='pureherb'){renderPureHerb();return;}
   if(at==='dailytrack'){renderDailyTrack();return;}
-  if(at==='plmanual'){renderPLManualSales();return;}
   if(at==='trends'){renderTrends();return;}
   if(at==='agedmeds'){renderAgedMeds();return;}
   /* ── SECTION 16: AI Smart Recommendations ── */
@@ -9124,7 +9120,7 @@ function sidebarNav(el, panel) {
   const panelEl = document.getElementById('panel-'+panel);
   if (panelEl) panelEl.classList.add('active');
   document.getElementById('branchPickerCard').style.display =
-    (['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','drugintel','targettrack','nearexpiry','plsales','pureherb','dailytrack','plmanual','agedmeds'].includes(panel))?'none':'block';
+    (['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','drugintel','targettrack','nearexpiry','plsales','pureherb','dailytrack','agedmeds'].includes(panel))?'none':'block';
   renderActive();
   try{ setTimeout(function(){ animateNums(document.getElementById('panel-'+panel)); }, 40); }catch(e){}
   // العودة لأعلى الصفحة عند تبديل القسم
@@ -9832,341 +9828,6 @@ function dtRenderPLCard(ds){
 
   html+='</div>';
   return html;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   PRIVATE LABEL — مبيعات يدوية يومية
-   ─ سجل واحد لكل: تاريخ × صيدلية × منتج
-   ─ الحبات والكتابات تحفظ محلياً وتغذي رسم آخر 90 يوماً
-══════════════════════════════════════════════════════════════ */
-const PL_MANUAL_SALES_KEY='pharmdash_pl_manual_sales_v1';
-const PL_MANUAL_PHARMACIES=['صيدلية 1','صيدلية 7','صيدلية 18'];
-var PL_MANUAL_UI={endDate:null,pharmacy:'all',productKey:'all',editingId:null};
-
-function plManualDateString(date){
-  return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
-}
-function plManualDateFromString(value){
-  var parts=String(value||'').split('-').map(Number);
-  return parts.length===3 ? new Date(parts[0],parts[1]-1,parts[2]) : null;
-}
-function plManualToday(){ return plManualDateString(new Date()); }
-function plManualDateLabel(value,shortLabel){
-  var d=plManualDateFromString(value);
-  if(!d) return '—';
-  var months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-  return shortLabel ? d.getDate()+' '+months[d.getMonth()].slice(0,3) : d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear();
-}
-function plManualNumber(value){
-  var n=Number(value);
-  return isFinite(n)&&n>0 ? Math.round(n) : 0;
-}
-function plManualProduct(key){
-  return PRIVATE_LABEL.find(function(product){ return product.key===key; })||null;
-}
-function plManualLoadEntries(){
-  try{
-    var raw=localStorage.getItem(PL_MANUAL_SALES_KEY);
-    var entries=raw?JSON.parse(raw):[];
-    if(!Array.isArray(entries)) return [];
-    return entries.map(function(entry,index){
-      if(!entry||!/^\d{4}-\d{2}-\d{2}$/.test(String(entry.date||''))) return null;
-      if(!plManualProduct(entry.productKey)||PL_MANUAL_PHARMACIES.indexOf(entry.pharmacy)===-1) return null;
-      var safeId=String(entry.id||('legacy-'+index)).replace(/[^a-zA-Z0-9_-]/g,'');
-      return {
-        id:safeId||('legacy-'+index),
-        date:entry.date,
-        pharmacy:entry.pharmacy,
-        productKey:entry.productKey,
-        units:plManualNumber(entry.units),
-        prescriptions:plManualNumber(entry.prescriptions),
-        updatedAt:entry.updatedAt||''
-      };
-    }).filter(Boolean);
-  }catch(error){
-    console.warn('تعذر قراءة سجل المبيعات اليدوي',error);
-    return [];
-  }
-}
-function plManualSaveEntries(entries){
-  try{ localStorage.setItem(PL_MANUAL_SALES_KEY,JSON.stringify(entries)); }
-  catch(error){ toast('تعذر حفظ سجل المبيعات على هذا الجهاز','error'); }
-}
-function plManualRange(){
-  var end=plManualDateFromString(PL_MANUAL_UI.endDate||plManualToday())||new Date();
-  var start=new Date(end);
-  start.setDate(start.getDate()-89);
-  return {start:start,end:end,startDate:plManualDateString(start),endDate:plManualDateString(end)};
-}
-function plManualMatchesFilters(entry){
-  return (PL_MANUAL_UI.pharmacy==='all'||entry.pharmacy===PL_MANUAL_UI.pharmacy)
-    && (PL_MANUAL_UI.productKey==='all'||entry.productKey===PL_MANUAL_UI.productKey);
-}
-function plManualEntriesInRange(){
-  var range=plManualRange();
-  return plManualLoadEntries().filter(function(entry){
-    return entry.date>=range.startDate&&entry.date<=range.endDate&&plManualMatchesFilters(entry);
-  });
-}
-function plManualOptions(selectedKey){
-  return PRIVATE_LABEL.map(function(product){
-    return '<option value="'+product.key+'" '+(product.key===selectedKey?'selected':'')+'>'+escapeHtml(product.name)+' — '+escapeHtml(product.form)+'</option>';
-  }).join('');
-}
-function plManualPharmacyOptions(selectedPharmacy,includeAll){
-  var options=includeAll?'<option value="all">كل الصيدليات</option>':'';
-  return options+PL_MANUAL_PHARMACIES.map(function(pharmacy){
-    return '<option value="'+pharmacy+'" '+(pharmacy===selectedPharmacy?'selected':'')+'>'+pharmacy+'</option>';
-  }).join('');
-}
-function plManualSetFilter(type,value){
-  PL_MANUAL_UI[type]=value;
-  renderPLManualSales();
-}
-function plManualSetEndDate(value){
-  if(/^\d{4}-\d{2}-\d{2}$/.test(String(value||''))) PL_MANUAL_UI.endDate=value;
-  renderPLManualSales();
-}
-function plManualSubmit(event){
-  event.preventDefault();
-  var date=document.getElementById('plManualDate').value;
-  var pharmacy=document.getElementById('plManualPharmacy').value;
-  var productKey=document.getElementById('plManualProduct').value;
-  var units=plManualNumber(document.getElementById('plManualUnits').value);
-  var prescriptions=plManualNumber(document.getElementById('plManualPrescriptions').value);
-  if(!date||!plManualProduct(productKey)||PL_MANUAL_PHARMACIES.indexOf(pharmacy)===-1){
-    toast('أكمل التاريخ والصيدلية والمنتج أولاً','warn');
-    return;
-  }
-  if(units===0&&prescriptions===0){
-    toast('أدخل الحبات المباعة أو كتابات الأطباء','warn');
-    return;
-  }
-
-  var entries=plManualLoadEntries();
-  var edited=PL_MANUAL_UI.editingId&&entries.find(function(entry){ return entry.id===PL_MANUAL_UI.editingId; });
-  var duplicate=entries.find(function(entry){
-    return entry.id!==PL_MANUAL_UI.editingId&&entry.date===date&&entry.pharmacy===pharmacy&&entry.productKey===productKey;
-  });
-  var target=edited||duplicate;
-  var action=target?'تم تحديث السجل':'تمت إضافة السجل';
-  if(target){
-    target.date=date;
-    target.pharmacy=pharmacy;
-    target.productKey=productKey;
-    target.units=units;
-    target.prescriptions=prescriptions;
-    target.updatedAt=new Date().toISOString();
-  }else{
-    entries.push({
-      id:'pl-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),
-      date:date,
-      pharmacy:pharmacy,
-      productKey:productKey,
-      units:units,
-      prescriptions:prescriptions,
-      updatedAt:new Date().toISOString()
-    });
-  }
-  plManualSaveEntries(entries);
-  PL_MANUAL_UI.editingId=null;
-  toast(action+' ✓','success');
-  renderPLManualSales();
-}
-function plManualEdit(id){
-  var exists=plManualLoadEntries().some(function(entry){ return entry.id===id; });
-  if(!exists) return;
-  PL_MANUAL_UI.editingId=id;
-  renderPLManualSales();
-  setTimeout(function(){
-    var input=document.getElementById('plManualUnits');
-    if(input) input.focus();
-  },0);
-}
-function plManualCancelEdit(){
-  PL_MANUAL_UI.editingId=null;
-  renderPLManualSales();
-}
-function plManualDelete(id){
-  if(!confirm('حذف هذا السجل من المبيعات والكتابات؟')) return;
-  plManualSaveEntries(plManualLoadEntries().filter(function(entry){ return entry.id!==id; }));
-  if(PL_MANUAL_UI.editingId===id) PL_MANUAL_UI.editingId=null;
-  toast('تم حذف السجل','success');
-  renderPLManualSales();
-}
-function plManualRenderChart(range,entries){
-  var canvas=document.getElementById('plManualTrendChart');
-  if(!canvas||typeof Chart==='undefined') return;
-  if(window._plManualTrendChart) window._plManualTrendChart.destroy();
-
-  var totals={};
-  entries.forEach(function(entry){
-    if(!totals[entry.date]) totals[entry.date]={units:0,prescriptions:0};
-    totals[entry.date].units+=entry.units;
-    totals[entry.date].prescriptions+=entry.prescriptions;
-  });
-
-  var labels=[],units=[],prescriptions=[],cursor=new Date(range.start);
-  while(cursor<=range.end){
-    var date=plManualDateString(cursor);
-    var total=totals[date]||{units:0,prescriptions:0};
-    labels.push(plManualDateLabel(date,true));
-    units.push(total.units);
-    prescriptions.push(total.prescriptions);
-    cursor.setDate(cursor.getDate()+1);
-  }
-  var styles=getComputedStyle(document.documentElement);
-  var textColor=styles.getPropertyValue('--text-dim').trim()||'#9aa7c4';
-  var gridColor=styles.getPropertyValue('--border').trim()||'rgba(255,255,255,.09)';
-  window._plManualTrendChart=new Chart(canvas.getContext('2d'),{
-    type:'line',
-    data:{
-      labels:labels,
-      datasets:[
-        {
-          label:'الحبات المباعة',
-          data:units,
-          borderColor:'#0d9488',
-          backgroundColor:'rgba(13,148,136,.12)',
-          borderWidth:3,
-          tension:.32,
-          pointRadius:2,
-          pointHoverRadius:5,
-          pointBackgroundColor:'#14b8a6',
-          fill:true
-        },
-        {
-          label:'كتابات الأطباء',
-          data:prescriptions,
-          borderColor:'#2563eb',
-          backgroundColor:'transparent',
-          borderWidth:3,
-          tension:.32,
-          pointRadius:2,
-          pointHoverRadius:5,
-          pointBackgroundColor:'#60a5fa',
-          borderDash:[7,4],
-          fill:false
-        }
-      ]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      interaction:{intersect:false,mode:'index'},
-      plugins:{
-        legend:{labels:{color:textColor,font:{family:'IBM Plex Sans Arabic',size:12,weight:'700'},usePointStyle:true,padding:16}},
-        tooltip:{
-          backgroundColor:'rgba(15,23,42,.96)',
-          titleColor:'#fff',
-          bodyColor:'#e2e8f0',
-          borderColor:'rgba(255,255,255,.12)',
-          borderWidth:1,
-          padding:12,
-          callbacks:{
-            title:function(items){
-              var index=items[0]&&items[0].dataIndex;
-              var date=new Date(range.start);
-              date.setDate(date.getDate()+index);
-              return plManualDateLabel(plManualDateString(date));
-            },
-            label:function(item){ return item.dataset.label+': '+fmt(item.raw); }
-          }
-        }
-      },
-      scales:{
-        x:{
-          ticks:{color:textColor,font:{family:'IBM Plex Sans Arabic',size:10},maxTicksLimit:12},
-          grid:{display:false}
-        },
-        y:{
-          beginAtZero:true,
-          ticks:{color:textColor,font:{family:'Inter',size:11},callback:function(value){ return fmt(value); }},
-          grid:{color:gridColor}
-        }
-      }
-    }
-  });
-}
-function renderPLManualSales(){
-  var container=document.getElementById('plmanual-content');
-  if(!container) return;
-  if(!PL_MANUAL_UI.endDate) PL_MANUAL_UI.endDate=plManualToday();
-  var allEntries=plManualLoadEntries();
-  var editing=PL_MANUAL_UI.editingId?allEntries.find(function(entry){ return entry.id===PL_MANUAL_UI.editingId; }):null;
-  if(PL_MANUAL_UI.editingId&&!editing) PL_MANUAL_UI.editingId=null;
-
-  var range=plManualRange();
-  var entries=plManualEntriesInRange();
-  var totals=entries.reduce(function(result,entry){
-    result.units+=entry.units;
-    result.prescriptions+=entry.prescriptions;
-    result.days[entry.date]=true;
-    result.pharmacies[entry.pharmacy]=true;
-    result.products[entry.productKey]=true;
-    return result;
-  },{units:0,prescriptions:0,days:{},pharmacies:{},products:{}});
-  var recordedDays=Object.keys(totals.days).length;
-  var sorted=[].concat(entries).sort(function(a,b){
-    return b.date.localeCompare(a.date)||String(b.updatedAt).localeCompare(String(a.updatedAt));
-  });
-  var activeProduct=PL_MANUAL_UI.productKey==='all'?'كل المنتجات':(plManualProduct(PL_MANUAL_UI.productKey)||{}).name;
-  var activePharmacy=PL_MANUAL_UI.pharmacy==='all'?'كل الصيدليات':PL_MANUAL_UI.pharmacy;
-  var selectedDate=editing?editing.date:plManualToday();
-  var selectedPharmacy=editing?editing.pharmacy:PL_MANUAL_PHARMACIES[0];
-  var selectedProduct=editing?editing.productKey:PRIVATE_LABEL[0].key;
-
-  container.innerHTML=
-    '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px;">'
-      +'<div><div style="font-size:20px;font-weight:900;">📈 متابعة مبيعات Private Label</div>'
-      +'<div style="font-size:12.5px;color:var(--text-dim);margin-top:4px;">إدخال يومي لكل منتج ولكل صيدلية — الحبات المباعة وكتابات الأطباء</div></div>'
-      +'<div style="padding:7px 12px;border-radius:999px;background:rgba(13,148,136,.1);border:1px solid rgba(13,148,136,.24);font-size:11px;font-weight:800;color:var(--teal-l);">6 منتجات · 3 صيدليات</div>'
-    +'</div>'
-    +'<div class="card" style="margin-bottom:16px;"><div style="padding:18px;">'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;">'
-        +'<div><div style="font-size:14px;font-weight:900;">'+(editing?'✏️ تعديل سجل يومي':'➕ إضافة سجل مبيعات يومي')+'</div>'
-        +'<div style="font-size:11px;color:var(--text-muted);margin-top:3px;">الحفظ لنفس التاريخ والصيدلية والمنتج يحدّث السجل القائم.</div></div>'
-        +(editing?'<button type="button" onclick="plManualCancelEdit()" style="padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-glass2);color:var(--text-dim);font:700 12px inherit;cursor:pointer;">إلغاء التعديل</button>':'')
-      +'</div>'
-      +'<form onsubmit="plManualSubmit(event)" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end;">'
-        +'<label style="display:grid;gap:6px;font-size:11px;font-weight:700;color:var(--text-dim);">التاريخ<input required type="date" id="plManualDate" value="'+selectedDate+'" style="padding:10px 11px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:8px;color:var(--text);font:600 13px inherit;color-scheme:dark;"></label>'
-        +'<label style="display:grid;gap:6px;font-size:11px;font-weight:700;color:var(--text-dim);">الصيدلية<select id="plManualPharmacy" style="padding:10px 11px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:8px;color:var(--text);font:600 13px inherit;">'+plManualPharmacyOptions(selectedPharmacy,false)+'</select></label>'
-        +'<label style="display:grid;gap:6px;font-size:11px;font-weight:700;color:var(--text-dim);">المنتج<select id="plManualProduct" style="padding:10px 11px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:8px;color:var(--text);font:600 13px inherit;">'+plManualOptions(selectedProduct)+'</select></label>'
-        +'<label style="display:grid;gap:6px;font-size:11px;font-weight:700;color:var(--text-dim);">الحبات المباعة<input min="0" step="1" inputmode="numeric" type="number" id="plManualUnits" value="'+(editing?editing.units:'')+'" placeholder="مثال: 25" style="padding:10px 11px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:8px;color:var(--text);font:600 13px inherit;"></label>'
-        +'<label style="display:grid;gap:6px;font-size:11px;font-weight:700;color:var(--text-dim);">كتابات الأطباء<input min="0" step="1" inputmode="numeric" type="number" id="plManualPrescriptions" value="'+(editing?editing.prescriptions:'')+'" placeholder="مثال: 12" style="padding:10px 11px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:8px;color:var(--text);font:600 13px inherit;"></label>'
-        +'<button type="submit" style="min-height:41px;padding:10px 16px;background:var(--grad-p);border:0;border-radius:8px;color:#fff;font:800 13px inherit;cursor:pointer;">'+(editing?'💾 حفظ التعديل':'💾 حفظ السجل')+'</button>'
-      +'</form>'
-    +'</div></div>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px;">'
-      +'<div class="detail-card"><div class="l">إجمالي الحبات</div><div class="v" style="color:var(--teal-l);">'+fmt(totals.units)+'</div><div style="font-size:10px;color:var(--text-muted);margin-top:3px;">ضمن الفلاتر المحددة</div></div>'
-      +'<div class="detail-card"><div class="l">إجمالي الكتابات</div><div class="v" style="color:var(--violet-l);">'+fmt(totals.prescriptions)+'</div><div style="font-size:10px;color:var(--text-muted);margin-top:3px;">كتابات الأطباء</div></div>'
-      +'<div class="detail-card"><div class="l">أيام مسجلة</div><div class="v">'+fmt(recordedDays)+'</div><div style="font-size:10px;color:var(--text-muted);margin-top:3px;">متوسط '+fmt(recordedDays?totals.units/recordedDays:0)+' حبة/يوم</div></div>'
-      +'<div class="detail-card"><div class="l">تغطية</div><div class="v">'+fmt(Object.keys(totals.pharmacies).length)+' / 3</div><div style="font-size:10px;color:var(--text-muted);margin-top:3px;">صيدليات · '+fmt(Object.keys(totals.products).length)+' منتجات</div></div>'
-    +'</div>'
-    +'<div class="card" style="margin-bottom:16px;"><div style="padding:18px;">'
-      +'<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;">'
-        +'<div><div style="font-size:14px;font-weight:900;">مسار المبيعات والكتابات — 3 أشهر</div>'
-        +'<div style="font-size:11px;color:var(--text-muted);margin-top:3px;">من '+plManualDateLabel(range.startDate)+' إلى '+plManualDateLabel(range.endDate)+'</div></div>'
-        +'<div style="display:flex;gap:8px;flex-wrap:wrap;">'
-          +'<label style="display:grid;gap:4px;font-size:10px;font-weight:700;color:var(--text-muted);">نهاية المسار<input type="date" value="'+range.endDate+'" onchange="plManualSetEndDate(this.value)" style="padding:7px 9px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:7px;color:var(--text);font:600 12px inherit;color-scheme:dark;"></label>'
-          +'<label style="display:grid;gap:4px;font-size:10px;font-weight:700;color:var(--text-muted);">الصيدلية<select onchange="plManualSetFilter(\'pharmacy\',this.value)" style="padding:7px 9px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:7px;color:var(--text);font:600 12px inherit;">'+plManualPharmacyOptions(PL_MANUAL_UI.pharmacy,true)+'</select></label>'
-          +'<label style="display:grid;gap:4px;font-size:10px;font-weight:700;color:var(--text-muted);">المنتج<select onchange="plManualSetFilter(\'productKey\',this.value)" style="padding:7px 9px;background:var(--bg-glass2);border:1px solid var(--border);border-radius:7px;color:var(--text);font:600 12px inherit;"><option value="all">كل المنتجات</option>'+plManualOptions(PL_MANUAL_UI.productKey)+'</select></label>'
-        +'</div>'
-      +'</div>'
-      +'<div style="font-size:11px;color:var(--text-dim);padding:8px 10px;background:var(--bg-glass);border-radius:7px;margin-bottom:12px;">الفلاتر الحالية: <b style="color:var(--text);">'+escapeHtml(activePharmacy)+'</b> · <b style="color:var(--text);">'+escapeHtml(activeProduct)+'</b></div>'
-      +'<div style="height:320px;position:relative;"><canvas id="plManualTrendChart"></canvas></div>'
-    +'</div></div>'
-    +'<div class="card"><div style="padding:18px;">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><div><div style="font-size:14px;font-weight:900;">السجلات ضمن فترة العرض</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">'+fmt(sorted.length)+' سجل — يمكن تعديل أي سجل أو حذفه.</div></div></div>'
-      +(sorted.length?'<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:650px;"><thead><tr style="border-bottom:1px solid var(--border);"><th style="text-align:right;padding:9px;color:var(--text-muted);">التاريخ</th><th style="text-align:right;padding:9px;color:var(--text-muted);">الصيدلية</th><th style="text-align:right;padding:9px;color:var(--text-muted);">المنتج</th><th style="text-align:center;padding:9px;color:var(--teal-l);">الحبات</th><th style="text-align:center;padding:9px;color:var(--violet-l);">الكتابات</th><th style="padding:9px;"></th></tr></thead><tbody>'
-        +sorted.map(function(entry){
-          var product=plManualProduct(entry.productKey);
-          return '<tr style="border-bottom:1px solid var(--border);"><td style="padding:10px 9px;font-weight:700;">'+plManualDateLabel(entry.date)+'</td><td style="padding:10px 9px;">'+entry.pharmacy+'</td><td style="padding:10px 9px;"><b>'+escapeHtml(product.name)+'</b><span style="display:block;font-size:10px;color:var(--text-muted);margin-top:2px;">'+escapeHtml(product.form)+'</span></td><td style="padding:10px 9px;text-align:center;font-weight:800;color:var(--teal-l);">'+fmt(entry.units)+'</td><td style="padding:10px 9px;text-align:center;font-weight:800;color:var(--violet-l);">'+fmt(entry.prescriptions)+'</td><td style="padding:10px 9px;white-space:nowrap;"><button type="button" onclick="plManualEdit(\''+entry.id+'\')" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-glass2);color:var(--text-dim);font:700 11px inherit;cursor:pointer;">تعديل</button> <button type="button" onclick="plManualDelete(\''+entry.id+'\')" style="padding:5px 8px;border:1px solid rgba(220,38,38,.25);border-radius:6px;background:rgba(220,38,38,.08);color:var(--rose-l);font:700 11px inherit;cursor:pointer;">حذف</button></td></tr>';
-        }).join('')
-        +'</tbody></table></div>'
-        :'<div style="text-align:center;padding:30px 12px;color:var(--text-muted);font-size:13px;"><div style="font-size:28px;margin-bottom:7px;">📝</div>لا توجد سجلات ضمن هذه الفترة أو الفلاتر. أضف أول سجل من النموذج أعلاه.</div>')
-    +'</div></div>';
-  plManualRenderChart(range,entries);
 }
 
 /* ── INIT: افتح على اليوم الحالي ── */
