@@ -9997,7 +9997,7 @@ function plManualDelete(id){
 function plManualRenderChart(range,entries){
   var canvas=document.getElementById('plManualTrendChart');
   if(!canvas||typeof Chart==='undefined') return;
-  if(window.plManualTrendChart) window.plManualTrendChart.destroy();
+  if(window._plManualTrendChart) window._plManualTrendChart.destroy();
 
   var totals={};
   entries.forEach(function(entry){
@@ -10018,7 +10018,7 @@ function plManualRenderChart(range,entries){
   var styles=getComputedStyle(document.documentElement);
   var textColor=styles.getPropertyValue('--text-dim').trim()||'#9aa7c4';
   var gridColor=styles.getPropertyValue('--border').trim()||'rgba(255,255,255,.09)';
-  window.plManualTrendChart=new Chart(canvas.getContext('2d'),{
+  window._plManualTrendChart=new Chart(canvas.getContext('2d'),{
     type:'line',
     data:{
       labels:labels,
