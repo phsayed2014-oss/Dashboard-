@@ -262,6 +262,22 @@ body::before{
 /* Quick actions */
 .quick-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 
+/* Product bar */
+.product-bar{
+  display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:24px;
+  background:linear-gradient(135deg,rgba(168,85,247,0.10),rgba(99,102,241,0.06));
+  border:1px solid var(--border);border-radius:16px;padding:14px 20px;
+}
+.product-bar .pb-label{font-size:14px;font-weight:800}
+.product-bar select{
+  background:var(--bg-base);border:1px solid var(--border-h);color:var(--text);
+  padding:9px 14px;border-radius:10px;font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;
+  min-width:180px;outline:none;cursor:pointer;
+}
+.product-bar select:focus{border-color:var(--purple)}
+.product-bar .pb-hint{font-size:12px;color:var(--text-muted);font-weight:600;margin-inline-start:auto}
+@media(max-width:768px){ .product-bar .pb-hint{display:none} }
+
 /* Pharmacy comparison */
 .pharma-compare{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px}
 .pharma-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:8px}
@@ -338,6 +354,16 @@ body::before{
       <div class="dot"></div>
       <span id="currentMonthLabel">يونيو 2026</span>
     </div>
+  </div>
+
+  <!-- Product bar -->
+  <div class="product-bar">
+    <span class="pb-label">📦 المنتج:</span>
+    <select id="productSelect" onchange="switchProduct(this.value)"></select>
+    <button class="btn ghost sm" onclick="addProduct()">➕ منتج جديد</button>
+    <button class="btn ghost sm" onclick="renameProduct()">✏️ إعادة تسمية</button>
+    <button class="btn ghost sm" onclick="deleteProduct()">🗑️ حذف</button>
+    <span class="pb-hint">كل منتج له تارجت ومبيعات وصيدليات مستقلة</span>
   </div>
 
   <!-- Setup Panel -->
@@ -609,13 +635,16 @@ body::before{
 // STATE
 // ═══════════════════════════════════════════════════════════════
 const STATE = {
+  // ── إعدادات مشتركة بين كل المنتجات ──
   month: '2026-06',
-  target: 60000,
-  avgPrice: 58,
   holidays: [],
   fridayMode: 'reduced',
-  prevMonthSales: 35550,
   forecastMode: 'weighted',   // 'simple' متوسط بسيط | 'weighted' مرجّح لأحدث الأيام
+
+  // ── حقول المنتج النشِط (نسخة عمل مرآة للمنتج المختار) ──
+  target: 60000,
+  avgPrice: 58,
+  prevMonthSales: 35550,
   entries: {},                // {date: {qty, amount}}
   // مقارنة الصيدليات: المبيعات الفعلية (حبة) مقابل كتابات الطبيب (مرة)
   pharmacies: [
@@ -623,8 +652,15 @@ const STATE = {
     { id:2, name:'صيدلية 18', prevSales:166, currSales:147, prevRx:70,  currRx:97  },
     { id:3, name:'صيدلية 7',  prevSales:87,  currSales:84,  prevRx:57,  currRx:71  }
   ],
-  archive: {}                 // {'YYYY-MM': {target, achieved, realistic, qty}}
+  archive: {},                // {'YYYY-MM': {target, achieved, realistic, qty}}
+
+  // ── مخزن المنتجات (كل منتج بياناته المستقلة) ──
+  activeProduct: 'p1',
+  products: {}                // {id: {name, target, avgPrice, prevMonthSales, entries, pharmacies, archive}}
 };
+
+// الحقول الخاصة بكل منتج على حِدة
+const PRODUCT_FIELDS = ['target','avgPrice','prevMonthSales','entries','pharmacies','archive'];
 
 const STORAGE_KEY = 'sales_forecast_v1';
 
@@ -632,7 +668,99 @@ const STORAGE_KEY = 'sales_forecast_v1';
 // PERSISTENCE
 // ═══════════════════════════════════════════════════════════════
 function saveState(){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); }catch(e){ console.warn('Save failed', e); }
+  try{ commitActiveProduct(); localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); }catch(e){ console.warn('Save failed', e); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MULTI-PRODUCT
+// ═══════════════════════════════════════════════════════════════
+// كتابة حقول المنتج النشِط من نسخة العمل إلى المخزن
+function commitActiveProduct(){
+  if(!STATE.products) STATE.products = {};
+  const id = STATE.activeProduct;
+  if(!id) return;
+  const existing = STATE.products[id] || {};
+  const p = { name: existing.name || 'منتج' };
+  PRODUCT_FIELDS.forEach(f => p[f] = STATE[f]);
+  STATE.products[id] = p;
+}
+// تحميل حقول المنتج النشِط من المخزن إلى نسخة العمل
+function loadActiveProduct(){
+  const p = STATE.products[STATE.activeProduct];
+  if(!p) return;
+  PRODUCT_FIELDS.forEach(f => { STATE[f] = (p[f] !== undefined ? p[f] : STATE[f]); });
+}
+// إنشاء المنتج الافتراضي / ترحيل البيانات القديمة
+function ensureProducts(){
+  if(!STATE.products || Object.keys(STATE.products).length === 0){
+    STATE.products = {};
+    STATE.activeProduct = 'p1';
+    STATE.products['p1'] = { name:'المنتج الرئيسي' };
+    PRODUCT_FIELDS.forEach(f => STATE.products['p1'][f] = STATE[f]);
+  }
+  if(!STATE.activeProduct || !STATE.products[STATE.activeProduct]){
+    STATE.activeProduct = Object.keys(STATE.products)[0];
+  }
+  loadActiveProduct();
+}
+
+function renderProductSelector(){
+  const sel = document.getElementById('productSelect');
+  if(!sel) return;
+  sel.innerHTML = Object.entries(STATE.products)
+    .map(([id,p]) => `<option value="${id}" ${id===STATE.activeProduct?'selected':''}>${p.name||id}</option>`)
+    .join('');
+}
+
+function switchProduct(id){
+  if(id === STATE.activeProduct) return;
+  commitActiveProduct();
+  STATE.activeProduct = id;
+  loadActiveProduct();
+  syncSetupUI();
+  renderProductSelector();
+  render();
+  saveState();
+}
+
+function addProduct(){
+  const name = prompt('اسم المنتج الجديد:');
+  if(!name) return;
+  commitActiveProduct();
+  const id = 'p' + Date.now();
+  STATE.products[id] = {
+    name, target:0, avgPrice:STATE.avgPrice, prevMonthSales:0,
+    entries:{}, pharmacies:[], archive:{}
+  };
+  STATE.activeProduct = id;
+  loadActiveProduct();
+  syncSetupUI();
+  renderProductSelector();
+  render();
+  saveState();
+}
+
+function renameProduct(){
+  const p = STATE.products[STATE.activeProduct];
+  if(!p) return;
+  const name = prompt('اسم المنتج:', p.name);
+  if(!name) return;
+  p.name = name;
+  renderProductSelector();
+  saveState();
+}
+
+function deleteProduct(){
+  if(Object.keys(STATE.products).length <= 1){ alert('لا يمكن حذف المنتج الوحيد.'); return; }
+  const p = STATE.products[STATE.activeProduct];
+  if(!confirm(`حذف المنتج «${p.name}» وكل بياناته نهائياً؟`)) return;
+  delete STATE.products[STATE.activeProduct];
+  STATE.activeProduct = Object.keys(STATE.products)[0];
+  loadActiveProduct();
+  syncSetupUI();
+  renderProductSelector();
+  render();
+  saveState();
 }
 function loadState(){
   try{
@@ -1489,9 +1617,11 @@ function importData(event){
       const data = JSON.parse(e.target.result);
       if(confirm('استيراد سيستبدل البيانات الحالية. تريد المتابعة؟')){
         Object.assign(STATE, data);
-        saveState();
+        ensureProducts();
         syncSetupUI();
+        renderProductSelector();
         render();
+        saveState();
         alert('تم الاستيراد بنجاح');
       }
     } catch(err){
@@ -1524,8 +1654,10 @@ function preloadIfEmpty(){
 // ═══════════════════════════════════════════════════════════════
 function init(){
   loadState();
+  ensureProducts();
   preloadIfEmpty();
   syncSetupUI();
+  renderProductSelector();
   attachSetupHandlers();
 
   // Default entry date = today (if in month) else first day of month
