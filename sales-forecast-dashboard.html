@@ -309,8 +309,10 @@ body::before{
 .pharma-summary .ps-chip .n{font-size:20px;font-family:'Cairo',sans-serif;display:block;margin-top:2px}
 .pharma-editor{margin-top:18px;border-top:1px solid var(--border);padding-top:14px}
 .pharma-editor summary{cursor:pointer;font-size:13px;font-weight:800;color:var(--violet-l)}
-.pharma-editor input{width:100%;background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:8px;font-family:'Tajawal';font-weight:600;font-size:13px}
+.pharma-editor input{width:100%;min-width:56px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:8px;font-family:'Tajawal';font-weight:600;font-size:13px;text-align:center}
 .pharma-editor input:focus{border-color:var(--violet);outline:none}
+.pharma-table th{text-align:center !important;white-space:nowrap}
+.pharma-table td{padding:6px 8px}
 
 /* Archive trend */
 .archive-bars{display:flex;align-items:flex-end;gap:14px;height:180px;padding:10px 0;overflow-x:auto}
@@ -539,27 +541,18 @@ body::before{
         <span><i class="ln-rx"></i> كتابات الطبيب (مرة)</span>
       </div>
     </div>
-    <p class="pharma-hint">قارن بين ما يبيعه كل فرع فعلياً وبين عدد مرات وصف الطبيب للمنتج، من <b id="pharmaPrevLabel">الشهر السابق</b> إلى <b id="pharmaCurrLabel">الشهر الحالي</b>. اتساع الفجوة = تسرّب مبيعات (المريض يشتري من مكان آخر).</p>
+    <p class="pharma-hint">قارن أداء كل فرع خلال آخر <b>٣ شهور</b> (<b id="pharmaPrevLabel">—</b> → <b id="pharmaCurrLabel">—</b>): البيع الفعلي مقابل كتابات الطبيب. اتساع الفجوة = تسرّب مبيعات (المريض يشتري من مكان آخر). عدّل الأرقام بالأسفل ويتحدّث المؤشر فوراً.</p>
 
     <div class="pharma-cards" id="pharmaCards"></div>
 
     <div class="pharma-summary" id="pharmaSummary"></div>
 
     <!-- Editable data table -->
-    <details class="pharma-editor">
-      <summary>✏️ تعديل بيانات الصيدليات</summary>
+    <details class="pharma-editor" open>
+      <summary>✏️ إدخال أرقام الصيدليات (٣ شهور) — البيع والكتابات لكل شهر</summary>
       <div class="days-table-wrap" style="margin-top:14px">
-        <table class="days-table">
-          <thead>
-            <tr>
-              <th>الصيدلية</th>
-              <th>بيع سابق</th>
-              <th>بيع حالي</th>
-              <th>كتابات سابق</th>
-              <th>كتابات حالي</th>
-              <th></th>
-            </tr>
-          </thead>
+        <table class="days-table pharma-table">
+          <thead id="pharmaTableHead"></thead>
           <tbody id="pharmaTableBody"></tbody>
         </table>
       </div>
@@ -642,27 +635,33 @@ const STATE = {
   forecastMode: 'weighted',   // 'simple' متوسط بسيط | 'weighted' مرجّح لأحدث الأيام
 
   // ── حقول المنتج النشِط (نسخة عمل مرآة للمنتج المختار) ──
-  target: 60000,
+  target: 0,
   avgPrice: 58,
-  prevMonthSales: 35550,
+  prevMonthSales: 0,
   entries: {},                // {date: {qty, amount}}
-  // مقارنة الصيدليات: المبيعات الفعلية (حبة) مقابل كتابات الطبيب (مرة)
-  pharmacies: [
-    { id:1, name:'صيدلية 1',  prevSales:361, currSales:378, prevRx:285, currRx:333 },
-    { id:2, name:'صيدلية 18', prevSales:166, currSales:147, prevRx:70,  currRx:97  },
-    { id:3, name:'صيدلية 7',  prevSales:87,  currSales:84,  prevRx:57,  currRx:71  }
-  ],
+  // مقارنة الصيدليات: كل صيدلية لها 3 شهور {sales: بيع فعلي, rx: كتابات الطبيب}
+  pharmacies: [],
   archive: {},                // {'YYYY-MM': {target, achieved, realistic, qty}}
 
   // ── مخزن المنتجات (كل منتج بياناته المستقلة) ──
-  activeProduct: 'p1',
+  activeProduct: 'reflex',
   products: {}                // {id: {name, target, avgPrice, prevMonthSales, entries, pharmacies, archive}}
 };
 
 // الحقول الخاصة بكل منتج على حِدة
 const PRODUCT_FIELDS = ['target','avgPrice','prevMonthSales','entries','pharmacies','archive'];
 
-const STORAGE_KEY = 'sales_forecast_v1';
+// منتجات الـ Private Label الستة (من الداشبورد الأساسية)
+const PL_PRODUCTS = [
+  { key:'reflex',     label:'Reflex · Massage Emulgel 100ML' },
+  { key:'rizer',      label:'Rizer · Apply Cream 75ML' },
+  { key:'oracure',    label:'Oracure · Mouth Wash 300ML' },
+  { key:'intimo',     label:'Intimo · Vaginal Wash 250ML' },
+  { key:'nostriderm', label:'Nostriderm · Ointment 50ML' },
+  { key:'nostricure', label:'Nostricure · Oral Gel 30ML' }
+];
+
+const STORAGE_KEY = 'sales_forecast_v2';
 
 // ═══════════════════════════════════════════════════════════════
 // PERSISTENCE
@@ -690,17 +689,51 @@ function loadActiveProduct(){
   if(!p) return;
   PRODUCT_FIELDS.forEach(f => { STATE[f] = (p[f] !== undefined ? p[f] : STATE[f]); });
 }
-// إنشاء المنتج الافتراضي / ترحيل البيانات القديمة
+// صيدليات تجريبية بثلاثة شهور (توضّح المؤشر)
+function demoPharmacies(){
+  return [
+    { id:1, name:'صيدلية 1',  months:[{sales:340,rx:260},{sales:361,rx:300},{sales:378,rx:333}] },
+    { id:2, name:'صيدلية 18', months:[{sales:180,rx:60}, {sales:166,rx:78}, {sales:147,rx:97}] },
+    { id:3, name:'صيدلية 7',  months:[{sales:90,rx:48},  {sales:87,rx:57},  {sales:84,rx:71}] }
+  ];
+}
+// بناء المنتجات الستة الافتراضية
+function buildDefaultProducts(){
+  const products = {};
+  PL_PRODUCTS.forEach((p,i)=>{
+    products[p.key] = {
+      name:p.label, target:0, avgPrice:58, prevMonthSales:0,
+      entries:{}, archive:{},
+      pharmacies: i===0 ? demoPharmacies() : []
+    };
+  });
+  return products;
+}
+// تحويل شكل الصيدلية القديم (شهرين) إلى الشكل الجديد (٣ شهور) وضمان 3 شهور دائماً
+function normalizePharmacy(ph){
+  if(ph && Array.isArray(ph.months)){
+    let m = ph.months.map(x=>({ sales:Number(x.sales)||0, rx:Number(x.rx)||0 }));
+    while(m.length < 3) m.unshift({sales:0,rx:0});
+    if(m.length > 3) m = m.slice(-3);
+    return { id:ph.id, name:ph.name, months:m };
+  }
+  return { id:ph.id, name:ph.name, months:[
+    { sales:ph.prevSales||0, rx:ph.prevRx||0 },
+    { sales:ph.prevSales||0, rx:ph.prevRx||0 },
+    { sales:ph.currSales||0, rx:ph.currRx||0 }
+  ]};
+}
+// إنشاء المنتجات الافتراضية / ترحيل البيانات القديمة
 function ensureProducts(){
   if(!STATE.products || Object.keys(STATE.products).length === 0){
-    STATE.products = {};
-    STATE.activeProduct = 'p1';
-    STATE.products['p1'] = { name:'المنتج الرئيسي' };
-    PRODUCT_FIELDS.forEach(f => STATE.products['p1'][f] = STATE[f]);
+    STATE.products = buildDefaultProducts();
+    STATE.activeProduct = PL_PRODUCTS[0].key;
   }
   if(!STATE.activeProduct || !STATE.products[STATE.activeProduct]){
     STATE.activeProduct = Object.keys(STATE.products)[0];
   }
+  // توحيد شكل الصيدليات لكل المنتجات (٣ شهور)
+  Object.values(STATE.products).forEach(pr => { pr.pharmacies = (pr.pharmacies||[]).map(normalizePharmacy); });
   loadActiveProduct();
 }
 
@@ -1135,18 +1168,25 @@ function renderTable(c){
 // ═══════════════════════════════════════════════════════════════
 // PHARMACY COMPARISON (Sales vs Prescriptions)
 // ═══════════════════════════════════════════════════════════════
-function prevMonthLabel(monthStr){
+// أسماء آخر n شهور منتهية بالشهر الحالي (short)
+function lastNMonthLabels(monthStr, n){
   const [y,m] = monthStr.split('-').map(Number);
-  const pm = m===1 ? 12 : m-1;
-  const py = m===1 ? y-1 : y;
-  return `${AR_MONTHS[pm-1]} ${py}`;
+  const out = [];
+  for(let i=n-1; i>=0; i--){
+    let mm = m-i, yy = y;
+    while(mm <= 0){ mm += 12; yy--; }
+    out.push(AR_MONTHS[mm-1]);
+  }
+  return out;
 }
 
-// تشخيص حالة الصيدلية بمقارنة اتجاه البيع مع اتجاه الكتابات
+// تشخيص حالة الصيدلية بمقارنة اتجاه البيع مع اتجاه الكتابات عبر الـ3 شهور (الأول → الأخير)
 // نطاق غير متماثل: النمو يُعتبر من +2%، والثبات حتى -5% (تراجع بسيط = "ثابت")
 function classifyPharmacy(p){
-  const sPct = p.prevSales > 0 ? (p.currSales - p.prevSales) / p.prevSales * 100 : (p.currSales>0?100:0);
-  const rPct = p.prevRx > 0 ? (p.currRx - p.prevRx) / p.prevRx * 100 : (p.currRx>0?100:0);
+  const m = p.months;
+  const s0 = m[0].sales, s2 = m[2].sales, r0 = m[0].rx, r2 = m[2].rx;
+  const sPct = s0 > 0 ? (s2 - s0) / s0 * 100 : (s2>0?100:0);
+  const rPct = r0 > 0 ? (r2 - r0) / r0 * 100 : (r2>0?100:0);
   const UP = 2, DOWN = -5;
 
   if(sPct < DOWN && rPct > UP)
@@ -1162,69 +1202,73 @@ function classifyPharmacy(p){
   return { type:'flat', icon:'➖', title:'أداء مستقر', sPct, rPct };
 }
 
-// رسم مخطط منحدر (slope) بـ SVG — يعمل بدون إنترنت
-function slopeSVG(p, prevLbl, currLbl){
-  const vals = [p.prevSales, p.currSales, p.prevRx, p.currRx].filter(v=>!isNaN(v));
+// رسم مخطط منحدر (slope) بثلاث نقاط بـ SVG — يعمل بدون إنترنت
+function slopeSVG(p, monthLbls){
+  const m = p.months;
+  const vals = [];
+  m.forEach(x=>{ vals.push(x.sales, x.rx); });
   let max = Math.max(...vals), min = Math.min(...vals);
   if(max===min){ max+=1; min-=1; }
-  const pad = (max-min)*0.15; max+=pad; min-=pad;
-  const xL=62, xR=198, yT=18, yB=112;
+  const pad = (max-min)*0.18; max+=pad; min-=pad;
+  const xs = [56, 130, 204], yT=20, yB=108;
   const Y = v => yB - ((v-min)/(max-min))*(yB-yT);
-  const sPrevY=Y(p.prevSales), sCurrY=Y(p.currSales), rPrevY=Y(p.prevRx), rCurrY=Y(p.currRx);
-  const t = (x,y,txt,anchor,color)=>`<text x="${x}" y="${y}" text-anchor="${anchor}" font-size="12" font-weight="800" fill="${color}" font-family="Cairo,sans-serif">${txt}</text>`;
+  const t = (x,y,txt,anchor,color,size)=>`<text x="${x}" y="${y}" text-anchor="${anchor}" font-size="${size||12}" font-weight="800" fill="${color}" font-family="Cairo,sans-serif">${txt}</text>`;
+  const salesPts = xs.map((x,i)=>`${x},${Y(m[i].sales)}`).join(' ');
+  const rxPts    = xs.map((x,i)=>`${x},${Y(m[i].rx)}`).join(' ');
+  const dots = (field,color,dash)=> xs.map((x,i)=>`<circle cx="${x}" cy="${Y(m[i][field])}" r="4" fill="${color}"/>`).join('');
+  // labels: sales above points, rx below points (with edge anchoring)
+  const lbl = (field,color,dy)=> xs.map((x,i)=>{
+    const anchor = i===0?'start':(i===2?'end':'middle');
+    const dx = i===0?-2:(i===2?2:0);
+    return t(x+dx, Y(m[i][field])+dy, fmtNum(m[i][field]), anchor, color, 11);
+  }).join('');
   return `<svg viewBox="0 0 260 150" preserveAspectRatio="xMidYMid meet">
-    <line x1="${xL}" y1="128" x2="${xR}" y2="128" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
-    <!-- sales solid -->
-    <line x1="${xL}" y1="${sPrevY}" x2="${xR}" y2="${sCurrY}" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
-    <circle cx="${xL}" cy="${sPrevY}" r="4" fill="#38bdf8"/><circle cx="${xR}" cy="${sCurrY}" r="4" fill="#38bdf8"/>
-    <!-- rx dotted -->
-    <line x1="${xL}" y1="${rPrevY}" x2="${xR}" y2="${rCurrY}" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 5"/>
-    <circle cx="${xL}" cy="${rPrevY}" r="4" fill="#34d399"/><circle cx="${xR}" cy="${rCurrY}" r="4" fill="#34d399"/>
-    ${t(xL-8, sPrevY-8, fmtNum(p.prevSales), 'end', '#7dd3fc')}
-    ${t(xR+8, sCurrY-8, fmtNum(p.currSales), 'start', '#38bdf8')}
-    ${t(xL-8, rPrevY+16, fmtNum(p.prevRx), 'end', '#6ee7b7')}
-    ${t(xR+8, rCurrY+16, fmtNum(p.currRx), 'start', '#34d399')}
-    ${t(xL, 145, prevLbl, 'middle', '#8b97b8')}
-    ${t(xR, 145, currLbl, 'middle', '#8b97b8')}
+    <line x1="46" y1="124" x2="214" y2="124" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+    <polyline points="${salesPts}" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="${rxPts}" fill="none" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 5"/>
+    ${dots('sales','#38bdf8')}
+    ${dots('rx','#34d399')}
+    ${lbl('sales','#7dd3fc',-9)}
+    ${lbl('rx','#6ee7b7',16)}
+    ${xs.map((x,i)=>t(x, 143, monthLbls[i]||'', 'middle', '#8b97b8', 11)).join('')}
   </svg>`;
 }
 
 function renderPharmacies(){
-  const prevLbl = prevMonthLabel(STATE.month);
-  const currLbl = `${AR_MONTHS[Number(STATE.month.split('-')[1])-1]}`;
-  const prevShort = prevLbl.split(' ')[0];
-  document.getElementById('pharmaPrevLabel').textContent = prevLbl;
-  document.getElementById('pharmaCurrLabel').textContent = getMonthInfo(STATE.month).monthLabel;
+  const mLbls = lastNMonthLabels(STATE.month, 3);
+  document.getElementById('pharmaPrevLabel').textContent = mLbls[0];
+  document.getElementById('pharmaCurrLabel').textContent = mLbls[2];
 
   const cardsEl = document.getElementById('pharmaCards');
   const list = STATE.pharmacies || [];
   if(list.length === 0){
-    cardsEl.innerHTML = '<div class="empty-state"><div class="icon">🏥</div>لا توجد صيدليات. أضِف صيدلية من زر التعديل بالأسفل.</div>';
+    cardsEl.innerHTML = '<div class="empty-state"><div class="icon">🏥</div>لا توجد صيدليات لهذا المنتج. أضِف صيدلية من الجدول بالأسفل وأدخل أرقام الـ3 شهور.</div>';
   } else {
     const dotColor = t => t==='ok'?'var(--teal)':t==='bad'?'var(--rose)':t==='warn'?'var(--amber)':'var(--text-muted)';
     cardsEl.innerHTML = list.map(p=>{
       const v = classifyPharmacy(p);
-      const convPrev = p.prevRx>0 ? (p.prevSales/p.prevRx) : 0;
-      const convCurr = p.currRx>0 ? (p.currSales/p.currRx) : 0;
+      const last = p.months[2], prev = p.months[1];
+      const convLast = last.rx>0 ? (last.sales/last.rx) : 0;
+      const convPrev = prev.rx>0 ? (prev.sales/prev.rx) : 0;
       return `<div class="pharma-card ${v.type}">
         <div class="pc-name"><span class="pc-dot" style="background:${dotColor(v.type)}"></span>${p.name||'صيدلية'}</div>
-        ${slopeSVG(p, prevShort, currLbl)}
+        ${slopeSVG(p, mLbls)}
         <div class="pc-verdict ${v.type}">${v.icon} ${v.title}</div>
         <div class="pc-metrics">
           <span>البيع: ${v.sPct>=0?'+':''}${v.sPct.toFixed(0)}%</span>
           <span>الكتابات: ${v.rPct>=0?'+':''}${v.rPct.toFixed(0)}%</span>
-          <span>تحويل: ${convPrev.toFixed(2)}→${convCurr.toFixed(2)}</span>
+          <span>تحويل: ${convPrev.toFixed(2)}→${convLast.toFixed(2)}</span>
         </div>
       </div>`;
     }).join('');
   }
 
-  // Summary
+  // Summary — الاتجاه من الشهر الأول إلى الأخير
   const counts = { ok:0, warn:0, bad:0, flat:0 };
-  let tPrevS=0,tCurrS=0,tPrevR=0,tCurrR=0;
-  list.forEach(p=>{ counts[classifyPharmacy(p).type]++; tPrevS+=p.prevSales; tCurrS+=p.currSales; tPrevR+=p.prevRx; tCurrR+=p.currRx; });
-  const sTrend = tPrevS>0 ? ((tCurrS-tPrevS)/tPrevS*100) : 0;
-  const rTrend = tPrevR>0 ? ((tCurrR-tPrevR)/tPrevR*100) : 0;
+  let s0=0,s2=0,r0=0,r2=0;
+  list.forEach(p=>{ counts[classifyPharmacy(p).type]++; s0+=p.months[0].sales; s2+=p.months[2].sales; r0+=p.months[0].rx; r2+=p.months[2].rx; });
+  const sTrend = s0>0 ? ((s2-s0)/s0*100) : 0;
+  const rTrend = r0>0 ? ((r2-r0)/r0*100) : 0;
   document.getElementById('pharmaSummary').innerHTML = list.length===0 ? '' : `<div class="ps-row">
     <div class="ps-chip" style="color:var(--teal-l)">فروع ممتازة<span class="n">${counts.ok}</span></div>
     <div class="ps-chip" style="color:var(--amber-l)">تحتاج انتباه<span class="n">${counts.warn}</span></div>
@@ -1233,22 +1277,38 @@ function renderPharmacies(){
     <div class="ps-chip">إجمالي الكتابات<span class="n">${rTrend>=0?'+':''}${rTrend.toFixed(0)}%</span></div>
   </div>`;
 
-  // Editor table
+  // Editor table headers (dynamic month labels)
+  const thead = document.getElementById('pharmaTableHead');
+  if(thead){
+    thead.innerHTML = `<tr>
+      <th rowspan="2" style="vertical-align:bottom">الصيدلية</th>
+      <th colspan="2">${mLbls[0]}</th>
+      <th colspan="2">${mLbls[1]}</th>
+      <th colspan="2">${mLbls[2]}</th>
+      <th rowspan="2"></th>
+    </tr>
+    <tr>
+      <th>بيع</th><th>كتابات</th>
+      <th>بيع</th><th>كتابات</th>
+      <th>بيع</th><th>كتابات</th>
+    </tr>`;
+  }
+  // Editor rows
   const tb = document.getElementById('pharmaTableBody');
+  const cell = (id,mi,field,val)=>`<td><input type="number" value="${val}" onchange="updatePharmacyMonth(${id},${mi},'${field}',this.value)"></td>`;
   tb.innerHTML = list.map(p=>`<tr>
-    <td><input value="${p.name||''}" onchange="updatePharmacy(${p.id},'name',this.value)"></td>
-    <td><input type="number" value="${p.prevSales}" onchange="updatePharmacy(${p.id},'prevSales',this.value)"></td>
-    <td><input type="number" value="${p.currSales}" onchange="updatePharmacy(${p.id},'currSales',this.value)"></td>
-    <td><input type="number" value="${p.prevRx}" onchange="updatePharmacy(${p.id},'prevRx',this.value)"></td>
-    <td><input type="number" value="${p.currRx}" onchange="updatePharmacy(${p.id},'currRx',this.value)"></td>
+    <td style="min-width:120px"><input value="${p.name||''}" onchange="updatePharmacy(${p.id},'name',this.value)"></td>
+    ${cell(p.id,0,'sales',p.months[0].sales)}${cell(p.id,0,'rx',p.months[0].rx)}
+    ${cell(p.id,1,'sales',p.months[1].sales)}${cell(p.id,1,'rx',p.months[1].rx)}
+    ${cell(p.id,2,'sales',p.months[2].sales)}${cell(p.id,2,'rx',p.months[2].rx)}
     <td><button class="btn rose sm" onclick="removePharmacy(${p.id})">🗑</button></td>
-  </tr>`).join('') || '<tr><td colspan="6" class="empty-state">لا توجد صيدليات</td></tr>';
+  </tr>`).join('') || '<tr><td colspan="8" class="empty-state">لا توجد صيدليات</td></tr>';
 }
 
 function addPharmacy(){
   if(!STATE.pharmacies) STATE.pharmacies = [];
   const id = STATE.pharmacies.reduce((m,p)=>Math.max(m,p.id),0)+1;
-  STATE.pharmacies.push({ id, name:'صيدلية جديدة', prevSales:0, currSales:0, prevRx:0, currRx:0 });
+  STATE.pharmacies.push({ id, name:'صيدلية جديدة', months:[{sales:0,rx:0},{sales:0,rx:0},{sales:0,rx:0}] });
   saveState();
   renderPharmacies();
 }
@@ -1260,7 +1320,14 @@ function removePharmacy(id){
 function updatePharmacy(id, field, value){
   const p = (STATE.pharmacies||[]).find(x=>x.id===id);
   if(!p) return;
-  p[field] = field==='name' ? value : (parseFloat(value)||0);
+  p[field] = value;
+  saveState();
+  renderPharmacies();
+}
+function updatePharmacyMonth(id, monthIdx, field, value){
+  const p = (STATE.pharmacies||[]).find(x=>x.id===id);
+  if(!p || !p.months[monthIdx]) return;
+  p.months[monthIdx][field] = parseFloat(value)||0;
   saveState();
   renderPharmacies();
 }
@@ -1637,7 +1704,7 @@ function importData(event){
 // ═══════════════════════════════════════════════════════════════
 function preloadIfEmpty(){
   // بيانات تجريبية تُزرع مرة واحدة فقط عند أول استخدام (لا تعود بعد التصفير)
-  if(localStorage.getItem('sales_seeded')) return;
+  if(localStorage.getItem('sales_seeded_v2')) return;
   if(Object.keys(STATE.entries).length === 0){
     STATE.entries = {
       '2026-06-01': { qty: 32, amount: 1950 },
@@ -1646,7 +1713,7 @@ function preloadIfEmpty(){
     };
     saveState();
   }
-  localStorage.setItem('sales_seeded', '1');
+  localStorage.setItem('sales_seeded_v2', '1');
 }
 
 // ═══════════════════════════════════════════════════════════════
