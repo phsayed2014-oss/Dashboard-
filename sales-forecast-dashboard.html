@@ -1293,6 +1293,12 @@ function slopeSVG(p, monthLbls){
 }
 
 function renderPharmacies(){
+  renderPharmaCards();
+  renderPharmaEditor();
+}
+
+// الجزء المرئي فقط (الكروت + الشارت + الملخّص) — آمن للتحديث الحيّ أثناء الكتابة
+function renderPharmaCards(){
   const mLbls = lastNMonthLabels(STATE.month, 3);
   document.getElementById('pharmaPrevLabel').textContent = mLbls[0];
   document.getElementById('pharmaCurrLabel').textContent = mLbls[2];
@@ -1334,8 +1340,12 @@ function renderPharmacies(){
     <div class="ps-chip">إجمالي البيع<span class="n">${sTrend>=0?'+':''}${sTrend.toFixed(0)}%</span></div>
     <div class="ps-chip">إجمالي الكتابات<span class="n">${rTrend>=0?'+':''}${rTrend.toFixed(0)}%</span></div>
   </div>`;
+}
 
-  // Editor table headers (dynamic month labels)
+// جدول الإدخال — يُبنى فقط عند تغيّر البنية (إضافة/حذف/تبديل منتج) حتى لا يفقد الحقلُ التركيزَ أثناء الكتابة
+function renderPharmaEditor(){
+  const mLbls = lastNMonthLabels(STATE.month, 3);
+  const list = STATE.pharmacies || [];
   const thead = document.getElementById('pharmaTableHead');
   if(thead){
     thead.innerHTML = `<tr>
@@ -1351,12 +1361,12 @@ function renderPharmacies(){
       <th>بيع</th><th>كتابات</th>
     </tr>`;
   }
-  // Editor rows (read-only in aggregate/all mode)
   const ro = isAllMode() ? 'disabled' : '';
   const tb = document.getElementById('pharmaTableBody');
-  const cell = (id,mi,field,val)=>`<td><input type="number" value="${val}" ${ro} onchange="updatePharmacyMonth(${id},${mi},'${field}',this.value)"></td>`;
+  // oninput = تحديث حيّ للشارت أثناء الكتابة
+  const cell = (id,mi,field,val)=>`<td><input type="number" inputmode="numeric" value="${val}" ${ro} oninput="updatePharmacyMonth(${id},${mi},'${field}',this.value)"></td>`;
   tb.innerHTML = list.map(p=>`<tr>
-    <td style="min-width:120px"><input value="${p.name||''}" ${ro} onchange="updatePharmacy(${p.id},'name',this.value)"></td>
+    <td style="min-width:120px"><input value="${p.name||''}" ${ro} oninput="updatePharmacy(${p.id},'name',this.value)"></td>
     ${cell(p.id,0,'sales',p.months[0].sales)}${cell(p.id,0,'rx',p.months[0].rx)}
     ${cell(p.id,1,'sales',p.months[1].sales)}${cell(p.id,1,'rx',p.months[1].rx)}
     ${cell(p.id,2,'sales',p.months[2].sales)}${cell(p.id,2,'rx',p.months[2].rx)}
@@ -1384,7 +1394,7 @@ function updatePharmacy(id, field, value){
   if(!p) return;
   p[field] = value;
   saveState();
-  renderPharmacies();
+  renderPharmaCards();   // حدّث الشارت فقط دون إعادة بناء حقول الإدخال
 }
 function updatePharmacyMonth(id, monthIdx, field, value){
   if(isAllMode()) return;
@@ -1392,7 +1402,7 @@ function updatePharmacyMonth(id, monthIdx, field, value){
   if(!p || !p.months[monthIdx]) return;
   p.months[monthIdx][field] = parseFloat(value)||0;
   saveState();
-  renderPharmacies();
+  renderPharmaCards();   // تحديث حيّ للشارت أثناء الكتابة (يحافظ على تركيز الحقل)
 }
 
 // ═══════════════════════════════════════════════════════════════
