@@ -110,7 +110,7 @@ describe('snapshot validation', () => {
       },
       dt: {},
     };
-    expect(validateSnapshot(snapshot)).toEqual({ valid: true, version: 2 });
+    expect(validateSnapshot(snapshot)).toEqual({ valid: true, version: 2, totalRows: 1 });
   });
 
   it('rejects malformed rows', () => {
@@ -122,6 +122,18 @@ describe('snapshot validation', () => {
       },
     };
     expect(validateSnapshot(snapshot).valid).toBe(false);
+  });
+
+  it('rejects future schemas and malformed daily data', () => {
+    expect(validateSnapshot({ v: 99, periods: { T1: [], T2: [], T3: [] } })).toMatchObject({
+      valid: false,
+      error: 'unsupported-version',
+    });
+    expect(validateSnapshot({
+      v: 2,
+      periods: { T1: [], T2: [], T3: [] },
+      dt: { tomorrow: { T1: { rows: [] } } },
+    })).toMatchObject({ valid: false, error: 'invalid-daily-date' });
   });
 });
 

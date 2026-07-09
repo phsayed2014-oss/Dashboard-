@@ -46,6 +46,8 @@ export default [
         rebuildBranchFromPeriods: 'readonly',
         doLogout: 'readonly',
         printVisitCard: 'readonly',
+        saveData: 'readonly',
+        flushSaveData: 'readonly',
         window: 'readonly',
       },
     },

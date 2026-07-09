@@ -300,6 +300,13 @@ body::before{
 .brand .sub .dot-sep{width:3px;height:3px;border-radius:50%;background:var(--text-muted);display:inline-block}
 .actions{display:flex;gap:9px;flex-wrap:wrap}
 .privacy-select{min-width:132px;max-width:160px;padding:8px 10px;font-size:11px;font-weight:700;}
+.save-status{display:inline-flex;align-items:center;gap:5px;padding:7px 10px;border-radius:999px;font-size:10px;font-weight:800;color:var(--text-muted);background:var(--bg-glass2);border:1px solid var(--border);}
+.save-status::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;}
+.save-status[data-state="pending"]{color:var(--amber-l);}
+.save-status[data-state="saving"]{color:var(--sky-l);}
+.save-status[data-state="saving"]::before{animation:pulse 1s infinite;}
+.save-status[data-state="saved"]{color:var(--teal-l);}
+.save-status[data-state="error"]{color:var(--rose-l);}
 
 /* ── BUTTONS ── */
 .btn{
@@ -2992,6 +2999,7 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
   <div class="actions">
     <!-- saved badge removed -->
     <button class="btn" id="themeBtn" onclick="toggleTheme()" title="Dark / Light">☀️</button>
+    <span class="save-status" id="saveStatus" data-state="idle" role="status" aria-live="polite">جاهز</span>
     <select class="select privacy-select" id="exportPrivacyMode" title="مستوى خصوصية التصدير والمشاركة" aria-label="مستوى خصوصية التصدير والمشاركة">
       <option value="anonymized">مجهول الهوية</option>
       <option value="full">بيانات كاملة حساسة</option>
@@ -3231,6 +3239,9 @@ var PharmaCore = (() => {
   // src/core/index.mjs
   var index_exports = {};
   __export(index_exports, {
+    MAX_PDF_PAGES: () => MAX_PDF_PAGES,
+    MAX_SNAPSHOT_BYTES: () => MAX_SNAPSHOT_BYTES,
+    MAX_SNAPSHOT_ROWS: () => MAX_SNAPSHOT_ROWS,
     MAX_UPLOAD_BYTES: () => MAX_UPLOAD_BYTES,
     MAX_UPLOAD_ROWS: () => MAX_UPLOAD_ROWS,
     SNAPSHOT_SCHEMA_VERSION: () => SNAPSHOT_SCHEMA_VERSION,
@@ -3255,6 +3266,9 @@ var PharmaCore = (() => {
   var SNAPSHOT_SCHEMA_VERSION = 2;
   var MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
   var MAX_UPLOAD_ROWS = 5e5;
+  var MAX_PDF_PAGES = 1e3;
+  var MAX_SNAPSHOT_ROWS = 2e6;
+  var MAX_SNAPSHOT_BYTES = 150 * 1024 * 1024;
   var ARABIC_DIACRITICS = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g;
   function stripControlCharacters(value) {
     return [...value].map((character) => {
@@ -3505,6 +3519,10 @@ var PharmaCore = (() => {
     if (!snapshot.periods || typeof snapshot.periods !== "object") {
       return { valid: false, error: "invalid-periods" };
     }
+    if (Number(snapshot.v || 1) > SNAPSHOT_SCHEMA_VERSION) {
+      return { valid: false, error: "unsupported-version" };
+    }
+    let totalRows = 0;
     for (const branch of ["T1", "T2", "T3"]) {
       const periods = snapshot.periods[branch];
       if (periods != null && !Array.isArray(periods)) return { valid: false, error: `invalid-${branch}` };
@@ -3515,9 +3533,28 @@ var PharmaCore = (() => {
         if (period.rows.length > MAX_UPLOAD_ROWS || !period.rows.every(validateRxRow)) {
           return { valid: false, error: `invalid-rows-${branch}` };
         }
+        totalRows += period.rows.length;
+        if (totalRows > MAX_SNAPSHOT_ROWS) return { valid: false, error: "snapshot-too-large" };
       }
     }
-    return { valid: true, version: Number(snapshot.v || 1) };
+    if (snapshot.dt != null) {
+      if (typeof snapshot.dt !== "object" || Array.isArray(snapshot.dt)) return { valid: false, error: "invalid-daily-store" };
+      for (const [date, branches] of Object.entries(snapshot.dt)) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !branches || typeof branches !== "object") {
+          return { valid: false, error: "invalid-daily-date" };
+        }
+        for (const branch of ["T1", "T2", "T3"]) {
+          const entry = branches[branch];
+          if (entry == null) continue;
+          if (!entry || typeof entry !== "object" || !Array.isArray(entry.rows) || !entry.rows.every(validateRxRow)) {
+            return { valid: false, error: `invalid-daily-${branch}` };
+          }
+          totalRows += entry.rows.length;
+          if (totalRows > MAX_SNAPSHOT_ROWS) return { valid: false, error: "snapshot-too-large" };
+        }
+      }
+    }
+    return { valid: true, version: Number(snapshot.v || 1), totalRows };
   }
   return __toCommonJS(index_exports);
 })();
@@ -3604,6 +3641,19 @@ const STATE={data:{T1:null,T2:null,T3:null},active:null,periods:{T1:[],T2:[],T3:
 /* التابات التي تجمع كل الفروع ولا تحتاج مُنتقي الفرع */
 const NO_BRANCH_TABS=['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','drugintel','targettrack','nearexpiry','plsales','pureherb','dailytrack','agedmeds'];
 let _pendingBranch=null,_pendingMode=null; /* upload state */
+const _uploadVersion={T1:0,T2:0,T3:0};
+function validateUploadFile(file){
+  if(!file||!file.name)throw new Error('لم يتم اختيار ملف');
+  const ext=(file.name.toLowerCase().match(/\.[^.]+$/)||[''])[0];
+  if(!['.xlsx','.xls','.csv','.pdf'].includes(ext))throw new Error('صيغة غير مدعومة — استخدم xlsx أو xls أو csv أو pdf');
+  if(!file.size)throw new Error('الملف فارغ');
+  if(file.size>PharmaCore.MAX_UPLOAD_BYTES)throw new Error('حجم الملف أكبر من الحد الآمن (50MB)');
+  return ext;
+}
+function validateParsedRows(rows){
+  if(!rows||!rows.length)throw new Error('لم يتم العثور على بيانات صالحة في الملف');
+  if(rows.length>PharmaCore.MAX_UPLOAD_ROWS)throw new Error('عدد الصفوف أكبر من الحد المدعوم (500,000 صف)');
+}
 const SOURCE_TEMPLATE=(function(){let h='<!DOCTYPE html>\n'+document.documentElement.outerHTML;const o='<scr'+'ipt id="embedded-rx-data">',c='<'+'/scr'+'ipt>';const i=h.indexOf(o);if(i>=0){const j=h.indexOf(c,i);if(j>=0) h=h.substring(0,i)+h.substring(j+c.length);}return h;})();
 
 /* Live Clock */
@@ -3684,8 +3734,9 @@ const PALETTE=['#6c63ff','#00d4a0','#ff4d6d','#d97706','#06b6d4','#7c3aed','#db2
 let charts={};
 
 function toast(msg,type){type=type||'success';const t=document.getElementById('toast'),i=document.getElementById('toastIco'),m=document.getElementById('toastMsg');t.className='toast show '+type;i.textContent=type==='success'?'✓':(type==='error'?'✕':'ℹ');m.textContent=msg;setTimeout(()=>t.classList.remove('show'),3500);}
-const lb=document.getElementById('loadingBar');
-function showLoad(){lb.classList.add('show');}function hideLoad(){lb.classList.remove('show');}
+const lb=document.getElementById('loadingBar');let _loadCount=0;
+function showLoad(){_loadCount++;lb.classList.add('show');}
+function hideLoad(){_loadCount=Math.max(0,_loadCount-1);if(!_loadCount)lb.classList.remove('show');}
 const modalBg=document.getElementById('modalBg'),modalBody=document.getElementById('modalBody');
 document.getElementById('modalClose').onclick=()=>modalBg.classList.remove('show');
 modalBg.addEventListener('click',e=>{if(e.target===modalBg) modalBg.classList.remove('show');});
@@ -3742,30 +3793,31 @@ BRANCHES.forEach(b=>{
 });
 
 async function handleFile(branch,file){
+  const version=++_uploadVersion[branch];
   _upShow(branch, file.name);
   showLoad();
   try{
-    let rows; const n=file.name.toLowerCase();
+    let rows;const ext=validateUploadFile(file);
     await _upTick(branch,15);
-    if(n.endsWith('.xlsx')||n.endsWith('.xls')) rows=await parseExcel(file);
-    else if(n.endsWith('.csv')) rows=await parseCSV(file);
-    else if(n.endsWith('.pdf')) rows=await parsePDF(file);
-    else throw new Error('صيغة غير مدعومة — xlsx/csv/pdf فقط');
+    if(ext==='.xlsx'||ext==='.xls')rows=await parseExcel(file);
+    else if(ext==='.csv')rows=await parseCSV(file);
+    else rows=await parsePDF(file);
+    if(version!==_uploadVersion[branch])return;
     await _upTick(branch,60);
-    if(!rows||!rows.length) throw new Error('لم يتم العثور على بيانات في الملف');
+    validateParsedRows(rows);
     await _upTick(branch,85);
+    if(version!==_uploadVersion[branch])return;
     setBranchData(branch,rows,file.name,'');
     if(!STATE.active) STATE.active=branch;
     await _upTick(branch,100);
-    setTimeout(()=>_upHide(branch),500);
+    setTimeout(()=>{if(version===_uploadVersion[branch])_upHide(branch);},500);
     renderAll();
     saveData();
     const q=STATE.quality[branch];
     toast('✓ '+BRANCH_LABELS[branch]+' — '+fmt(rows.length)+' وصفة'+(q?' · جودة '+q.score+'%':''));
     if(q&&q.warnings.length)setTimeout(()=>toast('راجع لوحة جودة البيانات: '+q.warnings[0],'warn'),900);
   }catch(e){
-    console.error(e);_upHide(branch);
-    toast(e.message||'فشل القراءة','error');
+    if(version===_uploadVersion[branch]){console.error(e);_upHide(branch);toast(e.message||'فشل القراءة','error');}
   }finally{hideLoad();}
 }
 /* Upload progress helpers — pure DOM, no HTML strings */
@@ -3846,6 +3898,7 @@ function aggregate(rows){
 }
 function attachParseMeta(rows,meta){Object.defineProperty(rows,'_parseMeta',{value:meta,enumerable:false,configurable:true});return rows;}
 function normalizeParsedRows(rawRows,source){
+  if((rawRows||[]).length>PharmaCore.MAX_UPLOAD_ROWS)throw new Error('عدد الصفوف أكبر من الحد المدعوم (500,000 صف)');
   const rows=(rawRows||[]).map(normalizeRow).filter(Boolean);
   return attachParseMeta(rows,{source,sourceRows:(rawRows||[]).length,rejectedRows:Math.max(0,(rawRows||[]).length-rows.length)});
 }
@@ -3868,6 +3921,7 @@ async function parsePDF(file){
   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   const buf=await file.arrayBuffer();
   const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+  if(pdf.numPages>PharmaCore.MAX_PDF_PAGES)throw new Error('عدد صفحات PDF أكبر من الحد المدعوم (1,000 صفحة)');
   const SEC_WORDS=['GASTROENTEROLOGY','ENDOCRINOLOGY','OPHTHALMOLOGY','OPTHALMOLOGY','RHEUMATOLOGY','PULMONOLOGY','PARACITIONER','DERMATOLOGY','ORTHOPAEDIC','PSYCHIATRY','OBSTETRICS','PAEDIATRIC','CARDIOLOGY','NEPHROLOGY','NEUROLOGY','ONCOLOGY','INTERNAL','UROLOGY','GENERAL','SURGERY','DENTAL','RADIOLOGY','GYNECOLOGY','MEDICINE','ENT'];
   const DEFAULT_COLS={patient:[0,75],patientName:[75,243],service:[243,476],orderNo:[476,535],status:[535,596],doctorSection:[596,Infinity]};
   function g(ws,r){return ws.filter(w=>w.x>=r[0]&&w.x<r[1]).map(w=>w.s).join(' ').trim();}
@@ -5826,24 +5880,25 @@ document.getElementById('shareBtn').onclick=()=>{
 };
 
 function loadEmbedded(){
-  if(!window.__EMBEDDED_RX__) return;const d=window.__EMBEDDED_RX__;
-  /* الملفات الأحدث تحمل الفترات الكاملة؛ القديمة تحمل الصفوف الأساسية فقط */
-  if(d.periods && Object.keys(d.periods).length){
+  if(!window.__EMBEDDED_RX__)return;
+  try{
+    const d=window.__EMBEDDED_RX__,periods={T1:[],T2:[],T3:[]};
+    if(d.periods&&typeof d.periods==='object')BRANCHES.forEach(b=>{periods[b]=d.periods[b]||[];});
+    else if(d.branches&&typeof d.branches==='object'){
+      BRANCHES.forEach(b=>{const item=d.branches[b];if(item?.rows?.length)periods[b]=[{id:Date.now(),label:item.reportName||BRANCH_LABELS[b],rows:item.rows,_main:true}];});
+    }
+    const candidate={v:d.v||1,periods,dt:d.dt||{}};
+    const validation=PharmaCore.validateSnapshot(candidate);
+    if(!validation.valid)throw new Error('ملف المشاركة غير صالح: '+validation.error);
     BRANCHES.forEach(b=>{
-      const ps=d.periods[b];
-      if(ps && ps.length){
-        STATE.periods[b]=ps.map(p=>({id:p.id,label:p.label,rows:p.rows,parseMeta:p.parseMeta||null,_main:!!p._main,data:aggregate(p.rows||[])}));
-        rebuildBranchFromPeriods(b);
-        _restoreBranchUI(b);
-        if(!STATE.active) STATE.active=b;
-      }
+      if(!periods[b].length)return;
+      STATE.periods[b]=periods[b].map(p=>({id:p.id,label:p.label,rows:p.rows,parseMeta:p.parseMeta||null,_main:!!p._main,data:aggregate(p.rows||[])}));
+      rebuildBranchFromPeriods(b);_restoreBranchUI(b);if(!STATE.active)STATE.active=b;
     });
-  } else if(d.branches){
-    BRANCHES.forEach(b=>{if(d.branches[b]&&d.branches[b].rows&&d.branches[b].rows.length){setBranchData(b,d.branches[b].rows,d.branches[b].reportName||BRANCH_LABELS[b],d.branches[b].reportDate||'');if(!STATE.active) STATE.active=b;}});
-  }
-  if(d.dt && typeof d.dt==='object' && typeof DT!=='undefined') DT.store=d.dt;
-  function tryRender(n){if(typeof Chart!=='undefined'){renderAll();}else if(n>0) setTimeout(()=>tryRender(n-1),200);else renderAll();}
-  tryRender(25);
+    if(typeof DT!=='undefined')DT.store=d.dt||{};
+    function tryRender(n){if(typeof Chart!=='undefined'){renderAll();}else if(n>0)setTimeout(()=>tryRender(n-1),200);else renderAll();}
+    tryRender(25);
+  }catch(e){console.error('loadEmbedded',e);toast(e.message||'تعذر فتح ملف المشاركة','error');}
 }
 
 /* ══ TARGETED PRODUCTS DATA ══ */
@@ -8563,34 +8618,38 @@ document.getElementById('periodNameInput').addEventListener('keydown', e => {
 
 /* ── Process period file ── */
 async function handlePeriodFile(branch, label, file) {
+  const version=++_uploadVersion[branch];
   _upShow(branch, label+' — '+file.name);
   showLoad();
   try {
-    let rows;
-    const n = file.name.toLowerCase();
+    let rows;const ext=validateUploadFile(file);
     await _upTick(branch,15);
-    if (n.endsWith('.xlsx')||n.endsWith('.xls')) rows = await parseExcel(file);
-    else if (n.endsWith('.csv')) rows = await parseCSV(file);
-    else if (n.endsWith('.pdf')) rows = await parsePDF(file);
-    else throw new Error('صيغة غير مدعومة');
+    if(ext==='.xlsx'||ext==='.xls')rows=await parseExcel(file);
+    else if(ext==='.csv')rows=await parseCSV(file);
+    else rows=await parsePDF(file);
+    if(version!==_uploadVersion[branch])return;
     await _upTick(branch,65);
-    if (!rows || !rows.length) throw new Error('الملف لا يحتوي على بيانات');
+    validateParsedRows(rows);
     const id = Date.now();
     const agg = aggregate(rows);
-    STATE.periods[branch].push({ id, label, rows, data: agg, parseMeta: rows._parseMeta||null });
+    const existing=STATE.periods[branch].findIndex(p=>entityKey(p.label)===entityKey(label));
+    const entry={id,label,rows,data:agg,parseMeta:rows._parseMeta||null};
+    if(existing>=0){
+      if(!confirm('الفترة "'+label+'" موجودة بالفعل. استبدالها بالملف الجديد؟')){_upHide(branch);return;}
+      entry.id=STATE.periods[branch][existing].id;entry._main=!!STATE.periods[branch][existing]._main;
+      STATE.periods[branch][existing]=entry;
+    }else STATE.periods[branch].push(entry);
     await _upTick(branch,90);
     rebuildBranchFromPeriods(branch);
     if (!STATE.active) STATE.active = branch;
     await _upTick(branch,100);
-    setTimeout(()=>_upHide(branch),500);
+    setTimeout(()=>{if(version===_uploadVersion[branch])_upHide(branch);},500);
     renderPeriodBadges(branch);
     renderAll();
     saveData();
     toast('✓ "'+label+'" — '+BRANCH_LABELS[branch]+' ('+fmt(rows.length)+' وصفة)');
   } catch(e) {
-    console.error(e);
-    _upHide(branch);
-    toast(e.message || 'فشل القراءة', 'error');
+    if(version===_uploadVersion[branch]){console.error(e);_upHide(branch);toast(e.message || 'فشل القراءة', 'error');}
   } finally { hideLoad(); }
 }
 
@@ -9516,6 +9575,7 @@ async function doLogin() {
 
 function doLogout() {
   sessionStorage.removeItem('pharmdash_user');
+  flushSaveData();
   lockInMemoryData();
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
@@ -9547,37 +9607,103 @@ document.addEventListener('DOMContentLoaded', () => {
    ── IndexedDB يتحمّل الملفات الكبيرة (بلا حد 5MB الخاص بـ localStorage)
    ── الحفظ مؤجَّل (debounced) لتفادي الكتابة المتكررة
 ══════════════════════════════════════════ */
-const _IDB_NAME='pharmdash', _IDB_STORE='kv', _IDB_KEY='state';
+const _IDB_NAME='pharmdash',_IDB_STORE='kv',_IDB_KEY='state',_IDB_VERSION=2;
+let _idbDbPromise=null;
 function _idbAvailable(){ try{ return typeof indexedDB!=='undefined' && indexedDB!==null; }catch(e){ return false; } }
 function _idbOpen(){
-  return new Promise((res,rej)=>{
-    const rq=indexedDB.open(_IDB_NAME,1);
-    rq.onupgradeneeded=()=>{ const db=rq.result; if(!db.objectStoreNames.contains(_IDB_STORE)) db.createObjectStore(_IDB_STORE); };
-    rq.onsuccess=()=>res(rq.result);
-    rq.onerror=()=>rej(rq.error);
+  if(_idbDbPromise)return _idbDbPromise;
+  _idbDbPromise=new Promise((res,rej)=>{
+    const rq=indexedDB.open(_IDB_NAME,_IDB_VERSION);
+    rq.onupgradeneeded=()=>{const db=rq.result;if(!db.objectStoreNames.contains(_IDB_STORE))db.createObjectStore(_IDB_STORE);};
+    rq.onsuccess=()=>{
+      const db=rq.result;
+      db.onversionchange=()=>{db.close();_idbDbPromise=null;};
+      res(db);
+    };
+    rq.onblocked=()=>{_idbDbPromise=null;rej(new Error('قاعدة البيانات مفتوحة في تبويب قديم — أغلق التبويب وأعد المحاولة'));};
+    rq.onerror=()=>{_idbDbPromise=null;rej(rq.error||new Error('تعذر فتح التخزين المحلي'));};
   });
+  return _idbDbPromise;
 }
-function _idbPut(key,val){ return _idbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(_IDB_STORE,'readwrite'); tx.objectStore(_IDB_STORE).put(val,key); tx.oncomplete=()=>{db.close();res();}; tx.onerror=()=>{db.close();rej(tx.error);}; })); }
-function _idbGet(key){ return _idbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(_IDB_STORE,'readonly'); const r=tx.objectStore(_IDB_STORE).get(key); r.onsuccess=()=>{db.close();res(r.result);}; r.onerror=()=>{db.close();rej(r.error);}; })); }
-function _idbDelete(key){ return _idbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction(_IDB_STORE,'readwrite'); tx.objectStore(_IDB_STORE).delete(key); tx.oncomplete=()=>{db.close();res();}; tx.onerror=()=>{db.close();rej(tx.error);}; })); }
+function _idbPut(key,val){return _idbOpen().then(db=>new Promise((res,rej)=>{const tx=db.transaction(_IDB_STORE,'readwrite');tx.objectStore(_IDB_STORE).put(val,key);tx.oncomplete=()=>res();tx.onabort=tx.onerror=()=>rej(tx.error||new Error('فشل الحفظ المحلي'));}));}
+function _idbGet(key){return _idbOpen().then(db=>new Promise((res,rej)=>{const tx=db.transaction(_IDB_STORE,'readonly'),r=tx.objectStore(_IDB_STORE).get(key);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error||new Error('فشل قراءة التخزين المحلي'));}));}
+function _idbDelete(key){return _idbOpen().then(db=>new Promise((res,rej)=>{const tx=db.transaction(_IDB_STORE,'readwrite');tx.objectStore(_IDB_STORE).delete(key);tx.oncomplete=()=>res();tx.onabort=tx.onerror=()=>rej(tx.error||new Error('فشل مسح التخزين المحلي'));}));}
 
 /* لقطة قابلة للتخزين: الصفوف الخام فقط (الـ aggregate يُعاد حسابه عند الاستعادة) */
 function _buildSnapshot(){
-  const snap={ v:2, active:STATE.active, periods:{}, dt:(typeof DT!=='undefined'&&DT.store)?DT.store:{} };
+  const snap={v:PharmaCore.SNAPSHOT_SCHEMA_VERSION,active:STATE.active,periods:{},dt:(typeof DT!=='undefined'&&DT.store)?DT.store:{}};
   BRANCHES.forEach(b=>{
     snap.periods[b]=(STATE.periods[b]||[]).map(p=>({ id:p.id, label:p.label, rows:p.rows, parseMeta:p.parseMeta||null, _main:!!p._main }));
   });
   return snap;
 }
-let _saveTimer=null;
-function saveData(){
-  if(!_idbAvailable()) return;
-  clearTimeout(_saveTimer);
-  _saveTimer=setTimeout(()=>{
-    try{ _idbPut(_IDB_KEY,_buildSnapshot()).catch(e=>console.error('saveData',e)); }
-    catch(e){ console.error('saveData',e); }
-  },700);
+function setSaveStatus(state,text){
+  const el=document.getElementById('saveStatus');if(!el)return;
+  el.dataset.state=state;el.textContent=text;
 }
+async function _sealSnapshot(snapshot){
+  const sealed={...snapshot,savedAt:new Date().toISOString()};
+  const json=JSON.stringify(sealed),bytes=new TextEncoder().encode(json);
+  if(bytes.byteLength>PharmaCore.MAX_SNAPSHOT_BYTES)throw new Error('حجم البيانات المحفوظة أكبر من الحد الآمن (150MB)');
+  if(typeof crypto!=='undefined'&&crypto.subtle){
+    const digest=await crypto.subtle.digest('SHA-256',bytes);
+    sealed.integrity={algorithm:'SHA-256',digest:[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,'0')).join('')};
+  }
+  return sealed;
+}
+async function _verifySnapshotIntegrity(snapshot){
+  if(!snapshot?.integrity?.digest)return true;
+  const copy={...snapshot};delete copy.integrity;
+  const bytes=new TextEncoder().encode(JSON.stringify(copy));
+  const digest=await crypto.subtle.digest('SHA-256',bytes);
+  const actual=[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,'0')).join('');
+  return actual===snapshot.integrity.digest;
+}
+function _migrateSnapshot(snapshot){
+  const migrated={...snapshot,periods:{...(snapshot.periods||{})}};
+  if(!migrated.v||migrated.v===1){
+    BRANCHES.forEach(b=>{migrated.periods[b]=(migrated.periods[b]||[]).map(p=>({...p,parseMeta:p.parseMeta||null}));});
+    migrated.v=2;
+  }
+  return migrated;
+}
+let _saveTimer=null,_saveRevision=0,_saveChain=Promise.resolve(),_saveErrorShown=false;
+function _queueSnapshotWrite(revision){
+  const snapshot=_buildSnapshot();
+  _saveChain=_saveChain.catch(()=>{}).then(async()=>{
+    if(revision<_saveRevision)return;
+    setSaveStatus('saving','جارٍ الحفظ');
+    const sealed=await _sealSnapshot(snapshot);
+    await _idbPut(_IDB_KEY,sealed);
+    if(revision===_saveRevision)setSaveStatus('saved','محفوظ');
+    _saveErrorShown=false;
+  }).catch(async e=>{
+    console.error('saveData',e);setSaveStatus('error','فشل الحفظ');
+    if(!_saveErrorShown){
+      _saveErrorShown=true;
+      let suffix='';
+      try{const est=await navigator.storage?.estimate?.();if(est?.quota)suffix=' ('+Math.round((est.usage||0)/1048576)+' من '+Math.round(est.quota/1048576)+'MB مستخدم)';}catch(_){}
+      toast((e?.name==='QuotaExceededError'?'مساحة التخزين غير كافية':'تعذر حفظ البيانات محلياً')+suffix,'error');
+    }
+  });
+  return _saveChain;
+}
+function saveData(options){
+  if(!_idbAvailable()){setSaveStatus('error','التخزين غير متاح');return Promise.resolve();}
+  const immediate=options&&options.immediate;
+  const revision=++_saveRevision;
+  clearTimeout(_saveTimer);
+  setSaveStatus('pending','تغييرات غير محفوظة');
+  if(immediate)return _queueSnapshotWrite(revision);
+  _saveTimer=setTimeout(()=>{_saveTimer=null;_queueSnapshotWrite(revision);},450);
+  return _saveChain;
+}
+function flushSaveData(){
+  if(_saveTimer){clearTimeout(_saveTimer);_saveTimer=null;return _queueSnapshotWrite(_saveRevision);}
+  return _saveChain;
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushSaveData();});
+window.addEventListener('pagehide',()=>{flushSaveData();});
 /* استعادة واجهة كارت الفرع بعد تحميل الفترات */
 function _restoreBranchUI(branch){
   const periods=STATE.periods[branch]||[];
@@ -9610,6 +9736,10 @@ async function loadSavedData(){
   if(!snap) return false;
   let any=false;
   try{
+    if(!(await _verifySnapshotIntegrity(snap)))throw new Error('فشل التحقق من سلامة البيانات المحفوظة');
+    snap=_migrateSnapshot(snap);
+    const validation=PharmaCore.validateSnapshot(snap);
+    if(!validation.valid)throw new Error('لقطة التخزين غير صالحة: '+validation.error);
     BRANCHES.forEach(b=>{
       const ps=(snap.periods&&snap.periods[b])||[];
       if(!ps.length) return;
@@ -9621,17 +9751,20 @@ async function loadSavedData(){
     if(snap.dt && typeof snap.dt==='object' && typeof DT!=='undefined') DT.store=snap.dt;
     if(snap.active && STATE.data[snap.active]) STATE.active=snap.active;
     else if(!STATE.active) STATE.active=BRANCHES.find(b=>STATE.data[b])||null;
-  }catch(e){ console.error('loadSavedData',e); }
+    setSaveStatus('saved','محفوظ');
+  }catch(e){console.error('loadSavedData',e);setSaveStatus('error','بيانات تالفة');toast(e.message||'تعذر استعادة البيانات المحفوظة','error');return false;}
   return any || (snap.dt && Object.keys(snap.dt).length>0);
 }
 function updateSavedBadge() { /* لا يوجد شارة في الواجهة الحالية */ }
-function clearSavedData(){
+async function clearSavedData(){
   try{ if(!confirm('مسح كل البيانات المحفوظة نهائياً؟ لا يمكن التراجع.')) return; }catch(e){}
-  if(_idbAvailable()) _idbDelete(_IDB_KEY).catch(e=>console.error('clearSavedData',e));
+  clearTimeout(_saveTimer);_saveTimer=null;_saveRevision++;
+  try{await _saveChain.catch(()=>{});if(_idbAvailable())await _idbDelete(_IDB_KEY);}catch(e){console.error('clearSavedData',e);toast('تعذر مسح التخزين المحلي','error');return;}
   BRANCHES.forEach(b=>{ STATE.data[b]=null; STATE.periods[b]=[]; STATE.quality[b]=null; _resetBranchUI(b); });
   if(typeof DT!=='undefined') DT.store={};
   STATE.active=null;
   clearTimeout(_saveTimer);
+  setSaveStatus('idle','جاهز');
   if(typeof renderAll==='function') renderAll();
   toast('تم مسح البيانات المحفوظة');
 }

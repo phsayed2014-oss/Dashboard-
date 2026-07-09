@@ -1,6 +1,9 @@
 export const SNAPSHOT_SCHEMA_VERSION = 2;
 export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 export const MAX_UPLOAD_ROWS = 500_000;
+export const MAX_PDF_PAGES = 1_000;
+export const MAX_SNAPSHOT_ROWS = 2_000_000;
+export const MAX_SNAPSHOT_BYTES = 150 * 1024 * 1024;
 
 const ARABIC_DIACRITICS = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g;
 function stripControlCharacters(value) {
@@ -283,6 +286,10 @@ export function validateSnapshot(snapshot) {
   if (!snapshot.periods || typeof snapshot.periods !== 'object') {
     return { valid: false, error: 'invalid-periods' };
   }
+  if (Number(snapshot.v || 1) > SNAPSHOT_SCHEMA_VERSION) {
+    return { valid: false, error: 'unsupported-version' };
+  }
+  let totalRows = 0;
   for (const branch of ['T1', 'T2', 'T3']) {
     const periods = snapshot.periods[branch];
     if (periods != null && !Array.isArray(periods)) return { valid: false, error: `invalid-${branch}` };
@@ -293,7 +300,26 @@ export function validateSnapshot(snapshot) {
       if (period.rows.length > MAX_UPLOAD_ROWS || !period.rows.every(validateRxRow)) {
         return { valid: false, error: `invalid-rows-${branch}` };
       }
+      totalRows += period.rows.length;
+      if (totalRows > MAX_SNAPSHOT_ROWS) return { valid: false, error: 'snapshot-too-large' };
     }
   }
-  return { valid: true, version: Number(snapshot.v || 1) };
+  if (snapshot.dt != null) {
+    if (typeof snapshot.dt !== 'object' || Array.isArray(snapshot.dt)) return { valid: false, error: 'invalid-daily-store' };
+    for (const [date, branches] of Object.entries(snapshot.dt)) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !branches || typeof branches !== 'object') {
+        return { valid: false, error: 'invalid-daily-date' };
+      }
+      for (const branch of ['T1', 'T2', 'T3']) {
+        const entry = branches[branch];
+        if (entry == null) continue;
+        if (!entry || typeof entry !== 'object' || !Array.isArray(entry.rows) || !entry.rows.every(validateRxRow)) {
+          return { valid: false, error: `invalid-daily-${branch}` };
+        }
+        totalRows += entry.rows.length;
+        if (totalRows > MAX_SNAPSHOT_ROWS) return { valid: false, error: 'snapshot-too-large' };
+      }
+    }
+  }
+  return { valid: true, version: Number(snapshot.v || 1), totalRows };
 }

@@ -284,6 +284,13 @@ body::before{
 .brand .sub .dot-sep{width:3px;height:3px;border-radius:50%;background:var(--text-muted);display:inline-block}
 .actions{display:flex;gap:9px;flex-wrap:wrap}
 .privacy-select{min-width:132px;max-width:160px;padding:8px 10px;font-size:11px;font-weight:700;}
+.save-status{display:inline-flex;align-items:center;gap:5px;padding:7px 10px;border-radius:999px;font-size:10px;font-weight:800;color:var(--text-muted);background:var(--bg-glass2);border:1px solid var(--border);}
+.save-status::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;}
+.save-status[data-state="pending"]{color:var(--amber-l);}
+.save-status[data-state="saving"]{color:var(--sky-l);}
+.save-status[data-state="saving"]::before{animation:pulse 1s infinite;}
+.save-status[data-state="saved"]{color:var(--teal-l);}
+.save-status[data-state="error"]{color:var(--rose-l);}
 
 /* ── BUTTONS ── */
 .btn{

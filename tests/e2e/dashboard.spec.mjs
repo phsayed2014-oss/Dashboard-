@@ -186,3 +186,31 @@ test('extracts a text PDF and shows its data-quality report', async ({ page }) =
     await rm(temp, { recursive: true, force: true });
   }
 });
+
+test('seals saved snapshots and refuses tampered local data', async ({ page }) => {
+  await page.locator('#loginUser').fill('elsayed');
+  await page.locator('#loginPass').fill('pharma2026');
+  await page.locator('.login-btn').click();
+
+  const integrity = await page.evaluate(async (rows) => {
+    setBranchData('T1', rows, 'مايو 2026.xlsx', '');
+    STATE.active = 'T1';
+    await saveData({ immediate: true });
+    await flushSaveData();
+    const snapshot = await _idbGet(_IDB_KEY);
+    return snapshot.integrity;
+  }, sampleRows);
+  expect(integrity).toMatchObject({ algorithm: 'SHA-256' });
+  expect(integrity.digest).toHaveLength(64);
+  await expect(page.locator('#saveStatus')).toHaveAttribute('data-state', 'saved');
+
+  await page.evaluate(async () => {
+    const snapshot = await _idbGet(_IDB_KEY);
+    snapshot.periods.T1[0].rows[0].doctor = 'Tampered';
+    await _idbPut(_IDB_KEY, snapshot);
+  });
+  await page.reload();
+  await expect(page.locator('#saveStatus')).toHaveAttribute('data-state', 'error');
+  const restored = await page.evaluate(() => STATE.data.T1);
+  expect(restored).toBeNull();
+});
