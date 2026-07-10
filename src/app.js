@@ -179,12 +179,72 @@ let charts={};
 
 function toast(msg,type){type=type||'success';const t=document.getElementById('toast'),i=document.getElementById('toastIco'),m=document.getElementById('toastMsg');t.className='toast show '+type;i.textContent=type==='success'?'✓':(type==='error'?'✕':'ℹ');m.textContent=msg;setTimeout(()=>t.classList.remove('show'),3500);}
 const lb=document.getElementById('loadingBar');let _loadCount=0;
-function showLoad(){_loadCount++;lb.classList.add('show');}
-function hideLoad(){_loadCount=Math.max(0,_loadCount-1);if(!_loadCount)lb.classList.remove('show');}
+function showLoad(){_loadCount++;lb.classList.add('show');lb.setAttribute('aria-hidden','false');}
+function hideLoad(){_loadCount=Math.max(0,_loadCount-1);if(!_loadCount){lb.classList.remove('show');lb.setAttribute('aria-hidden','true');}}
 const modalBg=document.getElementById('modalBg'),modalBody=document.getElementById('modalBody');
-document.getElementById('modalClose').onclick=()=>modalBg.classList.remove('show');
-modalBg.addEventListener('click',e=>{if(e.target===modalBg) modalBg.classList.remove('show');});
-document.addEventListener('keydown',e=>{if(e.key==='Escape') modalBg.classList.remove('show');});
+let _appShellUnlocked=false,_blockingUiOpen=false,_mobileSidebarOpen=false;
+function syncAppShellAccessibility(unlocked){
+  if(typeof unlocked==='boolean')_appShellUnlocked=unlocked;
+  const sidebar=document.getElementById('mainSidebar'),main=document.getElementById('mainContent'),login=document.getElementById('loginScreen');
+  const shellBlocked=!_appShellUnlocked||_blockingUiOpen;
+  if(sidebar)sidebar.toggleAttribute('inert',shellBlocked);
+  if(main)main.toggleAttribute('inert',shellBlocked||_mobileSidebarOpen);
+  if(login){
+    login.toggleAttribute('inert',_appShellUnlocked);
+    login.setAttribute('aria-hidden',String(_appShellUnlocked));
+  }
+  document.getElementById('skipLink')?.setAttribute('tabindex',_appShellUnlocked?'0':'-1');
+}
+function setBlockingUi(open){_blockingUiOpen=!!open;syncAppShellAccessibility();}
+let _modalReturnFocus=null;
+function openModal(label){
+  if(!modalBg.classList.contains('show'))_modalReturnFocus=document.activeElement;
+  const dialog=modalBg.querySelector('[role="dialog"]');
+  if(label)dialog.setAttribute('aria-label',label);
+  modalBg.classList.add('show');modalBg.setAttribute('aria-hidden','false');
+  setBlockingUi(true);
+  requestAnimationFrame(()=>document.getElementById('modalClose').focus());
+}
+function closeModal(){
+  if(!modalBg.classList.contains('show'))return;
+  modalBg.classList.remove('show');modalBg.setAttribute('aria-hidden','true');
+  modalBg.querySelector('.modal')?.classList.remove('wide');
+  setBlockingUi(false);
+  if(_modalReturnFocus&&document.contains(_modalReturnFocus))_modalReturnFocus.focus();
+  _modalReturnFocus=null;
+}
+function trapDialogTab(event,container){
+  if(event.key!=='Tab')return;
+  const focusable=[...container.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(el=>!el.hidden&&el.getClientRects().length);
+  if(!focusable.length){event.preventDefault();container.focus?.();return;}
+  const first=focusable[0],last=focusable[focusable.length-1];
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+}
+document.getElementById('modalClose').onclick=closeModal;
+modalBg.addEventListener('click',e=>{if(e.target===modalBg)closeModal();});
+document.addEventListener('keydown',e=>{
+  const login=document.getElementById('loginScreen');
+  if(!_appShellUnlocked){
+    if(e.key==='Tab')trapDialogTab(e,login);
+    return;
+  }
+  if(!modalBg.classList.contains('show')){
+    const share=document.getElementById('plShareOverlay')||document.getElementById('phShareOverlay');
+    const period=document.getElementById('periodPopup');
+    if(e.key==='Escape'){
+      if(document.getElementById('plShareOverlay'))closePLShareCard();
+      else if(document.getElementById('phShareOverlay'))closePHShareCard();
+      else if(period?.classList.contains('open'))cancelAddPeriod();
+      else if(_mobileSidebarOpen)closeSidebar();
+    }
+    else if(share)trapDialogTab(e,share);
+    else if(period?.classList.contains('open'))trapDialogTab(e,period);
+    return;
+  }
+  if(e.key==='Escape'){e.preventDefault();closeModal();return;}
+  trapDialogTab(e,modalBg);
+});
 function escapeHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function escapeAttr(s){return escapeHtml(s).replace(/'/g,'&#39;');}
 /* أرقام المرضى قد تتكرر بين أنظمة الفروع؛ لذلك الهوية المجمعة = الفرع + الرقم. */
@@ -196,13 +256,36 @@ function entityKey(value){return PharmaCore.normalizeEntityKey(value);}
 function sameEntity(a,b){return entityKey(a)===entityKey(b);}
 function rankBadge(i){const c=i===0?'gold':(i===1?'silver':(i===2?'bronze':'normal'));return '<span class="rank '+c+'">'+(i+1)+'</span>';}
 function barRow(v,m){const p=m>0?(v*100/m):0;return '<div class="bar-cell"><div class="bar" style="width:'+p+'%;"></div><div class="v">'+p.toFixed(1)+'%</div></div>';}
+function enhanceAccessibility(root){
+  const base=root&&root.querySelectorAll?root:document;
+  const interactive=[...(base.matches?.('tr.clickable,[onclick]:not(button):not(a):not(input):not(select)')?[base]:[]),...base.querySelectorAll('tr.clickable,[onclick]:not(button):not(a):not(input):not(select)')];
+  interactive.forEach(el=>{
+    if(el.dataset.a11yReady)return;
+    el.dataset.a11yReady='1';el.setAttribute('role','button');el.tabIndex=0;
+    el.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();el.click();}});
+  });
+  base.querySelectorAll('th:not([scope])').forEach(th=>th.setAttribute('scope','col'));
+  base.querySelectorAll('input:not([aria-label]),select:not([aria-label])').forEach(el=>{const label=el.placeholder||el.title;if(label)el.setAttribute('aria-label',label.replace(/[🔎📅]/g,'').trim());});
+  base.querySelectorAll('svg:not([aria-hidden])').forEach(svg=>svg.setAttribute('aria-hidden','true'));
+  base.querySelectorAll('canvas:not([role])').forEach(canvas=>{canvas.setAttribute('role','img');const title=canvas.closest('.card')?.querySelector('.card-title')?.textContent?.trim();canvas.setAttribute('aria-label',title||'رسم بياني للبيانات المعروضة');});
+  base.querySelectorAll('.panel').forEach(panel=>{panel.setAttribute('role','region');panel.setAttribute('aria-hidden',panel.classList.contains('active')?'false':'true');});
+}
+enhanceAccessibility(document);
+new MutationObserver(records=>records.forEach(record=>record.addedNodes.forEach(node=>{if(node.nodeType===1)enhanceAccessibility(node);}))).observe(document.body,{childList:true,subtree:true});
+document.querySelector('nav[aria-label="التنقل الرئيسي"]')?.addEventListener('keydown',event=>{
+  if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;
+  const items=[...document.querySelectorAll('.sb-nav-item')],current=items.indexOf(document.activeElement);if(current<0)return;
+  event.preventDefault();
+  const next=event.key==='Home'?0:event.key==='End'?items.length-1:(current+(event.key==='ArrowDown'?1:-1)+items.length)%items.length;
+  items[next].focus();
+});
 
 BRANCHES.forEach(b=>{
   const btn=document.querySelector('[data-upload="'+b+'"]'),inp=document.getElementById('file-'+b);
   const card=document.querySelector('.branch-card[data-branch="'+b+'"]');
 
   // Click to upload
-  btn.onclick=()=>{_pendingMode=null;inp.click();};
+  btn.onclick=()=>{_pendingMode=null;_pendingBranch=null;restorePeriodFocus();inp.click();};
 
   // Drag & Drop
   card.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation();card.classList.add('dragover');});
@@ -214,7 +297,7 @@ BRANCHES.forEach(b=>{
     if(file){
       if(_pendingMode==='period'&&_pendingBranch===b){
         const label=inp._pendingLabel||'فترة '+(STATE.periods[b].length+1);
-        inp._pendingLabel=null;_pendingMode=null;
+        inp._pendingLabel=null;_pendingMode=null;_pendingBranch=null;restorePeriodFocus();
         handlePeriodFile(b,label,file);
       } else {
         handleFile(b,file);
@@ -228,12 +311,17 @@ BRANCHES.forEach(b=>{
     inp.value='';
     if(_pendingMode==='period'&&_pendingBranch===b){
       const label=inp._pendingLabel||'فترة '+(STATE.periods[b].length+1);
-      inp._pendingLabel=null;_pendingMode=null;
+      inp._pendingLabel=null;_pendingMode=null;_pendingBranch=null;restorePeriodFocus();
       handlePeriodFile(b,label,file);
     } else {
       handleFile(b,file);
     }
   };
+  inp.addEventListener('cancel',()=>{
+    if(_pendingMode==='period'&&_pendingBranch===b){
+      inp._pendingLabel=null;_pendingMode=null;_pendingBranch=null;restorePeriodFocus();
+    }
+  });
 });
 
 async function handleFile(branch,file){
@@ -479,7 +567,21 @@ function renderBranchPicker(){
   const box=document.getElementById('branchPicker');const loaded=BRANCHES.filter(b=>STATE.data[b]);
   if(!STATE.active&&loaded.length) STATE.active=loaded[0];
   box.innerHTML=BRANCHES.map(b=>{const has=!!STATE.data[b],isActive=b===STATE.active;return '<button class="btn" data-pick="'+b+'" '+(has?'':'disabled')+' style="'+(isActive?'background:var(--grad-p);color:#fff;border-color:transparent;':'')+'">'+BRANCH_LABELS[b]+(has?' ✓':'')+'</button>';}).join('');
-  box.querySelectorAll('[data-pick]').forEach(btn=>{btn.onclick=()=>{STATE.active=btn.dataset.pick;renderBranchPicker();renderActive();};});
+  box.querySelectorAll('[data-pick]').forEach(btn=>{btn.onclick=()=>{STATE.active=btn.dataset.pick;renderBranchPicker();updateDataContext();renderActive();};});
+}
+function updateDataContext(){
+  const el=document.getElementById('dataContext');if(!el)return;
+  const loaded=BRANCHES.filter(b=>STATE.data[b]);if(!loaded.length){el.textContent='لا توجد بيانات';el.title='';return;}
+  const aggregateScope=NO_BRANCH_TABS.includes(window._activePanel||'overview');
+  if(aggregateScope){
+    const labels=loaded.map(b=>periodOldestNewest(STATE.periods[b]||[]).newest?.label).filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i);
+    const total=loaded.reduce((sum,b)=>sum+(STATE.data[b]?.totalRows||0),0);
+    el.textContent='كل الفروع · '+(labels.join(' / ')||'أحدث فترة')+' · '+fmt(total)+' وصفة';
+  }else{
+    const b=STATE.active&&STATE.data[STATE.active]?STATE.active:loaded[0],latest=periodOldestNewest(STATE.periods[b]||[]).newest;
+    el.textContent=BRANCH_LABELS[b]+' · '+(latest?.label||STATE.data[b].reportName||'أحدث فترة')+' · '+fmt(STATE.data[b].totalRows)+' وصفة';
+  }
+  el.title=el.textContent;
 }
 function renderDataQualityPanel(){
   const panel=document.getElementById('dataQualityPanel');if(!panel)return;
@@ -527,6 +629,7 @@ function removeExactDuplicates(branch){
 function renderAll(){
   renderBranchPicker();
   renderDataQualityPanel();
+  updateDataContext();
   renderActive();
   updateSummaryBar();
   setTimeout(()=>document.querySelectorAll('tbody').forEach(tb=>{
@@ -1134,17 +1237,25 @@ function chartColors(){const l=document.documentElement.getAttribute('data-theme
 if(window.Chart){try{Chart.defaults.font.family="'IBM Plex Sans Arabic',sans-serif";}catch(e){}}
 function tt(c){return{backgroundColor:c.ttBg,titleColor:c.ttFg,bodyColor:c.ttFg,borderColor:'rgba(108,99,255,0.35)',borderWidth:1,padding:12,titleFont:{family:'IBM Plex Sans Arabic',weight:'700'},bodyFont:{family:'IBM Plex Sans Arabic'},cornerRadius:10};}
 function destroyChart(n){if(charts[n]){charts[n].destroy();delete charts[n];}}
+function setChartSummary(canvas,data){
+  const title=canvas.closest('.card')?.querySelector('.card-title')?.textContent?.trim()||'رسم بياني';
+  const summary=(data||[]).slice(0,12).map(item=>item.label+': '+fmt(item.v)).join('، ');
+  canvas.setAttribute('role','img');canvas.setAttribute('aria-label',title+(summary?' — '+summary:''));
+}
 function drawBar(id,data,color,onClick){
   destroyChart(id);const ctx=document.getElementById(id);if(!ctx) return;const c=chartColors();
+  setChartSummary(ctx,data);
   const gctx=ctx.getContext('2d');const grad=gctx.createLinearGradient(0,0,400,0);grad.addColorStop(0,color);grad.addColorStop(1,color+'44');
   charts[id]=new Chart(ctx,{type:'bar',data:{labels:data.map(x=>x.label),datasets:[{data:data.map(x=>x.v),backgroundColor:grad,borderColor:color,borderWidth:1,borderRadius:6,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,onClick:(e,els)=>{if(els&&els.length&&onClick) onClick(els[0].index);},plugins:{legend:{display:false},tooltip:tt(c)},scales:{x:{ticks:{color:c.text,font:{family:'IBM Plex Sans Arabic',size:12}},grid:{color:c.grid}},y:{ticks:{color:c.text,font:{family:'IBM Plex Sans Arabic',size:12}},grid:{color:c.grid}}}}});
 }
 function drawDoughnut(id,data){
   destroyChart(id);const ctx=document.getElementById(id);if(!ctx) return;const c=chartColors();
+  setChartSummary(ctx,data);
   charts[id]=new Chart(ctx,{type:'doughnut',data:{labels:data.map(s=>s.label),datasets:[{data:data.map(s=>s.v),backgroundColor:data.map((_,i)=>PALETTE[i%PALETTE.length]),borderColor:'rgba(0,0,0,0.12)',borderWidth:2,hoverOffset:14}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:{color:c.text,font:{family:'IBM Plex Sans Arabic',size:11},boxWidth:11,padding:9}},tooltip:tt(c)}}});
 }
 function drawPolar(id,data){
   destroyChart(id);const ctx=document.getElementById(id);if(!ctx) return;const c=chartColors();
+  setChartSummary(ctx,data);
   charts[id]=new Chart(ctx,{type:'polarArea',data:{labels:data.map(s=>s.label),datasets:[{data:data.map(s=>s.v),backgroundColor:data.map((_,i)=>PALETTE[i%PALETTE.length]+'cc'),borderColor:'rgba(255,255,255,0.08)',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,scales:{r:{ticks:{color:c.text,backdropColor:'transparent'},grid:{color:c.grid},angleLines:{color:c.grid}}},plugins:{legend:{position:'right',labels:{color:c.text,font:{family:'IBM Plex Sans Arabic',size:12}}},tooltip:tt(c)}}});
 }
 function renderDocs(d){
@@ -1774,13 +1885,14 @@ function showPLShareCard(name){
     : '';
   var grandTotal = (d.total || 0) + ph.total;
   var ov = document.createElement('div');
+  window._shareReturnFocus=document.activeElement;
   ov.id = 'plShareOverlay';
   ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:' + _overlay + ';backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px;';
   ov.onclick = function(e){ if(e.target === ov) closePLShareCard(); };
-  ov.innerHTML = '<div style="width:100%;max-width:430px;border-radius:22px;padding:26px 24px;background:' + _bg + ';border:1px solid ' + _border + ';box-shadow:' + _shadow + ';">'
+  ov.innerHTML = '<div role="dialog" aria-modal="true" aria-label="بطاقة مشاركة NOSTRI" tabindex="-1" style="width:100%;max-width:430px;border-radius:22px;padding:26px 24px;background:' + _bg + ';border:1px solid ' + _border + ';box-shadow:' + _shadow + ';">'
     + '<div style="position:relative;text-align:center;padding:2px 0 4px;">'
     + '<span style="font-size:24px;font-weight:900;letter-spacing:5px;font-family:\'Inter\',sans-serif;background:linear-gradient(90deg,#60a5fa,#14b8a6);-webkit-background-clip:text;background-clip:text;color:transparent;">NOSTRI</span>'
-    + '<button onclick="closePLShareCard()" style="position:absolute;left:0;top:50%;transform:translateY(-50%);border:none;background:' + _closeBg + ';color:' + _closeColor + ';border-radius:9px;padding:5px 12px;cursor:pointer;font-family:inherit;font-size:12px;">إغلاق ✕</button></div>'
+    + '<button type="button" aria-label="إغلاق بطاقة المشاركة" onclick="closePLShareCard()" style="position:absolute;left:0;top:50%;transform:translateY(-50%);border:none;background:' + _closeBg + ';color:' + _closeColor + ';border-radius:9px;padding:5px 12px;cursor:pointer;font-family:inherit;font-size:12px;">إغلاق ✕</button></div>'
     + '<div style="font-size:20px;font-weight:900;color:' + _nameColor + ';margin-top:14px;line-height:1.5;text-align:center;">' + escapeHtml(d.name) + '</div>'
     + '<div style="font-size:12px;color:' + _secColor + ';margin-bottom:18px;text-align:center;">' + escapeHtml(d.section) + '</div>'
     + chips
@@ -1792,10 +1904,16 @@ function showPLShareCard(name){
     + '<div style="text-align:center;margin-top:10px;font-size:9.5px;color:' + _dateColor + ';">التقرير الدوري لرئيس مجلس الإدارة — ' + escapeHtml(currentReportPeriodLabel()) + '</div>'
     + '</div>';
   document.body.appendChild(ov);
+  setBlockingUi(true);
+  ov.querySelector('[role="dialog"]').focus();
 }
 function closePLShareCard(){
   var ov = document.getElementById('plShareOverlay');
-  if(ov) ov.remove();
+  if(!ov)return;
+  ov.remove();
+  setBlockingUi(false);
+  if(window._shareReturnFocus&&document.contains(window._shareReturnFocus))window._shareReturnFocus.focus();
+  window._shareReturnFocus=null;
 }
 /* عدّ كتابات منتجات PureHerb لطبيب معيّن عبر كل الفروع المرفوعة (نفس نطاق NOSTRI) */
 function getPureHerbForDoctor(name){
@@ -1949,13 +2067,14 @@ function showPHShareCard(name){
       + '<span style="width:12px;height:12px;border-radius:50%;background:'+pc+';flex-shrink:0;"></span></div>';
   }
   var ov = document.createElement('div');
+  window._shareReturnFocus=document.activeElement;
   ov.id = 'phShareOverlay';
   ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:'+_overlay+';backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px;';
   ov.onclick = function(e){ if(e.target === ov) closePHShareCard(); };
-  ov.innerHTML = '<div style="width:100%;max-width:430px;border-radius:22px;padding:26px 24px;background:'+_bg+';border:1px solid '+_border+';box-shadow:'+_shadow+';">'
+  ov.innerHTML = '<div role="dialog" aria-modal="true" aria-label="بطاقة مشاركة PureHerb" tabindex="-1" style="width:100%;max-width:430px;border-radius:22px;padding:26px 24px;background:'+_bg+';border:1px solid '+_border+';box-shadow:'+_shadow+';">'
     + '<div style="position:relative;text-align:center;padding:2px 0 4px;">'
     + '<span style="font-size:24px;font-weight:900;letter-spacing:4px;font-family:\'Inter\',sans-serif;background:linear-gradient(90deg,#a855f7,#7c3aed);-webkit-background-clip:text;background-clip:text;color:transparent;">PUREHERB</span>'
-    + '<button onclick="closePHShareCard()" style="position:absolute;left:0;top:50%;transform:translateY(-50%);border:none;background:'+_closeBg+';color:'+_closeColor+';border-radius:9px;padding:5px 12px;cursor:pointer;font-family:inherit;font-size:12px;">إغلاق ✕</button></div>'
+    + '<button type="button" aria-label="إغلاق بطاقة المشاركة" onclick="closePHShareCard()" style="position:absolute;left:0;top:50%;transform:translateY(-50%);border:none;background:'+_closeBg+';color:'+_closeColor+';border-radius:9px;padding:5px 12px;cursor:pointer;font-family:inherit;font-size:12px;">إغلاق ✕</button></div>'
     + '<div style="font-size:20px;font-weight:900;color:'+_nameColor+';margin-top:14px;line-height:1.5;text-align:center;">'+escapeHtml(name)+'</div>'
     + '<div style="font-size:12px;color:'+_secColor+';margin-bottom:18px;text-align:center;">'+escapeHtml(section)+'</div>'
     + chips
@@ -1966,8 +2085,10 @@ function showPHShareCard(name){
     + '<div style="text-align:center;margin-top:10px;font-size:9.5px;color:'+_dateColor+';">التقرير الدوري لرئيس مجلس الإدارة — '+escapeHtml(currentReportPeriodLabel())+'</div>'
     + '</div>';
   document.body.appendChild(ov);
+  setBlockingUi(true);
+  ov.querySelector('[role="dialog"]').focus();
 }
-function closePHShareCard(){ var ov = document.getElementById('phShareOverlay'); if(ov) ov.remove(); }
+function closePHShareCard(){var ov=document.getElementById('phShareOverlay');if(!ov)return;ov.remove();setBlockingUi(false);if(window._shareReturnFocus&&document.contains(window._shareReturnFocus))window._shareReturnFocus.focus();window._shareReturnFocus=null;}
 
 function renderPLDoctorsAgg(){
   const box = document.getElementById('plDoctorsAgg');
@@ -2266,7 +2387,7 @@ function showDoctorMulti(name){
       </div>
     </div>`;
 
-  modalBg.classList.add('show');
+  openModal('تفاصيل الطبيب');
 
   // Draw sparkline
   if(hasSpark) setTimeout(()=>{drawSparklineFull('miniSpark',sparkPts,'#6c63ff');},60);
@@ -2293,8 +2414,8 @@ function showDoctor(name){
 function showDrug(name){
   if(!STATE.active) return;const d=STATE.data[STATE.active];if(!d) return;const x=d.drugs.find(z=>sameEntity(z.name,name));if(!x) return;
   modalBody.innerHTML='<h2 style="font-size:22px;margin-bottom:6px;font-family:Inter,Alexandria,sans-serif">💊 '+escapeHtml(x.name)+' <span class="tag '+STATE.active.toLowerCase()+'" style="font-size:11px;">'+BRANCH_LABELS[STATE.active]+'</span></h2><div class="detail-grid" style="margin-top:16px"><div class="detail-card"><div class="l">الكتابات</div><div class="v">'+fmt(x.total)+'</div></div><div class="detail-card"><div class="l">الأطباء</div><div class="v">'+fmt(x.doctorCount)+'</div></div><div class="detail-card"><div class="l">المرضى</div><div class="v">'+fmt(x.patients)+'</div></div><div class="detail-card"><div class="l">النسبة</div><div class="v">'+pct(x.total,d.totalRows).toFixed(1)+'%</div></div></div><div class="mini-head"><h3>أعلى الأطباء</h3></div><div class="table-wrap" style="max-height:300px;overflow-y:auto;"><table><thead><tr><th style="width:50px;">#</th><th>الطبيب</th><th>الكتابات</th><th>النسبة</th></tr></thead><tbody>'+x.doctors.slice(0,30).map((y,i)=>'<tr class="clickable" data-doc="'+escapeAttr(y.name)+'"><td>'+rankBadge(i)+'</td><td>'+escapeHtml(y.name)+'</td><td class="num">'+fmt(y.count)+'</td><td class="num">'+pct(y.count,x.total).toFixed(1)+'%</td></tr>').join('')+'</tbody></table></div>';
-  modalBody.querySelectorAll('tr[data-doc]').forEach(tr=>tr.onclick=()=>{modalBg.classList.remove('show');setTimeout(()=>showDoctor(tr.dataset.doc),150);});
-  modalBg.classList.add('show');
+  modalBody.querySelectorAll('tr[data-doc]').forEach(tr=>tr.onclick=()=>{closeModal();setTimeout(()=>showDoctor(tr.dataset.doc),150);});
+  openModal('تفاصيل الدواء');
 }
 
 function getExportPrivacyMode(){
@@ -2586,7 +2707,7 @@ function showTargetedProduct(idx) {
       </tbody></table>
     </div>` : '<div class="feat-empty">لا توجد كتابات لهذا الصنف في الفروع المرفوعة</div>'}
   `;
-  modalBg.classList.add('show');
+  openModal('تفاصيل الصنف المستهدف');
 }
 
 /* ══════════════════════════════════════════
@@ -5065,35 +5186,82 @@ STATE.periods = { T1:[], T2:[], T3:[] };
 
 const PERIOD_COLORS = ['pc0','pc1','pc2','pc3','pc4'];
 /* _pending vars moved to top */
+let _periodReturnFocus=null;
+const PERIOD_MONTHS_AR=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function periodLabelForOffset(offset){
+  const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-(offset||0));
+  return PERIOD_MONTHS_AR[d.getMonth()]+' '+d.getFullYear();
+}
+function populatePeriodMonthPicker(){
+  const grid=document.getElementById('monthPickerGrid');if(!grid)return;
+  const colors=[
+    {bg:'rgba(37,99,235,.12)',bd:'rgba(37,99,235,.35)',cl:'var(--violet-l)'},
+    {bg:'rgba(13,148,136,.12)',bd:'rgba(13,148,136,.35)',cl:'var(--teal-l)'},
+    {bg:'rgba(2,132,199,.12)',bd:'rgba(2,132,199,.35)',cl:'var(--sky-l)'},
+    {bg:'rgba(217,119,6,.12)',bd:'rgba(217,119,6,.35)',cl:'var(--amber-l)'}
+  ];
+  grid.replaceChildren();
+  let lastYear=null;
+  for(let offset=0;offset<18;offset++){
+    const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-offset);
+    if(d.getFullYear()!==lastYear){
+      lastYear=d.getFullYear();
+      const heading=document.createElement('div');
+      heading.textContent=lastYear+':';heading.style.cssText='width:100%;font-size:10px;font-weight:700;color:var(--text-muted);margin:4px 0 2px;letter-spacing:.5px;';
+      grid.appendChild(heading);
+    }
+    const color=colors[offset%colors.length],label=PERIOD_MONTHS_AR[d.getMonth()]+' '+d.getFullYear();
+    const button=document.createElement('button');
+    button.type='button';button.textContent=(offset===0?'● ':'')+label;button.dataset.periodLabel=label;button.setAttribute('aria-pressed','false');
+    button.style.cssText='padding:'+(offset<12?'6px 12px':'5px 10px')+';border-radius:999px;font-size:'+(offset<12?'11.5px':'10.5px')+';font-weight:'+(offset===0?'800':'600')+';background:'+color.bg+';border:1px solid '+color.bd+';color:'+color.cl+';cursor:pointer;font-family:inherit;'+(offset===0?'box-shadow:0 0 8px '+color.bd+';':'');
+    button.addEventListener('click',()=>{
+      grid.querySelectorAll('button[aria-pressed]').forEach(x=>x.setAttribute('aria-pressed','false'));
+      button.setAttribute('aria-pressed','true');
+      document.getElementById('periodNameInput').value=label;
+      document.getElementById('periodNameWarn').style.display='none';
+    });
+    grid.appendChild(button);
+  }
+}
+function restorePeriodFocus(){
+  if(_periodReturnFocus&&document.contains(_periodReturnFocus))_periodReturnFocus.focus();
+  _periodReturnFocus=null;
+}
 
 
 /* ── مستمعو الرفع (onclick/onchange + السحب والإفلات) مُعرَّفون مرة واحدة أعلى الملف ── */
 
 /* ── Add-period flow ── */
 function startAddPeriod(branch) {
+  _periodReturnFocus=document.activeElement;
   _pendingBranch = branch;
   const idx = STATE.periods[branch].length;
-  const suggestions = ['مايو 2026','أبريل 2026','مارس 2026','فبراير 2026','Q2 2026','Q1 2026','الربع الأول','الربع الثاني'];
   const inp = document.getElementById('periodNameInput');
-  inp.value = suggestions[idx] || '';
-  document.getElementById('periodPopup').classList.add('open');
+  populatePeriodMonthPicker();
+  inp.value = periodLabelForOffset(idx);
+  document.getElementById('periodNameWarn').style.display='none';
+  const popup=document.getElementById('periodPopup');popup.classList.add('open');popup.setAttribute('aria-hidden','false');
+  setBlockingUi(true);
   setTimeout(() => inp.focus(), 120);
 }
 function cancelAddPeriod() {
   _pendingBranch = null; _pendingMode = null;
-  document.getElementById('periodPopup').classList.remove('open');
+  const popup=document.getElementById('periodPopup');popup.classList.remove('open');popup.setAttribute('aria-hidden','true');
+  setBlockingUi(false);
+  restorePeriodFocus();
 }
 function confirmAddPeriod() {
   const rawName = document.getElementById('periodNameInput').value.trim();
-  // تحذير لو مكتبش تاريخ (اختياري — مش بيمنع الرفع)
   const warn = document.getElementById('periodNameWarn');
-  if(rawName && periodDateScore(rawName)===0){
-    if(warn){ warn.style.display='block'; }
-    // نستنى ثانية للمستخدم يشوف التحذير قبل ما يكمل
-    setTimeout(()=>{ if(warn) warn.style.display='none'; }, 3000);
+  if(!rawName||periodDateScore(rawName)===0){
+    warn.style.display='block';
+    document.getElementById('periodNameInput').focus();
+    return;
   }
-  const name = rawName || ('فترة '+(STATE.periods[_pendingBranch].length+1));
-  document.getElementById('periodPopup').classList.remove('open');
+  warn.style.display='none';
+  const name = rawName;
+  const popup=document.getElementById('periodPopup');popup.classList.remove('open');popup.setAttribute('aria-hidden','true');
+  setBlockingUi(false);
   _pendingMode = 'period';
   const inp = document.getElementById('file-'+_pendingBranch);
   inp._pendingLabel = name;
@@ -5103,6 +5271,7 @@ document.getElementById('periodNameInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') confirmAddPeriod();
   if (e.key === 'Escape') cancelAddPeriod();
 });
+document.getElementById('periodNameInput').addEventListener('input',()=>{document.getElementById('periodNameWarn').style.display='none';});
 
 /* ── Process period file ── */
 async function handlePeriodFile(branch, label, file) {
@@ -5521,6 +5690,7 @@ function buildTimeComp() {
 
 /* ── KEYBOARD SHORTCUTS ── */
 document.addEventListener('keydown', e => {
+  if(!_appShellUnlocked||modalBg.classList.contains('show')||document.getElementById('plShareOverlay')||document.getElementById('phShareOverlay')||document.getElementById('periodPopup')?.classList.contains('open'))return;
   // Ctrl/Cmd+K → Global Search
   if ((e.ctrlKey||e.metaKey) && e.key==='k') {
     e.preventDefault();
@@ -5528,11 +5698,10 @@ document.addEventListener('keydown', e => {
     if (gs) { gs.focus(); gs.select(); }
     return;
   }
-  // Escape → close modal / search dropdown
+  // Escape → close transient navigation UI
   if (e.key==='Escape') {
-    document.getElementById('modalBg')?.classList.remove('show');
     document.getElementById('searchDropdown')?.classList.remove('open');
-    document.getElementById('periodPopup')?.classList.remove('open');
+    if(_mobileSidebarOpen)closeSidebar();
     return;
   }
   // ? → toggle hotkey panel
@@ -5541,12 +5710,12 @@ document.addEventListener('keydown', e => {
     if(hp) hp.classList.toggle('show');
     return;
   }
-  // 1-9 → switch tabs (when not in input)
+  // 1-9 → switch primary sidebar sections (when not in an input)
   if (!e.ctrlKey && !e.metaKey && !e.altKey && document.activeElement.tagName!=='INPUT' && document.activeElement.tagName!=='SELECT') {
     const n=parseInt(e.key);
     if (n>=1 && n<=9) {
-      const tabs=[...document.querySelectorAll('.tab')];
-      if(tabs[n-1]) tabs[n-1].click();
+      const items=[...document.querySelectorAll('.sb-nav-item[data-tab]')];
+      if(items[n-1]){e.preventDefault();items[n-1].click();items[n-1].focus();}
     }
   }
 });
@@ -5845,18 +6014,6 @@ function drawSparklineFull(id, data, color) {
   pts.forEach((p,i)=>ctx.fillText(data[i].toLocaleString(),p.x,p.y-8));
 }
 
-/* ── Reset modal wide class on close ── */
-document.getElementById('modalClose').addEventListener('click', () => {
-  document.getElementById('modalBg').classList.remove('show');
-  document.querySelector('.modal')?.classList.remove('wide');
-});
-document.getElementById('modalBg').addEventListener('click', e => {
-  if (e.target === e.currentTarget) {
-    e.currentTarget.classList.remove('show');
-    document.querySelector('.modal')?.classList.remove('wide');
-  }
-});
-
 /* ── THEME: handled by toggleTheme() ── */
 
 /* ══ SIDEBAR NAV ══ */
@@ -5901,41 +6058,55 @@ function sidebarNav(el, panel) {
   // Track active panel globally
   window._activePanel = panel;
   // Update sidebar active state
-  document.querySelectorAll('.sb-nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('.sb-nav-item').forEach(i=>{i.classList.remove('active');i.removeAttribute('aria-current');});
   el.classList.add('active');
+  el.setAttribute('aria-current','page');
   // Sync hidden tabs + panels
-  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-selected','false');});
+  document.querySelectorAll('.panel').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-hidden','true');});
   const tabBtn = document.querySelector('.tab[data-panel="'+panel+'"]');
-  if (tabBtn) tabBtn.classList.add('active');
+  if (tabBtn){tabBtn.classList.add('active');tabBtn.setAttribute('aria-selected','true');}
   const panelEl = document.getElementById('panel-'+panel);
-  if (panelEl) panelEl.classList.add('active');
+  if(panelEl){panelEl.classList.add('active');panelEl.setAttribute('aria-hidden','false');}
   document.getElementById('branchPickerCard').style.display =
     (NO_BRANCH_TABS.includes(panel))?'none':'block';
+  updateDataContext();
   renderActive();
   try{ setTimeout(function(){ animateNums(document.getElementById('panel-'+panel)); }, 40); }catch(e){}
   // العودة لأعلى الصفحة عند تبديل القسم
   const mainEl = document.querySelector('.main-content') || document.querySelector('main') || window;
   try{ (mainEl.scrollTo ? mainEl : window).scrollTo({top:0, behavior:'instant'}); }catch(e){ window.scrollTo(0,0); }
   // Close mobile sidebar
-  closeSidebar();
+  if(_mobileSidebarOpen)closeSidebar(false);
 }
 function toggleSidebar() {
   const sb = document.getElementById('mainSidebar');
-  const isMobile = window.innerWidth <= 900;
+  const isMobile = window.matchMedia('(max-width:700px)').matches;
   if(isMobile) {
     if(sb.classList.contains('mobile-open')) { closeSidebar(); } else { openSidebar(); }
   } else {
     sb.classList.toggle('collapsed');
+    const expanded=!sb.classList.contains('collapsed'),btn=document.querySelector('.mob-menu-btn');
+    btn?.setAttribute('aria-expanded',String(expanded));btn?.setAttribute('aria-label',expanded?'إخفاء قائمة التنقل':'إظهار قائمة التنقل');
   }
 }
 function openSidebar() {
+  if(!_appShellUnlocked)return;
+  _mobileSidebarOpen=true;
   document.getElementById('mainSidebar').classList.add('mobile-open');
-  document.getElementById('sbOverlay').classList.add('show');
+  const overlay=document.getElementById('sbOverlay');overlay.classList.add('show');overlay.setAttribute('aria-hidden','false');
+  syncAppShellAccessibility();
+  const btn=document.querySelector('.mob-menu-btn');btn?.setAttribute('aria-expanded','true');btn?.setAttribute('aria-label','إغلاق قائمة التنقل');
+  document.querySelector('.sb-nav-item.active')?.focus();
 }
-function closeSidebar() {
+function closeSidebar(restoreFocus) {
+  const wasOpen=_mobileSidebarOpen;
+  _mobileSidebarOpen=false;
   document.getElementById('mainSidebar').classList.remove('mobile-open');
-  document.getElementById('sbOverlay').classList.remove('show');
+  const overlay=document.getElementById('sbOverlay');overlay.classList.remove('show');overlay.setAttribute('aria-hidden','true');
+  syncAppShellAccessibility();
+  const btn=document.querySelector('.mob-menu-btn');btn?.setAttribute('aria-expanded','false');btn?.setAttribute('aria-label','فتح قائمة التنقل');
+  if(wasOpen&&restoreFocus!==false)btn?.focus();
 }
 
 /* Sync sidebar badges when tab badges update */
@@ -6029,6 +6200,13 @@ function updateThemeIcon(){
   btn.textContent=isLight?'🌙':'☀️';
   btn.title=isLight?'الوضع الداكن':'الوضع الفاتح';
 }
+function updateUserUI(user){
+  if(!user)return;
+  const name=document.querySelector('.sb-user-name'),role=document.querySelector('.sb-user-role'),avatar=document.querySelector('.sb-avatar');
+  if(name)name.textContent=user.name||user.username||'مستخدم';
+  if(role)role.textContent=user.role||'';
+  if(avatar)avatar.textContent=PharmaCore.normalizeWhitespace(user.name||user.username).split(' ').slice(0,2).map(part=>part[0]||'').join('').toUpperCase()||'U';
+}
 
 async function doLogin() {
   const u = document.getElementById('loginUser').value.trim().toLowerCase();
@@ -6049,11 +6227,14 @@ async function doLogin() {
     err.classList.remove('show');
     /* لا نخزّن كلمة المرور — فقط بيانات العرض */
     sessionStorage.setItem('pharmdash_user', JSON.stringify({ username: u, name: rec.name, role: rec.role }));
+    updateUserUI({username:u,name:rec.name,role:rec.role});
     const screen = document.getElementById('loginScreen');
     screen.style.transition = 'opacity .4s ease';
     screen.style.opacity = '0';
     setTimeout(() => { screen.style.display = 'none'; }, 400);
-    unlockStoredData();
+    syncAppShellAccessibility(true);
+    await unlockStoredData();
+    document.getElementById('mainContent')?.focus();
   } else {
     _loginFailures++;
     if(_loginFailures>=5){_loginLockedUntil=Date.now()+30000;_loginFailures=0;err.textContent='محاولات كثيرة. تم الإيقاف 30 ثانية';}
@@ -6064,16 +6245,20 @@ async function doLogin() {
   }
 }
 
-function doLogout() {
+async function doLogout() {
   sessionStorage.removeItem('pharmdash_user');
-  flushSaveData();
+  const pendingSave=flushSaveData();
   lockInMemoryData();
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
   const screen = document.getElementById('loginScreen');
+  closeSidebar(false);
+  setSaveStatus('idle','جاهز');
+  syncAppShellAccessibility(false);
   screen.style.opacity = '0';
   screen.style.display = 'flex';
-  requestAnimationFrame(() => { screen.style.transition = 'opacity .3s ease'; screen.style.opacity = '1'; });
+  requestAnimationFrame(() => { screen.style.transition = 'opacity .3s ease'; screen.style.opacity = '1';document.getElementById('loginUser')?.focus(); });
+  await pendingSave;
 }
 
 // Allow Enter key on login
@@ -6082,11 +6267,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   });
+  const privacy=document.getElementById('exportPrivacyMode');
+  privacy?.addEventListener('change',()=>{
+    if(privacy.value==='full'&&!confirm('الوضع الكامل يضم بيانات مرضى حساسة في أي تصدير أو مشاركة. تفعيله؟'))privacy.value='anonymized';
+    privacy.classList.toggle('sensitive',privacy.value==='full');
+  });
   // Check if already logged in this session
   if (window.__PHARMADASH_SHARED__ || sessionStorage.getItem('pharmdash_user')) {
     document.getElementById('loginScreen').style.display = 'none';
+    syncAppShellAccessibility(true);
+    try{updateUserUI(window.__PHARMADASH_SHARED__?{name:'عرض مشترك',role:window.__EMBEDDED_RX__?.privacy?.anonymized?'بيانات مجهولة الهوية':'بيانات حساسة'}:JSON.parse(sessionStorage.getItem('pharmdash_user')||'null'));}catch(e){}
     /* استعادة البيانات تتم في معالج window.load عبر loadSavedData() */
-  }
+  }else{syncAppShellAccessibility(false);document.getElementById('loginUser')?.focus();}
 });
 
 /* ══════════════════════════════════════════
@@ -6348,7 +6540,7 @@ function dtOpenUpload(dateStr){
     +'<div id="dtUpResult" style="display:none;margin-top:12px;padding:12px 16px;background:rgba(13,148,136,.08);border:1px solid rgba(13,148,136,.25);border-radius:var(--r-sm);font-size:12.5px;color:var(--teal-l);"></div>'
     +'<div id="dtUpError" style="display:none;margin-top:12px;padding:12px 16px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.25);border-radius:var(--r-sm);font-size:12.5px;color:var(--rose-l);"></div>'
     +'</div>';
-  modalBody.innerHTML=html; modalBg.classList.add('show');
+  modalBody.innerHTML=html;openModal('رفع تقرير المتابعة اليومية');
 }
 
 function dtHandleDrop(e){
@@ -6380,7 +6572,7 @@ async function dtHandleFile(file){
     res.innerHTML='✅ تم رفع '+BRANCH_LABELS[branch]+' — '+dtFmtAr(ds)+' ('+fmt(rows.length)+' كتابة)';
     res.style.display='block';
     toast('✓ '+dtFmtAr(ds)+' '+BRANCH_LABELS[branch]+' — '+fmt(rows.length)+' كتابة');
-    setTimeout(function(){ modalBg.classList.remove('show'); },1500);
+    setTimeout(closeModal,1500);
   }catch(e){
     document.getElementById('dtDropZone').innerHTML='<div style="font-size:32px;margin-bottom:8px;">📄</div><div style="font-size:13px;font-weight:700;color:var(--violet-l);margin-bottom:4px;">اسحب الملف هنا أو اضغط للاختيار</div><div style="font-size:11px;color:var(--text-muted);">PDF · Excel · CSV — كتابات الأطباء</div>';
     err.textContent='⚠️ '+e.message; err.style.display='block';
