@@ -3776,7 +3776,7 @@ function enhanceAccessibility(root){
     el.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();el.click();}});
   });
   base.querySelectorAll('th:not([scope])').forEach(th=>th.setAttribute('scope','col'));
-  base.querySelectorAll('input:not([aria-label]),select:not([aria-label])').forEach(el=>{const label=el.placeholder||el.title;if(label)el.setAttribute('aria-label',label.replace(/[🔎📅]/g,'').trim());});
+  base.querySelectorAll('input:not([aria-label]),select:not([aria-label])').forEach(el=>{const label=el.placeholder||el.title;if(label)el.setAttribute('aria-label',label.replace(/[🔎📅]/gu,'').trim());});
   base.querySelectorAll('svg:not([aria-hidden])').forEach(svg=>svg.setAttribute('aria-hidden','true'));
   base.querySelectorAll('canvas:not([role])').forEach(canvas=>{canvas.setAttribute('role','img');const title=canvas.closest('.card')?.querySelector('.card-title')?.textContent?.trim();canvas.setAttribute('aria-label',title||'رسم بياني للبيانات المعروضة');});
   base.querySelectorAll('.panel').forEach(panel=>{panel.setAttribute('role','region');panel.setAttribute('aria-hidden',panel.classList.contains('active')?'false':'true');});
@@ -4014,7 +4014,7 @@ async function parseExcel(file,options){
 }
 function decodeDelimitedText(buffer){
   const bytes=new Uint8Array(buffer);
-  let text='';
+  let text;
   if(bytes[0]===0xFF&&bytes[1]===0xFE)text=new TextDecoder('utf-16le').decode(bytes.subarray(2));
   else if(bytes[0]===0xFE&&bytes[1]===0xFF)text=new TextDecoder('utf-16be').decode(bytes.subarray(2));
   else{
@@ -5286,7 +5286,7 @@ function renderPLComparison(){
   }
 
   // قسم العدد
-  let countSection='';
+  let countSection;
   if(hasPeriods){
     const upC = countChange>=0;
     const detailRows = PRIVATE_LABEL.map(p=>prodCompare[p.key]).filter(p=>p.before>0||p.after>0).sort((a,b)=>(b.after-b.before)-(a.after-a.before));
