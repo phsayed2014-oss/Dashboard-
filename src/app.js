@@ -1011,7 +1011,7 @@ function renderOverviewCore(d){
   const isMulti=loaded.length>1;
 
   /* ── Trend: compare across periods ── */
-  const firstBranch=loaded[0]||null;
+  const trendBranch=isMulti?null:(STATE.active&&STATE.data[STATE.active]?STATE.active:(loaded[0]||null));
   function getPeriodTrend(branch,fn){
     const range=periodOldestNewest(STATE.periods[branch]||[]);
     if(!range.oldest||!range.newest||range.oldest===range.newest)return null;
@@ -1026,8 +1026,8 @@ function renderOverviewCore(d){
 
   /* ── Sparkline data ── */
   function sparkPts(branch,fn){const p=PharmaCore.sortPeriods(STATE.periods[branch]||[]);return p.length>=2?p.map(x=>fn(x.data)):[];}
-  const sp1=firstBranch?sparkPts(firstBranch,x=>x.totalRows):[];
-  const sp2=firstBranch?sparkPts(firstBranch,x=>x.doctors.length):[];
+  const sp1=trendBranch?sparkPts(trendBranch,x=>x.totalRows):[];
+  const sp2=trendBranch?sparkPts(trendBranch,x=>x.doctors.length):[];
 
   const scopeTag=isMulti
     ?`<span class="tag" style="background:rgba(0,212,160,.12);color:var(--teal-l);font-size:10px;border:1px solid rgba(0,212,160,.25);margin-right:8px;">مجمّع كل الفروع</span>`
@@ -1035,8 +1035,8 @@ function renderOverviewCore(d){
 
   const items=[
     {cls:'k1',ico:'Rx',label:'إجمالي الكتابات',val:fmt(isMulti?globalTotal:d.totalRows),foot:isMulti?'كل الفروع':BRANCH_LABELS[STATE.active],
-      trend:firstBranch?getPeriodTrend(firstBranch,x=>x.totalRows):null,spark:'sp-1'},{cls:'k2',ico:'Dr',label:'عدد الأطباء',val:fmt(isMulti?globalDocMap.size:d.doctors.length),foot:'أطباء كتبوا وصفات',
-      trend:firstBranch?getPeriodTrend(firstBranch,x=>x.doctors.length):null,spark:'sp-2'},{cls:'k3',ico:'Md',label:'الأدوية الفريدة',val:fmt(isMulti?globalDrugMap.size:d.drugs.length),foot:'صنف مختلف',trend:null,spark:null},{cls:'k4',ico:'Dp',label:'الأقسام',val:fmt(isMulti?globalSecMap.size:d.sections.length),foot:'قسم/تخصص',trend:null,spark:null},{cls:'k5',ico:'Pt',label:'المرضى',val:fmt(isMulti?globalPatientSet.size:d.totalPatients),foot:isMulti?'مريض/فرع فريد':'مريض فريد',trend:null,spark:null},{cls:'k6',ico:'Av',label:'متوسط/طبيب',val:fmt(avg),foot:top?'الأعلى: '+top.name.slice(0,22):'—',trend:null,spark:null}
+      trend:trendBranch?getPeriodTrend(trendBranch,x=>x.totalRows):null,spark:'sp-1'},{cls:'k2',ico:'Dr',label:'عدد الأطباء',val:fmt(isMulti?globalDocMap.size:d.doctors.length),foot:'أطباء كتبوا وصفات',
+      trend:trendBranch?getPeriodTrend(trendBranch,x=>x.doctors.length):null,spark:'sp-2'},{cls:'k3',ico:'Md',label:'الأدوية الفريدة',val:fmt(isMulti?globalDrugMap.size:d.drugs.length),foot:'صنف مختلف',trend:null,spark:null},{cls:'k4',ico:'Dp',label:'الأقسام',val:fmt(isMulti?globalSecMap.size:d.sections.length),foot:'قسم/تخصص',trend:null,spark:null},{cls:'k5',ico:'Pt',label:'المرضى',val:fmt(isMulti?globalPatientSet.size:d.totalPatients),foot:isMulti?'مريض/فرع فريد':'مريض فريد',trend:null,spark:null},{cls:'k6',ico:'Av',label:'متوسط/طبيب',val:fmt(avg),foot:top?'الأعلى: '+top.name.slice(0,22):'—',trend:null,spark:null}
   ];
 
   const kpis='<div class="kpi-grid">'+items.map(it=>`
@@ -2350,7 +2350,8 @@ function showDoctorMulti(name){
 
   // Period sparkline data
   const firstBranch=blocks[0]?.b;
-  const sparkPts=PharmaCore.sortPeriods(STATE.periods[firstBranch]||[]).map(p=>{const doc=p.data.doctors.find(x=>sameEntity(x.name,name));return doc?doc.total:0;});
+  const sortedDoctorPeriods=PharmaCore.sortPeriods(STATE.periods[firstBranch]||[]).filter(p=>periodDateScore(p.label)>0);
+  const sparkPts=sortedDoctorPeriods.map(p=>{const doc=p.data.doctors.find(x=>sameEntity(x.name,name));return doc?doc.total:0;});
   const hasSpark=sparkPts.length>=2;
 
   // Branch comparison pills
@@ -2403,7 +2404,7 @@ function showDoctorMulti(name){
           <div class="mini-dash-section-title">مسار الكتابات عبر الفترات</div>
           <div class="mini-spark-container"><canvas id="miniSpark"></canvas></div>
           <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;">
-            ${(STATE.periods[firstBranch]||[]).map(p=>`<span>${escapeHtml(p.label)}</span>`).join('')}
+            ${sortedDoctorPeriods.map(p=>`<span>${escapeHtml(p.label)}</span>`).join('')}
           </div>
         </div>`:''}
         <div class="mini-dash-section">
@@ -2707,8 +2708,9 @@ function showTargetedProduct(idx) {
       branchTotals[b] += m.total;
       matchedNames.add(m.name);
       m.doctors.forEach(dr => {
-        let rec = allDocs.get(dr.name);
-        if (!rec) { const doc = d.doctors.find(z => z.name === dr.name); rec = {name: dr.name, section: doc ? doc.section : '', total: 0, byBranch: {T1:0,T2:0,T3:0}}; allDocs.set(dr.name, rec); }
+        const doctorKey=entityKey(dr.name);
+        let rec = allDocs.get(doctorKey);
+        if (!rec) { const doc = d.doctors.find(z => sameEntity(z.name,dr.name)); rec = {name: dr.name, section: doc ? doc.section : '', total: 0, byBranch: {T1:0,T2:0,T3:0}}; allDocs.set(doctorKey, rec); }
         rec.total += dr.count; rec.byBranch[b] += dr.count;
       });
     });
@@ -4770,7 +4772,7 @@ function filterNearExpiry(){
 //   4. نسبة Private Label
 // يعطي تصنيف اتجاهي (Trend) وتوقع (Prediction)
 // ══════════════════════════════════════════
-function renderTrends() {
+function renderBehavioralTrends() {
   const container = document.getElementById('trends-content');
   const loaded = BRANCHES.filter(b => STATE.data[b]);
   if (!loaded.length) {
@@ -5015,6 +5017,101 @@ function renderTrends() {
   }, 60);
 }
 
+/* اتجاه زمني حقيقي: يقارن أقدم وآخر فترة مؤرخة لكل فرع، ويستخدم
+   التصنيف السلوكي القديم فقط عندما لا تتوفر فترتان صالحـتان للمقارنة. */
+function renderTrends(){
+  const container=document.getElementById('trends-content');
+  const eligible=BRANCHES.map(branch=>{
+    const dated=(STATE.periods[branch]||[]).filter(period=>periodDateScore(period.label)>0);
+    const range=periodOldestNewest(dated);
+    return range.oldest&&range.newest&&range.oldest!==range.newest?{branch,...range}:null;
+  }).filter(Boolean);
+  if(!eligible.length){
+    renderBehavioralTrends();
+    if(BRANCHES.some(branch=>STATE.data[branch])){
+      container.insertAdjacentHTML('afterbegin','<div class="card" style="padding:13px 16px;border-color:rgba(217,119,6,.3);background:rgba(217,119,6,.07);font-size:12px;color:var(--text-dim);">ارفع فترتين باسم شهر وسنة لنفس الفرع لعرض الاتجاه الزمني. المعروض حالياً تصنيف سلوكي للبيانات الأحدث فقط.</div>');
+    }
+    return;
+  }
+
+  const doctors=new Map(),beforeLabels=new Set(),afterLabels=new Set();
+  eligible.forEach(({branch,oldest,newest})=>{
+    beforeLabels.add(oldest.label);afterLabels.add(newest.label);
+    const oldMap=new Map((oldest.data?.doctors||[]).map(doc=>[entityKey(doc.name),doc]));
+    const newMap=new Map((newest.data?.doctors||[]).map(doc=>[entityKey(doc.name),doc]));
+    new Set([...oldMap.keys(),...newMap.keys()]).forEach(key=>{
+      const oldDoc=oldMap.get(key),newDoc=newMap.get(key);
+      let rec=doctors.get(key);
+      if(!rec){
+        rec={name:newDoc?.name||oldDoc?.name||key,section:newDoc?.section||oldDoc?.section||'—',before:0,after:0,branches:new Set(),latestDrugs:new Set(),plAfter:0};
+        doctors.set(key,rec);
+      }
+      rec.before+=oldDoc?.total||0;rec.after+=newDoc?.total||0;rec.branches.add(branch);
+      if(newDoc){
+        if(newDoc.section)rec.section=newDoc.section;
+        (newDoc.drugs||[]).forEach(drug=>{
+          rec.latestDrugs.add(entityKey(drug.name));
+          if(findPrivateLabelProduct(drug.name)||findPureHerbProduct(drug.name))rec.plAfter+=drug.count||0;
+        });
+      }
+    });
+  });
+
+  const avgAfter=doctors.size?[...doctors.values()].reduce((sum,doc)=>sum+doc.after,0)/doctors.size:0;
+  const defs={
+    star:{ar:'🚀 نمو قوي',color:'#0d9488',bg:'rgba(13,148,136,.1)',border:'rgba(13,148,136,.3)',desc:'زيادة 50%+ وحجم أعلى من المتوسط',prediction:'حافظ على الزيارة ووسّع مزيج المنتجات.'},
+    growing:{ar:'📈 صاعد',color:'#2563eb',bg:'rgba(37,99,235,.1)',border:'rgba(37,99,235,.3)',desc:'زيادة 15% أو أكثر',prediction:'استمر في المتابعة وحدد الأصناف المحركة للنمو.'},
+    stable:{ar:'➖ ثابت',color:'#0284c7',bg:'rgba(2,132,199,.1)',border:'rgba(2,132,199,.3)',desc:'التغير بين -15% و+15%',prediction:'حافظ على المستوى واختبر فرصة منتج إضافي.'},
+    new:{ar:'🌱 طبيب جديد',color:'#7c3aed',bg:'rgba(124,58,237,.1)',border:'rgba(124,58,237,.3)',desc:'ظهر في أحدث فترة',prediction:'فعّل خطة ترحيب ومتابعة مبكرة.'},
+    declining:{ar:'📉 متراجع',color:'#d97706',bg:'rgba(217,119,6,.1)',border:'rgba(217,119,6,.3)',desc:'انخفاض 15% أو أكثر',prediction:'راجع سبب الانخفاض وقارن الأصناف والتخصص.'},
+    risk:{ar:'⚠ متوقف',color:'#dc2626',bg:'rgba(220,38,38,.1)',border:'rgba(220,38,38,.3)',desc:'كان نشطاً ولم يظهر في أحدث فترة',prediction:'تدخل عاجل للتحقق من التحول أو توقف الزيارة.'}
+  };
+  const analyzed=[...doctors.values()].map(doc=>{
+    const delta=doc.before>0?((doc.after-doc.before)/doc.before*100):null;
+    let trend;
+    if(doc.before===0&&doc.after>0)trend='new';
+    else if(doc.before>0&&doc.after===0)trend='risk';
+    else if(delta>=50&&doc.after>=avgAfter)trend='star';
+    else if(delta>=15)trend='growing';
+    else if(delta<=-15)trend='declining';
+    else trend='stable';
+    return {...doc,delta,trend,plPct:doc.after?doc.plAfter/doc.after*100:0,...defs[trend]};
+  });
+  const order={star:0,growing:1,new:2,stable:3,declining:4,risk:5};
+  analyzed.sort((a,b)=>order[a.trend]-order[b.trend]||b.after-a.after);
+  const counts=Object.fromEntries(Object.keys(defs).map(key=>[key,analyzed.filter(doc=>doc.trend===key).length]));
+  const periodText=[...beforeLabels].join(' / ')+' ← '+[...afterLabels].join(' / ');
+  const deltaText=doc=>doc.before===0?'<span style="color:#7c3aed;font-weight:800;">جديد</span>':doc.after===0?'<span style="color:#dc2626;font-weight:800;">توقف</span>':'<span style="color:'+(doc.delta>=0?'#0d9488':'#dc2626')+';font-weight:800;">'+(doc.delta>=0?'↑ ':'↓ ')+Math.abs(doc.delta).toFixed(1)+'%</span>';
+
+  container.innerHTML='<div class="card">'
+    +'<div class="card-head"><div class="card-title"><span class="dot"></span> اتجاه الأطباء عبر الفترات</div><div style="font-size:11px;color:var(--text-dim);">'+escapeHtml(periodText)+' · '+eligible.length+' فرع</div></div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px;">'
+    +Object.entries(defs).map(([key,def])=>'<div style="padding:14px;border-radius:var(--r-md);background:'+def.bg+';border:1px solid '+def.border+';"><div style="display:flex;justify-content:space-between;gap:8px;"><strong style="font-size:11px;color:'+def.color+';">'+def.ar+'</strong><span style="font:800 24px Inter;color:'+def.color+';">'+counts[key]+'</span></div><div style="font-size:9.5px;color:var(--text-dim);margin-top:5px;">'+def.desc+'</div></div>').join('')
+    +'</div>'
+    +'<div class="grid-2" style="gap:16px;margin-bottom:22px;"><div style="height:250px;"><canvas id="trendPie"></canvas></div><div style="height:250px;"><canvas id="trendVolume"></canvas></div></div>'
+    +Object.entries(defs).map(([key,def])=>{
+      const group=analyzed.filter(doc=>doc.trend===key);if(!group.length)return '';
+      return '<div style="margin-bottom:18px;"><div style="padding:10px 14px;background:'+def.bg+';border:1px solid '+def.border+';border-radius:var(--r-md) var(--r-md) 0 0;color:'+def.color+';font-weight:800;">'+def.ar+' · '+group.length+' طبيب</div>'
+        +'<div style="overflow-x:auto;border:1px solid '+def.border+';border-top:0;border-radius:0 0 var(--r-md) var(--r-md);"><table><thead><tr><th>#</th><th>الطبيب</th><th>القسم</th><th>الفترة الأقدم</th><th>الفترة الأحدث</th><th>التغير</th><th>الأصناف</th><th>الفروع</th><th>منتجاتنا</th><th>الإجراء المقترح</th></tr></thead><tbody>'
+        +group.map((doc,index)=>'<tr '+(doc.after?'class="clickable" data-trend-doc="'+escapeAttr(doc.name)+'"':'')+'><td>'+rankBadge(index)+'</td><td><strong>'+escapeHtml(doc.name)+'</strong></td><td>'+escapeHtml(doc.section)+'</td><td class="num">'+fmt(doc.before)+'</td><td class="num">'+fmt(doc.after)+'</td><td>'+deltaText(doc)+'</td><td class="num">'+fmt(doc.latestDrugs.size)+'</td><td class="num">'+fmt(doc.branches.size)+'</td><td class="num">'+doc.plPct.toFixed(1)+'%</td><td style="font-size:11px;color:var(--text-dim);max-width:230px;">'+escapeHtml(doc.prediction)+'</td></tr>').join('')
+        +'</tbody></table></div></div>';
+    }).join('')
+    +'</div>';
+  container.querySelectorAll('[data-trend-doc]').forEach(row=>{row.onclick=()=>showDoctorMulti(row.dataset.trendDoc);});
+
+  setTimeout(()=>{
+    if((window._activePanel||'overview')!=='trends')return;
+    const c=chartColors(),keys=['star','growing','stable','new','declining','risk'];
+    destroyChart('trendPie');
+    const pie=document.getElementById('trendPie');
+    if(pie)charts.trendPie=new Chart(pie,{type:'doughnut',data:{labels:keys.map(key=>defs[key].ar),datasets:[{data:keys.map(key=>counts[key]),backgroundColor:keys.map(key=>defs[key].color),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:c.text,font:{family:'IBM Plex Sans Arabic',size:10}}},tooltip:tt(c)}}});
+    const top=analyzed.slice().sort((a,b)=>b.after-a.after).slice(0,15);
+    destroyChart('trendVolume');
+    const volume=document.getElementById('trendVolume');
+    if(volume)charts.trendVolume=new Chart(volume,{type:'bar',data:{labels:top.map(doc=>doc.name.split(' ').slice(0,2).join(' ')),datasets:[{label:[...beforeLabels].join(' / '),data:top.map(doc=>doc.before),backgroundColor:'rgba(148,163,184,.5)',borderRadius:4},{label:[...afterLabels].join(' / '),data:top.map(doc=>doc.after),backgroundColor:'rgba(37,99,235,.8)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:c.text,font:{family:'IBM Plex Sans Arabic',size:10}}},tooltip:tt(c)},scales:{x:{ticks:{color:c.text,maxRotation:35},grid:{display:false}},y:{ticks:{color:c.text},grid:{color:c.grid}}}}});
+  },60);
+}
+
 // ══════════════════════════════════════════
 // SECTION 16 — AI SMART RECOMMENDATIONS
 // توصيات للعمل مبنية على:
@@ -5115,7 +5212,7 @@ function runGlobalSearch() {
         setTimeout(() => {
           const sel = document.getElementById('docPicker');
           if (sel) {
-            const opt = [...sel.options].find(o => o.text.includes(name));
+            const opt = [...sel.options].find(o => sameEntity(o.text,name));
             if (opt) { sel.value = opt.value; sel.dispatchEvent(new Event('change')); }
           }
           showDoctorMulti(name);
@@ -5355,7 +5452,9 @@ async function handlePeriodFile(branch, label, file) {
     renderPeriodBadges(branch);
     renderAll();
     saveData();
-    toast('✓ "'+label+'" — '+BRANCH_LABELS[branch]+' ('+fmt(rows.length)+' وصفة)');
+    const quality=STATE.quality[branch];
+    toast('✓ "'+label+'" — '+BRANCH_LABELS[branch]+' ('+fmt(rows.length)+' وصفة'+(quality?' · جودة '+quality.score+'%':'')+')');
+    if(quality?.warnings?.length)setTimeout(()=>toast('راجع لوحة جودة البيانات: '+quality.warnings[0],'warn'),900);
   } catch(e) {
     if(version===_uploadVersion[branch]){console.error(e);_upHide(branch);toast(e.message || 'فشل القراءة', 'error');}
   } finally { hideLoad(); }

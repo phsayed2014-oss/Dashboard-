@@ -62,6 +62,15 @@ describe('period ordering', () => {
     expect(range.oldest).toBe(april);
     expect(range.newest).toBe(june);
   });
+
+  it('does not let an undated filename replace dated periods in temporal analytics', () => {
+    const upload = { id: 30, label: 'oracle-report' };
+    const april = { id: 10, label: 'أبريل 2026' };
+    const june = { id: 20, label: 'يونيو 2026' };
+    const range = selectPeriodRange([june, upload, april]);
+    expect(range.oldest).toBe(april);
+    expect(range.newest).toBe(june);
+  });
 });
 
 describe('privacy and export safety', () => {

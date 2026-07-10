@@ -209,7 +209,7 @@ export function sortPeriods(periods) {
     const aScore = periodDateScore(a?.label);
     const bScore = periodDateScore(b?.label);
     if (aScore && bScore && aScore !== bScore) return aScore - bScore;
-    if (aScore !== bScore) return aScore ? -1 : 1;
+    if (aScore !== bScore) return aScore ? 1 : -1;
     return Number(a?.id || 0) - Number(b?.id || 0);
   });
 }
@@ -217,7 +217,9 @@ export function sortPeriods(periods) {
 export function selectPeriodRange(periods) {
   const sorted = sortPeriods(periods);
   if (!sorted.length) return { oldest: null, newest: null, sorted };
-  return { oldest: sorted[0], newest: sorted.at(-1), sorted };
+  const dated = sorted.filter((period) => periodDateScore(period?.label) > 0);
+  const candidates = dated.length ? dated : sorted;
+  return { oldest: candidates[0], newest: candidates.at(-1), sorted };
 }
 
 export function localDateKey(date = new Date()) {

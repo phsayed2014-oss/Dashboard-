@@ -332,3 +332,39 @@ test('destroys the bar chart when switching to the doctor bubble view', async ({
   }
   expect(await page.evaluate(() => Object.keys(charts).filter((key) => key === 'cTopDocs'))).toEqual(['cTopDocs']);
 });
+
+test('classifies doctor trends from the oldest and newest dated periods', async ({ page }) => {
+  await page.locator('#loginUser').fill('elsayed');
+  await page.locator('#loginPass').fill('pharma2026');
+  await page.locator('.login-btn').click();
+  await page.evaluate(() => {
+    const oldRows = [
+      { doctor: 'Dr Growth', service: 'Drug A', section: 'GENERAL', patient: '1', status: 'Closed' },
+      { doctor: 'Dr Lost', service: 'Drug B', section: 'GENERAL', patient: '2', status: 'Closed' },
+    ];
+    const newRows = [
+      { doctor: 'Dr Growth', service: 'Drug A', section: 'GENERAL', patient: '3', status: 'Closed' },
+      { doctor: 'Dr Growth', service: 'Drug A', section: 'GENERAL', patient: '4', status: 'Closed' },
+      { doctor: 'Dr Growth', service: 'Drug C', section: 'GENERAL', patient: '5', status: 'Closed' },
+      { doctor: 'Dr New', service: 'Drug D', section: 'GENERAL', patient: '6', status: 'Closed' },
+    ];
+    STATE.periods.T1 = [
+      { id: 2, label: 'يونيو 2026', rows: newRows, data: aggregate(newRows) },
+      { id: 1, label: 'أبريل 2026', rows: oldRows, data: aggregate(oldRows) },
+      { id: 3, label: 'oracle-report', rows: [], data: aggregate([]) },
+    ];
+    rebuildBranchFromPeriods('T1');
+    STATE.active = 'T1';
+    renderAll();
+  });
+
+  await page.locator('[data-tab="trends"]').click();
+  await expect(page.locator('#trends-content')).toContainText('أبريل 2026');
+  await expect(page.locator('#trends-content')).toContainText('يونيو 2026');
+  await expect(page.locator('#trends-content')).toContainText('Dr Growth');
+  await expect(page.locator('#trends-content')).toContainText('200.0%');
+  await expect(page.locator('#trends-content')).toContainText('Dr New');
+  await expect(page.locator('#trends-content')).toContainText('طبيب جديد');
+  await expect(page.locator('#trends-content')).toContainText('Dr Lost');
+  await expect(page.locator('#trends-content')).toContainText('متوقف');
+});
