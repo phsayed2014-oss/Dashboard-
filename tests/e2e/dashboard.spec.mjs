@@ -164,22 +164,34 @@ test('extracts a text PDF and shows its data-quality report', async ({ page }) =
       <span style="left:680px;top:100px">O100</span>
       <span style="left:780px;top:100px">Closed</span>
       <span style="left:880px;top:100px">Dr Ahmed ORTHOPAEDIC</span>
+      <span style="left:20px;top:160px">P12A</span>
+      <span style="left:130px;top:160px">Patient Two</span>
+      <span style="left:360px;top:160px">REFLEX MASSAGE Emulgel 100ML</span>
+      <span style="left:680px;top:160px">O101</span>
+      <span style="left:780px;top:160px">Closed</span>
+      <span style="left:880px;top:160px">Dr Sara GENERAL</span>
     `);
     await pdfPage.pdf({ path: pdfPath, width: '1200px', height: '800px', printBackground: true });
     await pdfPage.close();
 
     await page.locator('#file-T1').setInputFiles(pdfPath);
-    await expect(page.locator('#meta-T1')).toContainText('1 وصفة');
+    await expect(page.locator('#meta-T1')).toContainText('2 وصفة');
     await expect(page.locator('#dataQualityPanel')).toBeVisible();
     await expect(page.locator('#dataQualityPanel')).toContainText('PDF');
 
-    const extracted = await page.evaluate(() => STATE.data.T1.rows[0]);
-    expect(extracted).toMatchObject({
+    const extracted = await page.evaluate(() => STATE.data.T1.rows);
+    expect(extracted[0]).toMatchObject({
       patient: '12345',
       service: 'ZINCOLIVE Syrup 150ML',
       doctor: 'Dr Ahmed',
       section: 'ORTHOPAEDIC',
       status: 'Closed',
+    });
+    expect(extracted[1]).toMatchObject({
+      patient: 'P12A',
+      service: 'REFLEX MASSAGE Emulgel 100ML',
+      doctor: 'Dr Sara',
+      section: 'GENERAL',
     });
   } finally {
     await pdfPage.close().catch(() => {});
@@ -297,4 +309,26 @@ test('enforces upload limits in daily tracking', async ({ page }) => {
   await expect(page.locator('#dtUpError')).toContainText('50MB');
   const stored = await page.evaluate(() => DT.store['2026-07-09']);
   expect(stored).toBeUndefined();
+});
+
+test('destroys the bar chart when switching to the doctor bubble view', async ({ page }) => {
+  await page.locator('#loginUser').fill('elsayed');
+  await page.locator('#loginPass').fill('pharma2026');
+  await page.locator('.login-btn').click();
+  await page.evaluate((rows) => {
+    setBranchData('T1', rows, 'مايو 2026.xlsx', '');
+    STATE.active = 'T1';
+    renderAll();
+  }, sampleRows);
+  await page.waitForFunction(() => Boolean(charts.cTopDocs));
+
+  const bubble = page.locator('.vt-btn', { hasText: 'فقاعات' });
+  const bar = page.locator('.vt-btn', { hasText: 'بار' });
+  for (let index = 0; index < 3; index += 1) {
+    await bubble.click();
+    expect(await page.evaluate(() => Boolean(charts.cTopDocs))).toBe(false);
+    await bar.click();
+    await page.waitForFunction(() => Boolean(charts.cTopDocs));
+  }
+  expect(await page.evaluate(() => Object.keys(charts).filter((key) => key === 'cTopDocs'))).toEqual(['cTopDocs']);
 });

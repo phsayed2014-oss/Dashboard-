@@ -54,6 +54,7 @@ export default [
         dtOpenUpload: 'readonly',
         dtHandleFile: 'readonly',
         DT: 'readonly',
+        charts: 'readonly',
         window: 'readonly',
       },
     },
