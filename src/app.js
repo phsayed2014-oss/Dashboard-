@@ -537,15 +537,19 @@ async function parsePDF(file,options){
         [...ws].sort((a,b)=>a.x-b.x),
         [...ws].sort((a,b)=>b.x-a.x),
       ];
+      let best=null;
       for(const sequence of sequences){
         for(let start=0;start<sequence.length;start++){
           for(let size=1;size<=Math.min(4,sequence.length-start);size++){
             const words=sequence.slice(start,start+size),text=words.map(word=>word.s).join(' ');
-            if(re.test(text))return{x:words.reduce((sum,word)=>sum+word.x,0)/words.length};
+            if(re.test(text)){
+              const candidate={x:words.reduce((sum,word)=>sum+word.x,0)/words.length,size,length:text.length};
+              if(!best||candidate.size<best.size||(candidate.size===best.size&&candidate.length<best.length))best=candidate;
+            }
           }
         }
       }
-      return null;
+      return best;
     }
     function headerFields(ws){
       return HEADER_ALIASES.map(([key,re])=>{const found=findHeader(ws,re);return found?{key,x:found.x}:null;}).filter(Boolean);
