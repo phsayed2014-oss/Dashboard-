@@ -524,9 +524,8 @@ test('exports manual reports without Rx data and clears their saved edits', asyn
 
   page.once('dialog', (dialog) => dialog.accept());
   await page.getByTitle('مسح البيانات المحفوظة').click();
-  const cleared = await page.evaluate(() => ({
+  await expect.poll(() => page.evaluate(() => ({
     aged: localStorage.getItem('pharmdash_agedmeds_v1'),
     target: localStorage.getItem('pharmdash_pl_target_v1'),
-  }));
-  expect(cleared).toEqual({ aged: null, target: null });
+  }))).toEqual({ aged: null, target: null });
 });
