@@ -159,8 +159,8 @@
   <!-- Search -->
   <div class="global-search-wrap">
     <span class="global-search-icon">🔍</span>
-    <input class="global-search" id="globalSearch" placeholder="بحث سريع: طبيب أو دواء..." autocomplete="off">
-    <div class="search-results-dropdown" id="searchDropdown"></div>
+    <input class="global-search" id="globalSearch" placeholder="بحث سريع: طبيب أو دواء..." autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="searchDropdown" aria-expanded="false">
+    <div class="search-results-dropdown" id="searchDropdown" role="listbox" aria-label="نتائج البحث"></div>
   </div>
 
   <!-- Actions -->
@@ -195,7 +195,7 @@
     <button type="button" class="branch-upload-btn" data-upload="T1" aria-label="رفع ملف التعاون الأول">رفع</button>
     <button type="button" class="add-period-btn" onclick="startAddPeriod('T1')" aria-label="إضافة فترة للتعاون الأول">+ فترة</button>
     <input type="file" class="file-input" id="file-T1" accept=".xlsx,.xls,.csv,.pdf">
-    <div class="up-overlay" id="uprog-T1">
+    <div class="up-overlay" id="uprog-T1" role="progressbar" aria-label="تقدم رفع ملف التعاون الأول" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div class="up-icon">⚡</div>
       <div class="up-name" id="uprog-T1-name">جاري المعالجة...</div>
       <div class="up-track"><div class="up-fill" id="uprog-T1-fill"></div></div>
@@ -212,7 +212,7 @@
     <button type="button" class="branch-upload-btn" data-upload="T2" aria-label="رفع ملف التعاون الثاني">رفع</button>
     <button type="button" class="add-period-btn" onclick="startAddPeriod('T2')" aria-label="إضافة فترة للتعاون الثاني">+ فترة</button>
     <input type="file" class="file-input" id="file-T2" accept=".xlsx,.xls,.csv,.pdf">
-    <div class="up-overlay" id="uprog-T2">
+    <div class="up-overlay" id="uprog-T2" role="progressbar" aria-label="تقدم رفع ملف التعاون الثاني" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div class="up-icon">⚡</div>
       <div class="up-name" id="uprog-T2-name">جاري المعالجة...</div>
       <div class="up-track"><div class="up-fill" id="uprog-T2-fill"></div></div>
@@ -229,7 +229,7 @@
     <button type="button" class="branch-upload-btn" data-upload="T3" aria-label="رفع ملف التعاون الثالث">رفع</button>
     <button type="button" class="add-period-btn" onclick="startAddPeriod('T3')" aria-label="إضافة فترة للتعاون الثالث">+ فترة</button>
     <input type="file" class="file-input" id="file-T3" accept=".xlsx,.xls,.csv,.pdf">
-    <div class="up-overlay" id="uprog-T3">
+    <div class="up-overlay" id="uprog-T3" role="progressbar" aria-label="تقدم رفع ملف التعاون الثالث" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div class="up-icon">⚡</div>
       <div class="up-name" id="uprog-T3-name">جاري المعالجة...</div>
       <div class="up-track"><div class="up-fill" id="uprog-T3-fill"></div></div>
@@ -237,6 +237,8 @@
     </div>
   </div>
 </div>
+
+<div class="local-processing-note" role="note">🔒 تتم قراءة PDF وExcel وCSV وحفظها محليًا داخل هذا المتصفح. لا تُرسل ملفات المرضى إلى خادم.</div>
 
 <section class="data-quality-panel" id="dataQualityPanel" aria-live="polite" aria-label="جودة البيانات" hidden></section>
 
@@ -254,8 +256,6 @@
   <div class="sb-divider"></div>
   <div class="sb-item" style="margin-right:auto;"><div class="sb-label">متوسط/طبيب</div><div class="sb-val" id="sb-avg" style="color:var(--rose-l)">—</div></div>
 </div>
-
-<div id="tabs" style="display:none;"></div>
 
 <div class="card" id="branchPickerCard" style="display:none;">
   <div class="card-head"><div class="card-title"><span class="dot"></span> اعرض بيانات:</div><div style="display:flex;gap:8px;flex-wrap:wrap;" id="branchPicker"></div></div>
@@ -283,7 +283,6 @@
 <div class="panel" id="panel-sections"><div id="secHubBar"></div><div id="sections-content"></div><div id="specialty-content" style="display:none"></div></div>
 <div class="panel" id="panel-visitcard"><div id="visitcard-content"></div></div>
 <div class="panel" id="panel-nearexpiry"><div id="nearexpiry-content"></div></div>
-<div class="panel" id="panel-plsales"><div id="plsales-content"></div></div>
 <div class="panel" id="panel-pureherb"><div id="pureherb-content"></div></div>
 
 
@@ -340,7 +339,7 @@
 <!-- Footer -->
 <div id="appFooter" style="text-align:center;padding:20px 16px 12px;margin-top:24px;border-top:1px solid var(--border);opacity:.6;">
   <div style="font-size:11px;color:var(--text-muted);font-weight:600;letter-spacing:.3px;">
-    PharmaDash v2.0 — الإدارة التجارية · قطاع الصيدليات · مجمعات التعاون الطبية
+    PharmaDash v4.0 — الإدارة التجارية · قطاع الصيدليات · مجمعات التعاون الطبية
   </div>
   <div style="font-size:10px;color:var(--text-muted);margin-top:4px;opacity:.7;">
     Dr. Elsayed Hassan — Business Development Manager

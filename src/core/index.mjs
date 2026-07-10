@@ -47,7 +47,7 @@ const RX_COLUMN_ALIASES = {
   section: ['section', 'sectionname', 'specialty', 'speciality', 'department', 'اسم القسم', 'اسمالقسم', 'القسم', 'التخصص'],
   patient: ['patient', 'patientno', 'patientnumber', 'mrn', 'رقم المريض', 'رقمالمريض'],
   patientName: ['patientname', 'اسم المريض', 'اسمالمريض'],
-  orderNo: ['orderno', 'ordernumber', 'orderid', 'رقم الامر', 'رقمالامر', 'رقم الأمر', 'رقمالأمر'],
+  orderNo: ['orderno', 'ordernumber', 'orderid', 'رقم الامر', 'رقمالامر', 'رقم الأمر', 'رقمالأمر', 'رقم الطلب', 'رقمالطلب'],
   status: ['status', 'orderstatus', 'الحالة', 'حالة الطلب'],
 };
 
@@ -61,6 +61,11 @@ const RX_ALIAS_KEYS = Object.fromEntries(
     new Set([field, ...aliases].map(headerKey)),
   ]),
 );
+
+export function countRxHeaderMatches(headers) {
+  const keys = new Set((headers || []).map(headerKey));
+  return Object.values(RX_ALIAS_KEYS).filter((aliases) => [...aliases].some((alias) => keys.has(alias))).length;
+}
 
 export function normalizeRxRow(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
@@ -134,12 +139,15 @@ export function assessRows(rows, meta = {}) {
     + (duplicates / denominator) * 7;
   const score = Math.max(0, Math.round(100 - penalty));
   const warnings = [];
-  if (rejectedRows) warnings.push(`${rejectedRows} صف لم يحتوِ طبيبًا أو دواء`);
+  if (rejectedRows) warnings.push(`${rejectedRows} صف لم يُقبل أثناء قراءة الملف`);
   if (missing.doctor) warnings.push(`${missing.doctor} صف بدون طبيب`);
   if (missing.service) warnings.push(`${missing.service} صف بدون دواء`);
   if (missing.section) warnings.push(`${missing.section} صف بدون تخصص`);
   if (duplicates) warnings.push(`${duplicates} صف مكرر تمامًا`);
   if (unknownStatuses) warnings.push(`${unknownStatuses} حالة غير قياسية`);
+  if (meta.source === 'pdf' && Number(meta.fallbackPages || 0) > 0) {
+    warnings.push(`${Number(meta.fallbackPages)} صفحة PDF استُخدم لها تخطيط أعمدة احتياطي؛ راجع عينة من النتائج`);
+  }
 
   return {
     source: meta.source || 'unknown',
@@ -209,7 +217,7 @@ export function sortPeriods(periods) {
     const aScore = periodDateScore(a?.label);
     const bScore = periodDateScore(b?.label);
     if (aScore && bScore && aScore !== bScore) return aScore - bScore;
-    if (aScore !== bScore) return aScore ? 1 : -1;
+    if (aScore !== bScore) return aScore ? -1 : 1;
     return Number(a?.id || 0) - Number(b?.id || 0);
   });
 }
@@ -238,6 +246,9 @@ export function escapeSpreadsheetFormula(value) {
 export function sanitizeExportRow(row, { anonymize = false } = {}) {
   const safe = {};
   for (const [key, value] of Object.entries(row || {})) {
+    if (anonymize && !['doctor', 'service', 'section', 'status', 'patient', 'patientName', 'orderNo'].includes(key)) {
+      continue;
+    }
     if (anonymize && ['patient', 'patientName', 'orderNo'].includes(key)) {
       safe[key] = '';
     } else {

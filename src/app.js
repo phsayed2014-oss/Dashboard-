@@ -82,10 +82,26 @@ function findPrivateLabelProduct(service){return PRIVATE_LABEL.find(p=>phraseMat
 const BRANCHES=['T1','T2','T3'];
 const BRANCH_LABELS={T1:'التعاون الأول',T2:'التعاون الثاني',T3:'التعاون الثالث'};
 const STATE={data:{T1:null,T2:null,T3:null},active:null,periods:{T1:[],T2:[],T3:[]},quality:{T1:null,T2:null,T3:null}};
+function readEmbeddedBusiness(key){
+  const value=window.__PHARMADASH_SHARED__&&window.__EMBEDDED_RX__?.business?.[key];
+  if(value==null)return null;
+  try{return JSON.parse(JSON.stringify(value));}catch(_){return null;}
+}
+function saveEmbeddedBusiness(key,value){
+  if(!window.__PHARMADASH_SHARED__||!window.__EMBEDDED_RX__)return false;
+  if(!window.__EMBEDDED_RX__.business)window.__EMBEDDED_RX__.business={};
+  window.__EMBEDDED_RX__.business[key]=JSON.parse(JSON.stringify(value));
+  return true;
+}
 /* التابات التي تجمع كل الفروع ولا تحتاج مُنتقي الفرع */
-const NO_BRANCH_TABS=['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','drugintel','targettrack','nearexpiry','plsales','pureherb','dailytrack','agedmeds'];
+const NO_BRANCH_TABS=['featured','targeted','compare','timecomp','pareto','loyalty','basket','trends','drugintel','targettrack','nearexpiry','pureherb','dailytrack','agedmeds'];
 let _pendingBranch=null,_pendingMode=null; /* upload state */
 const _uploadVersion={T1:0,T2:0,T3:0};
+let _dtUploadVersion=0;
+function cancelActiveUploads(){
+  BRANCHES.forEach(branch=>{_uploadVersion[branch]++;_upHide(branch);});
+  _dtUploadVersion++;
+}
 function validateUploadFile(file){
   if(!file||!file.name)throw new Error('لم يتم اختيار ملف');
   const ext=(file.name.toLowerCase().match(/\.[^.]+$/)||[''])[0];
@@ -97,6 +113,13 @@ function validateUploadFile(file){
 function validateParsedRows(rows){
   if(!rows||!rows.length)throw new Error('لم يتم العثور على بيانات صالحة في الملف');
   if(rows.length>PharmaCore.MAX_UPLOAD_ROWS)throw new Error('عدد الصفوف أكبر من الحد المدعوم (500,000 صف)');
+  const meta=rows._parseMeta||{};
+  if(meta.source==='pdf'&&meta.sourceRows>20&&rows.length/meta.sourceRows<.2){
+    throw new Error('نسبة الصفوف المقروءة من PDF منخفضة جداً — راجع تخطيط الأعمدة أو استخدم PDF نصياً واضحاً');
+  }
+  if(rows.some(row=>Object.values(row).some(value=>String(value||'').includes('\uFFFD')))){
+    throw new Error('ترميز النص غير صالح — احفظ الملف بصيغة UTF-8 أو Excel ثم أعد الرفع');
+  }
 }
 const SOURCE_TEMPLATE=(function(){let h='<!DOCTYPE html>\n'+document.documentElement.outerHTML;const o='<scr'+'ipt id="embedded-rx-data">',c='<'+'/scr'+'ipt>';const i=h.indexOf(o);if(i>=0){const j=h.indexOf(c,i);if(j>=0) h=h.substring(0,i)+h.substring(j+c.length);}return h;})();
 
@@ -126,49 +149,6 @@ const SOURCE_TEMPLATE=(function(){let h='<!DOCTYPE html>\n'+document.documentEle
 if((localStorage.getItem('rx-theme')||'light')==='light') document.documentElement.setAttribute('data-theme','light');
 setTimeout(function(){if(typeof updateThemeIcon==='function')updateThemeIcon();},100);
 
-
-/* ── تبديل كثافة الجداول (مضغوط/مريح) ── */
-function toggleDensity(){
-  const cur=document.documentElement.getAttribute('data-density');
-  const btn=document.getElementById('densityBtn');if(!btn)return;
-  if(cur==='compact'){
-    document.documentElement.removeAttribute('data-density');
-    try{localStorage.setItem('rx-density','comfortable');}catch(e){}
-    if(btn){btn.textContent='⊟';btn.title='كثافة الجدول: مريح (اضغط للمضغوط)';}
-    toast('وضع مريح — صفوف أوسع');
-  }else{
-    document.documentElement.setAttribute('data-density','compact');
-    try{localStorage.setItem('rx-density','compact');}catch(e){}
-    if(btn){btn.textContent='☰';btn.title='كثافة الجدول: مضغوط (اضغط للمريح)';}
-    toast('وضع مضغوط — صفوف أكثر');
-  }
-}
-/* استعادة التفضيل المحفوظ */
-if(localStorage.getItem('rx-density')==='compact'){
-  document.documentElement.setAttribute('data-density','compact');
-  setTimeout(()=>{const b=document.getElementById('densityBtn');if(b){b.textContent='☰';}},100);
-}
-
-/* ── تبديل وضع الهدوء ── */
-function toggleCalm(){
-  const on=document.documentElement.getAttribute('data-calm')==='1';
-  const btn=document.getElementById('calmBtn');if(!btn)return;
-  if(on){
-    document.documentElement.removeAttribute('data-calm');
-    try{localStorage.setItem('rx-calm','0');}catch(e){}
-    if(btn)btn.textContent='⊟';
-    toast('الوضع العادي — كل التأثيرات مفعّلة');
-  }else{
-    document.documentElement.setAttribute('data-calm','1');
-    try{localStorage.setItem('rx-calm','1');}catch(e){}
-    if(btn)btn.textContent='🌙';
-    toast('وضع الهدوء — تأثيرات أقل وراحة أكثر');
-  }
-}
-if(localStorage.getItem('rx-calm')==='1'){
-  document.documentElement.setAttribute('data-calm','1');
-  setTimeout(()=>{const b=document.getElementById('calmBtn');if(b)b.textContent='🌙';},100);
-}
 
 const fmt=n=>(n==null||isNaN(n))?'—':Number(n).toLocaleString('en-US');
 /* debounce — يؤخّر تنفيذ الدالة حتى يتوقف المستخدم عن الكتابة (يمنع تجمّد المتصفح) */
@@ -207,6 +187,7 @@ function openModal(label){
 }
 function closeModal(){
   if(!modalBg.classList.contains('show'))return;
+  if(modalBody.querySelector('#dtDropZone'))_dtUploadVersion++;
   modalBg.classList.remove('show');modalBg.setAttribute('aria-hidden','true');
   modalBg.querySelector('.modal')?.classList.remove('wide');
   destroyChartsWithin(modalBg);
@@ -366,6 +347,7 @@ function _upShow(b,name){
   if(nm) nm.textContent=(name||'').slice(0,35)||'جاري المعالجة...';
   if(fill) fill.style.width='0%';
   if(pct) pct.textContent='0%';
+  el.setAttribute('aria-valuenow','0');
   el.classList.add('show');
 }
 function _upTick(b,v){
@@ -375,13 +357,14 @@ function _upTick(b,v){
   });
 }
 function _upSet(b,v){
-  const value=Math.max(0,Math.min(100,Math.round(v))),fill=document.getElementById('uprog-'+b+'-fill'),pct=document.getElementById('uprog-'+b+'-pct');
+  const value=Math.max(0,Math.min(100,Math.round(v))),overlay=document.getElementById('uprog-'+b),fill=document.getElementById('uprog-'+b+'-fill'),pct=document.getElementById('uprog-'+b+'-pct');
   if(fill)fill.style.width=value+'%';
   if(pct)pct.textContent=value+'%';
+  overlay?.setAttribute('aria-valuenow',String(value));
 }
 function _upHide(b){
   const el=document.getElementById('uprog-'+b);
-  if(el) el.classList.remove('show');
+  if(el){el.classList.remove('show');el.setAttribute('aria-valuenow','0');}
 }
 function setBranchData(branch,rows,name,date,preparedAggregate){
   const d=preparedAggregate||aggregate(rows);d.rows=rows;d.reportName=name;d.reportDate=date;STATE.data[branch]=d;
@@ -472,23 +455,54 @@ async function normalizeParsedRows(rawRows,source,options){
     options?.onProgress?.(end/sourceList.length);
     if(end<sourceList.length)await yieldToBrowser();
   }
-  return attachParseMeta(rows,{source,sourceRows:(rawRows||[]).length,rejectedRows:Math.max(0,(rawRows||[]).length-rows.length)});
+  return attachParseMeta(rows,{source,...(options?.meta||{}),sourceRows:(rawRows||[]).length,rejectedRows:Math.max(0,(rawRows||[]).length-rows.length)});
+}
+function selectWorkbookData(wb,options){
+  for(const sheetName of wb.SheetNames||[]){
+    throwIfCancelled(options);
+    const sheet=wb.Sheets[sheetName];
+    if(!sheet||!sheet['!ref'])continue;
+    let range;
+    try{range=XLSX.utils.decode_range(sheet['!ref']);}catch(_){continue;}
+    if(range.e.r-range.s.r>PharmaCore.MAX_UPLOAD_ROWS+50)throw new Error('عدد صفوف ورقة Excel أكبر من الحد المدعوم (500,000 صف)');
+    const previewRange={s:{r:range.s.r,c:range.s.c},e:{r:Math.min(range.e.r,range.s.r+24),c:range.e.c}};
+    const preview=XLSX.utils.sheet_to_json(sheet,{header:1,defval:'',raw:false,blankrows:true,range:previewRange});
+    const headerOffset=preview.findIndex(row=>PharmaCore.countRxHeaderMatches(row)>=2);
+    if(headerOffset<0)continue;
+    const headerRow=range.s.r+headerOffset;
+    if(range.e.r-headerRow>PharmaCore.MAX_UPLOAD_ROWS)throw new Error('عدد صفوف ورقة Excel أكبر من الحد المدعوم (500,000 صف)');
+    const rows=XLSX.utils.sheet_to_json(sheet,{defval:'',raw:false,range:headerRow});
+    if(rows.length)return{rows,sheetName};
+  }
+  throw new Error('لم أجد ورقة تحتوي أعمدة الطبيب والدواء — راجع أسماء الأعمدة في الملف');
 }
 async function parseExcel(file,options){
   const buf=await file.arrayBuffer();throwIfCancelled(options);options?.onProgress?.(.08);await yieldToBrowser();
   const wb=XLSX.read(buf,{type:'array'});throwIfCancelled(options);options?.onProgress?.(.28);
   if(!wb.SheetNames.length)throw new Error('ملف Excel لا يحتوي أوراقاً');
-  const sh=wb.Sheets[wb.SheetNames[0]];
-  const raw=XLSX.utils.sheet_to_json(sh,{defval:'',raw:true});options?.onProgress?.(.4);
-  return normalizeParsedRows(raw,'excel',{...options,onProgress:p=>options?.onProgress?.(.4+p*.6)});
+  const selected=selectWorkbookData(wb,options);options?.onProgress?.(.4);
+  return normalizeParsedRows(selected.rows,'excel',{...options,meta:{sheet:selected.sheetName},onProgress:p=>options?.onProgress?.(.4+p*.6)});
+}
+function decodeDelimitedText(buffer){
+  const bytes=new Uint8Array(buffer);
+  let text='';
+  if(bytes[0]===0xFF&&bytes[1]===0xFE)text=new TextDecoder('utf-16le').decode(bytes.subarray(2));
+  else if(bytes[0]===0xFE&&bytes[1]===0xFF)text=new TextDecoder('utf-16be').decode(bytes.subarray(2));
+  else{
+    const source=bytes[0]===0xEF&&bytes[1]===0xBB&&bytes[2]===0xBF?bytes.subarray(3):bytes;
+    try{text=new TextDecoder('utf-8',{fatal:true}).decode(source);}
+    catch(_){text=new TextDecoder('windows-1256').decode(source);}
+  }
+  if(text.includes('\uFFFD'))throw new Error('تعذر تحديد ترميز CSV — احفظه بصيغة UTF-8 ثم أعد الرفع');
+  return text;
 }
 async function parseCSV(file,options){
-  const text=await file.text();throwIfCancelled(options);options?.onProgress?.(.1);await yieldToBrowser();
+  const buffer=await file.arrayBuffer();throwIfCancelled(options);
+  const text=decodeDelimitedText(buffer);options?.onProgress?.(.1);await yieldToBrowser();
   const wb=XLSX.read(text,{type:'string'});throwIfCancelled(options);options?.onProgress?.(.3);
   if(!wb.SheetNames.length)throw new Error('ملف CSV فارغ');
-  const sh=wb.Sheets[wb.SheetNames[0]];
-  const raw=XLSX.utils.sheet_to_json(sh,{defval:''});options?.onProgress?.(.4);
-  return normalizeParsedRows(raw,'csv',{...options,onProgress:p=>options?.onProgress?.(.4+p*.6)});
+  const selected=selectWorkbookData(wb,options);options?.onProgress?.(.4);
+  return normalizeParsedRows(selected.rows,'csv',{...options,meta:{encoding:'auto'},onProgress:p=>options?.onProgress?.(.4+p*.6)});
 }
 function normalizeRow(r){return PharmaCore.normalizeRxRow(r);}
 async function parsePDF(file,options){
@@ -496,92 +510,151 @@ async function parsePDF(file,options){
   if(!window.pdfjsLib)throw new Error('تعذر تحميل قارئ PDF — تحقق من الاتصال ثم أعد المحاولة');
   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   const buf=await file.arrayBuffer();throwIfCancelled(options);
-  const pdf=await pdfjsLib.getDocument({data:buf}).promise;
-  if(pdf.numPages>PharmaCore.MAX_PDF_PAGES)throw new Error('عدد صفحات PDF أكبر من الحد المدعوم (1,000 صفحة)');
-  const SEC_WORDS=['GASTROENTEROLOGY','ENDOCRINOLOGY','OPHTHALMOLOGY','OPTHALMOLOGY','RHEUMATOLOGY','PULMONOLOGY','PARACITIONER','DERMATOLOGY','ORTHOPAEDIC','PSYCHIATRY','OBSTETRICS','PAEDIATRIC','CARDIOLOGY','NEPHROLOGY','NEUROLOGY','ONCOLOGY','INTERNAL','UROLOGY','GENERAL','SURGERY','DENTAL','RADIOLOGY','GYNECOLOGY','MEDICINE','ENT'];
-  const DEFAULT_COLS={patient:[0,75],patientName:[75,243],service:[243,476],orderNo:[476,535],status:[535,596],doctorSection:[596,Infinity]};
-  function g(ws,r){return ws.filter(w=>w.x>=r[0]&&w.x<r[1]).map(w=>w.s).join(' ').trim();}
-  function detectColumns(lines){
-    const aliases=[
-      ['patient',/PATIENT\s*(NO|NUMBER)|رقم\s*المريض/i],
-      ['patientName',/PATIENT\s*NAME|اسم\s*المريض/i],
-      ['service',/SERVICE\s*NAME|MEDICATION|اسم\s*(الخدمة|الدواء)/i],
+  const loadingTask=pdfjsLib.getDocument({data:buf});
+  let pdf=null;
+  try{
+    pdf=await loadingTask.promise;throwIfCancelled(options);
+    if(pdf.numPages>PharmaCore.MAX_PDF_PAGES)throw new Error('عدد صفحات PDF أكبر من الحد المدعوم (1,000 صفحة)');
+    const ENGLISH_SPECIALTIES=['GASTROENTEROLOGY','ENDOCRINOLOGY','OPHTHALMOLOGY','OPTHALMOLOGY','RHEUMATOLOGY','PULMONOLOGY','FAMILY MEDICINE','GENERAL PRACTITIONER','PARACITIONER','DERMATOLOGY','ORTHOPAEDIC','PSYCHIATRY','OBSTETRICS','PAEDIATRIC','CARDIOLOGY','NEPHROLOGY','NEUROLOGY','ONCOLOGY','INTERNAL MEDICINE','UROLOGY','GENERAL','SURGERY','DENTAL','RADIOLOGY','GYNECOLOGY','MEDICINE','ENT'];
+    const SPECIALTIES=[...ENGLISH_SPECIALTIES,'الطب العام','طب عام','الباطنة','باطنة','العظام','عظام','الاطفال','الأطفال','اطفال','أطفال','العيون','عيون','الانف والاذن','الأنف والأذن','النسا والولادة','نساء وولادة','الجلدية','جلدية','النفسية','نفسية','المسالك','مسالك','الاسنان','الأسنان','اسنان','أسنان','الجراحة','جراحة','القلب','قلب','الكلى','كلى','المخ والاعصاب','مخ واعصاب'].sort((a,b)=>b.split(/\s+/).length-a.split(/\s+/).length);
+    const DEFAULT_COLS={patient:[-Infinity,75],patientName:[75,243],service:[243,476],orderNo:[476,535],status:[535,596],doctorSection:[596,Infinity]};
+    const HEADER_ALIASES=[
+      ['patient',/PATIENT\s*(NO|NUMBER)|رقم\s*المريض|المريض\s*رقم/i],
+      ['patientName',/PATIENT\s*NAME|اسم\s*المريض|المريض\s*اسم/i],
+      ['service',/SERVICE\s*NAME|MEDICATION|DRUG\s*NAME|اسم\s*(الخدمة|الدواء|الصنف)/i],
       ['orderNo',/ORDER\s*(NO|NUMBER)|رقم\s*(الأمر|الطلب)/i],
-      ['status',/STATUS|الحالة/i],
-      ['doctorSection',/DOCTOR\s*NAME|PHYSICIAN|اسم\s*الطبيب/i],
+      ['status',/STATUS|الحالة|حالة\s*الطلب/i],
+      ['doctorSection',/DOCTOR\s*NAME|PHYSICIAN|اسم\s*الطبيب|الطبيب\s*اسم/i],
+      ['section',/SECTION|SPECIAL(TY|ITY)|DEPARTMENT|القسم|التخصص/i],
     ];
-    for(const ws of lines){
-      const found=[];
-      aliases.forEach(([key,re])=>{const item=ws.find(w=>re.test(w.s));if(item)found.push({key,x:item.x});});
-      if(found.length<5)continue;
-      found.sort((a,b)=>a.x-b.x);
-      const out={};
-      found.forEach((item,i)=>{
-        const start=i===0?Math.min(0,item.x):item.x;
-        const end=i===found.length-1?Infinity:found[i+1].x;
-        out[item.key]=[start,end];
-      });
-      if(out.patient&&out.service&&out.doctorSection)return {...DEFAULT_COLS,...out};
+    function joinCell(ws,range){
+      if(!range)return'';
+      return ws.filter(word=>word.x>=range[0]&&word.x<range[1]).sort((a,b)=>a.order-b.order).map(word=>word.s).join(' ').replace(/\s+/g,' ').trim();
     }
-    return DEFAULT_COLS;
-  }
-  function splitDS(txt){
-    const words=txt.split(/\s+/);
-    /* Pass 1: fused word e.g. AbdelmoneemGENERAL */
-    for(let i=0;i<words.length;i++){
-      const w=words[i],wu=w.toUpperCase();
-      if(SEC_WORDS.includes(wu)) continue;
-      for(const sec of SEC_WORDS){
-        const idx=wu.indexOf(sec);
-        if(idx>0){
-          const d=words.slice(0,i).join(' ')+' '+w.slice(0,idx);
-          const s=w.slice(idx)+' '+words.slice(i+1).join(' ');
-          return{doctor:d.trim(),section:s.trim()};
+    function findHeader(ws,re){
+      const sequences=[
+        [...ws].sort((a,b)=>a.order-b.order),
+        [...ws].sort((a,b)=>a.x-b.x),
+        [...ws].sort((a,b)=>b.x-a.x),
+      ];
+      for(const sequence of sequences){
+        for(let start=0;start<sequence.length;start++){
+          for(let size=1;size<=Math.min(4,sequence.length-start);size++){
+            const words=sequence.slice(start,start+size),text=words.map(word=>word.s).join(' ');
+            if(re.test(text))return{x:words.reduce((sum,word)=>sum+word.x,0)/words.length};
+          }
         }
       }
+      return null;
     }
-    /* Pass 2: standalone section keyword */
-    for(let i=0;i<words.length;i++){
-      if(SEC_WORDS.includes(words[i].toUpperCase())){
-        return{doctor:words.slice(0,i).join(' ').trim(),section:words.slice(i).join(' ').trim()};
+    function headerFields(ws){
+      return HEADER_ALIASES.map(([key,re])=>{const found=findHeader(ws,re);return found?{key,x:found.x}:null;}).filter(Boolean);
+    }
+    function detectColumns(lines){
+      for(const ws of lines){
+        const found=headerFields(ws),keys=new Set(found.map(item=>item.key));
+        if(!keys.has('patient')||!keys.has('service')||!keys.has('doctorSection'))continue;
+        found.sort((a,b)=>a.x-b.x);
+        const cols={};
+        found.forEach((item,index)=>{
+          const previous=found[index-1],next=found[index+1];
+          cols[item.key]=[previous?(previous.x+item.x)/2:-Infinity,next?(item.x+next.x)/2:Infinity];
+        });
+        return{cols,detected:true};
       }
+      return{cols:DEFAULT_COLS,detected:false};
     }
-    return{doctor:txt.trim(),section:''};
+    function isHeaderLine(ws){
+      const keys=new Set(headerFields(ws).map(item=>item.key));
+      return keys.size>=2&&(keys.has('patient')||keys.has('service')||keys.has('doctorSection'));
+    }
+    function normalizeDigits(value){
+      return String(value||'').replace(/[٠-٩]/g,d=>'0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]).replace(/[۰-۹]/g,d=>'0123456789'['۰۱۲۳۴۵۶۷۸۹'.indexOf(d)]);
+    }
+    function splitDoctorSection(text){
+      const clean=PharmaCore.normalizeWhitespace(text),words=clean.split(/\s+/).filter(Boolean);
+      for(let index=1;index<words.length;index++){
+        for(const specialty of SPECIALTIES){
+          const size=specialty.split(/\s+/).length;
+          if(entityKey(words.slice(index,index+size).join(' '))===entityKey(specialty)){
+            return{doctor:words.slice(0,index).join(' '),section:words.slice(index).join(' ')};
+          }
+        }
+      }
+      for(let index=0;index<words.length;index++){
+        const upper=words[index].toUpperCase();
+        for(const specialty of ENGLISH_SPECIALTIES.filter(item=>!item.includes(' ')&&item.length>=5)){
+          if(upper.length>specialty.length+1&&upper.endsWith(specialty)){
+            const splitAt=words[index].length-specialty.length;
+            return{doctor:[...words.slice(0,index),words[index].slice(0,splitAt)].join(' ').trim(),section:[words[index].slice(splitAt),...words.slice(index+1)].join(' ').trim()};
+          }
+        }
+      }
+      return{doctor:clean,section:''};
+    }
+    function appendValue(current,next){return next?PharmaCore.normalizeWhitespace((current?current+' ':'')+next):current;}
+    const rows=[];let textItemCount=0,rejectedRows=0,sourceRows=0,layoutDetectedPages=0,fallbackPages=0;
+    for(let pageNumber=1;pageNumber<=pdf.numPages;pageNumber++){
+      throwIfCancelled(options);
+      const page=await pdf.getPage(pageNumber),content=await page.getTextContent();
+      textItemCount+=content.items.length;
+      const lineMap={};
+      content.items.forEach((item,order)=>{
+        const y=Math.round(item.transform[5]/2)*2;
+        if(!lineMap[y])lineMap[y]=[];
+        const text=String(item.str||'').trim();
+        if(text)lineMap[y].push({x:item.transform[4],s:text,order});
+      });
+      const lines=Object.keys(lineMap).map(Number).sort((a,b)=>b-a).map(y=>({y,words:lineMap[y]})).filter(line=>line.words.length);
+      const layout=detectColumns(lines.map(line=>line.words)),cols=layout.cols;
+      if(layout.detected)layoutDetectedPages++;else fallbackPages++;
+      let pending=null;
+      const finalizePending=()=>{
+        if(!pending)return;
+        sourceRows++;
+        const split=cols.section?{doctor:pending.doctorSection,section:pending.section}:splitDoctorSection(pending.doctorSection);
+        const row=normalizeRow({patient:pending.patient,patientName:pending.patientName,service:pending.service,orderNo:pending.orderNo,status:pending.status,doctor:split.doctor,section:split.section});
+        if(row&&row.doctor&&row.service)rows.push(row);else rejectedRows++;
+        pending=null;
+        if(rows.length>PharmaCore.MAX_UPLOAD_ROWS)throw new Error('عدد الصفوف أكبر من الحد المدعوم (500,000 صف)');
+      };
+      for(const line of lines){
+        const ws=line.words;
+        if(isHeaderLine(ws))continue;
+        const cells={
+          patient:joinCell(ws,cols.patient),
+          patientName:joinCell(ws,cols.patientName),
+          service:joinCell(ws,cols.service),
+          orderNo:joinCell(ws,cols.orderNo),
+          status:joinCell(ws,cols.status),
+          doctorSection:joinCell(ws,cols.doctorSection),
+          section:joinCell(ws,cols.section),
+        };
+        const patientToken=normalizeDigits(cells.patient).replace(/\s+/g,'');
+        if(patientToken){
+          finalizePending();
+          if(!/^[\p{L}\p{N}][\p{L}\p{N}._/-]{0,31}$/u.test(patientToken)){sourceRows++;rejectedRows++;continue;}
+          pending={...cells,patient:patientToken,lastY:line.y};
+          continue;
+        }
+        if(pending&&Math.abs(pending.lastY-line.y)<=24){
+          ['patientName','service','orderNo','status','doctorSection','section'].forEach(field=>{pending[field]=appendValue(pending[field],cells[field]);});
+          pending.lastY=line.y;
+        }
+      }
+      finalizePending();
+      options?.onProgress?.(pageNumber/pdf.numPages);
+      if(pageNumber<pdf.numPages&&pageNumber%3===0)await yieldToBrowser();
+    }
+    if(!textItemCount)throw new Error('ملف PDF عبارة عن صور ممسوحة ولا يحتوي نصاً قابلاً للاستخراج. استخدم PDF نصي من Oracle أو شغّل OCR أولاً');
+    if(!rows.length){
+      if(textItemCount<Math.max(20,pdf.numPages*5)||!layoutDetectedPages)throw new Error('PDF لا يحتوي طبقة نص كاملة أو تخطيطه غير معروف. شغّل OCR أو صدّر تقرير PDF نصياً من النظام');
+      throw new Error('لم أتمكن من تحليل صفوف PDF — تأكد من وجود أعمدة Patient No وService Name وDoctor Name');
+    }
+    return attachParseMeta(rows,{source:'pdf',pages:pdf.numPages,sourceRows,rejectedRows,textItemCount,layoutDetectedPages,fallbackPages});
+  }finally{
+    try{if(pdf)await pdf.destroy();else await loadingTask.destroy();}catch(_){}
   }
-  const rows=[];let textItemCount=0,candidateRows=0,rejectedRows=0;
-  for(let p=1;p<=pdf.numPages;p++){
-    throwIfCancelled(options);
-    const page=await pdf.getPage(p);
-    const c=await page.getTextContent();
-    textItemCount+=c.items.length;
-    const lmap={};
-    c.items.forEach(it=>{
-      const y=Math.round(it.transform[5]/3)*3;
-      if(!lmap[y]) lmap[y]=[];
-      lmap[y].push({x:it.transform[4],s:it.str.trim()});
-    });
-    const lines=Object.keys(lmap).map(Number).sort((a,b)=>b-a).map(y=>lmap[y].filter(w=>w.s).sort((a,b)=>a.x-b.x)).filter(ws=>ws.length);
-    const cols=detectColumns(lines);
-    lines.forEach(ws=>{
-      if(!ws.length) return;
-      const lineText=ws.map(w=>w.s).join(' ');
-      if(/Patient\s*(No|Name)|Medication Orders|From Date|To Date|Doctor Name|Service Name|Order No/i.test(lineText)) return;
-      const patient=g(ws,cols.patient);
-      const patientToken=patient.replace(/\s+/g,'');
-      if(!/^[A-Z0-9-]{3,24}$/i.test(patientToken)){if(patientToken)rejectedRows++;return;}
-      candidateRows++;
-      const ds=splitDS(g(ws,cols.doctorSection));
-      const row=normalizeRow({patient,patientName:g(ws,cols.patientName),service:g(ws,cols.service),
-                  orderNo:g(ws,cols.orderNo),status:g(ws,cols.status),doctor:ds.doctor,section:ds.section});
-      if(row)rows.push(row);else rejectedRows++;
-      if(rows.length>PharmaCore.MAX_UPLOAD_ROWS)throw new Error('عدد الصفوف أكبر من الحد المدعوم (500,000 صف)');
-    });
-    options?.onProgress?.(p/pdf.numPages);
-    if(p<pdf.numPages&&p%3===0)await yieldToBrowser();
-  }
-  if(!textItemCount)throw new Error('ملف PDF عبارة عن صور ممسوحة ولا يحتوي نصاً قابلاً للاستخراج. استخدم PDF نصي من Oracle أو شغّل OCR أولاً');
-  if(!rows.length) throw new Error('لم أتمكن من تحليل صفوف PDF — تأكد من وجود أعمدة Patient No وService Name وDoctor Name');
-  return attachParseMeta(rows,{source:'pdf',pages:pdf.numPages,sourceRows:candidateRows,rejectedRows});
 }
 
 /* التنقل يتم عبر الشريط الجانبي (sidebarNav)؛ مستمعو #tabs القديمة أُزيلوا */
@@ -684,6 +757,8 @@ const AGEDMEDS_DEFAULT = {
 let AGEDMEDS_DATA = loadAgedMedsData();
 
 function loadAgedMedsData(){
+  const embedded=readEmbeddedBusiness('agedMeds');
+  if(embedded&&embedded.y2025&&embedded.y2026&&embedded.months)return embedded;
   try{
     const raw = localStorage.getItem(AGEDMEDS_KEY);
     if(raw){
@@ -695,6 +770,7 @@ function loadAgedMedsData(){
 }
 function saveAgedMedsData(data){
   AGEDMEDS_DATA = data;
+  if(saveEmbeddedBusiness('agedMeds',data))return;
   try{ localStorage.setItem(AGEDMEDS_KEY, JSON.stringify(data)); }catch(e){}
 }
 function parseAgedMedsNum(v){
@@ -708,10 +784,16 @@ function agedMedsInputStyle(){
 }
 function agedMedsCell(year, branch, monthIdx){
   const v = AGEDMEDS_DATA[year][branch][monthIdx];
-  return '<td class="num" style="padding:4px 6px;"><input type="text" inputmode="numeric" class="agedmeds-inp" value="'+v+'" onchange="updateAgedMedsCell(\''+year+'\',\''+branch+'\','+monthIdx+',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}" style="'+agedMedsInputStyle()+'"></td>';
+  const label=(year==='y2025'?'2025':'2026')+' '+AGEDMEDS_DATA.months[monthIdx]+' '+branch;
+  return '<td class="num" style="padding:4px 6px;"><input type="text" inputmode="numeric" class="agedmeds-inp" aria-label="'+escapeAttr(label)+'" value="'+v+'" onchange="updateAgedMedsCell(\''+year+'\',\''+branch+'\','+monthIdx+',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}" style="'+agedMedsInputStyle()+'"></td>';
 }
-function agedMedsSpecCell(year, specIdx, value){
-  return '<td class="num" style="padding:4px 6px;"><input type="text" inputmode="numeric" class="agedmeds-inp" value="'+value+'" onchange="updateAgedMedsSpec(\''+year+'\','+specIdx+',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}" style="'+agedMedsInputStyle()+'"></td>';
+function agedMedsSpecialtyNames(){
+  const names=new Map();
+  [...(AGEDMEDS_DATA.specialties2025||[]),...(AGEDMEDS_DATA.specialties2026||[])].forEach(row=>{const key=entityKey(row[0]);if(key&&!names.has(key))names.set(key,row[0]);});
+  return [...names.values()];
+}
+function agedMedsSpecCell(year, specIdx, value, name){
+  return '<td class="num" style="padding:4px 6px;"><input type="text" inputmode="numeric" class="agedmeds-inp" aria-label="'+escapeAttr(name+' '+year.slice(1))+'" value="'+value+'" onchange="updateAgedMedsSpec(\''+year+'\','+specIdx+',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur();}" style="'+agedMedsInputStyle()+'"></td>';
 }
 function updateAgedMedsCell(year, branch, monthIdx, raw){
   AGEDMEDS_DATA[year][branch][monthIdx] = parseAgedMedsNum(raw);
@@ -721,14 +803,10 @@ function updateAgedMedsCell(year, branch, monthIdx, raw){
 }
 function updateAgedMedsSpec(year, specIdx, raw){
   const n = parseAgedMedsNum(raw);
-  if(year==='y2025'){
-    AGEDMEDS_DATA.specialties2025[specIdx][1] = n;
-  }else{
-    const name = AGEDMEDS_DATA.specialties2025[specIdx][0];
-    const match = AGEDMEDS_DATA.specialties2026.find(function(s){ return s[0]===name; });
-    if(match) match[1] = n;
-    else AGEDMEDS_DATA.specialties2026.push([name, n]);
-  }
+  const name=agedMedsSpecialtyNames()[specIdx],list=AGEDMEDS_DATA[year==='y2025'?'specialties2025':'specialties2026'];
+  const match=list.find(function(row){return sameEntity(row[0],name);});
+  if(match)match[1]=n;
+  else list.push([name,n]);
   saveAgedMedsData(AGEDMEDS_DATA);
   renderAgedMeds();
 }
@@ -778,13 +856,13 @@ function renderAgedMeds() {
       '<td class="num" style="color:'+gc+';font-weight:800;">'+(g>=0?'+':'')+g.toFixed(1)+'%</td></tr>';
   }).join('');
 
-  const specRows = AGEDMEDS_DATA.specialties2025.map(function(row, idx){
-    const name=row[0], v25=row[1];
-    const match = AGEDMEDS_DATA.specialties2026.find(function(s){return s[0]===name;});
-    const v26 = match ? match[1] : 0;
+  const specRows = agedMedsSpecialtyNames().map(function(name, idx){
+    const match25=AGEDMEDS_DATA.specialties2025.find(function(row){return sameEntity(row[0],name);});
+    const match26=AGEDMEDS_DATA.specialties2026.find(function(row){return sameEntity(row[0],name);});
+    const v25=match25?match25[1]:0,v26=match26?match26[1]:0;
     const g = v25>0 ? ((v26-v25)/v25*100) : 0;
     const gc = g>=0 ? 'var(--teal-l)' : 'var(--rose-l)';
-    return '<tr><td style="font-weight:700;">'+escapeHtml(name)+'</td>'+agedMedsSpecCell('y2025',idx,v25)+agedMedsSpecCell('y2026',idx,v26)+'<td class="num" style="color:'+gc+';font-weight:800;">'+(g>=0?'+':'')+g.toFixed(1)+'%</td></tr>';
+    return '<tr><td style="font-weight:700;">'+escapeHtml(name)+'</td>'+agedMedsSpecCell('y2025',idx,v25,name)+agedMedsSpecCell('y2026',idx,v26,name)+'<td class="num" style="color:'+gc+';font-weight:800;">'+(g>=0?'+':'')+g.toFixed(1)+'%</td></tr>';
   }).join('');
 
   container.innerHTML =
@@ -836,7 +914,7 @@ function renderAgedMeds() {
         '<div style="overflow-x:auto;"><table><thead><tr><th rowspan="2" style="vertical-align:middle;">الشهر</th><th colspan="4" style="text-align:center;">2025</th><th colspan="4" style="text-align:center;">2026</th><th rowspan="2" style="vertical-align:middle;">النمو</th></tr><tr><th>T1</th><th>T2</th><th>T3</th><th>إجمالي</th><th>T1</th><th>T2</th><th>T3</th><th>إجمالي</th></tr></thead><tbody>'+monthRows+'</tbody></table></div>'+
         '<div style="font-size:10.5px;color:var(--text-dim);margin-top:10px;line-height:1.7;">'+
           '✏️ اضغط على أي رقم في الجدول لتعديله — التغييرات تُحفظ تلقائيًا وتُحدَّث الإجماليات والرسم.<br>'+
-          '✓ يونيو 2026: الملف المرفوع لا يحتوي بيانات يونيو بعد — الأرقام مُدخَلة يدويًا ومؤكَّدة من حضرتك (إجمالي مؤكَّد: '+fmt(AGEDMEDS_DATA.june2026Confirmed)+' ريال، مطابق تمامًا لمجموع الفروع الثلاثة أعلاه — سيتم استبداله تلقائيًا عند رفع ملف يونيو الفعلي).<br>'+
+          '✓ يونيو 2026: الأرقام مُدخَلة يدويًا (إجمالي: '+fmt(AGEDMEDS_DATA.june2026Confirmed)+' ريال). ملفات الوصفات المرفوعة لا تحتوي مبالغ المبيعات، لذلك لا تستبدل هذه القيم تلقائيًا.<br>'+
           'ملحوظة: عمود "الأدوية" في التقرير الأصلي يمثل بالكامل الجزء "الآجل" من الإيراد (تم التحقق حسابيًا من أن اجمالي الايراد مع/بدون أدوية آجل يتطابقان تمامًا مع طرح هذا العمود).'+
         '</div>'+
       '</div>'+
@@ -891,7 +969,6 @@ function renderActive(){
   if(at==='targettrack'){renderTargetTrack();return;}
   if(at==='drugintel'){renderDrugIntel();return;}
   if(at==='nearexpiry'){renderNearExpiry();return;}
-  if(at==='plsales'){renderPLSales();return;}
     if(at==='pureherb'){renderPureHerb();return;}
   if(at==='dailytrack'){renderDailyTrack();return;}
   if(at==='trends'){renderTrends();return;}
@@ -1361,10 +1438,12 @@ function fillDrugDash(d,q){
 const PL_TARGET_KEY = 'pharmdash_pl_target_v1';
 
 function loadPLTarget(){
+  const embedded=readEmbeddedBusiness('plTarget');if(embedded)return embedded;
   try{ const r=localStorage.getItem(PL_TARGET_KEY); if(r) return JSON.parse(r); }catch(e){}
   return { target:60000, achieved:0, month:'مايو 2026', currency:'ريال' };
 }
 function savePLTarget(t){
+  if(saveEmbeddedBusiness('plTarget',t))return;
   try{ localStorage.setItem(PL_TARGET_KEY, JSON.stringify(t)); }catch(e){}
 }
 
@@ -1501,10 +1580,12 @@ function editPLTarget(){
 const PH_TARGET_KEY = 'pharmdash_ph_target_v1';
 
 function loadPHTarget(){
+  const embedded=readEmbeddedBusiness('phTarget');if(embedded)return embedded;
   try{ const r=localStorage.getItem(PH_TARGET_KEY); if(r) return JSON.parse(r); }catch(e){}
   return { target:20000, achieved:0, month:'يونيو 2026', currency:'ريال' };
 }
 function savePHTarget(t){
+  if(saveEmbeddedBusiness('phTarget',t))return;
   try{ localStorage.setItem(PH_TARGET_KEY, JSON.stringify(t)); }catch(e){}
 }
 
@@ -1617,10 +1698,11 @@ function editPHTarget(){
 const PL_AMOUNT_KEY = 'pharmdash_pl_amounts_v1';
 
 function loadPLAmounts(){
+  const embedded=readEmbeddedBusiness('plAmounts');if(embedded)return embedded;
   try{ const r=localStorage.getItem(PL_AMOUNT_KEY); if(r){ const a=JSON.parse(r); if(a.unitsBefore===undefined)a.unitsBefore=0; if(a.unitsAfter===undefined)a.unitsAfter=0; return a; } }catch(e){}
   return { before:0, after:0, unitsBefore:0, unitsAfter:0, beforeLabel:'الفترة السابقة', afterLabel:'الفترة الحالية' };
 }
-function savePLAmounts(a){ try{ localStorage.setItem(PL_AMOUNT_KEY, JSON.stringify(a)); }catch(e){} }
+function savePLAmounts(a){if(saveEmbeddedBusiness('plAmounts',a))return;try{ localStorage.setItem(PL_AMOUNT_KEY, JSON.stringify(a)); }catch(e){} }
 
 function renderPLComparison(){
   const box = document.getElementById('plComparisonCard');
@@ -1629,7 +1711,7 @@ function renderPLComparison(){
   const loaded = BRANCHES.filter(b=>STATE.data[b]);
 
   // الفروع اللي عندها فترتين (للمقارنة بالعدد)
-  const eligible = loaded.filter(b => (STATE.periods[b]||[]).length >= 2);
+  const eligible = loaded.filter(b => datedComparisonPeriods(STATE.periods[b]).length >= 2);
   // الفرع المختار (افتراضي: الكل لو فيه أكتر من فرع مؤهّل)
   if(window._plCompBranch===undefined) window._plCompBranch = 'all';
   const sel = window._plCompBranch;
@@ -1637,19 +1719,19 @@ function renderPLComparison(){
   // دالة تجمع المقارنة لفرع واحد أو الكل
   function gather(branchScope){
     const prod = {}; PRIVATE_LABEL.forEach(p=>prod[p.key]={name:p.name,before:0,after:0});
-    let bL='', aL='', has=false;
+    const beforeLabels=new Set(),afterLabels=new Set();let has=false;
     const branches = branchScope==='all' ? eligible : [branchScope];
     branches.forEach(b=>{
-      const periods = STATE.periods[b]||[]; if(periods.length<2) return;
+      const periods=datedComparisonPeriods(STATE.periods[b]);if(periods.length<2)return;
       has=true;
-      const range=periodOldestNewest(periods),oldest=range.oldest,newest=range.newest;
-      bL=oldest.label; aL=newest.label;
+      const oldest=periods[0],newest=periods.at(-1);
+      beforeLabels.add(oldest.label);afterLabels.add(newest.label);
       PRIVATE_LABEL.forEach(p=>{
         prod[p.key].before+=(oldest.data.drugs||[]).filter(d=>findPrivateLabelProduct(d.name)?.key===p.key).reduce((s,d)=>s+d.total,0);
         prod[p.key].after+=(newest.data.drugs||[]).filter(d=>findPrivateLabelProduct(d.name)?.key===p.key).reduce((s,d)=>s+d.total,0);
       });
     });
-    return {prod, beforeLabel:bL, afterLabel:aL, has};
+    return {prod,beforeLabel:[...beforeLabels].join(' · '),afterLabel:[...afterLabels].join(' · '),has};
   }
 
   const g = gather(sel);
@@ -1845,29 +1927,8 @@ function plAggRowsHTML(list, prodColors, pkFilter){
   return h;
 }
 
-/* آخر فترة ظهر/زاد فيها صرف الصنف لهذا الطبيب (مقارنة الفترات التراكمية) */
-function plLastPeriodLabel(docName, key){
-  var lastInc = null, firstNZ = null;
-  for(var bi=0;bi<BRANCHES.length;bi++){
-    var pers = PharmaCore.sortPeriods((STATE.periods && STATE.periods[BRANCHES[bi]]) || []);
-    var prev = 0;
-    for(var i=0;i<pers.length;i++){
-      var rows = pers[i].rows || [];
-      var c = 0;
-      for(var ri=0;ri<rows.length;ri++){
-        var r = rows[ri];
-        if(sameEntity(r.doctor,docName) && findPrivateLabelProduct(r.service)?.key===key)c++;
-      }
-      if(c > 0 && firstNZ === null) firstNZ = pers[i].label;
-      if(c > prev) lastInc = pers[i].label;
-      prev = c;
-    }
-  }
-  return lastInc || firstNZ;
-}
-
 function currentReportPeriodLabel(){
-  const branches=STATE.active&&STATE.data[STATE.active]?[STATE.active]:BRANCHES.filter(b=>STATE.data[b]);
+  const branches=BRANCHES.filter(b=>STATE.data[b]);
   const labels=branches.map(b=>periodOldestNewest(STATE.periods[b]||[]).newest).filter(Boolean);
   if(labels.length) return labels.map(p=>p.label).filter((v,i,a)=>a.indexOf(v)===i).join(' · ');
   return new Date().toLocaleDateString('ar-EG',{month:'long',year:'numeric'});
@@ -2447,11 +2508,34 @@ function showDoctor(name){
   if(!STATE.active) return;const d=STATE.data[STATE.active];if(!d) return;const x=d.doctors.find(z=>sameEntity(z.name,name));if(!x) return;
   showDoctorMulti(name); // use enhanced modal
 }
-function showDrug(name){
-  if(!STATE.active) return;const d=STATE.data[STATE.active];if(!d) return;const x=d.drugs.find(z=>sameEntity(z.name,name));if(!x) return;
-  modalBody.innerHTML='<h2 style="font-size:22px;margin-bottom:6px;font-family:Inter,Alexandria,sans-serif">💊 '+escapeHtml(x.name)+' <span class="tag '+STATE.active.toLowerCase()+'" style="font-size:11px;">'+BRANCH_LABELS[STATE.active]+'</span></h2><div class="detail-grid" style="margin-top:16px"><div class="detail-card"><div class="l">الكتابات</div><div class="v">'+fmt(x.total)+'</div></div><div class="detail-card"><div class="l">الأطباء</div><div class="v">'+fmt(x.doctorCount)+'</div></div><div class="detail-card"><div class="l">المرضى</div><div class="v">'+fmt(x.patients)+'</div></div><div class="detail-card"><div class="l">النسبة</div><div class="v">'+pct(x.total,d.totalRows).toFixed(1)+'%</div></div></div><div class="mini-head"><h3>أعلى الأطباء</h3></div><div class="table-wrap" style="max-height:300px;overflow-y:auto;"><table><thead><tr><th style="width:50px;">#</th><th>الطبيب</th><th>الكتابات</th><th>النسبة</th></tr></thead><tbody>'+x.doctors.slice(0,30).map((y,i)=>'<tr class="clickable" data-doc="'+escapeAttr(y.name)+'"><td>'+rankBadge(i)+'</td><td>'+escapeHtml(y.name)+'</td><td class="num">'+fmt(y.count)+'</td><td class="num">'+pct(y.count,x.total).toFixed(1)+'%</td></tr>').join('')+'</tbody></table></div>';
-  modalBody.querySelectorAll('tr[data-doc]').forEach(tr=>tr.onclick=()=>{closeModal();setTimeout(()=>showDoctor(tr.dataset.doc),150);});
+function openDrugDetail(x,scopeLabel,totalRows,scopeClass){
+  if(!x)return;
+  modalBody.innerHTML='<h2 style="font-size:22px;margin-bottom:6px;font-family:Inter,Alexandria,sans-serif">💊 '+escapeHtml(x.name)+' <span class="tag '+escapeAttr(scopeClass||'')+'" style="font-size:11px;">'+escapeHtml(scopeLabel)+'</span></h2><div class="detail-grid" style="margin-top:16px"><div class="detail-card"><div class="l">الكتابات</div><div class="v">'+fmt(x.total)+'</div></div><div class="detail-card"><div class="l">الأطباء</div><div class="v">'+fmt(x.doctorCount)+'</div></div><div class="detail-card"><div class="l">المرضى</div><div class="v">'+fmt(x.patients)+'</div></div><div class="detail-card"><div class="l">النسبة</div><div class="v">'+pct(x.total,totalRows).toFixed(1)+'%</div></div></div><div class="mini-head"><h3>أعلى الأطباء</h3></div><div class="table-wrap" style="max-height:300px;overflow-y:auto;"><table><thead><tr><th style="width:50px;">#</th><th>الطبيب</th><th>الكتابات</th><th>النسبة</th></tr></thead><tbody>'+x.doctors.slice(0,30).map((y,i)=>'<tr class="clickable" data-doc="'+escapeAttr(y.name)+'"><td>'+rankBadge(i)+'</td><td>'+escapeHtml(y.name)+'</td><td class="num">'+fmt(y.count)+'</td><td class="num">'+pct(y.count,x.total).toFixed(1)+'%</td></tr>').join('')+'</tbody></table></div>';
+  modalBody.querySelectorAll('tr[data-doc]').forEach(tr=>tr.onclick=()=>{const doctor=tr.dataset.doc;closeModal();setTimeout(()=>showDoctorMulti(doctor),150);});
   openModal('تفاصيل الدواء');
+}
+function showDrug(name,branch){
+  const selected=branch||STATE.active,d=selected&&STATE.data[selected];if(!d)return;
+  const x=d.drugs.find(drug=>sameEntity(drug.name,name));if(!x)return;
+  openDrugDetail(x,BRANCH_LABELS[selected],d.totalRows,selected.toLowerCase());
+}
+function showDrugFromPeriod(name,branch,periodId){
+  const period=(STATE.periods[branch]||[]).find(item=>String(item.id)===String(periodId));
+  const x=period?.data?.drugs?.find(drug=>sameEntity(drug.name,name));if(!x)return;
+  openDrugDetail(x,BRANCH_LABELS[branch]+' · '+period.label,period.data.totalRows,branch.toLowerCase());
+}
+function showDrugMulti(name){
+  const loaded=BRANCHES.filter(branch=>STATE.data[branch]),doctorMap=new Map(),patients=new Set();
+  let total=0,totalRows=0,displayName=name;
+  loaded.forEach(branch=>{
+    const data=STATE.data[branch],drug=data.drugs.find(item=>sameEntity(item.name,name));totalRows+=data.totalRows;
+    if(!drug)return;
+    displayName=drug.name;total+=drug.total;
+    drug.doctors.forEach(doctor=>{const key=entityKey(doctor.name),entry=doctorMap.get(key)||{name:doctor.name,count:0};entry.count+=doctor.count;doctorMap.set(key,entry);});
+    data.rows.forEach(row=>{if(sameEntity(row.service,name)&&row.patient)patients.add(patientIdentityKey(branch,row.patient));});
+  });
+  if(!total)return;
+  openDrugDetail({name:displayName,total,doctorCount:doctorMap.size,patients:patients.size,doctors:[...doctorMap.values()].sort((a,b)=>b.count-a.count)},'كل الفروع',totalRows,'');
 }
 
 function getExportPrivacyMode(){
@@ -2471,10 +2555,30 @@ function sanitizeDailyStore(store,anonymize){
     out[date]={T1:null,T2:null,T3:null};
     BRANCHES.forEach(b=>{
       const entry=store[date]&&store[date][b];
-      if(entry) out[date][b]={...entry,rows:sanitizeRowsForExport(entry.rows,anonymize)};
+      if(entry) out[date][b]={...entry,label:anonymize&&entry.label?'تقرير يومي':entry.label,rows:sanitizeRowsForExport(entry.rows,anonymize)};
     });
   });
   return out;
+}
+function sanitizedPeriodLabel(label,index,anonymize){
+  if(!anonymize)return label;
+  const score=periodDateScore(label);
+  return score?String(Math.floor(score/100))+'-'+String(score%100).padStart(2,'0'):'فترة '+(index+1);
+}
+function sanitizeParseMeta(meta,anonymize){
+  if(!meta||!anonymize)return meta||null;
+  const safe={};
+  ['source','pages','sourceRows','rejectedRows','textItemCount','layoutDetectedPages','fallbackPages'].forEach(key=>{if(meta[key]!=null)safe[key]=meta[key];});
+  return safe;
+}
+function buildBusinessSnapshot(){
+  return{
+    agedMeds:AGEDMEDS_DATA,
+    plTarget:loadPLTarget(),
+    phTarget:loadPHTarget(),
+    plAmounts:loadPLAmounts(),
+    competitorCustom:getCompCustom(),
+  };
 }
 function redactCredentialsFromSharedTemplate(html){
   const start=html.indexOf('const USERS = {');
@@ -2485,19 +2589,6 @@ function redactCredentialsFromSharedTemplate(html){
 }
 function exportCell(value){return PharmaCore.escapeSpreadsheetFormula(value==null?'':String(value));}
 
-var _eb=document.getElementById('exportBtn');if(_eb)_eb.onclick=()=>{
-  const loaded=BRANCHES.filter(b=>STATE.data[b]);
-  if(!loaded.length){toast('لا توجد بيانات للتصدير','error');return;}
-  if(!confirmSensitiveExport('ملف CSV')) return;
-  const anonymize=getExportPrivacyMode()!=='full';
-  const head=['الفرع','الطبيب','القسم','الدواء','الحالة','رقم المريض','اسم المريض','رقم الأمر'];
-  const lines=[head.join(',')];
-  loaded.forEach(b=>{sanitizeRowsForExport(STATE.data[b].rows,anonymize).forEach(r=>{lines.push([BRANCH_LABELS[b],r.doctor,r.section,r.service,r.status,r.patient,r.patientName,r.orderNo].map(v=>'"'+exportCell(v).replace(/"/g,'""')+'"').join(','));});});
-  const blob=new Blob(['\uFEFF'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rx-export-'+(anonymize?'anonymized-':'')+PharmaCore.localDateKey()+'.csv';
-  document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(a.href);},1000);toast('تم التصدير');
-};
-
 document.getElementById('shareBtn').onclick=()=>{
   const loaded=BRANCHES.filter(b=>STATE.data[b]);
   if(!loaded.length){toast('لا توجد بيانات للمشاركة','error');return;}
@@ -2506,9 +2597,9 @@ document.getElementById('shareBtn').onclick=()=>{
   showLoad();
   try{
     let html=redactCredentialsFromSharedTemplate(SOURCE_TEMPLATE);
-    const payload={v:2,active:STATE.active,privacy:{anonymized:anonymize,createdAt:new Date().toISOString()},branches:{},periods:{},dt:sanitizeDailyStore((typeof DT!=='undefined'&&DT.store)?DT.store:{},anonymize)};
-    BRANCHES.forEach(b=>{const d=STATE.data[b];if(d) payload.branches[b]={rows:sanitizeRowsForExport(d.rows,anonymize),reportName:d.reportName,reportDate:d.reportDate};});
-    BRANCHES.forEach(b=>{payload.periods[b]=(STATE.periods[b]||[]).map(p=>({id:p.id,label:p.label,rows:sanitizeRowsForExport(p.rows,anonymize),parseMeta:p.parseMeta||null,_main:!!p._main}));});
+    const payload={v:2,active:STATE.active,privacy:{anonymized:anonymize,createdAt:new Date().toISOString()},branches:{},periods:{},dt:sanitizeDailyStore((typeof DT!=='undefined'&&DT.store)?DT.store:{},anonymize),business:buildBusinessSnapshot()};
+    BRANCHES.forEach(b=>{const d=STATE.data[b];if(d) payload.branches[b]={rows:sanitizeRowsForExport(d.rows,anonymize),reportName:anonymize?'تقرير '+BRANCH_LABELS[b]:d.reportName,reportDate:anonymize?'':d.reportDate};});
+    BRANCHES.forEach(b=>{payload.periods[b]=(STATE.periods[b]||[]).map((p,index)=>({id:p.id,label:sanitizedPeriodLabel(p.label,index,anonymize),rows:sanitizeRowsForExport(p.rows,anonymize),parseMeta:sanitizeParseMeta(p.parseMeta,anonymize),_main:!!p._main}));});
     const closeToken='<'+'/scr'+'ipt>',openToken='<scr'+'ipt id="embedded-rx-data">';
     const json=JSON.stringify(payload).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');
     const tag=openToken+'window.__PHARMADASH_SHARED__=true;window.__EMBEDDED_RX__='+json+';'+closeToken;
@@ -2560,10 +2651,6 @@ async function loadEmbedded(){
 }
 
 /* ══ TARGETED PRODUCTS DATA ══ */
-/* Exact product match: compare first 25 normalized chars of drug name vs product name */
-function normalizeDrug(s) {
-  return PharmaCore.normalizeProductText(s);
-}
 function matchesTarget(drugName, prodFullName) {
   const product = (typeof TARGET_PRODUCTS!=='undefined' && TARGET_PRODUCTS.find(p=>p.name===prodFullName)) || {name:prodFullName};
   return PharmaCore.matchesCatalogProduct(drugName,product);
@@ -3601,16 +3688,16 @@ function exportHomeExcel() {
 
   const docAgg = new Map(), drugAgg = new Map();
   loaded.forEach(b => {
-    STATE.data[b].doctors.forEach(d => docAgg.set(d.name, (docAgg.get(d.name) || 0) + d.total));
-    STATE.data[b].drugs.forEach(d => drugAgg.set(d.name, (drugAgg.get(d.name) || 0) + d.total));
+    STATE.data[b].doctors.forEach(d=>{const key=entityKey(d.name),entry=docAgg.get(key)||{name:d.name,total:0};entry.total+=d.total;docAgg.set(key,entry);});
+    STATE.data[b].drugs.forEach(d=>{const key=entityKey(d.name),entry=drugAgg.get(key)||{name:d.name,total:0};entry.total+=d.total;drugAgg.set(key,entry);});
   });
 
   const wb = XLSX.utils.book_new();
   // Doctors sheet
-  const docRows = [...docAgg.entries()].sort((a, b) => b[1] - a[1]).map(([name, total], i) => ({ 'الترتيب': i + 1, 'الطبيب': name, 'الكتابات': total }));
+  const docRows=[...docAgg.values()].sort((a,b)=>b.total-a.total).map((entry,i)=>({'الترتيب':i+1,'الطبيب':entry.name,'الكتابات':entry.total}));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(docRows), 'الأطباء');
   // Drugs sheet
-  const drugRows = [...drugAgg.entries()].sort((a, b) => b[1] - a[1]).map(([name, total], i) => ({ 'الترتيب': i + 1, 'الدواء': name, 'الكتابات': total }));
+  const drugRows=[...drugAgg.values()].sort((a,b)=>b.total-a.total).map((entry,i)=>({'الترتيب':i+1,'الدواء':entry.name,'الكتابات':entry.total}));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(drugRows), 'الأدوية');
 
   const date = PharmaCore.localDateKey();
@@ -3619,7 +3706,10 @@ function exportHomeExcel() {
 }
 
 function exportHomePDF() {
+  if(!confirmSensitiveExport('ملف PDF المطبوع'))return;
+  document.documentElement.dataset.printPrivacy=getExportPrivacyMode();
   window.print();
+  setTimeout(()=>delete document.documentElement.dataset.printPrivacy,1000);
   toast('استخدم "حفظ كـ PDF" في نافذة الطباعة');
 }
 
@@ -3945,7 +4035,7 @@ function renderTargetTrack() {
   const container = document.getElementById('targettrack-content');
 
   // الفروع اللي عندها فترتين أو أكثر
-  const eligible = BRANCHES.filter(b => STATE.periods[b] && STATE.periods[b].length >= 2);
+  const eligible = BRANCHES.filter(b=>datedComparisonPeriods(STATE.periods[b]).length>=2);
 
   if (!eligible.length) {
     container.innerHTML = `
@@ -3964,7 +4054,7 @@ function renderTargetTrack() {
   }
 
   const branchOpts = eligible.map(b =>
-    `<option value="${b}">${BRANCH_LABELS[b]} (${STATE.periods[b].length} فترة)</option>`).join('');
+    `<option value="${b}">${BRANCH_LABELS[b]} (${datedComparisonPeriods(STATE.periods[b]).length} فترة مؤرخة)</option>`).join('');
 
   container.innerHTML = `
     <div class="card" style="margin-bottom:16px;">
@@ -4010,7 +4100,7 @@ function renderTargetTrack() {
 
   function refreshTT() {
     const b = document.getElementById('tt-branch').value;
-    const periods = PharmaCore.sortPeriods(STATE.periods[b]);
+    const periods=datedComparisonPeriods(STATE.periods[b]);
     const opts = periods.map((p, i) => `<option value="${i}">${escapeHtml(p.label)} (${fmt((p.rows || []).length)})</option>`).join('');
     document.getElementById('tt-base').innerHTML = opts;
     document.getElementById('tt-current').innerHTML = opts;
@@ -4053,7 +4143,7 @@ function buildTargetTrack() {
   const branchEl = document.getElementById('tt-branch');
   if (!branchEl) return;
   const branch = branchEl.value;
-  const periods = PharmaCore.sortPeriods(STATE.periods[branch]);
+  const periods=datedComparisonPeriods(STATE.periods[branch]);
   if (!periods || !periods.length) return;
 
   const iBase = parseInt(document.getElementById('tt-base').value);
@@ -4067,12 +4157,12 @@ function buildTargetTrack() {
 
   // دالة: تجمع صرف صنف مستهدف في فترة معينة
   function countInPeriod(periodData, prodName) {
-    if (!periodData || !periodData.drugs) return { total: 0, doctors: new Set() };
+    if (!periodData || !periodData.drugs) return { total: 0, doctors: new Map() };
     let total = 0;
-    const doctors = new Set();
+    const doctors = new Map();
     periodData.drugs.filter(x => matchesTarget(x.name, prodName)).forEach(m => {
       total += m.total;
-      (m.doctors || []).forEach(dr => doctors.add(dr.name));
+      (m.doctors || []).forEach(dr => {const key=entityKey(dr.name);if(key&&!doctors.has(key))doctors.set(key,dr.name);});
     });
     return { total, doctors };
   }
@@ -4085,8 +4175,8 @@ function buildTargetTrack() {
     const changePct = base.total > 0 ? (change / base.total * 100) : (cur.total > 0 ? 100 : 0);
     const isPL=!!findPrivateLabelProduct(prod.short)||!!findPrivateLabelProduct(prod.name);
     // أطباء جدد بدأوا يكتبوه
-    const newDoctors = [...cur.doctors].filter(d => !base.doctors.has(d));
-    const lostDoctors = [...base.doctors].filter(d => !cur.doctors.has(d));
+    const newDoctors=[...cur.doctors].filter(([key])=>!base.doctors.has(key)).map(([,name])=>name);
+    const lostDoctors=[...base.doctors].filter(([key])=>!cur.doctors.has(key)).map(([,name])=>name);
     return {
       id: prod.id, name: prod.name, short: prod.short, isPL,
       baseTotal: base.total, curTotal: cur.total, change, changePct,
@@ -4226,11 +4316,6 @@ function buildTargetTrack() {
 
 
 
-// ══════════════════════════════════════════
-// SECTION 21 — WEEKLY REPORT (التقرير الأسبوعي الجاهز)
-// يولّد ملخص احترافي جاهز للنسخ/الطباعة لرفعه للإدارة
-// ══════════════════════════════════════════
-
 /* ════ وتيرة المستهدف: أيام العمل المتبقية بدون الجمعة ════ */
 function plPaceInfo(remaining){
   var now = new Date();
@@ -4245,21 +4330,6 @@ function plPaceInfo(remaining){
   return { days: days, perDay: perDay };
 }
 
-function copyWeeklyReport() {
-  const txt = window._weeklyReportText || '';
-  if (!txt) { toast('لا توجد بيانات', 'error'); return; }
-  navigator.clipboard.writeText(txt).then(
-    () => toast('✓ تم نسخ التقرير — الصقه في واتساب أو إيميل'),
-    () => toast('تعذّر النسخ', 'error')
-  );
-}
-
-function printWeeklyReport() {
-  window.print();
-  toast('استخدم "حفظ كـ PDF" في نافذة الطباعة');
-}
-
-
 // ══════════════════════════════════════════
 // SECTION — CONVERSION OPPORTUNITIES (فرص التحويل)
 // لكل تخصص فيه نشاط، يعرض أكبر الأدوية المنافسة (غير PL)
@@ -4271,10 +4341,12 @@ function printWeeklyReport() {
    localStorage: pharmdash_comp_custom_v1 (بيانات صغيرة)
 ════════════════════════════════════════════════════ */
 function getCompCustom(){
+  const embedded=readEmbeddedBusiness('competitorCustom');if(embedded&&embedded.add&&embedded.exclude)return embedded;
   try{ var c=JSON.parse(localStorage.getItem('pharmdash_comp_custom_v1')); if(c&&c.add&&c.exclude) return c; }catch(e){}
   return {add:{},exclude:{}};
 }
 function saveCompCustom(c){
+  if(saveEmbeddedBusiness('competitorCustom',c)){window._compCustom=c;return;}
   try{ localStorage.setItem('pharmdash_comp_custom_v1', JSON.stringify(c)); }catch(e){}
   window._compCustom=c;
 }
@@ -4545,6 +4617,20 @@ function printVisitCard(){
 ════════════════════════════════════════════════════ */
 const NEAR_EXPIRY_DATA = [{"code": "1-03-187-229", "name": "BLUM-D 50000 iu/tablet, 20 TABLET/BOX", "branch": "T1", "expiry": "2026-06-24", "qty": 1.0, "cost": 0.0, "total": 0.0},{"code": "1-05-187-388", "name": "GALVUS MET 50/1000MG/tablet, 60 TABLET/BOX", "branch": "T3", "expiry": "2026-06-30", "qty": 1.0, "cost": 91.96, "total": 91.96},{"code": "1-09-194-012", "name": "NYDA PLUS 100 ml topical spray /1Applicator, 1Applicator/Applicator", "branch": "T3", "expiry": "2026-06-30", "qty": 1.0, "cost": 60.52, "total": 60.52},{"code": "1-09-031-131", "name": "ACRETIN C GEL 30 GM/TUBE", "branch": "T2", "expiry": "2026-07-22", "qty": 2.0, "cost": 28.17, "total": 56.33},{"code": "1-09-031-131", "name": "ACRETIN C GEL 30 GM/TUBE", "branch": "T2", "expiry": "2026-07-22", "qty": 2.0, "cost": 23.47, "total": 46.94},{"code": "1-09-031-067", "name": "HI-QUIN Cream 2%/1APPLY, 30GM/Tube", "branch": "T2", "expiry": "2026-07-22", "qty": 2.0, "cost": 17.43, "total": 34.85},{"code": "1-09-031-131", "name": "ACRETIN C GEL 30 GM/TUBE", "branch": "T3", "expiry": "2026-07-22", "qty": 1.0, "cost": 23.47, "total": 23.47},{"code": "1-09-031-131", "name": "ACRETIN C GEL 30 GM/TUBE", "branch": "T2", "expiry": "2026-07-22", "qty": 1.0, "cost": 23.47, "total": 23.47},{"code": "1-05-059-058", "name": "SELECTA PLUS Film coated tablet 5/12.5MG/1Tablet, 30Tablet/Box", "branch": "T1", "expiry": "2026-07-24", "qty": 6.0, "cost": 12.53, "total": 75.2},{"code": "1-02-036-003", "name": "VOLTIC  tablet 50MG/1Tablet, 20Tablet/Box", "branch": "T1", "expiry": "2026-07-25", "qty": 380.0, "cost": 7.52, "total": 2857.77},{"code": "1-02-036-003", "name": "VOLTIC  tablet 50MG/1Tablet, 20Tablet/Box", "branch": "T1", "expiry": "2026-07-25", "qty": 13.0, "cost": 7.52, "total": 97.77},{"code": "1-08-059-008", "name": "ENTAPRO Film coated tablet 20MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-07-27", "qty": 1.0, "cost": 75.09, "total": 75.09},{"code": "1-09-066-056", "name": "ADZOY 0.3 % / 2.5%/apply Gel, 30 GM/TUBE", "branch": "T1", "expiry": "2026-07-30", "qty": 4.0, "cost": 49.46, "total": 197.86},{"code": "1-03-187-186", "name": "HAEMOVIT Tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-07-30", "qty": 4.0, "cost": 32.5, "total": 130.0},{"code": "1-09-066-056", "name": "ADZOY 0.3 % / 2.5%/apply Gel, 30 GM/TUBE", "branch": "T3", "expiry": "2026-07-30", "qty": 1.0, "cost": 49.46, "total": 49.46},{"code": "1-05-187-090", "name": "DAONIL Tablet 5MG/1Tablet, 30Tablet/Box", "branch": "T1", "expiry": "2026-07-31", "qty": 151.0, "cost": 20.49, "total": 3093.99},{"code": "1-06-118-029", "name": "AVALON AVOCOM 0.1 %/apply Ointment , 50 GM/TUBE", "branch": "T1", "expiry": "2026-07-31", "qty": 55.0, "cost": 9.8, "total": 538.94},{"code": "1-05-187-090", "name": "DAONIL Tablet 5MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-07-31", "qty": 52.0, "cost": 20.49, "total": 1065.48},{"code": "1-05-086-010", "name": "MIXTARD Injection 30IU/1ML, 10ML/Vial", "branch": "T2", "expiry": "2026-07-31", "qty": 35.0, "cost": 54.16, "total": 1895.76},{"code": "1-06-118-029", "name": "AVALON AVOCOM 0.1 %/apply Ointment , 50 GM/TUBE", "branch": "T2", "expiry": "2026-07-31", "qty": 30.0, "cost": 9.8, "total": 293.97},{"code": "1-03-020-229", "name": "ELEVIT Tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-07-31", "qty": 30.0, "cost": 0.0, "total": 0.0},{"code": "1-03-020-229", "name": "ELEVIT Tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-07-31", "qty": 23.0, "cost": 0.0, "total": 0.0},{"code": "1-03-020-229", "name": "ELEVIT Tablet, 30 TABLET/BOX", "branch": "T3", "expiry": "2026-07-31", "qty": 17.0, "cost": 0.0, "total": 0.0},{"code": "1-03-020-045", "name": "GENTAPLEX Capsule /1Capsule, 36Capsule/Box", "branch": "T1", "expiry": "2026-07-31", "qty": 16.0, "cost": 142.92, "total": 2286.67},{"code": "1-03-187-238", "name": "ARKO PHARMA FORCAPIL GROWTH HAIR AND NAILS GUMMIES, 60 TABLET/BOTTEL", "branch": "T2", "expiry": "2026-07-31", "qty": 14.0, "cost": 89.87, "total": 1258.18},{"code": "1-06-085-001", "name": "BUTALIN INHALATION SPRAY 100MCG/1Applicator, 200Inhalation spray/Container", "branch": "T2", "expiry": "2026-07-31", "qty": 14.0, "cost": 9.47, "total": 132.62},{"code": "1-09-118-068", "name": "AVALON AVOMEB EXTERA Ointment , 50 GM/TUBE", "branch": "T2", "expiry": "2026-07-31", "qty": 13.0, "cost": 34.85, "total": 452.35},{"code": "1-04-187-103", "name": "MEBAGEN 200 mg/ml/tablet Extended Release Tab, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-07-31", "qty": 11.0, "cost": 21.13, "total": 232.47},{"code": "1-06-085-001", "name": "BUTALIN INHALATION SPRAY 100MCG/1Applicator, 200Inhalation spray/Container", "branch": "T1", "expiry": "2026-07-31", "qty": 10.0, "cost": 9.47, "total": 94.73},{"code": "1-14-020-003", "name": "VITA ROYAL 1000 MG 30 CAPS", "branch": "T2", "expiry": "2026-07-31", "qty": 8.0, "cost": 66.0, "total": 528.0},{"code": "1-05-086-010", "name": "MIXTARD Injection 30IU/1ML, 10ML/Vial", "branch": "T3", "expiry": "2026-07-31", "qty": 8.0, "cost": 54.16, "total": 433.32},{"code": "1-02-187-062", "name": "JOINTACE CHONDROITIN GLUCOSAMIN Tablet /1Tablet, 60Tablet/Box", "branch": "T2", "expiry": "2026-07-31", "qty": 8.0, "cost": 37.91, "total": 303.31},{"code": "1-09-066-057", "name": "ADZOY 0.1% / 2.5% apply Gel, 30 GM/TUBE", "branch": "T3", "expiry": "2026-07-31", "qty": 8.0, "cost": 0.0, "total": 0.0},{"code": "1-05-086-013", "name": "APIDRA SOLOSTAR 100 iu/ml Injection, 5 VIAL/BOX", "branch": "T1", "expiry": "2026-07-31", "qty": 6.0, "cost": 147.04, "total": 882.26},{"code": "1-01-020-076", "name": "DENACIF 300 mg/capsule, 10 CAPSULE", "branch": "T2", "expiry": "2026-07-31", "qty": 6.0, "cost": 24.09, "total": 144.51},{"code": "1-11-049-008", "name": "AZARGA Eye drops 10MG/1Drop, 5ML/Container", "branch": "T3", "expiry": "2026-07-31", "qty": 5.0, "cost": 42.8, "total": 214.0},{"code": "1-01-059-005", "name": "CEFODOX Film coated tablet 200MG/1Tablet, 14Tablet/Box", "branch": "T2", "expiry": "2026-07-31", "qty": 5.0, "cost": 0.0, "total": 0.0},{"code": "1-05-187-338", "name": "TENORYL PLUS 10/10 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-07-31", "qty": 4.0, "cost": 59.13, "total": 236.53},{"code": "1-04-187-103", "name": "MEBAGEN 200 mg/ml/tablet Extended Release Tab, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-07-31", "qty": 4.0, "cost": 21.13, "total": 84.53},{"code": "1-04-187-103", "name": "MEBAGEN 200 mg/ml/tablet Extended Release Tab, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-07-31", "qty": 4.0, "cost": 21.13, "total": 84.53},{"code": "1-06-085-011", "name": "SERETIDE EVOHALER125MG INHALATION SPRAY /1Inhaler, 120Inhaler/Container", "branch": "T2", "expiry": "2026-07-31", "qty": 3.0, "cost": 98.09, "total": 294.27},{"code": "1-14-020-003", "name": "VITA ROYAL 1000 MG 30 CAPS", "branch": "T1", "expiry": "2026-07-31", "qty": 3.0, "cost": 66.0, "total": 198.0},{"code": "1-11-049-033", "name": "TRAVATAN Eye drops 0.004MG/1Drop, 2.5ML/Container", "branch": "T3", "expiry": "2026-07-31", "qty": 3.0, "cost": 38.58, "total": 115.75},{"code": "1-05-187-090", "name": "DAONIL Tablet 5MG/1Tablet, 30Tablet/Box", "branch": "T3", "expiry": "2026-07-31", "qty": 3.0, "cost": 20.49, "total": 61.47},{"code": "1-04-187-103", "name": "MEBAGEN 200 mg/ml/tablet Extended Release Tab, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-07-31", "qty": 3.0, "cost": 17.9, "total": 53.71},{"code": "1-06-083-008", "name": "SERETIDE DISKUS 250MG Inhalation powder /1Inhaler, 60Inhaler/Container", "branch": "T2", "expiry": "2026-07-31", "qty": 2.0, "cost": 109.96, "total": 219.92},{"code": "1-03-187-238", "name": "ARKO PHARMA FORCAPIL GROWTH HAIR AND NAILS GUMMIES, 60 TABLET/BOTTEL", "branch": "T3", "expiry": "2026-07-31", "qty": 2.0, "cost": 89.87, "total": 179.74},{"code": "1-04-059-002", "name": "ASACOL Film coated tablet 400MG/1Tablet, 50Tablet/Box", "branch": "T1", "expiry": "2026-07-31", "qty": 2.0, "cost": 59.31, "total": 118.61},{"code": "1-09-066-047", "name": "SCAR PRO apply Gel, 6 GM/TUBE", "branch": "T2", "expiry": "2026-07-31", "qty": 2.0, "cost": 45.0, "total": 90.0},{"code": "1-08-187-115", "name": "SILOMES 100 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-07-31", "qty": 2.0, "cost": 43.14, "total": 86.28},{"code": "1-04-187-103", "name": "MEBAGEN 200 mg/ml/tablet Extended Release Tab, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-07-31", "qty": 2.0, "cost": 21.13, "total": 42.27},{"code": "1-01-020-083", "name": "KLENDAM 300 mg/capsule, 16 CAPSULE/BOX", "branch": "T1", "expiry": "2026-07-31", "qty": 2.0, "cost": 18.6, "total": 37.2},{"code": "1-05-187-393", "name": "LODIAB XR 750 mg/tablet, 60 TABLET/BOX", "branch": "T2", "expiry": "2026-07-31", "qty": 2.0, "cost": 16.94, "total": 33.88},{"code": "1-03-187-238", "name": "ARKO PHARMA FORCAPIL GROWTH HAIR AND NAILS GUMMIES, 60 TABLET/BOTTEL", "branch": "T3", "expiry": "2026-07-31", "qty": 2.0, "cost": 5.18, "total": 10.37},{"code": "1-03-187-238", "name": "ARKO PHARMA FORCAPIL GROWTH HAIR AND NAILS GUMMIES, 60 TABLET/BOTTEL", "branch": "T2", "expiry": "2026-07-31", "qty": 2.0, "cost": 5.18, "total": 10.37},{"code": "1-03-187-238", "name": "ARKO PHARMA FORCAPIL GROWTH HAIR AND NAILS GUMMIES, 60 TABLET/BOTTEL", "branch": "T2", "expiry": "2026-07-31", "qty": 2.0, "cost": 5.18, "total": 10.37},{"code": "1-05-001-001", "name": "SAXENDA Ampoule 6MG/1ML, 5ML/Box", "branch": "T1", "expiry": "2026-07-31", "qty": 1.4, "cost": 645.37, "total": 903.52},{"code": "1-05-168-013", "name": "RYZODEG 100 iu/ml Solution For Injection , 15 ML/BOX", "branch": "T1", "expiry": "2026-07-31", "qty": 1.0, "cost": 344.46, "total": 344.46},{"code": "1-08-187-153", "name": "DEBREX 1 mg/tablet, 30 TABLET/BOX", "branch": "T3", "expiry": "2026-07-31", "qty": 1.0, "cost": 256.73, "total": 256.73},{"code": "1-03-020-225", "name": "ARCON TISANE PLUS Capsule, 60 CAPSULE/BOX", "branch": "T2", "expiry": "2026-07-31", "qty": 1.0, "cost": 125.4, "total": 125.4},{"code": "1-06-085-011", "name": "SERETIDE EVOHALER125MG INHALATION SPRAY /1Inhaler, 120Inhaler/Container", "branch": "T3", "expiry": "2026-07-31", "qty": 1.0, "cost": 98.09, "total": 98.09},{"code": "1-01-187-142", "name": "ZOVIRAX 200 mg/tablet, 25 TABLET/BOX", "branch": "T1", "expiry": "2026-07-31", "qty": 1.0, "cost": 64.7, "total": 64.7},{"code": "1-08-187-115", "name": "SILOMES 100 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-07-31", "qty": 1.0, "cost": 43.14, "total": 43.14},{"code": "1-11-049-008", "name": "AZARGA Eye drops 10MG/1Drop, 5ML/Container", "branch": "T3", "expiry": "2026-07-31", "qty": 1.0, "cost": 42.8, "total": 42.8},{"code": "1-11-049-033", "name": "TRAVATAN Eye drops 0.004MG/1Drop, 2.5ML/Container", "branch": "T2", "expiry": "2026-07-31", "qty": 1.0, "cost": 38.58, "total": 38.58},{"code": "1-02-187-062", "name": "JOINTACE CHONDROITIN GLUCOSAMIN Tablet /1Tablet, 60Tablet/Box", "branch": "T2", "expiry": "2026-07-31", "qty": 1.0, "cost": 36.4, "total": 36.4},{"code": "1-09-118-068", "name": "AVALON AVOMEB EXTERA Ointment , 50 GM/TUBE", "branch": "T1", "expiry": "2026-07-31", "qty": 1.0, "cost": 34.85, "total": 34.85},{"code": "1-01-184-085", "name": "MINOCET 125 mg/5 ml Suspention, 80 ML/BOTTLE", "branch": "T2", "expiry": "2026-07-31", "qty": 1.0, "cost": 27.64, "total": 27.64},{"code": "1-01-020-083", "name": "KLENDAM 300 mg/capsule, 16 CAPSULE/BOX", "branch": "T1", "expiry": "2026-07-31", "qty": 1.0, "cost": 19.38, "total": 19.38},{"code": "1-04-187-103", "name": "MEBAGEN 200 mg/ml/tablet Extended Release Tab, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-07-31", "qty": 1.0, "cost": 17.9, "total": 17.9},{"code": "1-05-187-393", "name": "LODIAB XR 750 mg/tablet, 60 TABLET/BOX", "branch": "T2", "expiry": "2026-07-31", "qty": 1.0, "cost": 17.28, "total": 17.28},{"code": "1-09-031-011", "name": "AVALON AVOQUIN Cream 1.9%/1Container, 50GM/Container", "branch": "T1", "expiry": "2026-07-31", "qty": 1.0, "cost": 7.02, "total": 7.02},{"code": "1-03-187-238", "name": "ARKO PHARMA FORCAPIL GROWTH HAIR AND NAILS GUMMIES, 60 TABLET/BOTTEL", "branch": "T3", "expiry": "2026-07-31", "qty": 1.0, "cost": 5.18, "total": 5.18},{"code": "1-05-187-338", "name": "TENORYL PLUS 10/10 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-07-31", "qty": 1.0, "cost": 0.0, "total": 0.0},{"code": "1-01-020-076", "name": "DENACIF 300 mg/capsule, 10 CAPSULE", "branch": "T2", "expiry": "2026-07-31", "qty": 1.0, "cost": 0.0, "total": 0.0},{"code": "1-03-186-051", "name": "CALSYR  Syrup, 100 ML/BOTTLE", "branch": "T2", "expiry": "2026-08-07", "qty": 3.0, "cost": 5.43, "total": 16.29},{"code": "1-03-187-159", "name": "DEVARIN ODT 10 mg/tablet, 4 TABLET/BOX", "branch": "T1", "expiry": "2026-08-07", "qty": 1.0, "cost": 37.47, "total": 37.47},{"code": "1-03-186-051", "name": "CALSYR  Syrup, 100 ML/BOTTLE", "branch": "T2", "expiry": "2026-08-07", "qty": 1.0, "cost": 4.93, "total": 4.93},{"code": "1-09-066-057", "name": "ADZOY 0.1% / 2.5% apply Gel, 30 GM/TUBE", "branch": "T1", "expiry": "2026-08-08", "qty": 23.0, "cost": 15.77, "total": 362.73},{"code": "1-09-066-057", "name": "ADZOY 0.1% / 2.5% apply Gel, 30 GM/TUBE", "branch": "T3", "expiry": "2026-08-08", "qty": 6.0, "cost": 15.77, "total": 94.63},{"code": "1-09-066-057", "name": "ADZOY 0.1% / 2.5% apply Gel, 30 GM/TUBE", "branch": "T2", "expiry": "2026-08-08", "qty": 4.0, "cost": 15.77, "total": 63.08},{"code": "1-01-049-013", "name": "TYMER Eye drops 0.3MG/1Drop, 5ML/Container", "branch": "T1", "expiry": "2026-08-09", "qty": 37.0, "cost": 23.62, "total": 874.12},{"code": "1-01-049-013", "name": "TYMER Eye drops 0.3MG/1Drop, 5ML/Container", "branch": "T2", "expiry": "2026-08-09", "qty": 20.0, "cost": 23.62, "total": 472.5},{"code": "1-06-085-020", "name": "BUDIAIR 200 mcg/applicator Inhalation Spray, 200 INHALATION SPRAY/CONTAINER", "branch": "T3", "expiry": "2026-08-09", "qty": 1.0, "cost": 55.82, "total": 55.82},{"code": "1-09-031-002", "name": "ACRETIN Cream 0.05%/1APPLY, 30GM/Tube", "branch": "T1", "expiry": "2026-08-09", "qty": 1.0, "cost": 12.0, "total": 12.0},{"code": "1-14-086-041", "name": "MERIONAL HG 75 iu/ampoule Injection, 1 AMPOULE/BOX", "branch": "T3", "expiry": "2026-08-12", "qty": 3.0, "cost": 60.0, "total": 180.01},{"code": "1-14-086-041", "name": "MERIONAL HG 75 iu/ampoule Injection, 1 AMPOULE/BOX", "branch": "T1", "expiry": "2026-08-12", "qty": 2.0, "cost": 60.0, "total": 120.0},{"code": "1-05-059-121", "name": "PEXAPAN 5 mg/tablet, 60 TABLET/BOX", "branch": "T1", "expiry": "2026-08-12", "qty": 1.0, "cost": 133.92, "total": 133.92},{"code": "1-05-059-121", "name": "PEXAPAN 5 mg/tablet, 60 TABLET/BOX", "branch": "T3", "expiry": "2026-08-12", "qty": 1.0, "cost": 133.92, "total": 133.92},{"code": "1-05-059-121", "name": "PEXAPAN 5 mg/tablet, 60 TABLET/BOX", "branch": "T2", "expiry": "2026-08-12", "qty": 1.0, "cost": 133.92, "total": 133.92},{"code": "1-08-058-038", "name": "DAMESTA 20 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-08-13", "qty": 3.0, "cost": 56.12, "total": 168.37},{"code": "1-09-066-038", "name": "SURECURE Gel 0.1%/1APPLY, 30GM/Tube", "branch": "T2", "expiry": "2026-08-13", "qty": 2.0, "cost": 11.57, "total": 23.14},{"code": "1-02-187-209", "name": "OXIRA RAPID 8 mg/tablet, 20 TABLET/BOX", "branch": "T2", "expiry": "2026-08-13", "qty": 1.0, "cost": 10.43, "total": 10.43},{"code": "1-04-179-010", "name": "LAXOCODYL 5 mg/suppository, 10 SUPPOSITORY/BOX", "branch": "T3", "expiry": "2026-08-17", "qty": 5.0, "cost": 5.8, "total": 28.98},{"code": "1-05-059-064", "name": "SIMVA Film coated tablet 20MG/1Tablet, 30Tablet/Box", "branch": "T3", "expiry": "2026-08-17", "qty": 2.0, "cost": 31.61, "total": 63.23},{"code": "1-04-187-095", "name": "ACICAL PLUS tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-08-18", "qty": 1.0, "cost": 4.86, "total": 4.86},{"code": "1-06-001-005", "name": "ATROSOL 250 mg/mcg/2 ml Ampoule, 2 oral solution/BOX", "branch": "T1", "expiry": "2026-08-20", "qty": 8.5, "cost": 18.9, "total": 160.65},{"code": "1-06-001-005", "name": "ATROSOL 250 mg/mcg/2 ml Ampoule, 2 oral solution/BOX", "branch": "T3", "expiry": "2026-08-20", "qty": 8.5, "cost": 18.9, "total": 160.65},{"code": "1-06-001-005", "name": "ATROSOL 250 mg/mcg/2 ml Ampoule, 2 oral solution/BOX", "branch": "T2", "expiry": "2026-08-20", "qty": 4.5, "cost": 18.9, "total": 85.05},{"code": "1-04-146-012", "name": "FAWAR LEMON 5 gm/sachet, 6 SACHET/BOX", "branch": "T2", "expiry": "2026-08-24", "qty": 12.0, "cost": 0.0, "total": 0.0},{"code": "1-04-146-012", "name": "FAWAR LEMON 5 gm/sachet, 6 SACHET/BOX", "branch": "T3", "expiry": "2026-08-24", "qty": 8.0, "cost": 0.0, "total": 0.0},{"code": "1-04-146-012", "name": "FAWAR LEMON 5 gm/sachet, 6 SACHET/BOX", "branch": "T1", "expiry": "2026-08-24", "qty": 6.0, "cost": 0.0, "total": 0.0},{"code": "1-07-187-022", "name": "FENSOLIN 10 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-08-26", "qty": 17.0, "cost": 67.64, "total": 1149.92},{"code": "1-05-187-415", "name": "CO-TABUVAN Tablet 80/12.5MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-08-27", "qty": 7.0, "cost": 25.08, "total": 175.53},{"code": "1-05-187-415", "name": "CO-TABUVAN Tablet 80/12.5MG/1Tablet, 30Tablet/Box", "branch": "T1", "expiry": "2026-08-27", "qty": 2.0, "cost": 25.08, "total": 50.15},{"code": "1-09-113-005", "name": "SALINOSE PLUS NASAL SPRAY 0.9ML/1Spray, 20ML/Container", "branch": "T1", "expiry": "2026-08-28", "qty": 23.0, "cost": 15.99, "total": 367.77},{"code": "1-05-187-491", "name": "AMLOVAN-HCT 10/320/25 mg/tablet, 28 TABLET/BOX", "branch": "T1", "expiry": "2026-08-29", "qty": 9.0, "cost": 63.25, "total": 569.28},{"code": "1-05-187-491", "name": "AMLOVAN-HCT 10/320/25 mg/tablet, 28 TABLET/BOX", "branch": "T2", "expiry": "2026-08-29", "qty": 5.0, "cost": 63.25, "total": 316.26},{"code": "1-05-187-491", "name": "AMLOVAN-HCT 10/320/25 mg/tablet, 28 TABLET/BOX", "branch": "T3", "expiry": "2026-08-29", "qty": 2.0, "cost": 63.25, "total": 126.51},{"code": "1-04-186-025", "name": "BABYCOOL ml Syrup, 100 ML/BOTTLE", "branch": "T2", "expiry": "2026-08-30", "qty": 31.0, "cost": 23.4, "total": 725.4},{"code": "1-04-186-025", "name": "BABYCOOL ml Syrup, 100 ML/BOTTLE", "branch": "T3", "expiry": "2026-08-30", "qty": 11.0, "cost": 23.4, "total": 257.4},{"code": "1-04-186-025", "name": "BABYCOOL ml Syrup, 100 ML/BOTTLE", "branch": "T1", "expiry": "2026-08-30", "qty": 6.0, "cost": 23.4, "total": 140.4},{"code": "1-02-186-015", "name": "ADOL 120 mg/5 ml Syrup, 100 ML/BOTTLE", "branch": "T2", "expiry": "2026-08-30", "qty": 3.0, "cost": 2.0, "total": 6.0},{"code": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE", "branch": "T1", "expiry": "2026-08-31", "qty": 107.0, "cost": 21.81, "total": 2333.38},{"code": "1-06-049-027", "name": "AVALON SALINOSE BABY 0.9 ml/drop, 20 ML/BOTTLE", "branch": "T1", "expiry": "2026-08-31", "qty": 77.0, "cost": 15.3, "total": 1178.1},{"code": "1-14-187-062", "name": "LEVOGAND 100 mcg/tablet, 100 TABLET/BOX", "branch": "T1", "expiry": "2026-08-31", "qty": 43.0, "cost": 18.25, "total": 784.92},{"code": "1-14-187-062", "name": "LEVOGAND 100 mcg/tablet, 100 TABLET/BOX", "branch": "T3", "expiry": "2026-08-31", "qty": 18.0, "cost": 18.25, "total": 328.57},{"code": "1-04-128-007", "name": "FEMI BIOTIC box Sachets, 20 SACHET/BOX", "branch": "T1", "expiry": "2026-08-31", "qty": 17.0, "cost": 65.0, "total": 1105.0},{"code": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE", "branch": "T2", "expiry": "2026-08-31", "qty": 17.0, "cost": 21.8, "total": 370.68},{"code": "1-03-187-230", "name": "CENTRUM IMMUNE Support Capsule, 60 CAPSULE/CONTAINER", "branch": "T1", "expiry": "2026-08-31", "qty": 15.0, "cost": 44.61, "total": 669.12},{"code": "1-03-187-230", "name": "CENTRUM IMMUNE Support Capsule, 60 CAPSULE/CONTAINER", "branch": "T1", "expiry": "2026-08-31", "qty": 14.0, "cost": 55.76, "total": 780.64},{"code": "1-03-187-230", "name": "CENTRUM IMMUNE Support Capsule, 60 CAPSULE/CONTAINER", "branch": "T2", "expiry": "2026-08-31", "qty": 12.0, "cost": 55.76, "total": 669.12},{"code": "1-04-128-007", "name": "FEMI BIOTIC box Sachets, 20 SACHET/BOX", "branch": "T3", "expiry": "2026-08-31", "qty": 11.0, "cost": 65.0, "total": 715.0},{"code": "1-04-128-007", "name": "FEMI BIOTIC box Sachets, 20 SACHET/BOX", "branch": "T2", "expiry": "2026-08-31", "qty": 11.0, "cost": 0.0, "total": 0.0},{"code": "1-14-187-062", "name": "LEVOGAND 100 mcg/tablet, 100 TABLET/BOX", "branch": "T2", "expiry": "2026-08-31", "qty": 9.0, "cost": 18.25, "total": 164.29},{"code": "1-04-186-025", "name": "BABYCOOL ml Syrup, 100 ML/BOTTLE", "branch": "T2", "expiry": "2026-08-31", "qty": 8.0, "cost": 23.4, "total": 187.2},{"code": "1-05-001-002", "name": "OZEMPIC 0.5 mg/ml Ampoule, 4 AMPOULE/BOX", "branch": "T2", "expiry": "2026-08-31", "qty": 7.0, "cost": 365.03, "total": 2555.2},{"code": "1-04-186-025", "name": "BABYCOOL ml Syrup, 100 ML/BOTTLE", "branch": "T1", "expiry": "2026-08-31", "qty": 7.0, "cost": 23.4, "total": 163.8},{"code": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE", "branch": "T1", "expiry": "2026-08-31", "qty": 7.0, "cost": 21.8, "total": 152.63},{"code": "1-04-166-008", "name": "AMOVAC enema Solution, 120 ML/CONTAINER", "branch": "T1", "expiry": "2026-08-31", "qty": 7.0, "cost": 5.99, "total": 41.9},{"code": "1-14-086-036", "name": "INHIXA 40 mg/syringe Injection, 1 SYRINGE/BOX", "branch": "T2", "expiry": "2026-08-31", "qty": 6.0, "cost": 26.26, "total": 157.54},{"code": "1-14-187-064", "name": "LEVOGAND 25 mcg/tablet, 100 TABLET/BOX", "branch": "T3", "expiry": "2026-08-31", "qty": 6.0, "cost": 12.54, "total": 75.22},{"code": "1-06-118-003", "name": "AVALON AVOCOM Ointment 0.1%/1APPLY, 30GM/Tube", "branch": "T1", "expiry": "2026-08-31", "qty": 5.0, "cost": 7.01, "total": 35.05},{"code": "1-05-001-002", "name": "OZEMPIC 0.5 mg/ml Ampoule, 4 AMPOULE/BOX", "branch": "T1", "expiry": "2026-08-31", "qty": 4.0, "cost": 365.03, "total": 1460.11},{"code": "1-03-187-230", "name": "CENTRUM IMMUNE Support Capsule, 60 CAPSULE/CONTAINER", "branch": "T1", "expiry": "2026-08-31", "qty": 4.0, "cost": 55.76, "total": 223.04},{"code": "1-03-020-229", "name": "ELEVIT Tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-08-31", "qty": 4.0, "cost": 32.5, "total": 130.01},{"code": "1-08-187-010", "name": "DEPAKINE Tablet 500MG/1Tablet, 30Tablet/Box", "branch": "T1", "expiry": "2026-08-31", "qty": 4.0, "cost": 26.83, "total": 107.32},{"code": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE", "branch": "T1", "expiry": "2026-08-31", "qty": 4.0, "cost": 21.8, "total": 87.22},{"code": "1-07-020-002", "name": "AVODART Capsule 0.5MG/1Capsule, 30Capsule/Box", "branch": "T2", "expiry": "2026-08-31", "qty": 3.0, "cost": 97.31, "total": 291.92},{"code": "1-04-186-025", "name": "BABYCOOL ml Syrup, 100 ML/BOTTLE", "branch": "T1", "expiry": "2026-08-31", "qty": 3.0, "cost": 23.4, "total": 70.2},{"code": "1-06-118-003", "name": "AVALON AVOCOM Ointment 0.1%/1APPLY, 30GM/Tube", "branch": "T2", "expiry": "2026-08-31", "qty": 3.0, "cost": 7.01, "total": 21.03},{"code": "1-08-187-087", "name": "KEPPRA 1000 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-08-31", "qty": 2.0, "cost": 201.49, "total": 402.97},{"code": "1-05-086-013", "name": "APIDRA SOLOSTAR 100 iu/ml Injection, 5 VIAL/BOX", "branch": "T1", "expiry": "2026-08-31", "qty": 2.0, "cost": 147.04, "total": 294.09},{"code": "1-05-187-429", "name": "ATACAND PLUS Tablet 16 /12.5MG/1Tablet, 28Tablet/Box", "branch": "T1", "expiry": "2026-08-31", "qty": 2.0, "cost": 66.0, "total": 132.01},{"code": "1-03-187-230", "name": "CENTRUM IMMUNE Support Capsule, 60 CAPSULE/CONTAINER", "branch": "T3", "expiry": "2026-08-31", "qty": 2.0, "cost": 55.76, "total": 111.52},{"code": "1-03-187-230", "name": "CENTRUM IMMUNE Support Capsule, 60 CAPSULE/CONTAINER", "branch": "T2", "expiry": "2026-08-31", "qty": 2.0, "cost": 55.76, "total": 111.52},{"code": "1-09-118-068", "name": "AVALON AVOMEB EXTERA Ointment , 50 GM/TUBE", "branch": "T1", "expiry": "2026-08-31", "qty": 2.0, "cost": 34.85, "total": 69.7},{"code": "1-05-059-063", "name": "SIMVA Film coated tablet 10MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-08-31", "qty": 2.0, "cost": 31.61, "total": 63.23},{"code": "1-05-187-392", "name": "LODIAB XR 1000 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-08-31", "qty": 2.0, "cost": 13.2, "total": 26.4},{"code": "1-04-166-008", "name": "AMOVAC enema Solution, 120 ML/CONTAINER", "branch": "T2", "expiry": "2026-08-31", "qty": 2.0, "cost": 5.99, "total": 11.97},{"code": "1-04-128-007", "name": "FEMI BIOTIC box Sachets, 20 SACHET/BOX", "branch": "T1", "expiry": "2026-08-31", "qty": 2.0, "cost": 0.0, "total": 0.0},{"code": "1-08-187-087", "name": "KEPPRA 1000 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-08-31", "qty": 1.0, "cost": 201.49, "total": 201.49},{"code": "1-05-086-013", "name": "APIDRA SOLOSTAR 100 iu/ml Injection, 5 VIAL/BOX", "branch": "T3", "expiry": "2026-08-31", "qty": 1.0, "cost": 147.04, "total": 147.04},{"code": "1-09-118-058", "name": "KOZAMOD 5 % Cream, 12 sachet/box", "branch": "T3", "expiry": "2026-08-31", "qty": 1.0, "cost": 109.96, "total": 109.96},{"code": "1-07-020-002", "name": "AVODART Capsule 0.5MG/1Capsule, 30Capsule/Box", "branch": "T3", "expiry": "2026-08-31", "qty": 1.0, "cost": 97.31, "total": 97.31},{"code": "1-08-187-141", "name": "ARYZALERA 15 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-08-31", "qty": 1.0, "cost": 91.78, "total": 91.78},{"code": "1-08-187-141", "name": "ARYZALERA 15 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-08-31", "qty": 1.0, "cost": 91.78, "total": 91.78},{"code": "1-01-187-143", "name": "VALTREX 500 mg/tablet, 10 TABLET/BOX", "branch": "T1", "expiry": "2026-08-31", "qty": 1.0, "cost": 75.09, "total": 75.09},{"code": "1-07-059-004", "name": "URILAX Film coated tablet 5MG/1Tablet, 30Tablet/Box", "branch": "T1", "expiry": "2026-08-31", "qty": 1.0, "cost": 72.15, "total": 72.15},{"code": "1-08-047-001", "name": "PRISTIQ Extended release tab 50MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-08-31", "qty": 1.0, "cost": 68.27, "total": 68.27},{"code": "1-04-128-007", "name": "FEMI BIOTIC box Sachets, 20 SACHET/BOX", "branch": "T2", "expiry": "2026-08-31", "qty": 1.0, "cost": 65.0, "total": 65.0},{"code": "1-14-187-014", "name": "EUTHYROX Tablet 150MG/1Tablet, 100Tablet/Box", "branch": "T2", "expiry": "2026-08-31", "qty": 1.0, "cost": 29.85, "total": 29.85},{"code": "1-05-187-073", "name": "CONCOR Tablet 10MG/1Tablet, 30Tablet/Box", "branch": "T3", "expiry": "2026-08-31", "qty": 1.0, "cost": 26.55, "total": 26.55},{"code": "1-14-086-036", "name": "INHIXA 40 mg/syringe Injection, 1 SYRINGE/BOX", "branch": "T1", "expiry": "2026-08-31", "qty": 1.0, "cost": 26.26, "total": 26.26},{"code": "1-14-086-036", "name": "INHIXA 40 mg/syringe Injection, 1 SYRINGE/BOX", "branch": "T2", "expiry": "2026-08-31", "qty": 1.0, "cost": 26.26, "total": 26.26},{"code": "1-14-095-001", "name": "SEPTOFORT LOZENGES 2MG/1Tablet, 24Tablet/Box", "branch": "T1", "expiry": "2026-08-31", "qty": 1.0, "cost": 23.1, "total": 23.1},{"code": "1-05-187-392", "name": "LODIAB XR 1000 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-08-31", "qty": 1.0, "cost": 22.42, "total": 22.42},{"code": "1-07-179-004", "name": "NEO HEALAR Suppository /1Suppository, 10Suppository/Box", "branch": "T1", "expiry": "2026-08-31", "qty": 1.0, "cost": 22.25, "total": 22.25},{"code": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE", "branch": "T2", "expiry": "2026-08-31", "qty": 1.0, "cost": 21.81, "total": 21.81},{"code": "1-09-031-015", "name": "AVALON FOOT Cream /1APPLY, 90GM/Tube", "branch": "T1", "expiry": "2026-08-31", "qty": 1.0, "cost": 21.15, "total": 21.15},{"code": "1-05-105-002", "name": "ISOBID Modified-release capsule, soft 40MG/1Capsule, 20Capsule/Box", "branch": "T2", "expiry": "2026-08-31", "qty": 1.0, "cost": 19.79, "total": 19.79},{"code": "1-05-187-392", "name": "LODIAB XR 1000 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-08-31", "qty": 1.0, "cost": 0.0, "total": 0.0},{"code": "1-14-095-001", "name": "SEPTOFORT LOZENGES 2MG/1Tablet, 24Tablet/Box", "branch": "T1", "expiry": "2026-08-31", "qty": 0.5, "cost": 23.1, "total": 11.55},{"code": "1-14-187-030", "name": "NOLVADEX Tablet 10MG/1Tablet, 30Tablet/Box", "branch": "T3", "expiry": "2026-08-31", "qty": 0.3, "cost": 24.25, "total": 8.0},{"code": "1-05-168-015", "name": "TOUJEO SOLOSTAR 300 iu/ml Solution For Injection , 5 PEN/BOX", "branch": "T1", "expiry": "2026-08-31", "qty": 0.2, "cost": 323.95, "total": 64.79},{"code": "1-09-066-011", "name": "DIFFERIN Gel 0.1%/1APPLY, 30GM/Tube", "branch": "T2", "expiry": "2026-09-07", "qty": 18.0, "cost": 15.63, "total": 281.34},{"code": "1-09-031-154", "name": "EMOLIA apply Cream, 100 GM/TUBE", "branch": "T2", "expiry": "2026-09-08", "qty": 1.0, "cost": 14.35, "total": 14.35},{"code": "1-05-187-395", "name": "VAROXA 20 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-09-09", "qty": 3.0, "cost": 160.73, "total": 482.19},{"code": "1-01-049-020", "name": "LOTINIL drop, 5 ML/CONTAINER", "branch": "T3", "expiry": "2026-09-10", "qty": 9.0, "cost": 53.33, "total": 479.99},{"code": "1-06-031-023", "name": "LOCASONE Cream 0.1%/1APPLY, 100GM/Tube", "branch": "T2", "expiry": "2026-09-10", "qty": 9.0, "cost": 20.25, "total": 182.25},{"code": "1-06-031-023", "name": "LOCASONE Cream 0.1%/1APPLY, 100GM/Tube", "branch": "T3", "expiry": "2026-09-10", "qty": 8.0, "cost": 20.25, "total": 162.0},{"code": "1-06-120-002", "name": "SINEO 1 mg/drop, 20 ML/CONTAINER", "branch": "T3", "expiry": "2026-09-10", "qty": 6.0, "cost": 7.16, "total": 42.96},{"code": "1-05-187-405", "name": "CO-DIOVAN  160/25MG/1Tablet, 28Tablet/Box", "branch": "T2", "expiry": "2026-09-11", "qty": 1.0, "cost": 35.41, "total": 35.41},{"code": "1-09-118-047", "name": "VIOTOPIC Ointment 0.3%/1APPLY, 30GM/Tube\"", "branch": "T2", "expiry": "2026-09-12", "qty": 3.0, "cost": 0.0, "total": 0.0},{"code": "1-09-118-047", "name": "VIOTOPIC Ointment 0.3%/1APPLY, 30GM/Tube\"", "branch": "T2", "expiry": "2026-09-12", "qty": 2.0, "cost": 69.08, "total": 138.16},{"code": "1-06-049-012", "name": "OPTIPRED Eye drops 1%/1Drop, 5ML/Container", "branch": "T1", "expiry": "2026-09-14", "qty": 15.0, "cost": 12.04, "total": 180.6},{"code": "1-06-049-012", "name": "OPTIPRED Eye drops 1%/1Drop, 5ML/Container", "branch": "T3", "expiry": "2026-09-14", "qty": 8.0, "cost": 12.04, "total": 96.32},{"code": "1-06-049-012", "name": "OPTIPRED Eye drops 1%/1Drop, 5ML/Container", "branch": "T2", "expiry": "2026-09-14", "qty": 5.0, "cost": 12.04, "total": 60.2},{"code": "1-09-118-047", "name": "VIOTOPIC Ointment 0.3%/1APPLY, 30GM/Tube\"", "branch": "T2", "expiry": "2026-09-16", "qty": 1.0, "cost": 57.57, "total": 57.57},{"code": "1-06-186-110", "name": "IVY-CALM ml Syrup, 120 ML/BOTTLE", "branch": "T2", "expiry": "2026-09-16", "qty": 1.0, "cost": 7.0, "total": 7.0},{"code": "1-03-186-062", "name": "JP SAFFRON 28 mg/capsule, 30 CAPSULE/BOTTLE", "branch": "T1", "expiry": "2026-09-18", "qty": 2.0, "cost": 106.25, "total": 212.5},{"code": "1-03-186-062", "name": "JP SAFFRON 28 mg/capsule, 30 CAPSULE/BOTTLE", "branch": "T2", "expiry": "2026-09-18", "qty": 2.0, "cost": 106.25, "total": 212.5},{"code": "1-03-186-062", "name": "JP SAFFRON 28 mg/capsule, 30 CAPSULE/BOTTLE", "branch": "T3", "expiry": "2026-09-18", "qty": 1.0, "cost": 106.25, "total": 106.25},{"code": "1-05-187-362", "name": "LOXOL 25 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-09-21", "qty": 2.0, "cost": 19.97, "total": 39.93},{"code": "1-14-187-063", "name": "LEVOGAND 50 mcg/tablet, 100 TABLET/BOX", "branch": "T1", "expiry": "2026-09-30", "qty": 97.0, "cost": 16.33, "total": 1584.46},{"code": "1-01-184-093", "name": "KLACID 125 mg/5 ml Suspention, 100 ML/BOTTLE", "branch": "T2", "expiry": "2026-09-30", "qty": 27.0, "cost": 31.08, "total": 839.17},{"code": "1-01-049-012", "name": "TOBREX Eye drops 0.3MG/1Drop, 5ML/Container", "branch": "T2", "expiry": "2026-09-30", "qty": 24.0, "cost": 16.66, "total": 399.84},{"code": "1-09-118-061", "name": "TACROZ 0.03 %/apply Ointment , 10 GM/TUBE", "branch": "T1", "expiry": "2026-09-30", "qty": 18.0, "cost": 18.77, "total": 337.86},{"code": "1-14-187-063", "name": "LEVOGAND 50 mcg/tablet, 100 TABLET/BOX", "branch": "T2", "expiry": "2026-09-30", "qty": 18.0, "cost": 16.33, "total": 294.02},{"code": "1-06-187-017", "name": "CLARINASE Tablet 5/120MG/1Tablet, 14Tablet/Box", "branch": "T2", "expiry": "2026-09-30", "qty": 17.0, "cost": 10.37, "total": 176.25},{"code": "1-14-187-063", "name": "LEVOGAND 50 mcg/tablet, 100 TABLET/BOX", "branch": "T3", "expiry": "2026-09-30", "qty": 13.0, "cost": 16.33, "total": 212.35},{"code": "1-03-187-198", "name": "NAFEES PHARMA BIOTIN Tablet, 60 TABLET/BOX", "branch": "T1", "expiry": "2026-09-30", "qty": 12.0, "cost": 25.13, "total": 301.51},{"code": "1-14-166-027", "name": "PURGE Solution /1APPLY, 250ML/Container", "branch": "T1", "expiry": "2026-09-30", "qty": 11.0, "cost": 35.91, "total": 395.0},{"code": "1-14-166-027", "name": "PURGE Solution /1APPLY, 250ML/Container", "branch": "T3", "expiry": "2026-09-30", "qty": 11.0, "cost": 35.91, "total": 395.0},{"code": "1-06-187-017", "name": "CLARINASE Tablet 5/120MG/1Tablet, 14Tablet/Box", "branch": "T2", "expiry": "2026-09-30", "qty": 11.0, "cost": 11.22, "total": 123.43},{"code": "1-11-049-033", "name": "TRAVATAN Eye drops 0.004MG/1Drop, 2.5ML/Container", "branch": "T1", "expiry": "2026-09-30", "qty": 9.0, "cost": 38.58, "total": 347.26},{"code": "1-01-184-093", "name": "KLACID 125 mg/5 ml Suspention, 100 ML/BOTTLE", "branch": "T1", "expiry": "2026-09-30", "qty": 9.0, "cost": 31.08, "total": 279.72},{"code": "1-14-187-062", "name": "LEVOGAND 100 mcg/tablet, 100 TABLET/BOX", "branch": "T1", "expiry": "2026-09-30", "qty": 9.0, "cost": 18.07, "total": 162.61},{"code": "1-16-020-019", "name": "MEGAROY Capsule, 30 CAPSULE/BOX", "branch": "T1", "expiry": "2026-09-30", "qty": 8.0, "cost": 104.3, "total": 834.4},{"code": "1-04-146-011", "name": "EULAX sachet Powder For Oral Soln, 30 SACHET/BOX", "branch": "T1", "expiry": "2026-09-30", "qty": 8.0, "cost": 33.1, "total": 264.77},{"code": "1-03-187-198", "name": "NAFEES PHARMA BIOTIN Tablet, 60 TABLET/BOX", "branch": "T2", "expiry": "2026-09-30", "qty": 8.0, "cost": 25.13, "total": 201.01},{"code": "1-06-187-017", "name": "CLARINASE Tablet 5/120MG/1Tablet, 14Tablet/Box", "branch": "T2", "expiry": "2026-09-30", "qty": 7.0, "cost": 15.71, "total": 109.97},{"code": "1-03-187-254", "name": "ECHILIB CHewable tablet, 20 TABLET/BOX", "branch": "T1", "expiry": "2026-09-30", "qty": 7.0, "cost": 0.0, "total": 0.0},{"code": "1-08-187-070", "name": "ZYPREXA Tablet 5MG/1Tablet, 28Tablet/Box", "branch": "T2", "expiry": "2026-09-30", "qty": 6.0, "cost": 144.27, "total": 865.62},{"code": "1-01-184-077", "name": "ZINNAT SUSPENTION 125MG/5ML, 70ML/Bottle", "branch": "T2", "expiry": "2026-09-30", "qty": 6.0, "cost": 26.83, "total": 160.99},{"code": "1-01-020-053", "name": "ROXIL Capsule 500MG/1Capsule, 20Capsule/Box", "branch": "T3", "expiry": "2026-09-30", "qty": 6.0, "cost": 0.0, "total": 0.0},{"code": "1-06-113-006", "name": "PHYSIOTHERM ARKO NASAL SPRAY 9MG/1Spray, 100ML/Container", "branch": "T2", "expiry": "2026-09-30", "qty": 5.0, "cost": 30.75, "total": 153.72},{"code": "1-03-187-254", "name": "ECHILIB CHewable tablet, 20 TABLET/BOX", "branch": "T3", "expiry": "2026-09-30", "qty": 5.0, "cost": 0.0, "total": 0.0},{"code": "1-09-194-002", "name": "FORCAPIL TOPICAL SPRAY", "branch": "T2", "expiry": "2026-09-30", "qty": 4.0, "cost": 85.63, "total": 342.52},{"code": "1-01-184-077", "name": "ZINNAT SUSPENTION 125MG/5ML, 70ML/Bottle", "branch": "T1", "expiry": "2026-09-30", "qty": 4.0, "cost": 26.83, "total": 107.33},{"code": "1-01-187-126", "name": "ZOVIRAX Tablet 400MG/1Tablet, 70Tablet/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 3.0, "cost": 272.46, "total": 817.37},{"code": "1-05-187-028", "name": "ATACAND Tablet 8MG/1Tablet, 28Tablet/Box", "branch": "T2", "expiry": "2026-09-30", "qty": 3.0, "cost": 45.92, "total": 137.76},{"code": "1-14-166-027", "name": "PURGE Solution /1APPLY, 250ML/Container", "branch": "T1", "expiry": "2026-09-30", "qty": 3.0, "cost": 35.91, "total": 107.73},{"code": "1-06-113-006", "name": "PHYSIOTHERM ARKO NASAL SPRAY 9MG/1Spray, 100ML/Container", "branch": "T2", "expiry": "2026-09-30", "qty": 3.0, "cost": 35.75, "total": 107.25},{"code": "1-05-187-192", "name": "LASIX Tablet 40MG/1Tablet, 20Tablet/Box", "branch": "T3", "expiry": "2026-09-30", "qty": 3.0, "cost": 16.83, "total": 50.49},{"code": "1-06-120-001", "name": "FENISTIL Oral drops 1MG/1Drop, 20ML/Container", "branch": "T3", "expiry": "2026-09-30", "qty": 3.0, "cost": 12.04, "total": 36.13},{"code": "1-06-187-081", "name": "FEXODINE 120 mg/tablet, 14 TABLET/BOX", "branch": "T3", "expiry": "2026-09-30", "qty": 3.0, "cost": 8.78, "total": 26.33},{"code": "1-08-187-070", "name": "ZYPREXA Tablet 5MG/1Tablet, 28Tablet/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 2.0, "cost": 144.27, "total": 288.54},{"code": "1-04-128-003", "name": "ENTEROGERMINA ORAL VIAL 2billionMG/1Ampoule, 20Ampoule/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 2.0, "cost": 113.01, "total": 226.03},{"code": "1-04-128-003", "name": "ENTEROGERMINA ORAL VIAL 2billionMG/1Ampoule, 20Ampoule/Box", "branch": "T2", "expiry": "2026-09-30", "qty": 2.0, "cost": 113.01, "total": 226.03},{"code": "1-02-146-007", "name": "GLUCAJONE 1000 mg/sachet, 30 SACHET/BOX", "branch": "T1", "expiry": "2026-09-30", "qty": 2.0, "cost": 68.6, "total": 137.2},{"code": "1-08-187-054", "name": "SEROXAT CR 12.5 MG 30Tablet/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 2.0, "cost": 51.59, "total": 103.17},{"code": "1-08-187-054", "name": "SEROXAT CR 12.5 MG 30Tablet/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 2.0, "cost": 51.59, "total": 103.17},{"code": "1-14-086-036", "name": "INHIXA 40 mg/syringe Injection, 1 SYRINGE/BOX", "branch": "T2", "expiry": "2026-09-30", "qty": 2.0, "cost": 23.22, "total": 46.44},{"code": "1-09-118-017", "name": "DERMO Ointment /1APPLY, 30GM/Tube", "branch": "T3", "expiry": "2026-09-30", "qty": 2.0, "cost": 22.8, "total": 45.6},{"code": "1-05-187-006", "name": "ALDACTONE Tablet 100MG/1Tablet, 10Tablet/Box", "branch": "T3", "expiry": "2026-09-30", "qty": 2.0, "cost": 20.88, "total": 41.75},{"code": "1-03-186-026", "name": "OSTEOCARE Syrup 100MG/1ML, 200ML/Bottle", "branch": "T3", "expiry": "2026-09-30", "qty": 2.0, "cost": 16.19, "total": 32.38},{"code": "1-03-186-026", "name": "OSTEOCARE Syrup 100MG/1ML, 200ML/Bottle", "branch": "T1", "expiry": "2026-09-30", "qty": 2.0, "cost": 16.19, "total": 32.38},{"code": "1-06-193-001", "name": "DERMOVATE topical solution 0.05%/1Applicator, 1Applicator/Applicator", "branch": "T1", "expiry": "2026-09-30", "qty": 2.0, "cost": 14.18, "total": 28.37},{"code": "1-06-187-017", "name": "CLARINASE Tablet 5/120MG/1Tablet, 14Tablet/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 2.0, "cost": 11.22, "total": 22.44},{"code": "1-06-187-076", "name": "DESTAMIN 5 mg/tablet, 20 TABLET/BOX", "branch": "T3", "expiry": "2026-09-30", "qty": 2.0, "cost": 7.85, "total": 15.71},{"code": "1-01-020-053", "name": "ROXIL Capsule 500MG/1Capsule, 20Capsule/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 2.0, "cost": 0.0, "total": 0.0},{"code": "1-03-020-190", "name": "QUEEN JELLY ROYAL NIGELLA Capsule, 30 CAPSULE/BOX", "branch": "T2", "expiry": "2026-09-30", "qty": 2.0, "cost": 0.0, "total": 0.0},{"code": "1-03-187-254", "name": "ECHILIB CHewable tablet, 20 TABLET/BOX", "branch": "T2", "expiry": "2026-09-30", "qty": 2.0, "cost": 0.0, "total": 0.0},{"code": "1-14-086-012", "name": "GONAL-F Injection 450IU/1pen, 1ML/Pen", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 495.0, "total": 495.0},{"code": "1-08-187-073", "name": "ZYPREXA Tablet 10MG/1Tablet, 28Tablet/BOX", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 259.64, "total": 259.64},{"code": "1-07-187-008", "name": "MINIRIN MELT Tablet 120MG/1Tablet, 30Tablet/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 166.91, "total": 166.91},{"code": "1-03-020-158", "name": "ROVITAL Capsule /1CAPSULE, 30CAPSULE/BOX", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 159.43, "total": 159.43},{"code": "1-08-187-070", "name": "ZYPREXA Tablet 5MG/1Tablet, 28Tablet/Box", "branch": "T3", "expiry": "2026-09-30", "qty": 1.0, "cost": 144.27, "total": 144.27},{"code": "1-04-128-003", "name": "ENTEROGERMINA ORAL VIAL 2billionMG/1Ampoule, 20Ampoule/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 113.02, "total": 113.02},{"code": "1-04-128-003", "name": "ENTEROGERMINA ORAL VIAL 2billionMG/1Ampoule, 20Ampoule/Box", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 113.02, "total": 113.02},{"code": "1-06-083-008", "name": "SERETIDE DISKUS 250MG Inhalation powder /1Inhaler, 60Inhaler/Container", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 109.96, "total": 109.96},{"code": "1-06-083-008", "name": "SERETIDE DISKUS 250MG Inhalation powder /1Inhaler, 60Inhaler/Container", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 109.96, "total": 109.96},{"code": "1-16-020-019", "name": "MEGAROY Capsule, 30 CAPSULE/BOX", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 104.3, "total": 104.3},{"code": "1-05-187-308", "name": "SEVIKAR HCT Tablet 40/5/25MG/1Tablet, 28Tablet/BOX", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 96.48, "total": 96.48},{"code": "1-08-187-049", "name": "SEROQUEL Tablet 100MG/1Tablet, 60Tablet/Box", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 95.92, "total": 95.92},{"code": "1-03-020-190", "name": "QUEEN JELLY ROYAL NIGELLA Capsule, 30 CAPSULE/BOX", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 87.45, "total": 87.45},{"code": "1-05-187-308", "name": "SEVIKAR HCT Tablet 40/5/25MG/1Tablet, 28Tablet/BOX", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 80.4, "total": 80.4},{"code": "1-08-187-053", "name": "SEROXAT CR Tablet 25MG/1Tablet, 30Tablet/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 71.57, "total": 71.57},{"code": "1-02-146-007", "name": "GLUCAJONE 1000 mg/sachet, 30 SACHET/BOX", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 68.6, "total": 68.6},{"code": "1-05-187-480", "name": "MELIGAMET 50 mg / 850 mg/tablet, 60 TABLET/BOX", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 51.82, "total": 51.82},{"code": "1-08-187-054", "name": "SEROXAT CR 12.5 MG 30Tablet/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 51.59, "total": 51.59},{"code": "1-08-187-054", "name": "SEROXAT CR 12.5 MG 30Tablet/Box", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 51.59, "total": 51.59},{"code": "1-08-187-054", "name": "SEROXAT CR 12.5 MG 30Tablet/Box", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 51.59, "total": 51.59},{"code": "1-08-187-054", "name": "SEROXAT CR 12.5 MG 30Tablet/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 51.59, "total": 51.59},{"code": "1-08-187-054", "name": "SEROXAT CR 12.5 MG 30Tablet/Box", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 51.59, "total": 51.59},{"code": "1-05-187-028", "name": "ATACAND Tablet 8MG/1Tablet, 28Tablet/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 45.92, "total": 45.92},{"code": "1-02-187-191", "name": "MIGROTAN 40 mg/tablet, 4 TABLET/BOX", "branch": "T3", "expiry": "2026-09-30", "qty": 1.0, "cost": 45.38, "total": 45.38},{"code": "1-02-187-191", "name": "MIGROTAN 40 mg/tablet, 4 TABLET/BOX", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 45.38, "total": 45.38},{"code": "1-14-166-027", "name": "PURGE Solution /1APPLY, 250ML/Container", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 39.5, "total": 39.5},{"code": "1-11-049-033", "name": "TRAVATAN Eye drops 0.004MG/1Drop, 2.5ML/Container", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 38.58, "total": 38.58},{"code": "1-04-146-011", "name": "EULAX sachet Powder For Oral Soln, 30 SACHET/BOX", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 33.1, "total": 33.1},{"code": "1-06-095-028", "name": "STREPSILS LEMON SUGAR FREE 1 mg/tablet Lozenges, 36 TABLET/BOX", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 31.98, "total": 31.98},{"code": "1-01-020-053", "name": "ROXIL Capsule 500MG/1Capsule, 20Capsule/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 31.44, "total": 31.44},{"code": "1-01-020-053", "name": "ROXIL Capsule 500MG/1Capsule, 20Capsule/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 31.44, "total": 31.44},{"code": "1-03-187-144", "name": "SUN-D 1000 iu/tablet, 90 TABLET/BOX", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 29.47, "total": 29.47},{"code": "1-03-187-236", "name": "NAFEES PHARMA NEUROBIT-B12 (1000 mcg/tablet), 100 TABLET/BOX", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 26.88, "total": 26.88},{"code": "1-14-086-036", "name": "INHIXA 40 mg/syringe Injection, 1 SYRINGE/BOX", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 26.26, "total": 26.26},{"code": "1-03-187-198", "name": "NAFEES PHARMA BIOTIN Tablet, 60 TABLET/BOX", "branch": "T3", "expiry": "2026-09-30", "qty": 1.0, "cost": 25.13, "total": 25.13},{"code": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 21.8, "total": 21.8},{"code": "1-09-118-061", "name": "TACROZ 0.03 %/apply Ointment , 10 GM/TUBE", "branch": "T3", "expiry": "2026-09-30", "qty": 1.0, "cost": 18.77, "total": 18.77},{"code": "1-12-109-039", "name": "HY-SENSE Mouth Wash , 300 ML/BOTTLE", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 18.5, "total": 18.5},{"code": "1-14-187-062", "name": "LEVOGAND 100 mcg/tablet, 100 TABLET/BOX", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 18.07, "total": 18.07},{"code": "1-06-049-023", "name": "TOBRADEX Eye drops /1Drop, 5ML/Container", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 17.5, "total": 17.5},{"code": "1-03-186-026", "name": "OSTEOCARE Syrup 100MG/1ML, 200ML/Bottle", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 16.19, "total": 16.19},{"code": "1-03-186-026", "name": "OSTEOCARE Syrup 100MG/1ML, 200ML/Bottle", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 16.19, "total": 16.19},{"code": "1-06-187-017", "name": "CLARINASE Tablet 5/120MG/1Tablet, 14Tablet/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 15.71, "total": 15.71},{"code": "1-01-059-016", "name": "CLARITT Film coated tablet 250MG/1Tablet, 14Tablet/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 14.6, "total": 14.6},{"code": "1-06-193-001", "name": "DERMOVATE topical solution 0.05%/1Applicator, 1Applicator/Applicator", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 14.18, "total": 14.18},{"code": "1-02-059-005", "name": "KETESSE Film coated tablet 25MG/1Tablet, 20Tablet/Box", "branch": "T3", "expiry": "2026-09-30", "qty": 1.0, "cost": 10.83, "total": 10.83},{"code": "1-06-187-017", "name": "CLARINASE Tablet 5/120MG/1Tablet, 14Tablet/Box", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 10.37, "total": 10.37},{"code": "1-06-186-108", "name": "DESLIN 1 mg/ml Syrup, 150 ML/BOTTLE", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 8.28, "total": 8.28},{"code": "1-16-020-012", "name": "APLEFIT PLUS Capsule, 60 CAPSULE/BOX", "branch": "T1", "expiry": "2026-09-30", "qty": 1.0, "cost": 0.0, "total": 0.0},{"code": "1-01-020-053", "name": "ROXIL Capsule 500MG/1Capsule, 20Capsule/Box", "branch": "T2", "expiry": "2026-09-30", "qty": 1.0, "cost": 0.0, "total": 0.0},{"code": "1-06-146-002", "name": "CATAFAST SACHETS 50MG/1Sachet, 9sachet/Box", "branch": "T2", "expiry": "2026-09-30", "qty": 0.8, "cost": 15.0, "total": 11.7},{"code": "1-06-146-002", "name": "CATAFAST SACHETS 50MG/1Sachet, 9sachet/Box", "branch": "T2", "expiry": "2026-09-30", "qty": 0.4, "cost": 11.11, "total": 4.89},{"code": "1-09-031-152", "name": "AVALON ALPHA PLUS apply Cream, 30 GM/TUBE", "branch": "T2", "expiry": "2026-10-08", "qty": 3.0, "cost": 61.65, "total": 184.95},{"code": "1-09-031-152", "name": "AVALON ALPHA PLUS apply Cream, 30 GM/TUBE", "branch": "T1", "expiry": "2026-10-08", "qty": 1.0, "cost": 61.65, "total": 61.65},{"code": "1-06-049-012", "name": "OPTIPRED Eye drops 1%/1Drop, 5ML/Container", "branch": "T1", "expiry": "2026-10-09", "qty": 17.0, "cost": 12.04, "total": 204.68},{"code": "1-06-049-012", "name": "OPTIPRED Eye drops 1%/1Drop, 5ML/Container", "branch": "T2", "expiry": "2026-10-09", "qty": 12.0, "cost": 12.04, "total": 144.48},{"code": "1-09-118-025", "name": "FUSIBACT Ointment 2%/1APPLY, 15GM/Tube", "branch": "T2", "expiry": "2026-10-10", "qty": 2.0, "cost": 3.0, "total": 5.99},{"code": "1-09-118-025", "name": "FUSIBACT Ointment 2%/1APPLY, 15GM/Tube", "branch": "T3", "expiry": "2026-10-10", "qty": 1.0, "cost": 3.0, "total": 3.0},{"code": "1-06-187-086", "name": "RINOFED COLD&ALLERGY Tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-10-11", "qty": 3.0, "cost": 5.34, "total": 16.01},{"code": "1-08-187-062", "name": "TEGRETOL CR Tablet 400MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-10-11", "qty": 1.0, "cost": 28.91, "total": 28.91},{"code": "1-02-186-016", "name": "EMIDOL 120 mg/5 ml Syrup, 100 ML/BOTTLE", "branch": "T1", "expiry": "2026-10-12", "qty": 185.0, "cost": 0.01, "total": 2.05},{"code": "1-02-186-016", "name": "EMIDOL 120 mg/5 ml Syrup, 100 ML/BOTTLE", "branch": "T2", "expiry": "2026-10-12", "qty": 127.0, "cost": 0.01, "total": 1.41},{"code": "1-08-059-033", "name": "DEBILUR 20 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-10-12", "qty": 1.0, "cost": 149.72, "total": 149.72},{"code": "1-08-059-033", "name": "DEBILUR 20 mg/tablet, 30 TABLET/BOX", "branch": "T3", "expiry": "2026-10-12", "qty": 1.0, "cost": 149.72, "total": 149.72},{"code": "1-08-059-033", "name": "DEBILUR 20 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-10-12", "qty": 1.0, "cost": 149.72, "total": 149.72},{"code": "1-02-187-163", "name": "TORICOX 120 mg/tablet, 10 TABLET/BOX", "branch": "T3", "expiry": "2026-10-13", "qty": 3.0, "cost": 8.75, "total": 26.25},{"code": "1-01-187-132", "name": "VULGA XR Tablet 105MG/1Tablet, 30TABLET/BOX", "branch": "T3", "expiry": "2026-10-13", "qty": 2.0, "cost": 94.21, "total": 188.42},{"code": "1-08-187-062", "name": "TEGRETOL CR Tablet 400MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-10-14", "qty": 1.0, "cost": 28.91, "total": 28.91},{"code": "1-04-187-119", "name": "ONDANS 4 mg/tablet, 10 TABLET/BOX", "branch": "T1", "expiry": "2026-10-17", "qty": 16.0, "cost": 52.59, "total": 841.49},{"code": "1-04-187-119", "name": "ONDANS 4 mg/tablet, 10 TABLET/BOX", "branch": "T3", "expiry": "2026-10-17", "qty": 10.0, "cost": 52.59, "total": 525.93},{"code": "1-04-187-119", "name": "ONDANS 4 mg/tablet, 10 TABLET/BOX", "branch": "T2", "expiry": "2026-10-17", "qty": 3.0, "cost": 52.59, "total": 157.78},{"code": "1-04-179-009", "name": "LAXOCODYL 10 mg/suppository, 10 SUPPOSITORY/BOX", "branch": "T2", "expiry": "2026-10-18", "qty": 4.0, "cost": 5.8, "total": 23.21},{"code": "1-04-179-009", "name": "LAXOCODYL 10 mg/suppository, 10 SUPPOSITORY/BOX", "branch": "T3", "expiry": "2026-10-18", "qty": 1.0, "cost": 5.8, "total": 5.8},{"code": "1-01-186-010", "name": "LOVRAK 200MG/5ML/100ML SYRUP 200MG/5ML, 100ML/BOTTLE", "branch": "T1", "expiry": "2026-10-20", "qty": 9.0, "cost": 56.31, "total": 506.8},{"code": "1-01-186-010", "name": "LOVRAK 200MG/5ML/100ML SYRUP 200MG/5ML, 100ML/BOTTLE", "branch": "T2", "expiry": "2026-10-20", "qty": 5.0, "cost": 56.31, "total": 281.55},{"code": "1-01-186-010", "name": "LOVRAK 200MG/5ML/100ML SYRUP 200MG/5ML, 100ML/BOTTLE", "branch": "T3", "expiry": "2026-10-20", "qty": 2.0, "cost": 56.31, "total": 112.62},{"code": "1-02-187-005", "name": "ADOL SINUS Tablet /1Capsule, 20Tablet/Box", "branch": "T3", "expiry": "2026-10-20", "qty": 2.0, "cost": 6.5, "total": 12.99},{"code": "1-03-020-174", "name": "NEMR ROYAL 1000 mg/capsule, 30 CAPSULE/BOX", "branch": "T1", "expiry": "2026-10-20", "qty": 1.0, "cost": 123.25, "total": 123.25},{"code": "1-09-031-002", "name": "ACRETIN Cream 0.05%/1APPLY, 30GM/Tube", "branch": "T2", "expiry": "2026-10-20", "qty": 1.0, "cost": 12.04, "total": 12.04},{"code": "1-02-187-005", "name": "ADOL SINUS Tablet /1Capsule, 20Tablet/Box", "branch": "T1", "expiry": "2026-10-20", "qty": 1.0, "cost": 6.5, "total": 6.5},{"code": "1-08-186-011", "name": "LUSAM 10MG/ML 200M/BOTTLE SYP", "branch": "T1", "expiry": "2026-10-21", "qty": 5.0, "cost": 65.66, "total": 328.32},{"code": "1-08-186-011", "name": "LUSAM 10MG/ML 200M/BOTTLE SYP", "branch": "T2", "expiry": "2026-10-21", "qty": 3.0, "cost": 65.66, "total": 196.99},{"code": "1-08-186-011", "name": "LUSAM 10MG/ML 200M/BOTTLE SYP", "branch": "T3", "expiry": "2026-10-21", "qty": 2.0, "cost": 65.66, "total": 131.33},{"code": "1-05-187-360", "name": "LODIPAM 10 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-10-21", "qty": 1.0, "cost": 27.35, "total": 27.35},{"code": "1-09-031-152", "name": "AVALON ALPHA PLUS apply Cream, 30 GM/TUBE", "branch": "T2", "expiry": "2026-10-22", "qty": 5.0, "cost": 61.65, "total": 308.25},{"code": "1-08-187-146", "name": "LAZURE 50 mg/tablet, 60 TABLET/BOX", "branch": "T1", "expiry": "2026-10-22", "qty": 3.0, "cost": 92.85, "total": 278.55},{"code": "1-09-031-152", "name": "AVALON ALPHA PLUS apply Cream, 30 GM/TUBE", "branch": "T1", "expiry": "2026-10-23", "qty": 6.0, "cost": 61.65, "total": 369.9},{"code": "1-03-186-061", "name": "JP MACA 500 mg/capsule, 50 CAPSULE/BOTTLE", "branch": "T1", "expiry": "2026-10-23", "qty": 2.0, "cost": 102.0, "total": 204.0},{"code": "1-09-031-152", "name": "AVALON ALPHA PLUS apply Cream, 30 GM/TUBE", "branch": "T2", "expiry": "2026-10-23", "qty": 2.0, "cost": 61.65, "total": 123.3},{"code": "1-09-031-152", "name": "AVALON ALPHA PLUS apply Cream, 30 GM/TUBE", "branch": "T1", "expiry": "2026-10-23", "qty": 1.0, "cost": 61.65, "total": 61.65},{"code": "1-09-031-152", "name": "AVALON ALPHA PLUS apply Cream, 30 GM/TUBE", "branch": "T3", "expiry": "2026-10-23", "qty": 1.0, "cost": 61.65, "total": 61.65},{"code": "1-06-187-008", "name": "BILAXTEN Tablet 20MG/1Tablet, 20Tablet/Box", "branch": "T1", "expiry": "2026-10-24", "qty": 2.0, "cost": 24.79, "total": 49.58},{"code": "1-01-020-034", "name": "GLOMOX Capsule 500MG/1Capsule, 20Capsule/Box", "branch": "T1", "expiry": "2026-10-25", "qty": 2.0, "cost": 11.0, "total": 22.0},{"code": "1-03-164-008", "name": "VITALIFE Soft Gel Cap /1Capsule, 30Capsule/Box", "branch": "T2", "expiry": "2026-10-27", "qty": 2.0, "cost": 27.67, "total": 55.33},{"code": "1-05-059-119", "name": "RAVIXA 75 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-10-28", "qty": 2.0, "cost": 86.86, "total": 173.72},{"code": "1-05-059-119", "name": "RAVIXA 75 mg/tablet, 30 TABLET/BOX", "branch": "T3", "expiry": "2026-10-28", "qty": 1.0, "cost": 137.4, "total": 137.4},{"code": "1-05-059-119", "name": "RAVIXA 75 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-10-28", "qty": 1.0, "cost": 137.4, "total": 137.4},{"code": "1-05-059-119", "name": "RAVIXA 75 mg/tablet, 30 TABLET/BOX", "branch": "T3", "expiry": "2026-10-28", "qty": 1.0, "cost": 85.87, "total": 85.87},{"code": "1-05-059-119", "name": "RAVIXA 75 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-10-28", "qty": 1.0, "cost": 85.87, "total": 85.87},{"code": "1-01-059-038", "name": "VEDOXIN 500 mg/tablet, 5 TABLET/BOX", "branch": "T2", "expiry": "2026-10-29", "qty": 5.0, "cost": 28.06, "total": 140.29},{"code": "1-05-059-027", "name": "IPRAMAX Film coated tablet 100MG/1Tablet, 60Tablet/Box", "branch": "T2", "expiry": "2026-10-29", "qty": 2.0, "cost": 78.76, "total": 157.51},{"code": "1-03-187-228", "name": "NERVAN 500 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-10-29", "qty": 2.0, "cost": 33.79, "total": 67.58},{"code": "1-03-164-009", "name": "JP VITAMIN D3 Soft Gel Cap 1000IU/1Capsule, 60Capsule/Box", "branch": "T1", "expiry": "2026-10-29", "qty": 2.0, "cost": 27.5, "total": 55.0},{"code": "1-05-059-027", "name": "IPRAMAX Film coated tablet 100MG/1Tablet, 60Tablet/Box", "branch": "T2", "expiry": "2026-10-29", "qty": 1.0, "cost": 79.25, "total": 79.25},{"code": "1-05-187-485", "name": "SITAVIC 50/1000 mg/tablet, 56 TABLET/BOX", "branch": "T3", "expiry": "2026-10-29", "qty": 1.0, "cost": 0.0, "total": 0.0},{"code": "1-03-164-009", "name": "JP VITAMIN D3 Soft Gel Cap 1000IU/1Capsule, 60Capsule/Box", "branch": "T1", "expiry": "2026-10-30", "qty": 8.0, "cost": 27.5, "total": 220.0},{"code": "1-03-020-182", "name": "QUERSA Capsule, 60 CAPSULE/BOTTLE", "branch": "T1", "expiry": "2026-10-30", "qty": 2.0, "cost": 125.3, "total": 250.6},{"code": "1-03-020-182", "name": "QUERSA Capsule, 60 CAPSULE/BOTTLE", "branch": "T2", "expiry": "2026-10-30", "qty": 1.0, "cost": 125.3, "total": 125.3},{"code": "1-03-164-009", "name": "JP VITAMIN D3 Soft Gel Cap 1000IU/1Capsule, 60Capsule/Box", "branch": "T2", "expiry": "2026-10-30", "qty": 1.0, "cost": 27.5, "total": 27.5},{"code": "1-05-020-032", "name": "LYPFEN 200 mg/capsule, 30 CAPSULE/BOX", "branch": "T1", "expiry": "2026-10-30", "qty": 1.0, "cost": 2.35, "total": 2.35},{"code": "1-05-187-287", "name": "TRENTAL Tablet 400MG/1Tablet, 20Tablet/Box", "branch": "T2", "expiry": "2026-10-31", "qty": 51.0, "cost": 22.51, "total": 1148.01},{"code": "1-06-049-023", "name": "TOBRADEX Eye drops /1Drop, 5ML/Container", "branch": "T2", "expiry": "2026-10-31", "qty": 41.0, "cost": 17.5, "total": 717.5},{"code": "1-05-187-115", "name": "FORXIGA Tablet 10MG/1Tablet, 28Tablet/Box", "branch": "T2", "expiry": "2026-10-31", "qty": 19.1, "cost": 110.61, "total": 2109.39},{"code": "1-05-187-287", "name": "TRENTAL Tablet 400MG/1Tablet, 20Tablet/Box", "branch": "T1", "expiry": "2026-10-31", "qty": 19.0, "cost": 22.51, "total": 427.69},{"code": "1-03-020-188", "name": "FORCAPIL Capsule, 180 CAPSULE/BOX", "branch": "T1", "expiry": "2026-10-31", "qty": 15.0, "cost": 103.86, "total": 1557.84},{"code": "1-06-187-017", "name": "CLARINASE Tablet 5/120MG/1Tablet, 14Tablet/Box", "branch": "T1", "expiry": "2026-10-31", "qty": 13.0, "cost": 15.71, "total": 204.22},{"code": "1-09-049-047", "name": "ARTELAC COMPLET MDO 24 %/drop, 10 ML/CONTAINER", "branch": "T1", "expiry": "2026-10-31", "qty": 12.0, "cost": 40.33, "total": 483.98},{"code": "1-03-020-073", "name": "MARNYS SALMON OIL VIT E Capsule 60MG/1Capsule, 60Capsule/Box", "branch": "T2", "expiry": "2026-10-31", "qty": 12.0, "cost": 31.61, "total": 379.33},{"code": "1-06-187-017", "name": "CLARINASE Tablet 5/120MG/1Tablet, 14Tablet/Box", "branch": "T1", "expiry": "2026-10-31", "qty": 12.0, "cost": 10.18, "total": 122.15},{"code": "1-04-020-006", "name": "SENNA ARKO Capsule 180MG/1Capsule, 45Capsule/Box", "branch": "T2", "expiry": "2026-10-31", "qty": 10.0, "cost": 20.79, "total": 207.87},{"code": "1-01-138-028", "name": "CEFAJECT 1000 mg IV /vial Powder For Injection, VIAL", "branch": "T1", "expiry": "2026-10-31", "qty": 9.0, "cost": 34.13, "total": 307.17},{"code": "1-03-020-073", "name": "MARNYS SALMON OIL VIT E Capsule 60MG/1Capsule, 60Capsule/Box", "branch": "T1", "expiry": "2026-10-31", "qty": 9.0, "cost": 31.61, "total": 284.5},{"code": "1-05-182-001", "name": "NOVOMIX 30 FLEXPEN Susp. for inj. pre-filled pen 30IU/1ML, 15ML/Box", "branch": "T3", "expiry": "2026-10-31", "qty": 8.6, "cost": 164.35, "total": 1413.45},{"code": "1-05-001-009", "name": "MOUNJARO 7.5 mg/ml Ampoule, 4 AMPOULE/BOX", "branch": "T1", "expiry": "2026-10-31", "qty": 8.0, "cost": 1146.74, "total": 9173.91},{"code": "1-03-146-032", "name": "DOXIDA-M sachet, 30 SACHET/BOX", "branch": "T1", "expiry": "2026-10-31", "qty": 8.0, "cost": 166.15, "total": 1329.23},{"code": "1-03-020-073", "name": "MARNYS SALMON OIL VIT E Capsule 60MG/1Capsule, 60Capsule/Box", "branch": "T1", "expiry": "2026-10-31", "qty": 8.0, "cost": 31.61, "total": 252.89},{"code": "1-06-085-015", "name": "SPIRIVA INHALATION SPRAY 18MG/1Inhaler, 30Inhaler/Container", "branch": "T2", "expiry": "2026-10-31", "qty": 7.0, "cost": 123.61, "total": 865.3},{"code": "1-06-085-011", "name": "SERETIDE EVOHALER125MG INHALATION SPRAY /1Inhaler, 120Inhaler/Container", "branch": "T2", "expiry": "2026-10-31", "qty": 7.0, "cost": 98.09, "total": 686.64},{"code": "1-03-146-032", "name": "DOXIDA-M sachet, 30 SACHET/BOX", "branch": "T2", "expiry": "2026-10-31", "qty": 6.0, "cost": 166.15, "total": 996.92},{"code": "1-05-001-009", "name": "MOUNJARO 7.5 mg/ml Ampoule, 4 AMPOULE/BOX", "branch": "T2", "expiry": "2026-10-31", "qty": 5.0, "cost": 1146.74, "total": 5733.69},{"code": "1-02-146-002", "name": "BONOLIGHT (CARTIBON) SACHETS /1SACHET, 30SACHET/BOX", "branch": "T3", "expiry": "2026-10-31", "qty": 5.0, "cost": 257.05, "total": 1285.23},{"code": "1-03-146-032", "name": "DOXIDA-M sachet, 30 SACHET/BOX", "branch": "T3", "expiry": "2026-10-31", "qty": 5.0, "cost": 166.15, "total": 830.77},{"code": "1-06-085-011", "name": "SERETIDE EVOHALER125MG INHALATION SPRAY /1Inhaler, 120Inhaler/Container", "branch": "T1", "expiry": "2026-10-31", "qty": 5.0, "cost": 98.09, "total": 490.45},{"code": "1-08-186-010", "name": "VIMPAT 2 %/ml Syrup, 200 ML/BOTTLE", "branch": "T1", "expiry": "2026-10-31", "qty": 5.0, "cost": 84.17, "total": 420.85},{"code": "1-02-187-062", "name": "JOINTACE CHONDROITIN GLUCOSAMIN Tablet /1Tablet, 60Tablet/Box", "branch": "T1", "expiry": "2026-10-31", "qty": 5.0, "cost": 37.91, "total": 189.57},{"code": "1-02-187-062", "name": "JOINTACE CHONDROITIN GLUCOSAMIN Tablet /1Tablet, 60Tablet/Box", "branch": "T2", "expiry": "2026-10-31", "qty": 5.0, "cost": 36.4, "total": 182.01},{"code": "1-07-118-001", "name": "NEO HEALAR Ointment /1APPLY, 30GM/Tube", "branch": "T2", "expiry": "2026-10-31", "qty": 5.0, "cost": 22.29, "total": 111.46},{"code": "1-03-020-182", "name": "QUERSA Capsule, 60 CAPSULE/BOTTLE", "branch": "T1", "expiry": "2026-10-31", "qty": 4.0, "cost": 125.3, "total": 501.2},{"code": "1-02-187-062", "name": "JOINTACE CHONDROITIN GLUCOSAMIN Tablet /1Tablet, 60Tablet/Box", "branch": "T1", "expiry": "2026-10-31", "qty": 4.0, "cost": 36.4, "total": 145.61},{"code": "1-01-184-078", "name": "ZINNAT SUSPENTION 250MG/5ML, 50ML/Bottle", "branch": "T1", "expiry": "2026-10-31", "qty": 4.0, "cost": 34.05, "total": 136.22},{"code": "1-05-086-013", "name": "APIDRA SOLOSTAR 100 iu/ml Injection, 5 VIAL/BOX", "branch": "T2", "expiry": "2026-10-31", "qty": 3.0, "cost": 147.04, "total": 441.13},{"code": "1-05-086-013", "name": "APIDRA SOLOSTAR 100 iu/ml Injection, 5 VIAL/BOX", "branch": "T2", "expiry": "2026-10-31", "qty": 3.0, "cost": 147.04, "total": 441.13},{"code": "1-09-083-001", "name": "RELVAR ELLIPTA inhalation powder 100/25MCG/1Inhaler, 30doses/Inhaler", "branch": "T1", "expiry": "2026-10-31", "qty": 3.0, "cost": 137.74, "total": 413.23},{"code": "1-03-187-205", "name": "KIDS GUMMY OMEGA+DHA tablet, 60 TABLET/BOX", "branch": "T3", "expiry": "2026-10-31", "qty": 3.0, "cost": 84.0, "total": 252.0},{"code": "1-09-194-012", "name": "NYDA PLUS 100 ml topical spray /1Applicator, 1Applicator/Applicator", "branch": "T1", "expiry": "2026-10-31", "qty": 3.0, "cost": 60.52, "total": 181.57},{"code": "1-09-194-012", "name": "NYDA PLUS 100 ml topical spray /1Applicator, 1Applicator/Applicator", "branch": "T1", "expiry": "2026-10-31", "qty": 3.0, "cost": 60.52, "total": 181.57},{"code": "1-09-194-012", "name": "NYDA PLUS 100 ml topical spray /1Applicator, 1Applicator/Applicator", "branch": "T2", "expiry": "2026-10-31", "qty": 3.0, "cost": 60.52, "total": 181.57},{"code": "1-09-094-027", "name": "HEALCARE 100 mg/g Lotion, 180 ML/CONTAINER", "branch": "T1", "expiry": "2026-10-31", "qty": 3.0, "cost": 34.73, "total": 104.18},{"code": "1-09-094-027", "name": "HEALCARE 100 mg/g Lotion, 180 ML/CONTAINER", "branch": "T3", "expiry": "2026-10-31", "qty": 3.0, "cost": 34.73, "total": 104.18},{"code": "1-01-184-078", "name": "ZINNAT SUSPENTION 250MG/5ML, 50ML/Bottle", "branch": "T2", "expiry": "2026-10-31", "qty": 3.0, "cost": 34.05, "total": 102.16},{"code": "1-03-020-073", "name": "MARNYS SALMON OIL VIT E Capsule 60MG/1Capsule, 60Capsule/Box", "branch": "T3", "expiry": "2026-10-31", "qty": 3.0, "cost": 31.61, "total": 94.83},{"code": "1-03-020-073", "name": "MARNYS SALMON OIL VIT E Capsule 60MG/1Capsule, 60Capsule/Box", "branch": "T3", "expiry": "2026-10-31", "qty": 3.0, "cost": 31.61, "total": 94.83},{"code": "1-09-066-053", "name": "CONTRACTUBEX 1 %/apply Gel, 50 GM/TUBE", "branch": "T3", "expiry": "2026-10-31", "qty": 3.0, "cost": 26.21, "total": 78.64},{"code": "1-07-179-004", "name": "NEO HEALAR Suppository /1Suppository, 10Suppository/Box", "branch": "T1", "expiry": "2026-10-31", "qty": 3.0, "cost": 22.25, "total": 66.76},{"code": "1-07-187-030", "name": "MYFORTIC 360 mg/tablet, 120 TABLET/BOX", "branch": "T1", "expiry": "2026-10-31", "qty": 2.0, "cost": 752.82, "total": 1505.64},{"code": "1-07-187-020", "name": "BETMIGA 50 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-10-31", "qty": 2.0, "cost": 159.91, "total": 319.83},{"code": "1-09-118-067", "name": "DAIVOBET apply Ointment , 60 GM/TUBE", "branch": "T2", "expiry": "2026-10-31", "qty": 2.0, "cost": 129.01, "total": 258.01},{"code": "1-04-049-001", "name": "BIOGAIA oral drops 100MILLION/1Drop, 5ML/Container", "branch": "T2", "expiry": "2026-10-31", "qty": 2.0, "cost": 98.26, "total": 196.52},{"code": "1-06-085-011", "name": "SERETIDE EVOHALER125MG INHALATION SPRAY /1Inhaler, 120Inhaler/Container", "branch": "T3", "expiry": "2026-10-31", "qty": 2.0, "cost": 98.09, "total": 196.18},{"code": "1-08-187-015", "name": "FAVERIN Tablet 50MG/1Tablet, 60Tablet/Box", "branch": "T2", "expiry": "2026-10-31", "qty": 2.0, "cost": 72.04, "total": 144.09},{"code": "1-03-146-032", "name": "DOXIDA-M sachet, 30 SACHET/BOX", "branch": "T3", "expiry": "2026-10-31", "qty": 2.0, "cost": 71.9, "total": 143.81},{"code": "1-09-194-012", "name": "NYDA PLUS 100 ml topical spray /1Applicator, 1Applicator/Applicator", "branch": "T2", "expiry": "2026-10-31", "qty": 2.0, "cost": 60.52, "total": 121.04},{"code": "1-09-066-047", "name": "SCAR PRO apply Gel, 6 GM/TUBE", "branch": "T2", "expiry": "2026-10-31", "qty": 2.0, "cost": 45.0, "total": 90.0},{"code": "1-02-187-062", "name": "JOINTACE CHONDROITIN GLUCOSAMIN Tablet /1Tablet, 60Tablet/Box", "branch": "T2", "expiry": "2026-10-31", "qty": 2.0, "cost": 37.91, "total": 75.83},{"code": "1-03-020-073", "name": "MARNYS SALMON OIL VIT E Capsule 60MG/1Capsule, 60Capsule/Box", "branch": "T2", "expiry": "2026-10-31", "qty": 2.0, "cost": 31.61, "total": 63.22},{"code": "1-07-179-004", "name": "NEO HEALAR Suppository /1Suppository, 10Suppository/Box", "branch": "T1", "expiry": "2026-10-31", "qty": 2.0, "cost": 24.0, "total": 48.0},{"code": "1-02-020-040", "name": "PROLAX Capsule 15MG/1Capsule, 30Capsule/Box", "branch": "T3", "expiry": "2026-10-31", "qty": 2.0, "cost": 23.03, "total": 46.06},{"code": "1-09-031-015", "name": "AVALON FOOT Cream /1APPLY, 90GM/Tube", "branch": "T1", "expiry": "2026-10-31", "qty": 2.0, "cost": 21.15, "total": 42.3},{"code": "1-04-020-006", "name": "SENNA ARKO Capsule 180MG/1Capsule, 45Capsule/Box", "branch": "T2", "expiry": "2026-10-31", "qty": 2.0, "cost": 20.79, "total": 41.57},{"code": "1-05-059-105", "name": "RYBELSUS 3 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-10-31", "qty": 1.0, "cost": 415.19, "total": 415.19},{"code": "1-16-020-014", "name": "ARGITEST capsule Tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-10-31", "qty": 1.0, "cost": 203.0, "total": 203.0},{"code": "1-03-146-023", "name": "MOTOVA C Advanced sachet, 30 SACHET/BOX", "branch": "T1", "expiry": "2026-10-31", "qty": 1.0, "cost": 188.41, "total": 188.41},{"code": "1-05-086-013", "name": "APIDRA SOLOSTAR 100 iu/ml Injection, 5 VIAL/BOX", "branch": "T1", "expiry": "2026-10-31", "qty": 1.0, "cost": 147.04, "total": 147.04},{"code": "1-05-187-345", "name": "$$old$$SYNJARDY 12.5/1000 mg/tablet, 60 TABLET/BOX", "branch": "T1", "expiry": "2026-10-31", "qty": 1.0, "cost": 142.04, "total": 142.04},{"code": "1-03-020-205", "name": "ROYAL JELLY 1000 mg/capsule, 30 CAPSULE/BOX", "branch": "T1", "expiry": "2026-10-31", "qty": 1.0, "cost": 125.48, "total": 125.48},{"code": "1-03-020-182", "name": "QUERSA Capsule, 60 CAPSULE/BOTTLE", "branch": "T1", "expiry": "2026-10-31", "qty": 1.0, "cost": 125.3, "total": 125.3},{"code": "1-09-066-020", "name": "HEMAGEL Gel /1APPLY, 30GM/Tube", "branch": "T1", "expiry": "2026-10-31", "qty": 1.0, "cost": 113.76, "total": 113.76},{"code": "1-09-066-020", "name": "HEMAGEL Gel /1APPLY, 30GM/Tube", "branch": "T2", "expiry": "2026-10-31", "qty": 1.0, "cost": 113.76, "total": 113.76},{"code": "1-03-020-188", "name": "FORCAPIL Capsule, 180 CAPSULE/BOX", "branch": "T2", "expiry": "2026-10-31", "qty": 1.0, "cost": 103.86, "total": 103.86},{"code": "1-04-049-001", "name": "BIOGAIA oral drops 100MILLION/1Drop, 5ML/Container", "branch": "T1", "expiry": "2026-10-31", "qty": 1.0, "cost": 98.26, "total": 98.26},{"code": "1-07-020-002", "name": "AVODART Capsule 0.5MG/1Capsule, 30Capsule/Box", "branch": "T1", "expiry": "2026-10-31", "qty": 1.0, "cost": 97.31, "total": 97.31},{"code": "1-05-187-085", "name": "$$old$$COVERAM Tablet 10 mg / 5 MG/1Tablet, 30Tablet/Box", "branch": "T1", "expiry": "2026-10-31", "qty": 1.0, "cost": 89.31, "total": 89.31},{"code": "1-03-187-205", "name": "KIDS GUMMY OMEGA+DHA tablet, 60 TABLET/BOX", "branch": "T1", "expiry": "2026-10-31", "qty": 1.0, "cost": 84.0, "total": 84.0},{"code": "1-03-187-205", "name": "KIDS GUMMY OMEGA+DHA tablet, 60 TABLET/BOX", "branch": "T2", "expiry": "2026-10-31", "qty": 1.0, "cost": 84.0, "total": 84.0},{"code": "1-08-187-015", "name": "FAVERIN Tablet 50MG/1Tablet, 60Tablet/Box", "branch": "T3", "expiry": "2026-10-31", "qty": 1.0, "cost": 72.04, "total": 72.04},{"code": "1-08-187-023", "name": "LAMICTAL Tablet 50MG/1Tablet, 30Tablet/Box", "branch": "T3", "expiry": "2026-10-31", "qty": 1.0, "cost": 47.67, "total": 47.67},{"code": "1-14-201-005", "name": "HERBA CARE VAGINAL WASH /1ML, 250ML/Container", "branch": "T2", "expiry": "2026-10-31", "qty": 1.0, "cost": 39.5, "total": 39.5},{"code": "1-03-020-156", "name": "EVENING PRIMROSE OIL Capsule /1CAPSULE, 30CAPSULE/BOX", "branch": "T3", "expiry": "2026-10-31", "qty": 1.0, "cost": 38.5, "total": 38.5},{"code": "1-02-187-062", "name": "JOINTACE CHONDROITIN GLUCOSAMIN Tablet /1Tablet, 60Tablet/Box", "branch": "T1", "expiry": "2026-10-31", "qty": 1.0, "cost": 37.91, "total": 37.91},{"code": "1-02-187-062", "name": "JOINTACE CHONDROITIN GLUCOSAMIN Tablet /1Tablet, 60Tablet/Box", "branch": "T3", "expiry": "2026-10-31", "qty": 1.0, "cost": 36.4, "total": 36.4},{"code": "1-01-184-087", "name": "DENACIF 125 mg/5 ml Suspention, 50 ML/BOTTLE", "branch": "T3", "expiry": "2026-10-31", "qty": 1.0, "cost": 34.5, "total": 34.5},{"code": "1-03-020-156", "name": "EVENING PRIMROSE OIL Capsule /1CAPSULE, 30CAPSULE/BOX", "branch": "T2", "expiry": "2026-10-31", "qty": 1.0, "cost": 31.82, "total": 31.82},{"code": "1-14-187-014", "name": "EUTHYROX Tablet 150MG/1Tablet, 100Tablet/Box", "branch": "T2", "expiry": "2026-10-31", "qty": 1.0, "cost": 30.46, "total": 30.46},{"code": "1-05-187-430", "name": "JALRA 50 mg/tablet, 28 TABLET/BOX", "branch": "T3", "expiry": "2026-10-31", "qty": 1.0, "cost": 30.4, "total": 30.4},{"code": "1-09-049-036", "name": "VIZOL  0.21 %/drop, 10 ML/CONTAINER", "branch": "T1", "expiry": "2026-10-31", "qty": 1.0, "cost": 29.04, "total": 29.04},{"code": "1-09-049-036", "name": "VIZOL  0.21 %/drop, 10 ML/CONTAINER", "branch": "T2", "expiry": "2026-10-31", "qty": 1.0, "cost": 29.04, "total": 29.04},{"code": "1-05-187-287", "name": "TRENTAL Tablet 400MG/1Tablet, 20Tablet/Box", "branch": "T3", "expiry": "2026-10-31", "qty": 1.0, "cost": 22.51, "total": 22.51},{"code": "1-09-031-015", "name": "AVALON FOOT Cream /1APPLY, 90GM/Tube", "branch": "T2", "expiry": "2026-10-31", "qty": 1.0, "cost": 21.15, "total": 21.15},{"code": "1-08-187-142", "name": "DOGMATIL 200 mg/tablet, 12 TABLET/BOX", "branch": "T3", "expiry": "2026-10-31", "qty": 1.0, "cost": 18.75, "total": 18.75},{"code": "1-06-187-017", "name": "CLARINASE Tablet 5/120MG/1Tablet, 14Tablet/Box", "branch": "T3", "expiry": "2026-10-31", "qty": 1.0, "cost": 15.71, "total": 15.71},{"code": "1-08-187-003", "name": "ANAFRANIL Tablet 10MG/1Tablet, 30Tablet/Box", "branch": "T1", "expiry": "2026-10-31", "qty": 1.0, "cost": 14.92, "total": 14.92},{"code": "1-08-187-003", "name": "ANAFRANIL Tablet 10MG/1Tablet, 30Tablet/Box", "branch": "T1", "expiry": "2026-10-31", "qty": 1.0, "cost": 14.92, "total": 14.92},{"code": "1-01-059-016", "name": "CLARITT Film coated tablet 250MG/1Tablet, 14Tablet/Box", "branch": "T1", "expiry": "2026-10-31", "qty": 1.0, "cost": 14.6, "total": 14.6},{"code": "1-06-187-017", "name": "CLARINASE Tablet 5/120MG/1Tablet, 14Tablet/Box", "branch": "T3", "expiry": "2026-10-31", "qty": 1.0, "cost": 10.18, "total": 10.18},{"code": "1-05-059-047", "name": "LORVAST Film coated tablet 20MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-10-31", "qty": 1.0, "cost": 0.0, "total": 0.0},{"code": "1-06-146-002", "name": "CATAFAST SACHETS 50MG/1Sachet, 9sachet/Box", "branch": "T2", "expiry": "2026-10-31", "qty": 0.7, "cost": 15.0, "total": 10.05},{"code": "1-05-182-001", "name": "NOVOMIX 30 FLEXPEN Susp. for inj. pre-filled pen 30IU/1ML, 15ML/Box", "branch": "T2", "expiry": "2026-10-31", "qty": 0.4, "cost": 164.35, "total": 65.74},{"code": "1-06-146-002", "name": "CATAFAST SACHETS 50MG/1Sachet, 9sachet/Box", "branch": "T2", "expiry": "2026-10-31", "qty": 0.3, "cost": 15.0, "total": 4.95},{"code": "1-03-187-169", "name": "RAFOL 5 mg/tablet, 50 TABLET/BOX", "branch": "T2", "expiry": "2026-10-31", "qty": 0.0, "cost": 8.5, "total": 0.17},{"code": "1-03-186-062", "name": "JP SAFFRON 28 mg/capsule, 30 CAPSULE/BOTTLE", "branch": "T1", "expiry": "2026-11-07", "qty": 2.0, "cost": 106.25, "total": 212.5},{"code": "1-03-086-003", "name": "DEPOVIT B12 Injection 1000MG/1Ampoule, 2ML/Ampoule", "branch": "T3", "expiry": "2026-11-07", "qty": 1.0, "cost": 5.03, "total": 5.03},{"code": "1-01-187-129", "name": "VULGA TABLET 55MG/1Tablet, 30TABLET/BOX", "branch": "T2", "expiry": "2026-11-10", "qty": 1.0, "cost": 50.73, "total": 50.73},{"code": "1-04-138-001", "name": "RISEK Powder for injection 40MG/1Vial, 1Vial/Box", "branch": "T1", "expiry": "2026-11-10", "qty": 1.0, "cost": 10.0, "total": 10.0},{"code": "1-04-138-001", "name": "RISEK Powder for injection 40MG/1Vial, 1Vial/Box", "branch": "T2", "expiry": "2026-11-10", "qty": 1.0, "cost": 10.0, "total": 10.0},{"code": "1-06-187-086", "name": "RINOFED COLD&ALLERGY Tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-11-11", "qty": 18.0, "cost": 5.13, "total": 92.35},{"code": "1-06-187-086", "name": "RINOFED COLD&ALLERGY Tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-11-11", "qty": 10.0, "cost": 5.13, "total": 51.31},{"code": "1-06-187-086", "name": "RINOFED COLD&ALLERGY Tablet, 30 TABLET/BOX", "branch": "T3", "expiry": "2026-11-11", "qty": 3.0, "cost": 5.13, "total": 15.39},{"code": "1-05-187-486", "name": "SITAVIC 50/850 mg/tablet, 56 TABLET/BOX", "branch": "T3", "expiry": "2026-11-11", "qty": 2.0, "cost": 0.0, "total": 0.0},{"code": "1-14-086-009", "name": "EPIFASI Injection 5000IU/1Vial, 1Vial/Box", "branch": "T2", "expiry": "2026-11-11", "qty": 1.0, "cost": 20.57, "total": 20.57},{"code": "1-08-059-034", "name": "DEBILUR 40 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-11-12", "qty": 4.0, "cost": 149.72, "total": 598.86},{"code": "1-16-020-017", "name": "GARCIMIUM 1 gm/tablet, 60 TABLET/BOX", "branch": "T2", "expiry": "2026-11-12", "qty": 1.0, "cost": 126.75, "total": 126.75},{"code": "1-03-186-060", "name": "OMEGA MIND 1200 mg/5 ml Syrup, 100 ML/BOTTLE", "branch": "T1", "expiry": "2026-11-13", "qty": 2.0, "cost": 110.5, "total": 221.0},{"code": "1-03-187-146", "name": "BEFOLVIT 5 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-11-14", "qty": 8.0, "cost": 5.11, "total": 40.89},{"code": "1-03-186-060", "name": "OMEGA MIND 1200 mg/5 ml Syrup, 100 ML/BOTTLE", "branch": "T1", "expiry": "2026-11-14", "qty": 1.0, "cost": 110.5, "total": 110.5},{"code": "1-08-187-137", "name": "CARPAZIO 600 mg/tablet, 50 TABLET/BOX", "branch": "T1", "expiry": "2026-11-14", "qty": 1.0, "cost": 59.6, "total": 59.6},{"code": "1-14-138-004", "name": "FOSTIMON Powder for injection 75IU/1ML, 1Vial/Box", "branch": "T1", "expiry": "2026-11-16", "qty": 2.0, "cost": 64.44, "total": 128.87},{"code": "1-05-187-395", "name": "VAROXA 20 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-11-16", "qty": 1.0, "cost": 160.73, "total": 160.73},{"code": "1-14-138-004", "name": "FOSTIMON Powder for injection 75IU/1ML, 1Vial/Box", "branch": "T1", "expiry": "2026-11-16", "qty": 1.0, "cost": 64.44, "total": 64.44},{"code": "1-14-138-004", "name": "FOSTIMON Powder for injection 75IU/1ML, 1Vial/Box", "branch": "T1", "expiry": "2026-11-16", "qty": 1.0, "cost": 64.44, "total": 64.44},{"code": "1-14-138-004", "name": "FOSTIMON Powder for injection 75IU/1ML, 1Vial/Box", "branch": "T2", "expiry": "2026-11-16", "qty": 1.0, "cost": 64.44, "total": 64.44},{"code": "1-14-138-004", "name": "FOSTIMON Powder for injection 75IU/1ML, 1Vial/Box", "branch": "T2", "expiry": "2026-11-16", "qty": 1.0, "cost": 64.44, "total": 64.44},{"code": "1-04-179-010", "name": "LAXOCODYL 5 mg/suppository, 10 SUPPOSITORY/BOX", "branch": "T2", "expiry": "2026-11-17", "qty": 6.0, "cost": 5.8, "total": 34.81},{"code": "1-04-179-010", "name": "LAXOCODYL 5 mg/suppository, 10 SUPPOSITORY/BOX", "branch": "T1", "expiry": "2026-11-17", "qty": 1.0, "cost": 5.8, "total": 5.8},{"code": "1-04-179-010", "name": "LAXOCODYL 5 mg/suppository, 10 SUPPOSITORY/BOX", "branch": "T1", "expiry": "2026-11-17", "qty": 1.0, "cost": 5.8, "total": 5.8},{"code": "1-03-164-009", "name": "JP VITAMIN D3 Soft Gel Cap 1000IU/1Capsule, 60Capsule/Box", "branch": "T1", "expiry": "2026-11-18", "qty": 28.0, "cost": 27.5, "total": 770.0},{"code": "1-03-164-009", "name": "JP VITAMIN D3 Soft Gel Cap 1000IU/1Capsule, 60Capsule/Box", "branch": "T2", "expiry": "2026-11-18", "qty": 17.0, "cost": 27.5, "total": 467.5},{"code": "1-05-059-120", "name": "PEXAPAN 2.5 mg/tablet, 60 TABLET/BOX", "branch": "T1", "expiry": "2026-11-18", "qty": 2.0, "cost": 133.92, "total": 267.84},{"code": "1-03-164-009", "name": "JP VITAMIN D3 Soft Gel Cap 1000IU/1Capsule, 60Capsule/Box", "branch": "T3", "expiry": "2026-11-18", "qty": 2.0, "cost": 27.5, "total": 55.0},{"code": "1-03-187-041", "name": "ERECTA Tablet 50MG/1Tablet, 4Tablet/Box", "branch": "T3", "expiry": "2026-11-18", "qty": 2.0, "cost": 20.23, "total": 40.46},{"code": "1-05-059-120", "name": "PEXAPAN 2.5 mg/tablet, 60 TABLET/BOX", "branch": "T1", "expiry": "2026-11-18", "qty": 1.0, "cost": 154.52, "total": 154.52},{"code": "1-05-059-120", "name": "PEXAPAN 2.5 mg/tablet, 60 TABLET/BOX", "branch": "T1", "expiry": "2026-11-18", "qty": 1.0, "cost": 133.92, "total": 133.92},{"code": "1-05-059-120", "name": "PEXAPAN 2.5 mg/tablet, 60 TABLET/BOX", "branch": "T1", "expiry": "2026-11-19", "qty": 10.0, "cost": 133.92, "total": 1339.18},{"code": "1-05-059-120", "name": "PEXAPAN 2.5 mg/tablet, 60 TABLET/BOX", "branch": "T2", "expiry": "2026-11-19", "qty": 5.0, "cost": 133.92, "total": 669.59},{"code": "1-04-120-004", "name": "PICO Oral drops 7.5MG/1Drop, 30ML/Container", "branch": "T1", "expiry": "2026-11-19", "qty": 4.0, "cost": 8.0, "total": 32.0},{"code": "1-07-059-007", "name": "PROHAIR 1 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-11-19", "qty": 3.0, "cost": 30.59, "total": 91.77},{"code": "1-04-120-004", "name": "PICO Oral drops 7.5MG/1Drop, 30ML/Container", "branch": "T2", "expiry": "2026-11-19", "qty": 3.0, "cost": 8.0, "total": 24.0},{"code": "1-04-120-004", "name": "PICO Oral drops 7.5MG/1Drop, 30ML/Container", "branch": "T2", "expiry": "2026-11-19", "qty": 2.0, "cost": 8.3, "total": 16.6},{"code": "1-05-059-120", "name": "PEXAPAN 2.5 mg/tablet, 60 TABLET/BOX", "branch": "T3", "expiry": "2026-11-19", "qty": 1.0, "cost": 133.92, "total": 133.92},{"code": "1-05-059-120", "name": "PEXAPAN 2.5 mg/tablet, 60 TABLET/BOX", "branch": "T1", "expiry": "2026-11-20", "qty": 13.0, "cost": 133.92, "total": 1740.94},{"code": "1-05-059-120", "name": "PEXAPAN 2.5 mg/tablet, 60 TABLET/BOX", "branch": "T2", "expiry": "2026-11-20", "qty": 9.0, "cost": 133.92, "total": 1205.27},{"code": "1-06-187-074", "name": "ZOLIX 5 mg/tablet, 20 TABLET/BOX", "branch": "T1", "expiry": "2026-11-20", "qty": 4.0, "cost": 8.96, "total": 35.86},{"code": "1-05-059-120", "name": "PEXAPAN 2.5 mg/tablet, 60 TABLET/BOX", "branch": "T3", "expiry": "2026-11-20", "qty": 3.0, "cost": 133.92, "total": 401.76},{"code": "1-06-187-074", "name": "ZOLIX 5 mg/tablet, 20 TABLET/BOX", "branch": "T2", "expiry": "2026-11-20", "qty": 2.0, "cost": 8.96, "total": 17.93},{"code": "1-05-187-485", "name": "SITAVIC 50/1000 mg/tablet, 56 TABLET/BOX", "branch": "T3", "expiry": "2026-11-20", "qty": 1.0, "cost": 0.0, "total": 0.0},{"code": "1-05-187-022", "name": "ARENA Tablet 150MG/1Tablet, 30Tablet/Box", "branch": "T1", "expiry": "2026-11-23", "qty": 1.0, "cost": 29.46, "total": 29.46},{"code": "1-08-059-029", "name": "SETAPRO 10 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-11-24", "qty": 90.0, "cost": 38.83, "total": 3494.7},{"code": "1-08-059-029", "name": "SETAPRO 10 mg/tablet, 30 TABLET/BOX", "branch": "T3", "expiry": "2026-11-24", "qty": 4.0, "cost": 38.83, "total": 155.32},{"code": "1-08-059-029", "name": "SETAPRO 10 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-11-24", "qty": 2.0, "cost": 38.83, "total": 77.66},{"code": "1-05-187-286", "name": "TOVAST Tablet 10MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-11-24", "qty": 1.0, "cost": 18.1, "total": 18.1},{"code": "1-03-164-008", "name": "VITALIFE Soft Gel Cap /1Capsule, 30Capsule/Box", "branch": "T2", "expiry": "2026-11-25", "qty": 4.0, "cost": 27.67, "total": 110.67},{"code": "1-08-059-008", "name": "ENTAPRO Film coated tablet 20MG/1Tablet, 30Tablet/Box", "branch": "T3", "expiry": "2026-11-25", "qty": 1.0, "cost": 76.62, "total": 76.62},{"code": "1-08-059-029", "name": "SETAPRO 10 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-11-25", "qty": 1.0, "cost": 38.83, "total": 38.83},{"code": "1-01-184-049", "name": "KLAVOX SUSPENTION 156MG/5ML, 100ML/Bottle", "branch": "T3", "expiry": "2026-11-26", "qty": 5.0, "cost": 8.23, "total": 41.13},{"code": "1-08-059-008", "name": "ENTAPRO Film coated tablet 20MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-11-26", "qty": 1.0, "cost": 76.62, "total": 76.62},{"code": "1-09-031-153", "name": "EMOLIA apply Cream, 200 GM/TUBE", "branch": "T1", "expiry": "2026-11-26", "qty": 1.0, "cost": 22.55, "total": 22.55},{"code": "1-09-031-153", "name": "EMOLIA apply Cream, 200 GM/TUBE", "branch": "T3", "expiry": "2026-11-26", "qty": 1.0, "cost": 22.55, "total": 22.55},{"code": "1-06-049-011", "name": "OPTILONE Eye drops 0.1MG/1Drop, 5ML/Container", "branch": "T1", "expiry": "2026-11-26", "qty": 1.0, "cost": 11.46, "total": 11.46},{"code": "1-04-179-009", "name": "LAXOCODYL 10 mg/suppository, 10 SUPPOSITORY/BOX", "branch": "T1", "expiry": "2026-11-26", "qty": 1.0, "cost": 5.8, "total": 5.8},{"code": "1-03-164-009", "name": "JP VITAMIN D3 Soft Gel Cap 1000IU/1Capsule, 60Capsule/Box", "branch": "T1", "expiry": "2026-11-27", "qty": 9.0, "cost": 27.5, "total": 247.5},{"code": "1-03-164-009", "name": "JP VITAMIN D3 Soft Gel Cap 1000IU/1Capsule, 60Capsule/Box", "branch": "T2", "expiry": "2026-11-27", "qty": 7.0, "cost": 27.5, "total": 192.5},{"code": "1-06-085-019", "name": "BUFOMIX 1 mg/inhaler Inhalation Spray, INHALER", "branch": "T2", "expiry": "2026-11-27", "qty": 3.0, "cost": 105.68, "total": 317.05},{"code": "1-06-085-019", "name": "BUFOMIX 1 mg/inhaler Inhalation Spray, INHALER", "branch": "T2", "expiry": "2026-11-27", "qty": 3.0, "cost": 82.08, "total": 246.23},{"code": "1-03-164-009", "name": "JP VITAMIN D3 Soft Gel Cap 1000IU/1Capsule, 60Capsule/Box", "branch": "T3", "expiry": "2026-11-27", "qty": 1.0, "cost": 27.5, "total": 27.5},{"code": "1-08-187-081", "name": "ZOLINDA Tablet 5MG/1Tablet, 30TABLET/BOX", "branch": "T2", "expiry": "2026-11-29", "qty": 1.0, "cost": 91.78, "total": 91.78},{"code": "1-08-187-081", "name": "ZOLINDA Tablet 5MG/1Tablet, 30TABLET/BOX", "branch": "T2", "expiry": "2026-11-29", "qty": 1.0, "cost": 91.78, "total": 91.78},{"code": "1-03-121-007", "name": "IRO-VIT drop, 30 ML/CONTAINER", "branch": "T1", "expiry": "2026-11-30", "qty": 34.0, "cost": 0.0, "total": 0.0},{"code": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE", "branch": "T3", "expiry": "2026-11-30", "qty": 24.0, "cost": 21.8, "total": 523.31},{"code": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE", "branch": "T2", "expiry": "2026-11-30", "qty": 20.0, "cost": 21.8, "total": 436.09},{"code": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE", "branch": "T3", "expiry": "2026-11-30", "qty": 17.0, "cost": 21.8, "total": 370.68},{"code": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE", "branch": "T1", "expiry": "2026-11-30", "qty": 16.0, "cost": 21.8, "total": 348.87},{"code": "1-14-086-036", "name": "INHIXA 40 mg/syringe Injection, 1 SYRINGE/BOX", "branch": "T2", "expiry": "2026-11-30", "qty": 14.0, "cost": 20.8, "total": 291.14},{"code": "1-01-187-037", "name": "CLARIXIN Tablet 500MG/1Tablet, 14Tablet/Box", "branch": "T3", "expiry": "2026-11-30", "qty": 13.0, "cost": 17.76, "total": 230.9},{"code": "1-03-121-004", "name": "ZINCOVIT drop, 60 ML/CONTAINER", "branch": "T3", "expiry": "2026-11-30", "qty": 12.0, "cost": 0.0, "total": 0.0},{"code": "1-08-020-035", "name": "CITICOLINE Capsule, 30 CAPSULE/BOX", "branch": "T3", "expiry": "2026-11-30", "qty": 10.0, "cost": 38.0, "total": 380.0},{"code": "1-03-136-005", "name": "HIDRASEC 30 mg/sachet Powder, 16 SACHET/BOX for children", "branch": "T1", "expiry": "2026-11-30", "qty": 9.9, "cost": 26.03, "total": 258.74},{"code": "1-03-146-033", "name": "DOXIDA-F sachet, 30 SACHET/BOX", "branch": "T3", "expiry": "2026-11-30", "qty": 9.0, "cost": 216.0, "total": 1944.0},{"code": "1-03-186-038", "name": "MEGATOP SYRUP /1ML, 125ML/BOTTLE", "branch": "T2", "expiry": "2026-11-30", "qty": 9.0, "cost": 87.0, "total": 783.0},{"code": "1-05-059-130", "name": "JULEEN 100 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-11-30", "qty": 9.0, "cost": 65.17, "total": 586.54},{"code": "1-03-020-226", "name": "OPTIMUM OMEGA-3 1000 mg/capsule, 30 CAPSULE/BOX", "branch": "T3", "expiry": "2026-11-30", "qty": 8.0, "cost": 68.5, "total": 548.0},{"code": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE", "branch": "T1", "expiry": "2026-11-30", "qty": 8.0, "cost": 21.8, "total": 174.44},{"code": "1-14-086-036", "name": "INHIXA 40 mg/syringe Injection, 1 SYRINGE/BOX", "branch": "T1", "expiry": "2026-11-30", "qty": 8.0, "cost": 20.8, "total": 166.37},{"code": "1-07-020-037", "name": "DUODART Capsule 0.5/0.4MG/1Capsule, 30Capsule/Box", "branch": "T3", "expiry": "2026-11-30", "qty": 7.0, "cost": 90.09, "total": 630.63},{"code": "1-09-049-047", "name": "ARTELAC COMPLET MDO 24 %/drop, 10 ML/CONTAINER", "branch": "T3", "expiry": "2026-11-30", "qty": 7.0, "cost": 40.33, "total": 282.32},{"code": "1-14-086-036", "name": "INHIXA 40 mg/syringe Injection, 1 SYRINGE/BOX", "branch": "T1", "expiry": "2026-11-30", "qty": 7.0, "cost": 23.22, "total": 162.56},{"code": "1-01-118-005", "name": "RIACHOL Ointment 1%/1APPLY, 5GM/Tube", "branch": "T1", "expiry": "2026-11-30", "qty": 7.0, "cost": 7.25, "total": 50.73},{"code": "1-03-121-004", "name": "ZINCOVIT drop, 60 ML/CONTAINER", "branch": "T1", "expiry": "2026-11-30", "qty": 7.0, "cost": 0.0, "total": 0.0},{"code": "1-03-020-045", "name": "GENTAPLEX Capsule /1Capsule, 36Capsule/Box", "branch": "T1", "expiry": "2026-11-30", "qty": 6.0, "cost": 142.92, "total": 857.52},{"code": "1-08-187-030", "name": "MELATONIN Tablet 3MG/1Tablet, 100Tablet/Box", "branch": "T1", "expiry": "2026-11-30", "qty": 6.0, "cost": 109.06, "total": 654.35},{"code": "1-14-086-036", "name": "INHIXA 40 mg/syringe Injection, 1 SYRINGE/BOX", "branch": "T1", "expiry": "2026-11-30", "qty": 6.0, "cost": 26.25, "total": 157.52},{"code": "1-14-086-036", "name": "INHIXA 40 mg/syringe Injection, 1 SYRINGE/BOX", "branch": "T1", "expiry": "2026-11-30", "qty": 6.0, "cost": 20.66, "total": 123.94},{"code": "1-05-146-029", "name": "DECONE sachet, 20 SACHET/BOX", "branch": "T1", "expiry": "2026-11-30", "qty": 5.0, "cost": 75.0, "total": 375.0},{"code": "1-08-020-035", "name": "CITICOLINE Capsule, 30 CAPSULE/BOX", "branch": "T1", "expiry": "2026-11-30", "qty": 5.0, "cost": 38.0, "total": 190.0},{"code": "1-03-136-005", "name": "HIDRASEC 30 mg/sachet Powder, 16 SACHET/BOX for children", "branch": "T2", "expiry": "2026-11-30", "qty": 5.0, "cost": 26.03, "total": 130.15},{"code": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE", "branch": "T2", "expiry": "2026-11-30", "qty": 5.0, "cost": 21.8, "total": 109.02},{"code": "1-14-187-024", "name": "LOGYNON Tablet /1Tablet, 21Tablet/Box", "branch": "T2", "expiry": "2026-11-30", "qty": 5.0, "cost": 10.08, "total": 50.42},{"code": "1-03-121-007", "name": "IRO-VIT drop, 30 ML/CONTAINER", "branch": "T3", "expiry": "2026-11-30", "qty": 5.0, "cost": 0.0, "total": 0.0},{"code": "1-03-020-205", "name": "ROYAL JELLY 1000 mg/capsule, 30 CAPSULE/BOX", "branch": "T1", "expiry": "2026-11-30", "qty": 4.0, "cost": 106.83, "total": 427.32},{"code": "1-03-186-038", "name": "MEGATOP SYRUP /1ML, 125ML/BOTTLE", "branch": "T1", "expiry": "2026-11-30", "qty": 4.0, "cost": 87.0, "total": 348.0},{"code": "1-03-146-028", "name": "URI-PLUS capsule, 30 capsule/BOX", "branch": "T3", "expiry": "2026-11-30", "qty": 4.0, "cost": 80.5, "total": 322.0},{"code": "1-03-187-225", "name": "ARKOCAPS CALCOS 500 mg/tablet, 60 TABLET/BOX", "branch": "T3", "expiry": "2026-11-30", "qty": 4.0, "cost": 42.76, "total": 171.03},{"code": "1-09-049-047", "name": "ARTELAC COMPLET MDO 24 %/drop, 10 ML/CONTAINER", "branch": "T2", "expiry": "2026-11-30", "qty": 4.0, "cost": 40.33, "total": 161.33},{"code": "1-11-049-015", "name": "COSOPT Eye drops 2/0.5%/1Drop, 5ML/Container", "branch": "T3", "expiry": "2026-11-30", "qty": 4.0, "cost": 38.79, "total": 155.16},{"code": "1-01-059-005", "name": "CEFODOX Film coated tablet 200MG/1Tablet, 14Tablet/Box", "branch": "T1", "expiry": "2026-11-30", "qty": 4.0, "cost": 28.73, "total": 114.93},{"code": "1-03-136-005", "name": "HIDRASEC 30 mg/sachet Powder, 16 SACHET/BOX for children", "branch": "T1", "expiry": "2026-11-30", "qty": 4.0, "cost": 26.03, "total": 104.12},{"code": "1-14-086-036", "name": "INHIXA 40 mg/syringe Injection, 1 SYRINGE/BOX", "branch": "T2", "expiry": "2026-11-30", "qty": 4.0, "cost": 22.53, "total": 90.12},{"code": "1-14-086-036", "name": "INHIXA 40 mg/syringe Injection, 1 SYRINGE/BOX", "branch": "T2", "expiry": "2026-11-30", "qty": 4.0, "cost": 20.66, "total": 82.63},{"code": "1-01-184-066", "name": "ROXIL SUSPENTION 250MG/5ML, 100ML/Bottle", "branch": "T1", "expiry": "2026-11-30", "qty": 4.0, "cost": 13.67, "total": 54.66},{"code": "1-01-184-066", "name": "ROXIL SUSPENTION 250MG/5ML, 100ML/Bottle", "branch": "T2", "expiry": "2026-11-30", "qty": 4.0, "cost": 13.67, "total": 54.66},{"code": "1-06-186-219", "name": "ZERTAZINE 5 mg/5 ml Syrup, 100 ML/BOTTLE", "branch": "T1", "expiry": "2026-11-30", "qty": 4.0, "cost": 5.09, "total": 20.38},{"code": "1-01-059-003", "name": "AZIMAC Film coated tablet 250MG/1Tablet, 6Tablet/Box", "branch": "T1", "expiry": "2026-11-30", "qty": 4.0, "cost": 0.0, "total": 0.01},{"code": "1-03-020-045", "name": "GENTAPLEX Capsule /1Capsule, 36Capsule/Box", "branch": "T2", "expiry": "2026-11-30", "qty": 3.0, "cost": 142.92, "total": 428.76},{"code": "1-08-187-030", "name": "MELATONIN Tablet 3MG/1Tablet, 100Tablet/Box", "branch": "T2", "expiry": "2026-11-30", "qty": 3.0, "cost": 109.06, "total": 327.17},{"code": "1-05-146-029", "name": "DECONE sachet, 20 SACHET/BOX", "branch": "T2", "expiry": "2026-11-30", "qty": 3.0, "cost": 75.0, "total": 225.0},{"code": "1-09-194-019", "name": "AVALON AVOGAIN 5% SPRAY offer (2+1)  50 ML/APPLICATOR", "branch": "T2", "expiry": "2026-11-30", "qty": 3.0, "cost": 72.6, "total": 217.8},{"code": "1-04-186-019", "name": "DIGESTCARE ml Syrup, 125 ML/BOTTLE", "branch": "T1", "expiry": "2026-11-30", "qty": 3.0, "cost": 55.3, "total": 165.9},{"code": "1-08-020-035", "name": "CITICOLINE Capsule, 30 CAPSULE/BOX", "branch": "T2", "expiry": "2026-11-30", "qty": 3.0, "cost": 38.0, "total": 114.0},{"code": "1-11-049-015", "name": "COSOPT Eye drops 2/0.5%/1Drop, 5ML/Container", "branch": "T1", "expiry": "2026-11-30", "qty": 3.0, "cost": 35.26, "total": 105.79},{"code": "1-06-085-024", "name": "COMBIWAVE 25/125 mg/inhaler Inhalation Spray, 120 INHALER/CONTAINER", "branch": "T1", "expiry": "2026-11-30", "qty": 3.0, "cost": 31.52, "total": 94.56},{"code": "1-06-085-024", "name": "COMBIWAVE 25/125 mg/inhaler Inhalation Spray, 120 INHALER/CONTAINER", "branch": "T2", "expiry": "2026-11-30", "qty": 3.0, "cost": 31.52, "total": 94.56},{"code": "1-03-136-005", "name": "HIDRASEC 30 mg/sachet Powder, 16 SACHET/BOX for children", "branch": "T1", "expiry": "2026-11-30", "qty": 3.0, "cost": 26.03, "total": 78.09},{"code": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE", "branch": "T1", "expiry": "2026-11-30", "qty": 3.0, "cost": 21.8, "total": 65.41},{"code": "1-01-059-003", "name": "AZIMAC Film coated tablet 250MG/1Tablet, 6Tablet/Box", "branch": "T3", "expiry": "2026-11-30", "qty": 3.0, "cost": 0.0, "total": 0.01},{"code": "1-05-059-104", "name": "RYBELSUS 7 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-11-30", "qty": 2.0, "cost": 415.19, "total": 830.37},{"code": "1-05-001-004", "name": "OZEMPIC 0.25 mg/ml Ampoule, 4 AMPOULE/BOX", "branch": "T2", "expiry": "2026-11-30", "qty": 2.0, "cost": 355.85, "total": 711.71},{"code": "1-05-182-001", "name": "NOVOMIX 30 FLEXPEN Susp. for inj. pre-filled pen 30IU/1ML, 15ML/Box", "branch": "T2", "expiry": "2026-11-30", "qty": 2.0, "cost": 164.35, "total": 328.71},{"code": "1-08-020-034", "name": "OUTRIGHT Capsule, 30 CAPSULE/BOX", "branch": "T1", "expiry": "2026-11-30", "qty": 2.0, "cost": 133.0, "total": 266.0},{"code": "1-08-020-034", "name": "OUTRIGHT Capsule, 30 CAPSULE/BOX", "branch": "T1", "expiry": "2026-11-30", "qty": 2.0, "cost": 133.0, "total": 266.0},{"code": "1-08-187-030", "name": "MELATONIN Tablet 3MG/1Tablet, 100Tablet/Box", "branch": "T3", "expiry": "2026-11-30", "qty": 2.0, "cost": 118.96, "total": 237.92},{"code": "1-08-187-030", "name": "MELATONIN Tablet 3MG/1Tablet, 100Tablet/Box", "branch": "T2", "expiry": "2026-11-30", "qty": 2.0, "cost": 118.96, "total": 237.92},{"code": "1-04-065-023", "name": "CONESTAL 2 mg/tablet, 28 TABLET/BOX", "branch": "T3", "expiry": "2026-11-30", "qty": 2.0, "cost": 97.54, "total": 195.07},{"code": "1-03-187-155", "name": "OMEGA 3 FORT Capsule, 60 CAPSULE/BOX", "branch": "T1", "expiry": "2026-11-30", "qty": 2.0, "cost": 79.0, "total": 158.0},{"code": "1-08-020-002", "name": "PASSIFLORE ARKO Capsule 1MG/1Capsule, 45Capsule/Box", "branch": "T1", "expiry": "2026-11-30", "qty": 2.0, "cost": 47.52, "total": 95.03},{"code": "1-08-020-002", "name": "PASSIFLORE ARKO Capsule 1MG/1Capsule, 45Capsule/Box", "branch": "T2", "expiry": "2026-11-30", "qty": 2.0, "cost": 47.52, "total": 95.03},{"code": "1-04-136-007", "name": "FORTIFERRUM sachet Powder, 14 SACHET/BOX", "branch": "T2", "expiry": "2026-11-30", "qty": 2.0, "cost": 41.67, "total": 83.34},{"code": "1-09-049-047", "name": "ARTELAC COMPLET MDO 24 %/drop, 10 ML/CONTAINER", "branch": "T1", "expiry": "2026-11-30", "qty": 2.0, "cost": 40.33, "total": 80.66},{"code": "1-04-136-007", "name": "FORTIFERRUM sachet Powder, 14 SACHET/BOX", "branch": "T2", "expiry": "2026-11-30", "qty": 2.0, "cost": 39.83, "total": 79.66},{"code": "1-06-085-024", "name": "COMBIWAVE 25/125 mg/inhaler Inhalation Spray, 120 INHALER/CONTAINER", "branch": "T2", "expiry": "2026-11-30", "qty": 2.0, "cost": 31.52, "total": 63.04},{"code": "1-01-184-066", "name": "ROXIL SUSPENTION 250MG/5ML, 100ML/Bottle", "branch": "T1", "expiry": "2026-11-30", "qty": 2.0, "cost": 13.67, "total": 27.33},{"code": "1-03-146-033", "name": "DOXIDA-F sachet, 30 SACHET/BOX", "branch": "T1", "expiry": "2026-11-30", "qty": 2.0, "cost": 0.02, "total": 0.04},{"code": "1-03-121-007", "name": "IRO-VIT drop, 30 ML/CONTAINER", "branch": "T2", "expiry": "2026-11-30", "qty": 2.0, "cost": 0.0, "total": 0.0},{"code": "1-05-059-104", "name": "RYBELSUS 7 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-11-30", "qty": 1.0, "cost": 415.19, "total": 415.19},{"code": "1-05-059-105", "name": "RYBELSUS 3 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-11-30", "qty": 1.0, "cost": 415.19, "total": 415.19},{"code": "1-05-059-105", "name": "RYBELSUS 3 mg/tablet, 30 TABLET/BOX", "branch": "T3", "expiry": "2026-11-30", "qty": 1.0, "cost": 415.19, "total": 415.19},{"code": "1-05-059-105", "name": "RYBELSUS 3 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-11-30", "qty": 1.0, "cost": 415.19, "total": 415.19},{"code": "1-05-168-008", "name": "TRESIBA FLEX TOUCH Solution for injection 100IU/1ML, 15ML/Box", "branch": "T2", "expiry": "2026-11-30", "qty": 1.0, "cost": 327.23, "total": 327.23},{"code": "1-03-146-033", "name": "DOXIDA-F sachet, 30 SACHET/BOX", "branch": "T2", "expiry": "2026-11-30", "qty": 1.0, "cost": 216.0, "total": 216.0},{"code": "1-02-187-138", "name": "ARAVA TABLET 20MG/1Tablet, 30Tablet/BOX", "branch": "T3", "expiry": "2026-11-30", "qty": 1.0, "cost": 139.65, "total": 139.65},{"code": "1-02-187-138", "name": "ARAVA TABLET 20MG/1Tablet, 30Tablet/BOX", "branch": "T2", "expiry": "2026-11-30", "qty": 1.0, "cost": 139.65, "total": 139.65},{"code": "1-08-187-030", "name": "MELATONIN Tablet 3MG/1Tablet, 100Tablet/Box", "branch": "T1", "expiry": "2026-11-30", "qty": 1.0, "cost": 118.96, "total": 118.96},{"code": "1-04-128-003", "name": "ENTEROGERMINA ORAL VIAL 2billionMG/1Ampoule, 20Ampoule/Box", "branch": "T1", "expiry": "2026-11-30", "qty": 1.0, "cost": 113.02, "total": 113.02},{"code": "1-08-187-030", "name": "MELATONIN Tablet 3MG/1Tablet, 100Tablet/Box", "branch": "T1", "expiry": "2026-11-30", "qty": 1.0, "cost": 109.06, "total": 109.06},{"code": "1-08-187-030", "name": "MELATONIN Tablet 3MG/1Tablet, 100Tablet/Box", "branch": "T3", "expiry": "2026-11-30", "qty": 1.0, "cost": 109.06, "total": 109.06},{"code": "1-03-020-205", "name": "ROYAL JELLY 1000 mg/capsule, 30 CAPSULE/BOX", "branch": "T2", "expiry": "2026-11-30", "qty": 1.0, "cost": 106.83, "total": 106.83},{"code": "1-03-020-205", "name": "ROYAL JELLY 1000 mg/capsule, 30 CAPSULE/BOX", "branch": "T1", "expiry": "2026-11-30", "qty": 1.0, "cost": 106.83, "total": 106.83},{"code": "1-07-020-002", "name": "AVODART Capsule 0.5MG/1Capsule, 30Capsule/Box", "branch": "T2", "expiry": "2026-11-30", "qty": 1.0, "cost": 97.31, "total": 97.31},{"code": "1-07-020-037", "name": "DUODART Capsule 0.5/0.4MG/1Capsule, 30Capsule/Box", "branch": "T2", "expiry": "2026-11-30", "qty": 1.0, "cost": 90.09, "total": 90.09},{"code": "1-03-044-008", "name": "WELLMOV tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-11-30", "qty": 1.0, "cost": 83.3, "total": 83.3},{"code": "1-03-121-004", "name": "ZINCOVIT drop, 60 ML/CONTAINER", "branch": "T1", "expiry": "2026-11-30", "qty": 1.0, "cost": 78.0, "total": 78.0},{"code": "1-05-187-230", "name": "OLMETEC PLUS Tablet 40/25MG/1Tablet, 28Tablet/Box", "branch": "T1", "expiry": "2026-11-30", "qty": 1.0, "cost": 75.91, "total": 75.91},{"code": "1-05-146-029", "name": "DECONE sachet, 20 SACHET/BOX", "branch": "T3", "expiry": "2026-11-30", "qty": 1.0, "cost": 75.0, "total": 75.0},{"code": "1-09-194-019", "name": "AVALON AVOGAIN 5% SPRAY offer (2+1)  50 ML/APPLICATOR", "branch": "T1", "expiry": "2026-11-30", "qty": 1.0, "cost": 72.6, "total": 72.6},{"code": "1-09-194-019", "name": "AVALON AVOGAIN 5% SPRAY offer (2+1)  50 ML/APPLICATOR", "branch": "T2", "expiry": "2026-11-30", "qty": 1.0, "cost": 72.6, "total": 72.6},{"code": "1-03-146-033", "name": "DOXIDA-F sachet, 30 SACHET/BOX", "branch": "T2", "expiry": "2026-11-30", "qty": 1.0, "cost": 71.9, "total": 71.9},{"code": "1-08-187-053", "name": "SEROXAT CR Tablet 25MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-11-30", "qty": 1.0, "cost": 71.57, "total": 71.57},{"code": "1-04-187-062", "name": "SALOFALK Tablet 500MG/1Tablet, 50Tablet/Box", "branch": "T3", "expiry": "2026-11-30", "qty": 1.0, "cost": 56.56, "total": 56.56},{"code": "1-06-084-007", "name": "ROLENIUM INHALATION SOLUTION 50/250MCG/1Container, 1Container/Container", "branch": "T1", "expiry": "2026-11-30", "qty": 1.0, "cost": 49.55, "total": 49.55},{"code": "1-06-085-024", "name": "COMBIWAVE 25/125 mg/inhaler Inhalation Spray, 120 INHALER/CONTAINER", "branch": "T1", "expiry": "2026-11-30", "qty": 1.0, "cost": 31.52, "total": 31.52},{"code": "1-05-187-073", "name": "CONCOR Tablet 10MG/1Tablet, 30Tablet/Box", "branch": "T1", "expiry": "2026-11-30", "qty": 1.0, "cost": 26.55, "total": 26.55},{"code": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE", "branch": "T1", "expiry": "2026-11-30", "qty": 1.0, "cost": 21.8, "total": 21.8},{"code": "1-01-184-095", "name": "ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE", "branch": "T3", "expiry": "2026-11-30", "qty": 1.0, "cost": 21.8, "total": 21.8},{"code": "1-14-086-036", "name": "INHIXA 40 mg/syringe Injection, 1 SYRINGE/BOX", "branch": "T3", "expiry": "2026-11-30", "qty": 1.0, "cost": 20.8, "total": 20.8},{"code": "1-05-059-018", "name": "CONCOR PLUS Film coated tablet 5MG/1Tablet, 20Tablet/Box", "branch": "T2", "expiry": "2026-11-30", "qty": 1.0, "cost": 14.62, "total": 14.62},{"code": "1-01-184-066", "name": "ROXIL SUSPENTION 250MG/5ML, 100ML/Bottle", "branch": "T3", "expiry": "2026-11-30", "qty": 1.0, "cost": 13.67, "total": 13.67},{"code": "1-06-113-046", "name": "FLUSORT 0.05 % Nasal Spray, APPLICATOR", "branch": "T3", "expiry": "2026-11-30", "qty": 1.0, "cost": 10.5, "total": 10.5},{"code": "1-14-187-024", "name": "LOGYNON Tablet /1Tablet, 21Tablet/Box", "branch": "T1", "expiry": "2026-11-30", "qty": 1.0, "cost": 10.08, "total": 10.08},{"code": "1-03-121-004", "name": "ZINCOVIT drop, 60 ML/CONTAINER", "branch": "T2", "expiry": "2026-11-30", "qty": 1.0, "cost": 0.0, "total": 0.0},{"code": "1-05-182-001", "name": "NOVOMIX 30 FLEXPEN Susp. for inj. pre-filled pen 30IU/1ML, 15ML/Box", "branch": "T1", "expiry": "2026-11-30", "qty": 0.6, "cost": 164.35, "total": 98.61},{"code": "1-01-187-023", "name": "CIPRODAR Tablet 500MG/1Tablet, 10", "branch": "WH", "expiry": "2026-12-01", "qty": 26.0, "cost": 0, "total": 418.0},{"code": "1-01-187-039", "name": "CLAVODAR Tablet 625MG/1Tablet, 2", "branch": "WH", "expiry": "2026-12-01", "qty": 25.0, "cost": 0, "total": 254.0},{"code": "1-05-187-312", "name": "FORMIT XR Tablet 750MG/1Tablet, 3", "branch": "WH", "expiry": "2026-12-01", "qty": 676.0, "cost": 0, "total": 7098.0},{"code": "1-01-049-007", "name": "OPTICIN Eye drops 0.3MG/1Drop, 5M CONTAINER", "branch": "WH", "expiry": "2026-12-03", "qty": 22.0, "cost": 0, "total": 268.0},{"code": "1-03-187-204", "name": "OSTERRA 1500/800 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-12-07", "qty": 1.0, "cost": 17.0, "total": 17.0},{"code": "1-04-179-009", "name": "LAXOCODYL 10 mg/suppository, 10 SUPPOSITORY/BOX", "branch": "T1", "expiry": "2026-12-08", "qty": 3.0, "cost": 5.8, "total": 17.39},{"code": "1-08-187-080", "name": "OLENZA TABLET 15MG/1Tablet, 30Tablet/BOX", "branch": "T1", "expiry": "2026-12-09", "qty": 1.0, "cost": 223.93, "total": 223.93},{"code": "1-08-187-080", "name": "OLENZA TABLET 15MG/1Tablet, 30Tablet/BOX", "branch": "T2", "expiry": "2026-12-09", "qty": 1.0, "cost": 223.93, "total": 223.93},{"code": "1-04-065-022", "name": "LAXATROL 50/8.6 mg/tablet, 100 TABLET/BOX", "branch": "T3", "expiry": "2026-12-11", "qty": 5.0, "cost": 25.54, "total": 127.69},{"code": "1-05-187-272", "name": "SORTIVA-H Tablet 100/12.5MG/1Tablet, 30Tablet/Box", "branch": "T1", "expiry": "2026-12-12", "qty": 1.0, "cost": 25.3, "total": 25.3},{"code": "1-05-187-272", "name": "SORTIVA-H Tablet 100/12.5MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-12-12", "qty": 1.0, "cost": 25.3, "total": 25.3},{"code": "1-05-187-492", "name": "BANORIV 2.5 mg/tablet, 60 TABLET/BOX", "branch": "T1", "expiry": "2026-12-16", "qty": 4.0, "cost": 132.32, "total": 529.27},{"code": "1-05-187-492", "name": "BANORIV 2.5 mg/tablet, 60 TABLET/BOX", "branch": "T3", "expiry": "2026-12-16", "qty": 2.0, "cost": 132.32, "total": 264.64},{"code": "1-05-187-492", "name": "BANORIV 2.5 mg/tablet, 60 TABLET/BOX", "branch": "T2", "expiry": "2026-12-16", "qty": 1.0, "cost": 132.32, "total": 132.32},{"code": "1-01-186-010", "name": "LOVRAK 200MG/5ML/100ML SYRUP 200MG/5ML, 100ML/BOTTLE", "branch": "T1", "expiry": "2026-12-17", "qty": 1.0, "cost": 56.31, "total": 56.31},{"code": "1-03-186-040", "name": "SANOVIT IRON ml Syrup, 320 ML/BO", "branch": "WH", "expiry": "2026-12-19", "qty": 9.0, "cost": 0, "total": 144.0},{"code": "1-06-085-002", "name": "CLENIL FORTE INHALATION SPRA", "branch": "WH", "expiry": "2026-12-19", "qty": 2.0, "cost": 0, "total": 129.0},{"code": "1-08-187-100", "name": "ZOLAN 5 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-12-21", "qty": 3.0, "cost": 115.26, "total": 345.78},{"code": "1-09-031-136", "name": "TRIOLITE CREAM apply Cream, 30 GM/TUBE", "branch": "T3", "expiry": "2026-12-21", "qty": 1.0, "cost": 52.58, "total": 52.58},{"code": "1-03-187-228", "name": "NERVAN 500 mg/tablet, 30 TABLET/BOX", "branch": "T1", "expiry": "2026-12-22", "qty": 1.0, "cost": 33.79, "total": 33.79},{"code": "1-03-187-228", "name": "NERVAN 500 mg/tablet, 30 TABLET/BOX", "branch": "T3", "expiry": "2026-12-22", "qty": 1.0, "cost": 33.79, "total": 33.79},{"code": "1-02-186-017", "name": "PANADREX 120 mg/5 ml Syrup, 60 ML/BOTTLE", "branch": "T2", "expiry": "2026-12-24", "qty": 9.0, "cost": 2.24, "total": 20.19},{"code": "1-05-059-119", "name": "RAVIXA 75 mg/tablet, 30 TABLET/BOX", "branch": "T3", "expiry": "2026-12-24", "qty": 2.0, "cost": 76.71, "total": 153.41},{"code": "1-05-059-119", "name": "RAVIXA 75 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-12-24", "qty": 2.0, "cost": 76.71, "total": 153.41},{"code": "1-05-059-119", "name": "RAVIXA 75 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-12-24", "qty": 1.0, "cost": 85.87, "total": 85.87},{"code": "1-01-187-022", "name": "CIPROCIN Tablet 500MG/1Tablet, 10Tablet/Box", "branch": "T2", "expiry": "2026-12-24", "qty": 1.0, "cost": 14.27, "total": 14.27},{"code": "1-03-164-020", "name": "JP VITAMIN D3 1000 iu/capsule Soft Gel Cap, 90 CAPSULE/BOX", "branch": "T1", "expiry": "2026-12-25", "qty": 1.0, "cost": 41.25, "total": 41.25},{"code": "1-03-164-020", "name": "JP VITAMIN D3 1000 iu/capsule Soft Gel Cap, 90 CAPSULE/BOX", "branch": "T2", "expiry": "2026-12-25", "qty": 1.0, "cost": 41.25, "total": 41.25},{"code": "1-05-059-119", "name": "RAVIXA 75 mg/tablet, 30 TABLET/BOX", "branch": "T2", "expiry": "2026-12-30", "qty": 1.0, "cost": 17.49, "total": 17.49},{"code": "1-11-049-054", "name": "UNI FRESH UD 5 %/drop, 30 SINGLE DOSE/BOX", "branch": "T3", "expiry": "2026-12-30", "qty": 1.0, "cost": 14.33, "total": 14.33},{"code": "2-09-031-484", "name": "IVAPUR A.I. AKNE-SYT tube Cream,", "branch": "WH", "expiry": "2026-12-30", "qty": 2.0, "cost": 0, "total": 99.0},{"code": "1-01-184-084", "name": "SEFARIX 125 mg/5 ml Suspention, 50 ML/BOTTLE", "branch": "T1", "expiry": "2026-12-31", "qty": 50.0, "cost": 17.44, "total": 871.95},{"code": "1-03-187-169", "name": "RAFOL 5 mg/tablet, 50 TABLET/BOX", "branch": "T3", "expiry": "2026-12-31", "qty": 33.0, "cost": 8.52, "total": 281.0},{"code": "1-01-059-039", "name": "NEVOTIC 500 mg/tablet, 7 TABLET/BOX", "branch": "T2", "expiry": "2026-12-31", "qty": 29.0, "cost": 18.03, "total": 522.92},{"code": "1-03-121-006", "name": "LACTEEZ PLUS drop, 30 ML/CONTAINER", "branch": "T1", "expiry": "2026-12-31", "qty": 29.0, "cost": 0.0, "total": 0.0},{"code": "1-06-113-050", "name": "OTRI ALLERGY 0.05 mg/applicator Nasal Spray", "branch": "T1", "expiry": "2026-12-31", "qty": 24.0, "cost": 21.67, "total": 519.98},{"code": "1-03-186-064", "name": "VIDA-IRON  Spray, 60 ML/BOTTLE", "branch": "T1", "expiry": "2026-12-31", "qty": 17.0, "cost": 31.29, "total": 531.9},{"code": "1-09-020-010", "name": "ORATANE 10 mg/capsule, 30 CAPSULE/BOX", "branch": "T1", "expiry": "2026-12-31", "qty": 17.0, "cost": 28.18, "total": 478.98},{"code": "1-06-113-050", "name": "OTRI ALLERGY 0.05 mg/applicator Nasal Spray", "branch": "T2", "expiry": "2026-12-31", "qty": 14.0, "cost": 21.67, "total": 303.32},{"code": "1-06-085-011", "name": "SERETIDE EVOHALER125MG INHALATION SPRAY /1Inhaler, 120Inhaler/Container", "branch": "T1", "expiry": "2026-12-31", "qty": 12.0, "cost": 98.09, "total": 1178.07},{"code": "1-09-118-003", "name": "AVALON AVOMEB EXTRA 75 GM Ointment", "branch": "T2", "expiry": "2026-12-31", "qty": 10.0, "cost": 45.1, "total": 451.0},{"code": "1-03-121-006", "name": "LACTEEZ PLUS drop, 30 ML/CONTAINER", "branch": "T3", "expiry": "2026-12-31", "qty": 10.0, "cost": 0.0, "total": 0.0},{"code": "1-02-187-196", "name": "THIOTACID 600 mg/tablet, 30 TABLET/BOX", "branch": "T3", "expiry": "2026-12-31", "qty": 9.0, "cost": 66.0, "total": 594.0},{"code": "1-03-186-064", "name": "VIDA-IRON  Spray, 60 ML/BOTTLE", "branch": "T1", "expiry": "2026-12-31", "qty": 9.0, "cost": 43.02, "total": 387.19},{"code": "1-02-187-138", "name": "ARAVA TABLET 20MG/1Tablet, 30Tablet/BOX", "branch": "T1", "expiry": "2026-12-31", "qty": 7.0, "cost": 139.65, "total": 977.55},{"code": "1-01-059-039", "name": "NEVOTIC 500 mg/tablet, 7 TABLET/BOX", "branch": "T3", "expiry": "2026-12-31", "qty": 7.0, "cost": 0.0, "total": 0.0},{"code": "1-01-059-039", "name": "NEVOTIC 500 mg/tablet, 7 TABLET/BOX", "branch": "T2", "expiry": "2026-12-31", "qty": 7.0, "cost": 0.0, "total": 0.0},{"code": "1-05-146-035", "name": "ACTI-COLLA sachet, 30 SACHET/BOX", "branch": "T2", "expiry": "2026-12-31", "qty": 6.0, "cost": 132.55, "total": 795.3},{"code": "1-06-083-004", "name": "FLIXOTIDE Inhalation powder 125MCG/1Container, 1Container/Container", "branch": "T1", "expiry": "2026-12-31", "qty": 6.0, "cost": 74.31, "total": 445.84},{"code": "1-01-059-003", "name": "AZIMAC Film coated tablet 250MG/1Tablet, 6Tablet/Box", "branch": "T1", "expiry": "2026-12-31", "qty": 6.0, "cost": 10.73, "total": 64.41},{"code": "1-06-186-069", "name": "RHINATHIOL ENF Syrup 2%/1ML, 125ML/Bottle", "branch": "T2", "expiry": "2026-12-31", "qty": 6.0, "cost": 6.96, "total": 41.76},{"code": "1-06-187-081", "name": "FEXODINE 120 mg/tablet, 14 TABLET/BOX", "branch": "T3", "expiry": "2026-12-31", "qty": 6.0, "cost": 0.0, "total": 0.0},{"code": "1-06-085-011", "name": "SERETIDE EVOHALER125MG INHALATION SPRAY /1Inhaler, 120Inhaler/Container", "branch": "T2", "expiry": "2026-12-31", "qty": 4.0, "cost": 98.09, "total": 392.36},{"code": "1-08-065-001", "name": "MIRZAGEN Gastro-resistant coated tablet 30MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-12-31", "qty": 4.0, "cost": 88.07, "total": 352.29},{"code": "1-08-065-001", "name": "MIRZAGEN Gastro-resistant coated tablet 30MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-12-31", "qty": 4.0, "cost": 54.54, "total": 218.17},{"code": "1-02-146-002", "name": "BONOLIGHT (CARTIBON) SACHETS /1SACHET, 30SACHET/BOX", "branch": "T1", "expiry": "2026-12-31", "qty": 4.0, "cost": 0.0, "total": 0.0},{"code": "1-06-085-011", "name": "SERETIDE EVOHALER125MG INHALATION SPRAY /1Inhaler, 120Inhaler/Container", "branch": "T3", "expiry": "2026-12-31", "qty": 3.0, "cost": 98.09, "total": 294.27},{"code": "1-08-065-001", "name": "MIRZAGEN Gastro-resistant coated tablet 30MG/1Tablet, 30Tablet/Box", "branch": "T3", "expiry": "2026-12-31", "qty": 3.0, "cost": 88.07, "total": 264.22},{"code": "1-01-187-142", "name": "ZOVIRAX 200 mg/tablet, 25 TABLET/BOX", "branch": "T1", "expiry": "2026-12-31", "qty": 3.0, "cost": 64.7, "total": 194.09},{"code": "1-09-118-003", "name": "AVALON AVOMEB EXTRA 75 GM Ointment", "branch": "T2", "expiry": "2026-12-31", "qty": 3.0, "cost": 45.1, "total": 135.3},{"code": "1-09-118-068", "name": "AVALON AVOMEB EXTERA Ointment , 50 GM/TUBE", "branch": "T3", "expiry": "2026-12-31", "qty": 3.0, "cost": 34.85, "total": 104.55},{"code": "1-01-059-039", "name": "NEVOTIC 500 mg/tablet, 7 TABLET/BOX", "branch": "T1", "expiry": "2026-12-31", "qty": 3.0, "cost": 18.03, "total": 54.1},{"code": "1-01-059-039", "name": "NEVOTIC 500 mg/tablet, 7 TABLET/BOX", "branch": "T1", "expiry": "2026-12-31", "qty": 3.0, "cost": 0.0, "total": 0.0},{"code": "1-02-187-138", "name": "ARAVA TABLET 20MG/1Tablet, 30Tablet/BOX", "branch": "T2", "expiry": "2026-12-31", "qty": 2.0, "cost": 139.65, "total": 279.3},{"code": "1-03-187-180", "name": "EVERT Capsule, 30 CAPSULE/BOX", "branch": "T3", "expiry": "2026-12-31", "qty": 2.0, "cost": 104.3, "total": 208.6},{"code": "1-02-020-065", "name": "CONCERTA 18 mg/tablet Extended Release Tab, 30 TABLET/BOTTEL", "branch": "T1", "expiry": "2026-12-31", "qty": 2.0, "cost": 97.09, "total": 194.18},{"code": "1-04-187-116", "name": "NEXIUM 10 mg/sachet Granules for oral susp, 28 SACHET/BOX", "branch": "T1", "expiry": "2026-12-31", "qty": 2.0, "cost": 94.87, "total": 189.75},{"code": "1-06-083-004", "name": "FLIXOTIDE Inhalation powder 125MCG/1Container, 1Container/Container", "branch": "T3", "expiry": "2026-12-31", "qty": 2.0, "cost": 74.31, "total": 148.61},{"code": "2-09-149-065", "name": "VAGINECALM GEL CALM tube Gel, 50 ML/TUBE", "branch": "T2", "expiry": "2026-12-31", "qty": 2.0, "cost": 60.87, "total": 121.74},{"code": "2-09-149-065", "name": "VAGINECALM GEL CALM tube Gel, 50 ML/TUBE", "branch": "T1", "expiry": "2026-12-31", "qty": 2.0, "cost": 58.59, "total": 117.19},{"code": "1-09-118-068", "name": "AVALON AVOMEB EXTERA Ointment , 50 GM/TUBE", "branch": "T1", "expiry": "2026-12-31", "qty": 2.0, "cost": 34.85, "total": 69.7},{"code": "1-09-118-068", "name": "AVALON AVOMEB EXTERA Ointment , 50 GM/TUBE", "branch": "T1", "expiry": "2026-12-31", "qty": 2.0, "cost": 34.85, "total": 69.7},{"code": "1-01-184-073", "name": "ZETRON SUSPENTION 200MG/1ML, 15ML/Bottle", "branch": "T2", "expiry": "2026-12-31", "qty": 2.0, "cost": 15.94, "total": 31.89},{"code": "1-02-187-128", "name": "TILAX Tablet 2MG/1Tablet, 30Tablet/Box", "branch": "T3", "expiry": "2026-12-31", "qty": 2.0, "cost": 9.89, "total": 19.78},{"code": "1-06-187-031", "name": "LOHIST Tablet 10MG/1Tablet, 10Tablet/Box", "branch": "T3", "expiry": "2026-12-31", "qty": 2.0, "cost": 4.33, "total": 8.67},{"code": "1-03-121-006", "name": "LACTEEZ PLUS drop, 30 ML/CONTAINER", "branch": "T2", "expiry": "2026-12-31", "qty": 2.0, "cost": 0.0, "total": 0.0},{"code": "1-09-031-044", "name": "ELIDEL Cream 1%/1APPLY, 30GM/Tube", "branch": "T2", "expiry": "2026-12-31", "qty": 1.0, "cost": 102.83, "total": 102.83},{"code": "1-05-187-330", "name": "XIGDUO XR 5/1000 mg/tablet, 56 TABLET/BOX", "branch": "T2", "expiry": "2026-12-31", "qty": 1.0, "cost": 97.4, "total": 97.4},{"code": "1-02-086-028", "name": "METHOTREXATE SPC 2.5 mg/tablet, 100 TABLET/BOX", "branch": "T1", "expiry": "2026-12-31", "qty": 1.0, "cost": 93.48, "total": 93.48},{"code": "1-06-083-004", "name": "FLIXOTIDE Inhalation powder 125MCG/1Container, 1Container/Container", "branch": "T2", "expiry": "2026-12-31", "qty": 1.0, "cost": 74.31, "total": 74.31},{"code": "2-09-149-064", "name": "VAGINECALM ANTIAGING tube Gel, 50 ML/TUBE", "branch": "T2", "expiry": "2026-12-31", "qty": 1.0, "cost": 73.3, "total": 73.3},{"code": "2-09-149-064", "name": "VAGINECALM ANTIAGING tube Gel, 50 ML/TUBE", "branch": "T1", "expiry": "2026-12-31", "qty": 1.0, "cost": 73.29, "total": 73.29},{"code": "1-06-049-003", "name": "ECTOLLERG Eye drops 0.4MG/1Drop, 3ML/Container", "branch": "T1", "expiry": "2026-12-31", "qty": 1.0, "cost": 69.81, "total": 69.81},{"code": "1-06-049-003", "name": "ECTOLLERG Eye drops 0.4MG/1Drop, 3ML/Container", "branch": "T3", "expiry": "2026-12-31", "qty": 1.0, "cost": 69.81, "total": 69.81},{"code": "1-06-049-003", "name": "ECTOLLERG Eye drops 0.4MG/1Drop, 3ML/Container", "branch": "T2", "expiry": "2026-12-31", "qty": 1.0, "cost": 69.81, "total": 69.81},{"code": "1-08-047-001", "name": "PRISTIQ Extended release tab 50MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-12-31", "qty": 1.0, "cost": 68.27, "total": 68.27},{"code": "1-02-187-196", "name": "THIOTACID 600 mg/tablet, 30 TABLET/BOX", "branch": "T3", "expiry": "2026-12-31", "qty": 1.0, "cost": 66.0, "total": 66.0},{"code": "1-01-187-142", "name": "ZOVIRAX 200 mg/tablet, 25 TABLET/BOX", "branch": "T3", "expiry": "2026-12-31", "qty": 1.0, "cost": 64.7, "total": 64.7},{"code": "1-05-187-481", "name": "MELIGAMET 50 mg / 1000 mg/tablet, 60 TABLET/BOX", "branch": "T3", "expiry": "2026-12-31", "qty": 1.0, "cost": 53.7, "total": 53.7},{"code": "1-05-168-004", "name": "HUMULIN 70/30 Solution for injection 70/30MG/1ML, 1Vial/Vial", "branch": "T1", "expiry": "2026-12-31", "qty": 1.0, "cost": 44.63, "total": 44.63},{"code": "1-03-186-064", "name": "VIDA-IRON  Spray, 60 ML/BOTTLE", "branch": "T2", "expiry": "2026-12-31", "qty": 1.0, "cost": 43.02, "total": 43.02},{"code": "1-09-118-068", "name": "AVALON AVOMEB EXTERA Ointment , 50 GM/TUBE", "branch": "T1", "expiry": "2026-12-31", "qty": 1.0, "cost": 34.85, "total": 34.85},{"code": "1-02-066-011", "name": "HEMICLAR Gel /1APPLY, 120ML/Tube", "branch": "T1", "expiry": "2026-12-31", "qty": 1.0, "cost": 32.0, "total": 32.0},{"code": "1-03-186-064", "name": "VIDA-IRON  Spray, 60 ML/BOTTLE", "branch": "T2", "expiry": "2026-12-31", "qty": 1.0, "cost": 31.29, "total": 31.29},{"code": "1-04-187-003", "name": "A-LAX Tablet 20MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-12-31", "qty": 1.0, "cost": 28.8, "total": 28.8},{"code": "1-05-187-326", "name": "LAVISTINA 24 mg/tablet, 50 TABLET/BOX", "branch": "T1", "expiry": "2026-12-31", "qty": 1.0, "cost": 26.81, "total": 26.81},{"code": "1-06-113-050", "name": "OTRI ALLERGY 0.05 mg/applicator Nasal Spray", "branch": "T3", "expiry": "2026-12-31", "qty": 1.0, "cost": 21.67, "total": 21.67},{"code": "1-05-059-047", "name": "LORVAST Film coated tablet 20MG/1Tablet, 30Tablet/Box", "branch": "T2", "expiry": "2026-12-31", "qty": 1.0, "cost": 19.06, "total": 19.06},{"code": "1-04-187-067", "name": "SPASMOLYTE Tablet 20MG/1Tablet, 30Tablet/Box", "branch": "T1", "expiry": "2026-12-31", "qty": 1.0, "cost": 18.37, "total": 18.37},{"code": "1-06-049-023", "name": "TOBRADEX Eye drops /1Drop, 5ML/Container", "branch": "T2", "expiry": "2026-12-31", "qty": 1.0, "cost": 17.5, "total": 17.5},{"code": "1-01-059-003", "name": "AZIMAC Film coated tablet 250MG/1Tablet, 6Tablet/Box", "branch": "T1", "expiry": "2026-12-31", "qty": 1.0, "cost": 10.73, "total": 10.73},{"code": "1-09-118-068", "name": "AVALON AVOMEB EXTERA Ointment , 50 GM/TUBE", "branch": "T1", "expiry": "2026-12-31", "qty": 1.0, "cost": 0.0, "total": 0.0},{"code": "1-01-049-003", "name": "CIPROCIN Eye drops 0.3MG/1Drop, 5 CONTAINER", "branch": "WH", "expiry": "2026-12-31", "qty": 87.0, "cost": 0, "total": 795.0},{"code": "1-03-186-041", "name": "SANOVIT ml Syrup, 320 ML/BOTTL", "branch": "WH", "expiry": "2026-12-31", "qty": 19.0, "cost": 0, "total": 303.0},{"code": "1-05-028-001", "name": "JARDIANCE Coated tablet 10MG/1Ta", "branch": "WH", "expiry": "2026-12-31", "qty": 30.0, "cost": 0, "total": 3951.0},{"code": "1-05-187-163", "name": "GLUCOPHAGE Tablet 1000MG/1Tabl", "branch": "WH", "expiry": "2026-12-31", "qty": 1.0, "cost": 0, "total": 16.0},{"code": "1-07-187-013", "name": "URILAX Tablet 10MG/1Tablet, 30Tab", "branch": "WH", "expiry": "2026-12-31", "qty": 4.0, "cost": 0, "total": 371.0},{"code": "1-14-166-010", "name": "C-LACT Solution /1ML, 220ML/Cont CONTAINER", "branch": "WH", "expiry": "2026-12-31", "qty": 1.0, "cost": 0, "total": 36.0},{"code": "2-09-031-247", "name": "LOUIS WIDMER CARBAMID UREA", "branch": "WH", "expiry": "2026-12-31", "qty": 1.0, "cost": 0, "total": 63.0},{"code": "2-09-031-498", "name": "IVATHERM IVAWHITE WHITENIN", "branch": "WH", "expiry": "2026-12-31", "qty": 4.0, "cost": 0, "total": 396.0},{"code": "2-09-066-098", "name": "CEBELIA L.C.E REGARD container C CONTAINER", "branch": "WH", "expiry": "2026-12-31", "qty": 2.0, "cost": 0, "total": 149.0},{"code": "2-09-204-020", "name": "QV BABY 2 IN 1 SHAMPOO & COND CONTAINER", "branch": "WH", "expiry": "2026-12-31", "qty": 1.0, "cost": 0, "total": 50.0},{"code": "2-14-094-042", "name": "URIAGE DS HAIR REGULATING AN CONTAINER", "branch": "WH", "expiry": "2026-12-31", "qty": 3.0, "cost": 0, "total": 0.0},{"code": "2-14-094-090", "name": "CERAVE HYDRATING CLEANSER ( CONTAINER", "branch": "WH", "expiry": "2026-12-31", "qty": 2.0, "cost": 0, "total": 96.0}];
 
+const NEAR_EXPIRY_SOURCE={label:'تقرير مخزون مضمّن',asOf:null};
+function nearExpiryDrugMatches(inventoryName,rxName){
+  const inventory=PharmaCore.normalizeProductText(inventoryName),rx=PharmaCore.normalizeProductText(rxName);
+  if(!inventory||!rx)return false;
+  const brand=inventory.split(' ')[0];
+  if(brand.length<3||!rx.split(' ').includes(brand))return false;
+  if(PharmaCore.matchesCatalogProduct(rxName,{name:inventoryName,short:brand}))return true;
+  const dose=value=>[...PharmaCore.normalizeEntityKey(value).matchAll(/(\d+(?:\.\d+)?)\s*(MG|MCG|G|IU|%)/g)].map(match=>String(Number(match[1]))+match[2]);
+  const inventoryDose=dose(inventoryName),rxDose=dose(rxName);
+  if(inventoryDose.length&&rxDose.length&&inventoryDose[0]!==rxDose[0])return false;
+  const forms=['TABLET','CAPSULE','SYRUP','CREAM','GEL','SPRAY','SUSPENSION','SUSPENTION','OINTMENT','DROPS','PATCH'];
+  const inventoryForm=forms.find(form=>inventory.includes(form)),rxForm=forms.find(form=>rx.includes(form));
+  return !inventoryForm||!rxForm||inventoryForm===rxForm||(inventoryForm.startsWith('SUSP')&&rxForm.startsWith('SUSP'));
+}
 function renderNearExpiry(){
   const c = document.getElementById('nearexpiry-content');
   if(!c) return;
@@ -4570,6 +4656,7 @@ function renderNearExpiry(){
   const critical = items.filter(i=>i.urgency.level==='critical');
   const warning = items.filter(i=>i.urgency.level==='warning');
   const watch = items.filter(i=>i.urgency.level==='watch');
+  const ok = items.filter(i=>i.urgency.level==='ok');
   const totalValue = items.reduce((s,i)=>s+i.total,0);
   const critValue = [...expired,...critical].reduce((s,i)=>s+i.total,0);
   const totalQty = items.reduce((s,i)=>s+i.qty,0);
@@ -4587,21 +4674,17 @@ function renderNearExpiry(){
   const crossRef = new Map();
   if(loaded.length){
     items.forEach(item=>{
-      const code = item.code;
-      const nameLC = item.name.replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim().toLowerCase();
-      const nameKey = nameLC.split(' ').slice(0,2).join(' ');
       let totalRx = 0, docs = new Set();
-      loaded.forEach(b=>{
-        const d = STATE.data[b];
+      if(loaded.includes(item.branch)){
+        const d=STATE.data[item.branch];
         d.drugs.forEach(drug=>{
-          const drugNameLC = drug.name.replace(/\u00a0/g,' ').replace(/\s+/g,' ').trim().toLowerCase();
-          if(nameKey && drugNameLC.includes(nameKey)){
+          if(nearExpiryDrugMatches(item.name,drug.name)){
             totalRx += drug.total;
-            drug.doctors.forEach(dr=>docs.add(dr.name));
+            drug.doctors.forEach(dr=>docs.add(entityKey(dr.name)));
           }
         });
-      });
-      if(totalRx>0) crossRef.set(code,{rx:totalRx, docs:docs.size});
+      }
+      if(totalRx>0)crossRef.set(item.branch+'|'+item.code,{rx:totalRx,docs:docs.size});
     });
   }
 
@@ -4610,7 +4693,8 @@ function renderNearExpiry(){
 
   // KPIs
   h += '<div class="card"><div class="card-head"><div class="card-title"><span class="dot" style="background:#dc2626"></span> ⏰ أصناف قرب انتهاء الصلاحية</div>'
-     + '<span style="font-size:11px;color:var(--text-dim);">بيانات مستخرجة من تقرير المخزون — ' + items.length + ' صنف عبر 3 فروع</span></div>';
+     + '<span style="font-size:11px;color:var(--text-dim);">'+escapeHtml(NEAR_EXPIRY_SOURCE.label)+' — تاريخ المصدر غير مسجل · ' + items.length + ' صنف</span></div>'
+     + '<div style="padding:10px 14px;margin-bottom:14px;border-radius:10px;background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.25);color:var(--amber-l);font-size:11px;">راجع الكميات مع نظام المخزون قبل اتخاذ قرار؛ هذه لقطة مضمّنة وليست مزامنة حية.</div>';
 
   h += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;">';
   h += '<div class="kpi-box-c" style="background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.25);"><div class="kpi-label" style="color:#dc2626;">حرج / منتهي</div><div class="kpi-num" style="color:#dc2626;">'+ fmt(expired.length+critical.length) +'</div></div>';
@@ -4619,6 +4703,7 @@ function renderNearExpiry(){
   h += '<div class="kpi-box-c" style="background:var(--bg-glass2);border:1px solid var(--border);"><div class="kpi-label" style="color:var(--text-dim);">إجمالي الأصناف</div><div class="kpi-num">'+ fmt(items.length) +'</div></div>';
   h += '<div class="kpi-box-c" style="background:var(--bg-glass2);border:1px solid var(--border);"><div class="kpi-label" style="color:var(--text-dim);">إجمالي الكمية</div><div class="kpi-num">'+ fmt(totalQty) +'</div></div>';
   h += '<div class="kpi-box-c" style="background:var(--bg-glass2);border:1px solid var(--border);"><div class="kpi-label" style="color:var(--text-dim);">القيمة الإجمالية</div><div class="kpi-num" style="font-size:20px;">'+ fmt(Math.round(totalValue)) +' <small style="font-size:11px;">ر.س</small></div></div>';
+  h += '<div class="kpi-box-c" style="background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.25);"><div class="kpi-label" style="color:#dc2626;">قيمة الحرج/المنتهي</div><div class="kpi-num" style="font-size:20px;color:#dc2626;">'+fmt(Math.round(critValue))+' <small style="font-size:11px;">ر.س</small></div></div>';
   h += '</div>';
 
   // Branch breakdown
@@ -4640,7 +4725,7 @@ function renderNearExpiry(){
   h += '<div class="card"><div class="card-head"><div class="card-title"><span class="dot" style="background:#d97706"></span> توزيع الأصناف حسب مستوى الخطورة</div></div>'
      + '<div style="display:flex;gap:12px;flex-wrap:wrap;">';
   const urgGroups = [
-    {items:expired, label:'منتهي', color:'#ef4444', icon:'❌'},{items:critical, label:'حرج', color:'#dc2626', icon:'🔴'},{items:warning, label:'تحذير', color:'#d97706', icon:'🟡'},{items:watch, label:'مراقبة', color:'#0284c7', icon:'🔵'},
+    {items:expired, label:'منتهي', color:'#ef4444', icon:'❌'},{items:critical, label:'حرج', color:'#dc2626', icon:'🔴'},{items:warning, label:'تحذير', color:'#d97706', icon:'🟡'},{items:watch, label:'مراقبة', color:'#0284c7', icon:'🔵'},{items:ok,label:'آمن',color:'#0d9488',icon:'🟢'},
   ];
   urgGroups.forEach(g=>{
     const pct = items.length ? Math.round(g.items.length/items.length*100) : 0;
@@ -4658,12 +4743,13 @@ function renderNearExpiry(){
   h += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">'
      + '<input class="input" id="neSearch" placeholder="🔎 ابحث بالاسم أو الكود..." style="flex:1;min-width:200px;" oninput="filterNearExpiry()">'
      + '<select class="select" id="neBranch" style="min-width:130px;" onchange="filterNearExpiry()"><option value="all">كل الفروع</option><option value="T1">التعاون الأول</option><option value="T2">التعاون الثاني</option><option value="T3">التعاون الثالث</option><option value="WH">المستودع الرئيسي</option></select>'
-     + '<select class="select" id="neUrgency" style="min-width:140px;" onchange="filterNearExpiry()"><option value="all">كل المستويات</option><option value="expired">منتهي</option><option value="critical">حرج</option><option value="warning">تحذير</option><option value="watch">مراقبة</option></select>'
+     + '<select class="select" id="neUrgency" style="min-width:140px;" onchange="filterNearExpiry()"><option value="all">كل المستويات</option><option value="expired">منتهي</option><option value="critical">حرج</option><option value="warning">تحذير</option><option value="watch">مراقبة</option><option value="ok">آمن</option></select>'
      + '</div>';
 
   h += '<div style="overflow-x:auto;"><table class="table"><thead><tr><th>#</th><th>الصنف</th><th>الفرع</th><th>تاريخ الانتهاء</th><th>الأيام المتبقية</th><th>الكمية</th><th>القيمة (ر.س)</th>';
-  if(loaded.length) h += '<th>كتابات الأطباء</th>';
-  h += '<th>الحالة</th></tr></thead><tbody id="neTbody"></tbody></table></div></div>';
+  if(loaded.length) h += '<th>كتابات نفس الفرع</th>';
+  h += '<th>الحالة</th></tr></thead><tbody id="neTbody"></tbody></table></div>'
+    + '<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px;"><span id="neCount" style="font-size:11px;color:var(--text-dim);"></span><button type="button" class="btn table-more" id="neMore" onclick="filterNearExpiry(true)">عرض المزيد</button></div></div>';
 
   c.innerHTML = h;
 
@@ -4671,19 +4757,21 @@ function renderNearExpiry(){
   window.__neItems = items;
   window.__neCrossRef = crossRef;
   window.__neHasRx = loaded.length > 0;
+  window.__neLimit = 200;
   filterNearExpiry();
 }
 
-function filterNearExpiry(){
+function filterNearExpiry(loadMore){
   const items = window.__neItems || [];
   const crossRef = window.__neCrossRef || new Map();
   const hasRx = window.__neHasRx || false;
-  const search = (document.getElementById('neSearch')?.value||'').toLowerCase();
+  const search=entityKey(document.getElementById('neSearch')?.value||'');
   const branch = document.getElementById('neBranch')?.value||'all';
   const urgency = document.getElementById('neUrgency')?.value||'all';
 
-  let filtered = items;
-  if(search) filtered = filtered.filter(i=>i.name.toLowerCase().includes(search)||i.code.includes(search));
+  window.__neLimit=loadMore?(window.__neLimit||200)+200:200;
+  let filtered = [...items];
+  if(search)filtered=filtered.filter(item=>entityKey(item.name).includes(search)||entityKey(item.code).includes(search));
   if(branch!=='all') filtered = filtered.filter(i=>i.branch===branch);
   if(urgency!=='all') filtered = filtered.filter(i=>i.urgency.level===urgency);
 
@@ -4692,20 +4780,24 @@ function filterNearExpiry(){
 
   if(!filtered.length){
     tbody.innerHTML = '<tr><td colspan="'+(hasRx?9:8)+'" style="text-align:center;padding:40px;color:var(--text-dim);">لا توجد نتائج</td></tr>';
+    const count=document.getElementById('neCount'),more=document.getElementById('neMore');
+    if(count)count.textContent='لا توجد نتائج';
+    if(more)more.hidden=true;
     return;
   }
 
   // Sort: expired first, then critical, then by days
   filtered.sort((a,b)=>a.urgency.days-b.urgency.days);
 
-  tbody.innerHTML = filtered.slice(0,200).map((item,i)=>{
+  const visible=filtered.slice(0,window.__neLimit);
+  tbody.innerHTML = visible.map((item,i)=>{
     const u = item.urgency;
     const daysText = u.days < 0 ? '<span style="color:#ef4444;font-weight:700;">منتهي منذ '+Math.abs(u.days)+' يوم</span>' :
                      '<span style="color:'+u.color+';font-weight:700;">'+u.days+' يوم</span>';
     const statusBadge = '<span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:'+u.bg+';color:'+u.color+';border:1px solid '+u.color+'22;">'+u.label.split(' ')[0]+'</span>';
     const branchColor = item.branch==='T1'?'#0369a1':(item.branch==='T2'?'#0d9488':(item.branch==='T3'?'#d97706':'#a78bfa'));
     const dateFormatted = item.expiry.split('-').reverse().join('/');
-    const rxCell = hasRx ? ('<td class="num">' + (crossRef.has(item.code) ? '<span style="color:var(--teal-l);font-weight:700;">'+fmt(crossRef.get(item.code).rx)+'</span> <span style="font-size:10px;color:var(--text-dim);">('+crossRef.get(item.code).docs+' طبيب)</span>' : '<span style="color:var(--text-dim);">—</span>') + '</td>') : '';
+    const crossKey=item.branch+'|'+item.code,rxCell=hasRx?('<td class="num">'+(crossRef.has(crossKey)?'<span style="color:var(--teal-l);font-weight:700;">'+fmt(crossRef.get(crossKey).rx)+'</span> <span style="font-size:10px;color:var(--text-dim);">('+crossRef.get(crossKey).docs+' طبيب)</span>':'<span style="color:var(--text-dim);">—</span>')+'</td>'):'';
     return '<tr>'
       + '<td style="color:var(--text-dim);font-size:11px;">'+(i+1)+'</td>'
       + '<td><strong style="font-size:12px;">'+escapeHtml(item.name.substring(0,55))+'</strong><div style="font-size:10px;color:var(--text-dim);margin-top:2px;">'+escapeHtml(item.code)+'</div></td>'
@@ -4718,6 +4810,9 @@ function filterNearExpiry(){
       + '<td>'+statusBadge+'</td>'
       + '</tr>';
   }).join('');
+  const count=document.getElementById('neCount'),more=document.getElementById('neMore');
+  if(count)count.textContent='عرض '+fmt(visible.length)+' من '+fmt(filtered.length)+' صنف';
+  if(more)more.hidden=visible.length>=filtered.length;
 }
 
   /* ══ خريطة البدائل المنافسة لكل منتج Private Label ══
@@ -5132,10 +5227,10 @@ function updateSummaryBar() {
   loaded.forEach(b => {
     const d = STATE.data[b];
     total += d.totalRows;
-    d.doctors.forEach(x => docs.add(x.name));
-    d.drugs.forEach(x => drugs.add(x.name));
-    d.sections.forEach(x => secs.add(x.name));
-    d.rows.forEach(r => { if(r.patient) pats.add(b+'_'+r.patient); });
+    d.doctors.forEach(x=>docs.add(entityKey(x.name)));
+    d.drugs.forEach(x=>drugs.add(entityKey(x.name)));
+    d.sections.forEach(x=>secs.add(entityKey(x.name)));
+    d.rows.forEach(r=>{const key=patientIdentityKey(b,r.patient);if(key)pats.add(key);});
   });
   const avg = docs.size ? Math.round(total / docs.size) : 0;
   document.getElementById('sb-total').textContent = fmt(total);
@@ -5150,6 +5245,10 @@ function updateSummaryBar() {
 /* ══ UPGRADE: GLOBAL SEARCH ══ */
 const gSearch = document.getElementById('globalSearch');
 const gDropdown = document.getElementById('searchDropdown');
+function setGlobalSearchOpen(open){
+  gDropdown.classList.toggle('open',!!open);
+  gSearch.setAttribute('aria-expanded',String(!!open));
+}
 
 let _searchTimer = null;
 let _globalSearchCache=null;
@@ -5158,11 +5257,18 @@ gSearch.addEventListener('input', () => {
   clearTimeout(_searchTimer);
   _searchTimer = setTimeout(runGlobalSearch, 200); /* debounce 200ms للسرعة */
 });
+gSearch.addEventListener('keydown',event=>{
+  if(event.key==='ArrowDown'){
+    const first=gDropdown.querySelector('.sr-item');if(first){event.preventDefault();first.focus();}
+  }else if(event.key==='Escape'){
+    setGlobalSearchOpen(false);
+  }
+});
 function runGlobalSearch() {
   const q=entityKey(gSearch.value);
-  if (!q || q.length < 2) { gDropdown.classList.remove('open'); return; }
+  if (!q || q.length < 2) { setGlobalSearchOpen(false); return; }
   const loaded = BRANCHES.filter(b => STATE.data[b]);
-  if (!loaded.length) { gDropdown.innerHTML = '<div class="sr-empty">ارفع ملف أولاً</div>'; gDropdown.classList.add('open'); return; }
+  if (!loaded.length) { gDropdown.innerHTML = '<div class="sr-empty">ارفع ملف أولاً</div>'; setGlobalSearchOpen(true); return; }
 
   if(!_globalSearchCache){
     const docMap=new Map(),drugMap=new Map();
@@ -5182,7 +5288,7 @@ function runGlobalSearch() {
   let html = '';
   if (matchDocs.length) {
     html += '<div class="sr-section">👨‍⚕️ الأطباء</div>';
-    html += matchDocs.map(d => `<div class="sr-item" data-type="doc" data-name="${escapeAttr(d.name)}">
+    html += matchDocs.map(d => `<div class="sr-item" role="option" tabindex="-1" data-type="doc" data-name="${escapeAttr(d.name)}">
       <div class="sr-item-icon" style="background:var(--bg-glass2);">👨‍⚕️</div>
       <div class="sr-item-name">${escapeHtml(d.name)}</div>
       <div class="sr-item-val">${escapeHtml(d.section||'')} · ${fmt(d.total)}</div>
@@ -5190,7 +5296,7 @@ function runGlobalSearch() {
   }
   if (matchDrugs.length) {
     html += '<div class="sr-section">💊 الأدوية</div>';
-    html += matchDrugs.map(d => `<div class="sr-item" data-type="drug" data-name="${escapeAttr(d.name)}">
+    html += matchDrugs.map(d => `<div class="sr-item" role="option" tabindex="-1" data-type="drug" data-name="${escapeAttr(d.name)}">
       <div class="sr-item-icon" style="background:var(--bg-glass2);">💊</div>
       <div class="sr-item-name">${escapeHtml(d.name)}</div>
       <div class="sr-item-val">${fmt(d.total)} كتابة</div>
@@ -5198,12 +5304,13 @@ function runGlobalSearch() {
   }
   if (!html) html = '<div class="sr-empty">لا توجد نتائج</div>';
   gDropdown.innerHTML = html;
-  gDropdown.classList.add('open');
+  setGlobalSearchOpen(true);
 
-  gDropdown.querySelectorAll('.sr-item').forEach(el => {
+  const resultItems=[...gDropdown.querySelectorAll('.sr-item')];
+  resultItems.forEach((el,index) => {
     el.onclick = () => {
       const type = el.dataset.type, name = el.dataset.name;
-      gDropdown.classList.remove('open'); gSearch.value = '';
+      setGlobalSearchOpen(false); gSearch.value = '';
       if (type === 'doc') {
         // navigate to docDash tab and show doctor
         window._docHub = 'dash';
@@ -5225,14 +5332,24 @@ function runGlobalSearch() {
         setTimeout(() => {
           const inp = document.getElementById('drugQuery');
           if (inp) { inp.value = name; inp.dispatchEvent(new Event('input')); }
+          showDrugMulti(name);
         }, 200);
       }
     };
+    el.addEventListener('keydown',event=>{
+      if(event.key==='Enter'||event.key===' '){event.preventDefault();el.click();return;}
+      if(event.key==='Escape'){event.preventDefault();setGlobalSearchOpen(false);gSearch.focus();return;}
+      if(event.key==='ArrowDown'||event.key==='ArrowUp'){
+        event.preventDefault();
+        const next=(index+(event.key==='ArrowDown'?1:-1)+resultItems.length)%resultItems.length;
+        resultItems[next].focus();
+      }
+    });
   });
 }
 
 document.addEventListener('click', e => {
-  if (!gSearch.contains(e.target) && !gDropdown.contains(e.target)) gDropdown.classList.remove('open');
+  if (!gSearch.contains(e.target) && !gDropdown.contains(e.target)) setGlobalSearchOpen(false);
 });
 
 /* ══ UPGRADE: BRANCH COMPARISON TAB ══ */
@@ -5525,18 +5642,21 @@ function periodOldestNewest(periods){
   const range=PharmaCore.selectPeriodRange(periods);
   return {oldest:range.oldest,newest:range.newest};
 }
+function datedComparisonPeriods(periods){
+  return PharmaCore.sortPeriods(periods).filter(period=>periodDateScore(period.label)>0);
+}
 
 function renderTimeComp() {
   const container = document.getElementById('timecomp-content');
-  const anyData = BRANCHES.some(b => STATE.periods[b].length >= 2);
+  const anyData=BRANCHES.some(b=>datedComparisonPeriods(STATE.periods[b]).length>=2);
   if (!anyData) {
     container.innerHTML = `<div class="card"><div class="pl-no-data"><span class="nd-ico">📅</span><h3>ارفع فترتين على الأقل</h3><p>اضغط "+ فترة" في أي فرع لإضافة فترة زمنية للمقارنة</p></div></div>`;
     return;
   }
 
-  const eligibleBranches = BRANCHES.filter(b => STATE.periods[b].length >= 2);
+  const eligibleBranches=BRANCHES.filter(b=>datedComparisonPeriods(STATE.periods[b]).length>=2);
   const branchOpts = eligibleBranches.map(b =>
-    `<option value="${b}">${BRANCH_LABELS[b]} (${STATE.periods[b].length} فترة)</option>`).join('');
+    `<option value="${b}">${BRANCH_LABELS[b]} (${datedComparisonPeriods(STATE.periods[b]).length} فترة مؤرخة)</option>`).join('');
 
   container.innerHTML = `
     <div class="card">
@@ -5563,22 +5683,13 @@ function renderTimeComp() {
 
   function refreshSelects() {
     const b = document.getElementById('tc-branch').value;
-    const periods = STATE.periods[b];
+    const periods=datedComparisonPeriods(STATE.periods[b]);
     const opts = periods.map((p,i) => `<option value="${i}">${escapeHtml(p.label)} (${fmt((p.rows||[]).length)})</option>`).join('');
     document.getElementById('tc-p1').innerHTML = opts;
     document.getElementById('tc-p2').innerHTML = '<option value="">— لا مقارنة —</option>' + opts;
     if (periods.length >= 2) {
-      // رتّب زمنياً: الأحدث = الحالية، الأقدم قبلها = المقارنة
-      const scored = periods.map((p,i)=>({i, score:periodDateScore(p.label)}));
-      const allHaveDates = scored.every(x=>x.score>0);
-      if(allHaveDates){
-        const sorted=[...scored].sort((a,b)=>b.score-a.score); // تنازلي: الأحدث أولاً
-        document.getElementById('tc-p1').value = String(sorted[0].i);   // الأحدث = الحالي
-        document.getElementById('tc-p2').value = String(sorted[1].i);   // الأقدم = المقارنة
-      } else {
-        document.getElementById('tc-p1').value = String(periods.length - 1);
-        document.getElementById('tc-p2').value = String(periods.length - 2);
-      }
+      document.getElementById('tc-p1').value=String(periods.length-1);
+      document.getElementById('tc-p2').value=String(periods.length-2);
     }
     buildTimeComp();
   }
@@ -5595,7 +5706,7 @@ function buildTimeComp() {
   const branch = branchEl.value;
   const i1 = parseInt(p1El.value);
   const i2Val = p2El.value;
-  const periods = STATE.periods[branch];
+  const periods=datedComparisonPeriods(STATE.periods[branch]);
   if (!periods.length) return;
 
   const p1 = periods[i1];
@@ -5636,14 +5747,14 @@ function buildTimeComp() {
   // Insights — new/lost/grew/dropped doctors
   let insightsHtml = '';
   if (d2) {
-    const d1DocMap = new Map(d1.doctors.map(d => [d.name, d.total]));
-    const d2DocMap = new Map(d2.doctors.map(d => [d.name, d.total]));
-    const newDocs  = d1.doctors.filter(d => !d2DocMap.has(d.name));
-    const lostDocs = d2.doctors.filter(d => !d1DocMap.has(d.name));
-    const grewDocs = d1.doctors.filter(d => d2DocMap.has(d.name) && d.total > d2DocMap.get(d.name))
-      .sort((a,b) => (b.total - d2DocMap.get(b.name)) - (a.total - d2DocMap.get(a.name)));
-    const droppedDocs = d1.doctors.filter(d => d2DocMap.has(d.name) && d.total < d2DocMap.get(d.name))
-      .sort((a,b) => (a.total - d2DocMap.get(a.name)) - (b.total - d2DocMap.get(b.name)));
+    const d1DocMap=new Map(d1.doctors.map(doctor=>[entityKey(doctor.name),doctor]));
+    const d2DocMap=new Map(d2.doctors.map(doctor=>[entityKey(doctor.name),doctor]));
+    const newDocs=d1.doctors.filter(doctor=>!d2DocMap.has(entityKey(doctor.name)));
+    const lostDocs=d2.doctors.filter(doctor=>!d1DocMap.has(entityKey(doctor.name)));
+    const grewDocs=d1.doctors.filter(doctor=>d2DocMap.has(entityKey(doctor.name))&&doctor.total>d2DocMap.get(entityKey(doctor.name)).total)
+      .sort((a,b)=>(b.total-d2DocMap.get(entityKey(b.name)).total)-(a.total-d2DocMap.get(entityKey(a.name)).total));
+    const droppedDocs=d1.doctors.filter(doctor=>d2DocMap.has(entityKey(doctor.name))&&doctor.total<d2DocMap.get(entityKey(doctor.name)).total)
+      .sort((a,b)=>(a.total-d2DocMap.get(entityKey(a.name)).total)-(b.total-d2DocMap.get(entityKey(b.name)).total));
 
     // Generate unique ID for each insight card for expand toggle
     let _icCardIdx = 0;
@@ -5680,18 +5791,18 @@ function buildTimeComp() {
 
     insightsHtml = `<div class="tc-insights">
       ${insightCard('✨ أطباء جدد', 'var(--teal)', newDocs, d => fmt(d.total))}
-      ${insightCard('⚠ أطباء توقفوا', 'var(--rose)', lostDocs, d => fmt(d2DocMap.get(d.name)||0))}
-      ${insightCard('📈 الأكثر نمواً', 'var(--violet-l)', grewDocs, d => '+'+fmt(d.total-(d2DocMap.get(d.name)||0)))}
-      ${insightCard('📉 الأكثر انخفاضاً', 'var(--amber-l)', droppedDocs, d => fmt(d.total-(d2DocMap.get(d.name)||0)))}
+      ${insightCard('⚠ أطباء توقفوا', 'var(--rose)', lostDocs, d => fmt(d.total))}
+      ${insightCard('📈 الأكثر نمواً', 'var(--violet-l)', grewDocs, d => '+'+fmt(d.total-(d2DocMap.get(entityKey(d.name))?.total||0)))}
+      ${insightCard('📉 الأكثر انخفاضاً', 'var(--amber-l)', droppedDocs, d => fmt(d.total-(d2DocMap.get(entityKey(d.name))?.total||0)))}
     </div>`;
   }
 
   // Doctors table
-  const allDocNames = new Set([...d1.doctors.map(d=>d.name), ...(d2?d2.doctors.map(d=>d.name):[])]);
-  const d1Map = new Map(d1.doctors.map(d=>[d.name,d]));
-  const d2Map = d2 ? new Map(d2.doctors.map(d=>[d.name,d])) : new Map();
-  const docRows = [...allDocNames]
-    .map(name => ({ name, d1: d1Map.get(name)||null, d2: d2Map.get(name)||null }))
+  const d1Map=new Map(d1.doctors.map(doctor=>[entityKey(doctor.name),doctor]));
+  const d2Map=d2?new Map(d2.doctors.map(doctor=>[entityKey(doctor.name),doctor])):new Map();
+  const allDocKeys=new Set([...d1Map.keys(),...d2Map.keys()]);
+  const docRows=[...allDocKeys]
+    .map(key=>{const current=d1Map.get(key)||null,previous=d2Map.get(key)||null;return{name:current?.name||previous?.name||key,d1:current,d2:previous};})
     .sort((a,b) => (b.d1?.total||0) - (a.d1?.total||0));
   const maxCur = Math.max(...docRows.map(r=>r.d1?.total||0), 1);
 
@@ -5736,11 +5847,11 @@ function buildTimeComp() {
     </div>`;
 
   // Drugs table
-  const allDrugNames = new Set([...d1.drugs.map(d=>d.name), ...(d2?d2.drugs.map(d=>d.name):[])]);
-  const d1DMap = new Map(d1.drugs.map(d=>[d.name,d]));
-  const d2DMap = d2 ? new Map(d2.drugs.map(d=>[d.name,d])) : new Map();
-  const drugRows2 = [...allDrugNames]
-    .map(name => ({ name, cur:(d1DMap.get(name)?.total||0), prev:(d2DMap.get(name)?.total||0) }))
+  const d1DMap=new Map(d1.drugs.map(drug=>[entityKey(drug.name),drug]));
+  const d2DMap=d2?new Map(d2.drugs.map(drug=>[entityKey(drug.name),drug])):new Map();
+  const allDrugKeys=new Set([...d1DMap.keys(),...d2DMap.keys()]);
+  const drugRows2=[...allDrugKeys]
+    .map(key=>{const current=d1DMap.get(key),previous=d2DMap.get(key);return{name:current?.name||previous?.name||key,cur:current?.total||0,prev:previous?.total||0};})
     .sort((a,b) => b.cur - a.cur).slice(0,30);
   const maxDrug = Math.max(...drugRows2.map(r=>r.cur),1);
 
@@ -5759,7 +5870,7 @@ function buildTimeComp() {
           const d = d2 ? delta(r.cur, r.prev) : null;
           const dn = d!==null?parseFloat(d):null;
           const tc = dn===null?'var(--text-muted)':dn>0?'var(--teal)':dn<0?'var(--rose)':'var(--text-muted)';
-          return `<tr class="clickable" onclick="showDrug('${escapeAttr(r.name)}')">
+          return `<tr class="clickable" onclick="showDrugFromPeriod('${escapeAttr(r.name)}','${branch}','${escapeAttr(String(p1.id))}')">
             <td>${rankBadge(i)}</td>
             <td style="font-weight:600;">${escapeHtml(r.name)}</td>
             <td class="num" style="color:${colC};">${r.cur>0?fmt(r.cur):'—'}</td>
@@ -5849,7 +5960,7 @@ document.addEventListener('keydown', e => {
   }
   // Escape → close transient navigation UI
   if (e.key==='Escape') {
-    document.getElementById('searchDropdown')?.classList.remove('open');
+    setGlobalSearchOpen(false);
     if(_mobileSidebarOpen)closeSidebar();
     return;
   }
@@ -5869,14 +5980,10 @@ document.addEventListener('keydown', e => {
   }
 });
 
-/* ── PRINT BUTTON ── */
-var _pb=document.getElementById('printBtn');if(_pb)_pb.onclick = () => window.print();
-
 /* ── EXPORT EXCEL ── */
 document.getElementById('exportXlsxBtn').onclick = () => {
   const loaded=BRANCHES.filter(b=>STATE.data[b]);
-  if(!loaded.length){toast('لا توجد بيانات للتصدير','error');return;}
-  if(!confirmSensitiveExport('ملف Excel')) return;
+  if(loaded.length&&!confirmSensitiveExport('ملف Excel'))return;
   const anonymize=getExportPrivacyMode()!=='full';
   showLoad();
   try{
@@ -5905,7 +6012,43 @@ document.getElementById('exportXlsxBtn').onclick = () => {
       pld.push([exportCell(prod.name),bt.T1,bt.T2,bt.T3,bt.T1+bt.T2+bt.T3]);
     });
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pld),'Private Label');
-    XLSX.writeFile(wb,'تقرير-كتابات-'+(anonymize?'مجهول-':'')+PharmaCore.localDateKey()+'.xlsx');
+    // PureHerb
+    const phd=[['المنتج','T1','T2','T3','الإجمالي']];
+    PUREHERB_PRODUCTS.forEach(prod=>{
+      const bt={T1:0,T2:0,T3:0};
+      loaded.forEach(b=>STATE.data[b].drugs.filter(x=>findPureHerbProduct(x.name)?.key===prod.key).forEach(item=>bt[b]+=item.total));
+      phd.push([exportCell(prod.name),bt.T1,bt.T2,bt.T3,bt.T1+bt.T2+bt.T3]);
+    });
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(phd),'PureHerb');
+    // Period history and extraction quality
+    const periodRows=[['الفرع','الفترة','عدد الصفوف','المصدر','الصفوف المرفوضة','الملف الرئيسي']];
+    BRANCHES.forEach(b=>(STATE.periods[b]||[]).forEach((period,index)=>periodRows.push([
+      BRANCH_LABELS[b],exportCell(sanitizedPeriodLabel(period.label,index,anonymize)),period.rows?.length||0,exportCell(period.parseMeta?.source||''),period.parseMeta?.rejectedRows||0,period._main?'نعم':'لا'
+    ])));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(periodRows),'الفترات');
+    const qualityRows=[['الفرع','النتيجة','المصدر','المقبول','المرفوض','المكرر','التحذيرات']];
+    loaded.forEach(b=>{const q=STATE.quality[b];if(q)qualityRows.push([BRANCH_LABELS[b],q.score,exportCell(q.source||''),q.acceptedRows||0,q.rejectedRows||0,q.duplicates||0,exportCell((q.warnings||[]).join(' | '))]);});
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(qualityRows),'جودة البيانات');
+    // Inventory and manual aged-medicine reports
+    const nearRows=[['المصدر','تاريخ المصدر','الكود','الصنف','الفرع','تاريخ الانتهاء','الكمية','التكلفة','القيمة']];
+    NEAR_EXPIRY_DATA.forEach(item=>nearRows.push([exportCell(NEAR_EXPIRY_SOURCE.label),NEAR_EXPIRY_SOURCE.asOf||'غير مسجل',exportCell(item.code),exportCell(item.name),item.branch,item.expiry,item.qty,item.cost,item.total]));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(nearRows),'قرب الانتهاء');
+    const agedRows=[['السنة','الشهر','T1','T2','T3','الإجمالي']];
+    ['y2025','y2026'].forEach(year=>AGEDMEDS_DATA.months.forEach((month,index)=>{
+      const t1=AGEDMEDS_DATA[year].T1[index]||0,t2=AGEDMEDS_DATA[year].T2[index]||0,t3=AGEDMEDS_DATA[year].T3[index]||0;
+      agedRows.push([year.slice(1),exportCell(month),t1,t2,t3,t1+t2+t3]);
+    }));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(agedRows),'الأدوية الآجلة');
+    const agedSpecialtyRows=[['التخصص','2025','2026']];
+    agedMedsSpecialtyNames().forEach(name=>{
+      const y25=AGEDMEDS_DATA.specialties2025.find(row=>sameEntity(row[0],name))?.[1]||0,y26=AGEDMEDS_DATA.specialties2026.find(row=>sameEntity(row[0],name))?.[1]||0;
+      agedSpecialtyRows.push([exportCell(name),y25,y26]);
+    });
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(agedSpecialtyRows),'الآجلة حسب التخصص');
+    const dailyRows=[['التاريخ','الفرع','الكتابات','الأطباء','الأدوية']];
+    Object.keys(DT.store||{}).sort().forEach(date=>BRANCHES.forEach(branch=>{const entry=DT.store[date]?.[branch];if(entry)dailyRows.push([date,BRANCH_LABELS[branch],entry.rows?.length||0,entry.docs||0,entry.drugs||0]);}));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(dailyRows),'المتابعة اليومية');
+    XLSX.writeFile(wb,'PharmaDash-'+(anonymize?'مجهول-':'')+PharmaCore.localDateKey()+'.xlsx');
     toast('تم التصدير إلى Excel ✓');
   }catch(e){toast('فشل التصدير: '+e.message,'error');}
   finally{hideLoad();}
@@ -6267,27 +6410,9 @@ function updateSidebarBadges() {
   const docBadge = document.getElementById('sb-badge-doctors');
   const drBadge  = document.getElementById('sb-badge-drugs');
   const secBadge = document.getElementById('sb-badge-sections');
-  const alertsBadge = document.getElementById('sb-badge-alerts');
   if (docBadge) docBadge.textContent = fmt(d.doctors.length);
   if (drBadge)  drBadge.textContent  = fmt(d.drugs.length);
   if (secBadge) secBadge.textContent = fmt(d.sections.length);
-  /* Count risk alerts */
-  if (alertsBadge) {
-    const loaded = BRANCHES.filter(b => STATE.data[b]);
-    const grandTotal = loaded.reduce((s,b) => s + STATE.data[b].totalRows, 0);
-    const allDocs = new Map();
-    loaded.forEach(b => STATE.data[b].doctors.forEach(doc => {
-      const ex = allDocs.get(doc.name);
-      if (!ex) allDocs.set(doc.name, doc.total);
-      else allDocs.set(doc.name, ex + doc.total);
-    }));
-    const docArr = [...allDocs.values()].sort((a,b)=>b-a);
-    const avg = docArr.length ? docArr.reduce((s,v)=>s+v,0)/docArr.length : 0;
-    const risks = docArr.filter(v => v > avg * 3 || (grandTotal && v/grandTotal > 0.15)).length;
-    alertsBadge.textContent = risks > 0 ? risks : '✓';
-    alertsBadge.style.background = risks > 0 ? 'rgba(220,38,38,.25)' : 'rgba(13,148,136,.2)';
-    alertsBadge.style.color = risks > 0 ? 'var(--rose-l)' : 'var(--teal-l)';
-  }
 }
 // Patch renderActive to also update sidebar badges
 const __origRenderActiveForBadges = renderActive;
@@ -6321,6 +6446,7 @@ async function unlockStoredData(){
   }catch(e){_dataUnlocked=false;console.error('restore after login',e);toast('تعذر استرجاع البيانات المحفوظة','error');}
 }
 function lockInMemoryData(){
+  cancelActiveUploads();
   _dataUnlocked=false;
   BRANCHES.forEach(b=>{STATE.data[b]=null;STATE.periods[b]=[];STATE.quality[b]=null;if(typeof _resetBranchUI==='function')_resetBranchUI(b);});
   STATE.active=null;
@@ -6589,11 +6715,15 @@ async function loadSavedData(){
   const hasPeriods=BRANCHES.some(b=>(snap.periods?.[b]||[]).length);
   return hasPeriods || (snap.dt && Object.keys(snap.dt).length>0);
 }
-function updateSavedBadge() { /* لا يوجد شارة في الواجهة الحالية */ }
 async function clearSavedData(){
   try{ if(!confirm('مسح كل البيانات المحفوظة نهائياً؟ لا يمكن التراجع.')) return; }catch(e){}
+  cancelActiveUploads();
   clearTimeout(_saveTimer);_saveTimer=null;_saveRevision++;
   try{await _saveChain.catch(()=>{});if(_idbAvailable())await _idbDelete(_IDB_KEY);}catch(e){console.error('clearSavedData',e);toast('تعذر مسح التخزين المحلي','error');return;}
+  [AGEDMEDS_KEY,PL_TARGET_KEY,PH_TARGET_KEY,PL_AMOUNT_KEY,'pharmdash_comp_custom_v1'].forEach(key=>{try{localStorage.removeItem(key);}catch(_){}});
+  AGEDMEDS_DATA=JSON.parse(JSON.stringify(AGEDMEDS_DEFAULT));
+  window._compCustom=null;
+  if(window.__PHARMADASH_SHARED__&&window.__EMBEDDED_RX__)window.__EMBEDDED_RX__.business={};
   BRANCHES.forEach(b=>{ STATE.data[b]=null; STATE.periods[b]=[]; STATE.quality[b]=null; _resetBranchUI(b); });
   if(typeof DT!=='undefined') DT.store={};
   STATE.active=null;
@@ -6616,7 +6746,6 @@ async function clearSavedData(){
 
 /* تخزين: { "YYYY-MM-DD": { T1: {rows,label,loaded}, T2:…, T3:… } } */
 var DT = { store: {}, view: 'daily', selDate: null, selWeek: null, selMonth: null };
-let _dtUploadVersion=0;
 
 /* ── helpers ── */
 function dtDateStr(d){ return PharmaCore.localDateKey(d||new Date()); }
@@ -6678,7 +6807,7 @@ function dtOpenUpload(dateStr){
     +'<option value="T2">التعاون الثاني (T2)</option>'
     +'<option value="T3">التعاون الثالث (T3)</option>'
     +'</select></div></div>'
-    +'<div id="dtDropZone" style="border:2px dashed var(--border);border-radius:var(--r-md);padding:32px;text-align:center;cursor:pointer;transition:.2s;background:var(--bg-glass);" '
+    +'<div id="dtDropZone" role="button" tabindex="0" aria-label="رفع ملف المتابعة اليومية" style="border:2px dashed var(--border);border-radius:var(--r-md);padding:32px;text-align:center;cursor:pointer;transition:.2s;background:var(--bg-glass);" '
     +'onclick="document.getElementById(\'dtFileInp\').click()" '
     +'ondragover="event.preventDefault();this.style.borderColor=\'var(--violet)\'" '
     +'ondragleave="this.style.borderColor=\'var(--border)\'" '
@@ -6706,15 +6835,15 @@ async function dtHandleFile(file){
   var res=document.getElementById('dtUpResult'), err=document.getElementById('dtUpError'),zone=document.getElementById('dtDropZone');
   if(!res||!err||!zone)return;
   res.style.display='none'; err.style.display='none';
-  zone.innerHTML='<div style="font-size:24px;animation:spin 1s linear infinite;display:inline-block;">⚙️</div><div style="margin-top:8px;font-size:12px;color:var(--text-dim);">جاري القراءة…</div>';
+  zone.innerHTML='<div style="font-size:24px;animation:spin 1s linear infinite;display:inline-block;">⚙️</div><div id="dtUploadProgress" role="status" aria-live="polite" style="margin-top:8px;font-size:12px;color:var(--text-dim);">جاري القراءة… 0%</div>';
   showLoad();
   try{
     var rows;const ext=validateUploadFile(file);
-    const parseOptions={shouldCancel:()=>version!==_dtUploadVersion||!res.isConnected};
+    const parseOptions={shouldCancel:()=>version!==_dtUploadVersion||!modalBg.classList.contains('show'),onProgress:progress=>{const el=document.getElementById('dtUploadProgress');if(el)el.textContent='جاري القراءة… '+Math.round(progress*100)+'%';}};
     if(ext==='.xlsx'||ext==='.xls') rows=await parseExcel(file,parseOptions);
     else if(ext==='.csv') rows=await parseCSV(file,parseOptions);
     else rows=await parsePDF(file,parseOptions);
-    if(version!==_dtUploadVersion||!res.isConnected)return;
+    if(version!==_dtUploadVersion||!modalBg.classList.contains('show'))return;
     validateParsedRows(rows);
     var ds=document.getElementById('dtDateInp').value || dtToday();
     var branch=document.getElementById('dtBranchSel').value;
@@ -6738,74 +6867,6 @@ async function dtHandleFile(file){
 }
 
 /* ── RENDER MAIN ── */
-
-function renderPLSales(){
-  var el=document.getElementById('plsales-content');
-  if(!el) return;
-  var loaded=BRANCHES.filter(b=>STATE.data[b]);
-  
-  /* ── Collect NOSTRI drugs from loaded branches ── */
-  var plNames=PRIVATE_LABEL.map(p=>p.name.toUpperCase());
-  var plData={};
-  PRIVATE_LABEL.forEach(p=>{plData[p.name]={name:p.name,form:p.form,cls:p.cls,total:0,branches:{},doctors:{}};});
-  
-  loaded.forEach(function(b){
-    var rows=STATE.data[b]?STATE.data[b].rows:[];
-    rows.forEach(function(r){
-      if(!r.service) return;
-      var svc=r.service.toUpperCase();
-      PRIVATE_LABEL.forEach(function(p){
-        if(svc.indexOf(p.name.toUpperCase())===0 || svc.indexOf(p.name.split(' ')[0].toUpperCase())===0){
-          plData[p.name].total++;
-          plData[p.name].branches[b]=(plData[p.name].branches[b]||0)+1;
-          if(r.doctor) plData[p.name].doctors[r.doctor]=(plData[p.name].doctors[r.doctor]||0)+1;
-        }
-      });
-    });
-  });
-  
-  var items=Object.values(plData).sort(function(a,b){return b.total-a.total;});
-  var grandTotal=items.reduce(function(s,i){return s+i.total;},0);
-  
-  if(!loaded.length){
-    el.innerHTML='<div class="card"><div style="text-align:center;padding:48px 24px;"><h3 style="color:var(--text-dim);margin-bottom:8px;">لا توجد بيانات — يرجى رفع ملف الفرع أولاً</h3><p style="color:var(--text-muted);font-size:13px;">ارفع ملف PDF أو Excel لفرع واحد على الأقل لرؤية منتجات NOSTRI</p></div></div>';
-    return;
-  }
-  
-  var html='<div class="card"><div class="card-head"><div class="card-title"><span class="dot" style="background:#14b8a6;"></span> منتجات NOSTRI — تحليل الكتابات</div></div><div class="card-body">';
-  
-  /* KPI Strip */
-  html+='<div class="sales-kpi-strip">';
-  html+='<div class="kpi"><div class="kpi-label">إجمالي الكتابات</div><div class="kpi-value" style="color:#14b8a6;">'+fmt(grandTotal)+'</div><div class="kpi-foot">من '+loaded.length+' فروع</div></div>';
-  html+='<div class="kpi"><div class="kpi-label">المنتجات النشطة</div><div class="kpi-value" style="color:#0d9488;">'+items.filter(function(i){return i.total>0;}).length+' / '+PRIVATE_LABEL.length+'</div><div class="kpi-foot">منتج له كتابات</div></div>';
-  var topDoc={};items.forEach(function(i){Object.keys(i.doctors).forEach(function(d){topDoc[d]=(topDoc[d]||0)+i.doctors[d];});});
-  var topDocs=Object.entries(topDoc).sort(function(a,b){return b[1]-a[1];});
-  html+='<div class="kpi"><div class="kpi-label">أعلى طبيب</div><div class="kpi-value" style="font-size:16px;color:var(--amber-l);">'+(topDocs.length?escapeHtml(topDocs[0][0].split(" ").slice(0,2).join(" ")):"—")+'</div><div class="kpi-foot">'+(topDocs.length?fmt(topDocs[0][1])+' كتابة':'')+'</div></div>';
-  html+='</div>';
-  
-  /* Product Bars */
-  var maxVal=items.length?items[0].total:1;
-  items.forEach(function(p){
-    var pct=maxVal?Math.round(p.total/maxVal*100):0;
-    html+='<div class="sales-bar-wrap"><div style="width:120px;font-size:13px;font-weight:700;text-align:right;color:var(--text);">'+escapeHtml(p.name)+'</div>';
-    html+='<div class="sales-bar-bg"><div class="sales-bar-fill" style="width:'+pct+'%;background:linear-gradient(90deg,#14b8a6,#14b8a6);"></div></div>';
-    html+='<div style="width:50px;text-align:left;font-size:14px;font-weight:800;color:var(--text);font-family:Inter,sans-serif;">'+fmt(p.total)+'</div></div>';
-  });
-  
-  /* Branch Breakdown */
-  if(loaded.length>1){
-    html+='<div style="margin-top:20px;"><div style="font-size:12px;font-weight:700;color:var(--text-dim);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">توزيع الفروع</div>';
-    html+='<div class="grid-3">';
-    loaded.forEach(function(b){
-      var bTotal=0;items.forEach(function(i){bTotal+=(i.branches[b]||0);});
-      html+='<div class="detail-card"><div class="l">'+BRANCH_LABELS[b]+'</div><div class="v" style="color:#14b8a6;">'+fmt(bTotal)+'</div></div>';
-    });
-    html+='</div></div>';
-  }
-  
-  html+='</div></div>';
-  el.innerHTML=html;
-}
 
 function renderDailyTrack(){
   var el=document.getElementById('dailytrack-content');
