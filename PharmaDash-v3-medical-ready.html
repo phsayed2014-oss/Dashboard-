@@ -3755,6 +3755,7 @@ function closeModal(){
   if(!modalBg.classList.contains('show'))return;
   modalBg.classList.remove('show');modalBg.setAttribute('aria-hidden','true');
   modalBg.querySelector('.modal')?.classList.remove('wide');
+  destroyChartsWithin(modalBg);
   setBlockingUi(false);
   if(_modalReturnFocus&&document.contains(_modalReturnFocus))_modalReturnFocus.focus();
   _modalReturnFocus=null;
@@ -3876,14 +3877,15 @@ async function handleFile(branch,file){
   showLoad();
   try{
     let rows;const ext=validateUploadFile(file);
+    const parseOptions={shouldCancel:()=>version!==_uploadVersion[branch],onProgress:p=>_upSet(branch,15+Math.round(p*40))};
     await _upTick(branch,15);
-    if(ext==='.xlsx'||ext==='.xls')rows=await parseExcel(file);
-    else if(ext==='.csv')rows=await parseCSV(file);
-    else rows=await parsePDF(file);
+    if(ext==='.xlsx'||ext==='.xls')rows=await parseExcel(file,parseOptions);
+    else if(ext==='.csv')rows=await parseCSV(file,parseOptions);
+    else rows=await parsePDF(file,parseOptions);
     if(version!==_uploadVersion[branch])return;
     await _upTick(branch,60);
     validateParsedRows(rows);
-    const prepared=await aggregateAsync(rows,p=>{const fill=document.getElementById('uprog-'+branch+'-fill'),pctEl=document.getElementById('uprog-'+branch+'-pct'),v=Math.round(60+p*25);if(fill)fill.style.width=v+'%';if(pctEl)pctEl.textContent=v+'%';});
+    const prepared=await aggregateAsync(rows,p=>_upSet(branch,60+Math.round(p*25)),()=>version!==_uploadVersion[branch]);
     if(version!==_uploadVersion[branch])return;
     await _upTick(branch,85);
     if(version!==_uploadVersion[branch])return;
@@ -3914,12 +3916,14 @@ function _upShow(b,name){
 }
 function _upTick(b,v){
   return new Promise(r=>{
-    const fill=document.getElementById('uprog-'+b+'-fill');
-    const pct=document.getElementById('uprog-'+b+'-pct');
-    if(fill) fill.style.width=v+'%';
-    if(pct) pct.textContent=v+'%';
+    _upSet(b,v);
     setTimeout(r,80);
   });
+}
+function _upSet(b,v){
+  const value=Math.max(0,Math.min(100,Math.round(v))),fill=document.getElementById('uprog-'+b+'-fill'),pct=document.getElementById('uprog-'+b+'-pct');
+  if(fill)fill.style.width=value+'%';
+  if(pct)pct.textContent=value+'%';
 }
 function _upHide(b){
   const el=document.getElementById('uprog-'+b);
@@ -3985,9 +3989,17 @@ function aggregate(rows){
   return finalizeAggregate(state,(rows||[]).length);
 }
 function yieldToBrowser(){return new Promise(resolve=>setTimeout(resolve,0));}
-async function aggregateAsync(rows,onProgress){
+function throwIfCancelled(options){
+  if(options?.shouldCancel?.()){
+    const error=new Error('تم إلغاء المعالجة لأن ملفاً أحدث بدأ');
+    error.name='AbortError';
+    throw error;
+  }
+}
+async function aggregateAsync(rows,onProgress,shouldCancel){
   const list=rows||[],state=createAggregateState(),chunk=5000;
   for(let start=0;start<list.length;start+=chunk){
+    if(shouldCancel?.())throwIfCancelled({shouldCancel});
     const end=Math.min(start+chunk,list.length);
     for(let i=start;i<end;i++)aggregateRow(state,list[i]);
     if(onProgress)onProgress(end/list.length);
@@ -3996,34 +4008,40 @@ async function aggregateAsync(rows,onProgress){
   return finalizeAggregate(state,list.length);
 }
 function attachParseMeta(rows,meta){Object.defineProperty(rows,'_parseMeta',{value:meta,enumerable:false,configurable:true});return rows;}
-async function normalizeParsedRows(rawRows,source){
+async function normalizeParsedRows(rawRows,source,options){
   if((rawRows||[]).length>PharmaCore.MAX_UPLOAD_ROWS)throw new Error('عدد الصفوف أكبر من الحد المدعوم (500,000 صف)');
   const sourceList=rawRows||[],rows=[],chunk=5000;
   for(let start=0;start<sourceList.length;start+=chunk){
+    throwIfCancelled(options);
     const end=Math.min(start+chunk,sourceList.length);
     for(let i=start;i<end;i++){const row=normalizeRow(sourceList[i]);if(row)rows.push(row);}
+    options?.onProgress?.(end/sourceList.length);
     if(end<sourceList.length)await yieldToBrowser();
   }
   return attachParseMeta(rows,{source,sourceRows:(rawRows||[]).length,rejectedRows:Math.max(0,(rawRows||[]).length-rows.length)});
 }
-async function parseExcel(file){
-  const buf=await file.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});
+async function parseExcel(file,options){
+  const buf=await file.arrayBuffer();throwIfCancelled(options);options?.onProgress?.(.08);await yieldToBrowser();
+  const wb=XLSX.read(buf,{type:'array'});throwIfCancelled(options);options?.onProgress?.(.28);
   if(!wb.SheetNames.length)throw new Error('ملف Excel لا يحتوي أوراقاً');
   const sh=wb.Sheets[wb.SheetNames[0]];
-  return normalizeParsedRows(XLSX.utils.sheet_to_json(sh,{defval:'',raw:true}),'excel');
+  const raw=XLSX.utils.sheet_to_json(sh,{defval:'',raw:true});options?.onProgress?.(.4);
+  return normalizeParsedRows(raw,'excel',{...options,onProgress:p=>options?.onProgress?.(.4+p*.6)});
 }
-async function parseCSV(file){
-  const text=await file.text();const wb=XLSX.read(text,{type:'string'});
+async function parseCSV(file,options){
+  const text=await file.text();throwIfCancelled(options);options?.onProgress?.(.1);await yieldToBrowser();
+  const wb=XLSX.read(text,{type:'string'});throwIfCancelled(options);options?.onProgress?.(.3);
   if(!wb.SheetNames.length)throw new Error('ملف CSV فارغ');
   const sh=wb.Sheets[wb.SheetNames[0]];
-  return normalizeParsedRows(XLSX.utils.sheet_to_json(sh,{defval:''}),'csv');
+  const raw=XLSX.utils.sheet_to_json(sh,{defval:''});options?.onProgress?.(.4);
+  return normalizeParsedRows(raw,'csv',{...options,onProgress:p=>options?.onProgress?.(.4+p*.6)});
 }
 function normalizeRow(r){return PharmaCore.normalizeRxRow(r);}
-async function parsePDF(file){
+async function parsePDF(file,options){
   if(!window.pdfjsLib) window.pdfjsLib=window['pdfjs-dist/build/pdf'];
   if(!window.pdfjsLib)throw new Error('تعذر تحميل قارئ PDF — تحقق من الاتصال ثم أعد المحاولة');
   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  const buf=await file.arrayBuffer();
+  const buf=await file.arrayBuffer();throwIfCancelled(options);
   const pdf=await pdfjsLib.getDocument({data:buf}).promise;
   if(pdf.numPages>PharmaCore.MAX_PDF_PAGES)throw new Error('عدد صفحات PDF أكبر من الحد المدعوم (1,000 صفحة)');
   const SEC_WORDS=['GASTROENTEROLOGY','ENDOCRINOLOGY','OPHTHALMOLOGY','OPTHALMOLOGY','RHEUMATOLOGY','PULMONOLOGY','PARACITIONER','DERMATOLOGY','ORTHOPAEDIC','PSYCHIATRY','OBSTETRICS','PAEDIATRIC','CARDIOLOGY','NEPHROLOGY','NEUROLOGY','ONCOLOGY','INTERNAL','UROLOGY','GENERAL','SURGERY','DENTAL','RADIOLOGY','GYNECOLOGY','MEDICINE','ENT'];
@@ -4078,6 +4096,7 @@ async function parsePDF(file){
   }
   const rows=[];let textItemCount=0,candidateRows=0,rejectedRows=0;
   for(let p=1;p<=pdf.numPages;p++){
+    throwIfCancelled(options);
     const page=await pdf.getPage(p);
     const c=await page.getTextContent();
     textItemCount+=c.items.length;
@@ -4094,13 +4113,17 @@ async function parsePDF(file){
       const lineText=ws.map(w=>w.s).join(' ');
       if(/Patient\s*(No|Name)|Medication Orders|From Date|To Date|Doctor Name|Service Name|Order No/i.test(lineText)) return;
       const patient=g(ws,cols.patient);
-      if(!/^[A-Z]?\d{4,12}$/i.test(patient.replace(/\s+/g,''))) return;
+      const patientToken=patient.replace(/\s+/g,'');
+      if(!/^[A-Z0-9-]{3,24}$/i.test(patientToken)){if(patientToken)rejectedRows++;return;}
       candidateRows++;
       const ds=splitDS(g(ws,cols.doctorSection));
       const row=normalizeRow({patient,patientName:g(ws,cols.patientName),service:g(ws,cols.service),
                   orderNo:g(ws,cols.orderNo),status:g(ws,cols.status),doctor:ds.doctor,section:ds.section});
       if(row)rows.push(row);else rejectedRows++;
+      if(rows.length>PharmaCore.MAX_UPLOAD_ROWS)throw new Error('عدد الصفوف أكبر من الحد المدعوم (500,000 صف)');
     });
+    options?.onProgress?.(p/pdf.numPages);
+    if(p<pdf.numPages&&p%3===0)await yieldToBrowser();
   }
   if(!textItemCount)throw new Error('ملف PDF عبارة عن صور ممسوحة ولا يحتوي نصاً قابلاً للاستخراج. استخدم PDF نصي من Oracle أو شغّل OCR أولاً');
   if(!rows.length) throw new Error('لم أتمكن من تحليل صفوف PDF — تأكد من وجود أعمدة Patient No وService Name وDoctor Name');
@@ -4766,6 +4789,7 @@ function renderOverviewCore(d){
   const _sc={};(d.rows||[]).forEach(r=>{const k=r.status||'غير محدد';_sc[k]=(_sc[k]||0)+1;});
   const _docsData=docsData, _drugsData=drugsData, _secsData=secsData, _scData=_sc;
   function _drawOverviewCharts(){
+    if((window._activePanel||'overview')!=='overview')return;
     ['cTopDocs','cTopDrugs','cSecs','cStatus'].forEach(id=>destroyChart(id));
     drawBar('cTopDocs',_docsData.map(x=>({label:x.name.slice(0,18),v:x.total})),'#6c63ff',i=>showDoctorMulti(_docsData[i].name));
     drawBar('cTopDrugs',_drugsData.map(x=>({label:x.name.slice(0,22),v:x.total})),'#00d4a0',i=>showDrug(_drugsData[i].name));
@@ -4782,7 +4806,18 @@ function renderOverviewCore(d){
 function chartColors(){const l=document.documentElement.getAttribute('data-theme')==='light';return{text:l?'#1e293b':'#94a3b8',grid:l?'rgba(30,41,59,0.07)':'rgba(255,255,255,0.05)',ttBg:l?'rgba(255,255,255,0.96)':'rgba(10,15,35,0.96)',ttFg:l?'#1e293b':'#e8eeff'};}
 if(window.Chart){try{Chart.defaults.font.family="'IBM Plex Sans Arabic',sans-serif";}catch(e){}}
 function tt(c){return{backgroundColor:c.ttBg,titleColor:c.ttFg,bodyColor:c.ttFg,borderColor:'rgba(108,99,255,0.35)',borderWidth:1,padding:12,titleFont:{family:'IBM Plex Sans Arabic',weight:'700'},bodyFont:{family:'IBM Plex Sans Arabic'},cornerRadius:10};}
-function destroyChart(n){if(charts[n]){charts[n].destroy();delete charts[n];}}
+function destroyChart(n){if(charts[n]){try{charts[n].destroy();}catch(e){}delete charts[n];}}
+function destroyChartsWithin(root){
+  Object.keys(charts).forEach(key=>{const canvas=charts[key]?.canvas;if(canvas&&root?.contains(canvas))destroyChart(key);});
+}
+function pruneChartsForPanel(panel){
+  Object.keys(charts).forEach(key=>{
+    const canvas=charts[key]?.canvas;
+    if(!canvas?.isConnected){destroyChart(key);return;}
+    const owner=canvas.closest?.('.panel');
+    if(owner&&owner.id!=='panel-'+panel)destroyChart(key);
+  });
+}
 function setChartSummary(canvas,data){
   const title=canvas.closest('.card')?.querySelector('.card-title')?.textContent?.trim()||'رسم بياني';
   const summary=(data||[]).slice(0,12).map(item=>item.label+': '+fmt(item.v)).join('، ');
@@ -5260,9 +5295,9 @@ function renderPLComparison(){
     if(detailRows.length){
       setTimeout(()=>{
         const cv=document.getElementById('plCompChart');
-        if(!cv||typeof Chart==='undefined') return;
-        try{ if(window._plCompChartObj) window._plCompChartObj.destroy(); }catch(e){}
-        window._plCompChartObj = new Chart(cv.getContext('2d'),{
+        if(!cv||typeof Chart==='undefined'||!cv.closest('.panel')?.classList.contains('active')) return;
+        destroyChart('plCompChart');
+        charts.plCompChart = new Chart(cv.getContext('2d'),{
           type:'bar',
           data:{
             labels: detailRows.map(p=>p.name),
@@ -8839,15 +8874,16 @@ async function handlePeriodFile(branch, label, file) {
   showLoad();
   try {
     let rows;const ext=validateUploadFile(file);
+    const parseOptions={shouldCancel:()=>version!==_uploadVersion[branch],onProgress:p=>_upSet(branch,15+Math.round(p*45))};
     await _upTick(branch,15);
-    if(ext==='.xlsx'||ext==='.xls')rows=await parseExcel(file);
-    else if(ext==='.csv')rows=await parseCSV(file);
-    else rows=await parsePDF(file);
+    if(ext==='.xlsx'||ext==='.xls')rows=await parseExcel(file,parseOptions);
+    else if(ext==='.csv')rows=await parseCSV(file,parseOptions);
+    else rows=await parsePDF(file,parseOptions);
     if(version!==_uploadVersion[branch])return;
     await _upTick(branch,65);
     validateParsedRows(rows);
     const id = Date.now();
-    const agg=await aggregateAsync(rows,p=>{const fill=document.getElementById('uprog-'+branch+'-fill'),pctEl=document.getElementById('uprog-'+branch+'-pct'),v=Math.round(65+p*25);if(fill)fill.style.width=v+'%';if(pctEl)pctEl.textContent=v+'%';});
+    const agg=await aggregateAsync(rows,p=>_upSet(branch,65+Math.round(p*25)),()=>version!==_uploadVersion[branch]);
     if(version!==_uploadVersion[branch])return;
     const existing=STATE.periods[branch].findIndex(p=>entityKey(p.label)===entityKey(label));
     const entry={id,label,rows,data:agg,parseMeta:rows._parseMeta||null};
@@ -9438,6 +9474,7 @@ function switchDocView(mode, btn) {
   const docs = window._v8DocsData || [];
   if (!wrap || !docs.length) return;
   if (mode === 'bubble') {
+    destroyChart('cTopDocs');
     wrap.innerHTML = `<div id="bubbleContainer" style="height:400px;position:relative;"></div>`;
     drawBubble('bubbleContainer', docs, d => showDoctorMulti(d.name));
   } else {
@@ -9628,6 +9665,7 @@ function sidebarNav(el, panel) {
   if (tabBtn){tabBtn.classList.add('active');tabBtn.setAttribute('aria-selected','true');}
   const panelEl = document.getElementById('panel-'+panel);
   if(panelEl){panelEl.classList.add('active');panelEl.setAttribute('aria-hidden','false');}
+  pruneChartsForPanel(panel);
   document.getElementById('branchPickerCard').style.display =
     (NO_BRANCH_TABS.includes(panel))?'none':'block';
   updateDataContext();
@@ -10119,9 +10157,10 @@ async function dtHandleFile(file){
   showLoad();
   try{
     var rows;const ext=validateUploadFile(file);
-    if(ext==='.xlsx'||ext==='.xls') rows=await parseExcel(file);
-    else if(ext==='.csv') rows=await parseCSV(file);
-    else rows=await parsePDF(file);
+    const parseOptions={shouldCancel:()=>version!==_dtUploadVersion||!res.isConnected};
+    if(ext==='.xlsx'||ext==='.xls') rows=await parseExcel(file,parseOptions);
+    else if(ext==='.csv') rows=await parseCSV(file,parseOptions);
+    else rows=await parsePDF(file,parseOptions);
     if(version!==_dtUploadVersion||!res.isConnected)return;
     validateParsedRows(rows);
     var ds=document.getElementById('dtDateInp').value || dtToday();
