@@ -10122,6 +10122,64 @@ function _idbPut(key,val){return _idbOpen().then(db=>new Promise((res,rej)=>{con
 function _idbGet(key){return _idbOpen().then(db=>new Promise((res,rej)=>{const tx=db.transaction(_IDB_STORE,'readonly'),r=tx.objectStore(_IDB_STORE).get(key);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error||new Error('فشل قراءة التخزين المحلي'));}));}
 function _idbDelete(key){return _idbOpen().then(db=>new Promise((res,rej)=>{const tx=db.transaction(_IDB_STORE,'readwrite');tx.objectStore(_IDB_STORE).delete(key);tx.oncomplete=()=>res();tx.onabort=tx.onerror=()=>rej(tx.error||new Error('فشل مسح التخزين المحلي'));}));}
 
+/* ══════════════════════════════════════════
+   تشفير اللقطة المحلية (at-rest) — AES-GCM 256
+   ── يُشتقّ المفتاح من عبارة تطبيق ثابتة + salt عشوائي لكل تثبيت،
+      فيبقى المفتاح مشتركاً بين حسابات الجهاز الثلاثة (elsayed/admin/manager)
+      وتبقى البيانات المحفوظة مقروءة لأي منها بعد الدخول.
+   ── يمنع قراءة بيانات المرضى مباشرةً من IndexedDB عبر DevTools أو من
+      نسخة احتياطية/تصدير للتخزين المحلي. المفتاح لا يُخزَّن أبداً؛
+      يُشتقّ في الذاكرة عند الحاجة فقط.
+   ── حدّ الحماية: العبارة مضمّنة في الكود، فهذا يحمي ضد الوصول إلى
+      المخزَّن (وهو التهديد المستهدف) لا ضد من يقرأ ملف HTML نفسه.
+   ── متوافق للخلف: اللقطات القديمة غير المشفّرة تُقرأ كما هي ثم يُعاد
+      تشفيرها عند الحفظ التالي.
+══════════════════════════════════════════ */
+const _IDB_SALT_KEY='enc_salt_v1';
+let _dataKeyPromise=null;
+function _cryptoReady(){ try{ return typeof crypto!=='undefined' && !!crypto.subtle; }catch(e){ return false; } }
+function _appEncSecret(){
+  /* عبارة التطبيق المشتركة — مُجمَّعة وقت التشغيل لتفادي الاستخراج بـ grep المباشر */
+  return ['pharmdash','v3','local','2026','a7f31c9d','shared-vault'].join('·');
+}
+async function _getEncSalt(){
+  let salt=null;
+  try{ const s=await _idbGet(_IDB_SALT_KEY); if(s) salt=(s instanceof Uint8Array)?s:new Uint8Array(s); }catch(_){ salt=null; }
+  if(!salt||salt.byteLength<16){
+    salt=crypto.getRandomValues(new Uint8Array(16));
+    await _idbPut(_IDB_SALT_KEY,salt);
+  }
+  return salt;
+}
+function _deriveDataKey(){
+  if(_dataKeyPromise) return _dataKeyPromise;
+  _dataKeyPromise=(async()=>{
+    const salt=await _getEncSalt();
+    const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(_appEncSecret()),'PBKDF2',false,['deriveKey']);
+    return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:150000,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+  })();
+  _dataKeyPromise.catch(()=>{_dataKeyPromise=null;});
+  return _dataKeyPromise;
+}
+async function _encryptSnapshot(sealed){
+  if(!_cryptoReady()) return sealed; /* بيئة بلا WebCrypto: تخزين كما هو (تراجُع آمن) */
+  const key=await _deriveDataKey();
+  const bytes=new TextEncoder().encode(JSON.stringify(sealed));
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,bytes);
+  return {__enc__:1,alg:'AES-GCM-256',kdf:'PBKDF2-SHA256',iv,ct:new Uint8Array(cipher)};
+}
+async function _decryptSnapshot(env){
+  if(!_cryptoReady()) throw new Error('فكّ التشفير يحتاج تشغيل اللوحة عبر HTTPS أو localhost');
+  const key=await _deriveDataKey();
+  const iv=(env.iv instanceof Uint8Array)?env.iv:new Uint8Array(env.iv);
+  const ct=(env.ct instanceof Uint8Array)?env.ct:new Uint8Array(env.ct);
+  let plain;
+  try{ plain=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ct); }
+  catch(e){ throw new Error('تعذّر فكّ تشفير البيانات المحفوظة — قد تكون تالفة أو مشفّرة بمفتاح مختلف'); }
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+
 /* لقطة قابلة للتخزين: الصفوف الخام فقط (الـ aggregate يُعاد حسابه عند الاستعادة) */
 function _buildSnapshot(){
   const snap={v:PharmaCore.SNAPSHOT_SCHEMA_VERSION,active:STATE.active,periods:{},dt:(typeof DT!=='undefined'&&DT.store)?DT.store:{}};
@@ -10169,7 +10227,8 @@ function _queueSnapshotWrite(revision){
     if(revision<_saveRevision)return;
     setSaveStatus('saving','جارٍ الحفظ');
     const sealed=await _sealSnapshot(snapshot);
-    await _idbPut(_IDB_KEY,sealed);
+    const payload=await _encryptSnapshot(sealed);
+    await _idbPut(_IDB_KEY,payload);
     if(revision===_saveRevision)setSaveStatus('saved','محفوظ');
     _saveErrorShown=false;
   }).catch(async e=>{
@@ -10232,6 +10291,7 @@ async function loadSavedData(){
   try{ snap=await _idbGet(_IDB_KEY); }catch(e){ console.error('loadSavedData',e); return false; }
   if(!snap) return false;
   try{
+    if(snap && snap.__enc__) snap=await _decryptSnapshot(snap); /* لقطة مشفّرة → فكّها قبل التحقق */
     if(!(await _verifySnapshotIntegrity(snap)))throw new Error('فشل التحقق من سلامة البيانات المحفوظة');
     snap=_migrateSnapshot(snap);
     const validation=PharmaCore.validateSnapshot(snap);
@@ -10252,7 +10312,7 @@ async function clearSavedData(){
   try{ if(!confirm('مسح كل البيانات المحفوظة نهائياً؟ لا يمكن التراجع.')) return; }catch(e){}
   cancelActiveUploads();
   clearTimeout(_saveTimer);_saveTimer=null;_saveRevision++;
-  try{await _saveChain.catch(()=>{});if(_idbAvailable())await _idbDelete(_IDB_KEY);}catch(e){console.error('clearSavedData',e);toast('تعذر مسح التخزين المحلي','error');return;}
+  try{await _saveChain.catch(()=>{});if(_idbAvailable()){await _idbDelete(_IDB_KEY);await _idbDelete(_IDB_SALT_KEY).catch(()=>{});_dataKeyPromise=null;}}catch(e){console.error('clearSavedData',e);toast('تعذر مسح التخزين المحلي','error');return;}
   [AGEDMEDS_KEY,PL_TARGET_KEY,PH_TARGET_KEY,PL_AMOUNT_KEY,'pharmdash_comp_custom_v1'].forEach(key=>{try{localStorage.removeItem(key);}catch(_){}});
   AGEDMEDS_DATA=JSON.parse(JSON.stringify(AGEDMEDS_DEFAULT));
   window._compCustom=null;
