@@ -89,8 +89,10 @@ test('creates an anonymized, credential-free share by default', async ({ page })
   await page.locator('#loginPass').fill('pharma2026');
   await page.locator('.login-btn').click();
   await page.evaluate((rows) => {
-    setBranchData('T1', rows, 'مايو 2026.xlsx', '');
+    const sensitiveRows = rows.map((row, index) => ({ ...row, nationalId: index === 0 ? 'SECRET-NATIONAL-ID' : '' }));
+    setBranchData('T1', sensitiveRows, 'Patient 1 private report.xlsx', '');
     STATE.active = 'T1';
+    localStorage.setItem('pharmdash_pl_target_v1', JSON.stringify({ target: 77777, achieved: 123, month: 'مايو 2026', currency: 'ريال' }));
   }, sampleRows);
 
   await expect(page.locator('#exportPrivacyMode')).toHaveValue('anonymized');
@@ -105,6 +107,8 @@ test('creates an anonymized, credential-free share by default', async ({ page })
   expect(html).not.toContain('Patient 1');
   expect(html).not.toContain('"patient":"P1"');
   expect(html).not.toContain('"orderNo":"O1"');
+  expect(html).not.toContain('SECRET-NATIONAL-ID');
+  expect(html).toContain('"target":77777');
 });
 
 test('escapes uploaded text in printable visit cards', async ({ page }) => {
@@ -152,30 +156,39 @@ test('extracts a text PDF and shows its data-quality report', async ({ page }) =
         body { margin: 0; font: 14px Arial; }
         span { position: absolute; white-space: nowrap; }
       </style>
-      <span style="left:20px;top:40px">Patient No</span>
+      <span style="left:20px;top:40px">Patient</span>
+      <span style="left:76px;top:40px">No</span>
       <span style="left:130px;top:40px">Patient Name</span>
       <span style="left:360px;top:40px">Service Name</span>
       <span style="left:680px;top:40px">Order No</span>
       <span style="left:780px;top:40px">Status</span>
-      <span style="left:880px;top:40px">Doctor Name</span>
+      <span style="left:880px;top:40px">Doctor</span>
+      <span style="left:940px;top:40px">Name</span>
       <span style="left:20px;top:100px">12345</span>
       <span style="left:130px;top:100px">Patient One</span>
-      <span style="left:360px;top:100px">ZINCOLIVE Syrup 150ML</span>
+      <span style="left:360px;top:100px">ZINCOLIVE Syrup</span>
       <span style="left:680px;top:100px">O100</span>
       <span style="left:780px;top:100px">Closed</span>
       <span style="left:880px;top:100px">Dr Ahmed ORTHOPAEDIC</span>
+      <span style="left:360px;top:116px">150ML</span>
       <span style="left:20px;top:160px">P12A</span>
       <span style="left:130px;top:160px">Patient Two</span>
       <span style="left:360px;top:160px">REFLEX MASSAGE Emulgel 100ML</span>
       <span style="left:680px;top:160px">O101</span>
       <span style="left:780px;top:160px">Closed</span>
       <span style="left:880px;top:160px">Dr Sara GENERAL</span>
+      <span style="left:20px;top:220px">١٢٣</span>
+      <span style="left:130px;top:220px">Patient Three</span>
+      <span style="left:360px;top:220px">Drug C</span>
+      <span style="left:680px;top:220px">O102</span>
+      <span style="left:780px;top:220px">Closed</span>
+      <span style="left:880px;top:220px">Dr Vincent</span>
     `);
     await pdfPage.pdf({ path: pdfPath, width: '1200px', height: '800px', printBackground: true });
     await pdfPage.close();
 
     await page.locator('#file-T1').setInputFiles(pdfPath);
-    await expect(page.locator('#meta-T1')).toContainText('2 وصفة');
+    await expect(page.locator('#meta-T1')).toContainText('3 وصفة');
     await expect(page.locator('#dataQualityPanel')).toBeVisible();
     await expect(page.locator('#dataQualityPanel')).toContainText('PDF');
 
@@ -192,6 +205,12 @@ test('extracts a text PDF and shows its data-quality report', async ({ page }) =
       service: 'REFLEX MASSAGE Emulgel 100ML',
       doctor: 'Dr Sara',
       section: 'GENERAL',
+    });
+    expect(extracted[2]).toMatchObject({
+      patient: '123',
+      service: 'Drug C',
+      doctor: 'Dr Vincent',
+      section: '',
     });
   } finally {
     await pdfPage.close().catch(() => {});
@@ -367,4 +386,147 @@ test('classifies doctor trends from the oldest and newest dated periods', async 
   await expect(page.locator('#trends-content')).toContainText('طبيب جديد');
   await expect(page.locator('#trends-content')).toContainText('Dr Lost');
   await expect(page.locator('#trends-content')).toContainText('متوقف');
+});
+
+test('does not commit a branch upload after data is locked', async ({ page }) => {
+  await page.locator('#loginUser').fill('elsayed');
+  await page.locator('#loginPass').fill('pharma2026');
+  await page.locator('.login-btn').click();
+
+  const result = await page.evaluate(async (rows) => {
+    const original = parseCSV;
+    let finish;
+    parseCSV = () => new Promise((resolve) => { finish = resolve; });
+    try {
+      const pending = handleFile('T1', { name: 'deferred.csv', size: 20 });
+      while (!finish) await new Promise((resolve) => setTimeout(resolve, 10));
+      lockInMemoryData();
+      finish(rows);
+      await pending;
+      return {
+        data: STATE.data.T1,
+        periods: STATE.periods.T1.length,
+      };
+    } finally {
+      parseCSV = original;
+    }
+  }, sampleRows);
+
+  expect(result).toEqual({ data: null, periods: 0 });
+});
+
+test('cancels a hidden daily upload when its modal closes', async ({ page }) => {
+  await page.locator('#loginUser').fill('elsayed');
+  await page.locator('#loginPass').fill('pharma2026');
+  await page.locator('.login-btn').click();
+
+  const stored = await page.evaluate(async (rows) => {
+    dtOpenUpload('2026-07-09');
+    const original = parseCSV;
+    let finish;
+    parseCSV = () => new Promise((resolve) => { finish = resolve; });
+    try {
+      const pending = dtHandleFile({ name: 'deferred.csv', size: 20 });
+      while (!finish) await new Promise((resolve) => setTimeout(resolve, 0));
+      closeModal();
+      finish(rows);
+      await pending;
+      return DT.store['2026-07-09'];
+    } finally {
+      parseCSV = original;
+    }
+  }, sampleRows);
+
+  expect(stored).toBeUndefined();
+});
+
+test('selects the workbook data sheet and preserves formatted patient IDs', async ({ page }) => {
+  const parsed = await page.evaluate(async () => {
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([['Cover'], ['Monthly report']]), 'Cover');
+    const data = XLSX.utils.aoa_to_sheet([
+      ['اسم الطبيب', 'اسم الخدمة', 'رقم المريض', 'رقم الطلب'],
+      ['د. أحمد', 'دواء أ', 123, 7],
+    ]);
+    data.C2.z = '000000';
+    data.D2.z = '0000';
+    XLSX.utils.book_append_sheet(workbook, data, 'Data');
+    const bytes = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' });
+    const rows = await parseExcel(new File([bytes], 'report.xlsx'));
+    return { row: rows[0], sheet: rows._parseMeta.sheet };
+  });
+
+  expect(parsed).toEqual({
+    row: {
+      doctor: 'د. أحمد',
+      service: 'دواء أ',
+      section: '',
+      patient: '000123',
+      patientName: '',
+      orderNo: '0007',
+      status: 'غير محدد',
+    },
+    sheet: 'Data',
+  });
+});
+
+test('opens a cross-branch drug result and keeps near-expiry demand branch-local', async ({ page }) => {
+  await page.locator('#loginUser').fill('elsayed');
+  await page.locator('#loginPass').fill('pharma2026');
+  await page.locator('.login-btn').click();
+  await page.evaluate(() => {
+    setBranchData('T1', [{ doctor: 'Dr One', service: 'Drug One', patient: '1', status: 'Closed' }], 'مايو 2026.xlsx', '');
+    setBranchData('T2', [{ doctor: 'Dr Two', service: 'BLUM-D 50000 IU TABLET 20 TABLET BOX', patient: '2', status: 'Closed' }], 'مايو 2026.xlsx', '');
+    STATE.active = 'T1';
+    renderAll();
+  });
+
+  await page.locator('#globalSearch').fill('BLUM');
+  await expect(page.locator('.sr-item[data-type="drug"]')).toBeVisible();
+  await page.locator('.sr-item[data-type="drug"]').click();
+  await expect(page.locator('#modalBg')).toHaveClass(/show/);
+  await expect(page.locator('#modalBody')).toContainText('كل الفروع');
+  await page.locator('#modalClose').click();
+
+  const demand = await page.evaluate(() => {
+    renderNearExpiry();
+    const absent = window.__neCrossRef.has('T1|1-03-187-229');
+    setBranchData('T1', [{ doctor: 'Dr One', service: 'BLUM-D 50000 IU TABLET 20 TABLET BOX', patient: '3', status: 'Closed' }], 'يونيو 2026.xlsx', '');
+    renderNearExpiry();
+    return { absent, present: window.__neCrossRef.has('T1|1-03-187-229') };
+  });
+  expect(demand).toEqual({ absent: false, present: true });
+});
+
+test('exports manual reports without Rx data and clears their saved edits', async ({ page }) => {
+  await page.locator('#loginUser').fill('elsayed');
+  await page.locator('#loginPass').fill('pharma2026');
+  await page.locator('.login-btn').click();
+  await page.evaluate(() => {
+    localStorage.setItem('pharmdash_agedmeds_v1', JSON.stringify({
+      months: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
+      y2025: { T1: [1, 1, 1, 1, 1, 1], T2: [1, 1, 1, 1, 1, 1], T3: [1, 1, 1, 1, 1, 1] },
+      y2026: { T1: [2, 2, 2, 2, 2, 2], T2: [2, 2, 2, 2, 2, 2], T3: [2, 2, 2, 2, 2, 2] },
+      specialties2025: [['الأسنان', 10]],
+      specialties2026: [['المسالك', 20]],
+      june2026Confirmed: 6,
+    }));
+    localStorage.setItem('pharmdash_pl_target_v1', JSON.stringify({ target: 99, achieved: 1, month: 'اختبار', currency: 'ريال' }));
+  });
+
+  await page.locator('[data-tab="agedmeds"]').click();
+  await expect(page.locator('#agedmeds-content')).toContainText('الأسنان');
+  await expect(page.locator('#agedmeds-content')).toContainText('المسالك');
+  const downloadPromise = page.waitForEvent('download');
+  await page.locator('#exportXlsxBtn').click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toContain('PharmaDash-');
+
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.getByTitle('مسح البيانات المحفوظة').click();
+  const cleared = await page.evaluate(() => ({
+    aged: localStorage.getItem('pharmdash_agedmeds_v1'),
+    target: localStorage.getItem('pharmdash_pl_target_v1'),
+  }));
+  expect(cleared).toEqual({ aged: null, target: null });
 });

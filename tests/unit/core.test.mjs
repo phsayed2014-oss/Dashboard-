@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   MAX_UPLOAD_ROWS,
+  countRxHeaderMatches,
   escapeSpreadsheetFormula,
   assessRows,
   deduplicateExactRows,
@@ -12,6 +13,7 @@ import {
   periodDateScore,
   sanitizeExportRow,
   selectPeriodRange,
+  sortPeriods,
   validateSnapshot,
 } from '../../src/core/index.mjs';
 
@@ -43,6 +45,15 @@ describe('normalization', () => {
       status: 'Closed',
     });
   });
+
+  it('recognizes Arabic order headers and workbook header rows', () => {
+    expect(countRxHeaderMatches(['اسم الطبيب', 'اسم الخدمة', 'رقم الطلب'])).toBe(3);
+    expect(normalizeRxRow({
+      'اسم الطبيب': 'د. أحمد',
+      'اسم الخدمة': 'دواء',
+      'رقم الطلب': '0007',
+    })?.orderNo).toBe('0007');
+  });
 });
 
 describe('period ordering', () => {
@@ -70,6 +81,7 @@ describe('period ordering', () => {
     const range = selectPeriodRange([june, upload, april]);
     expect(range.oldest).toBe(april);
     expect(range.newest).toBe(june);
+    expect(sortPeriods([upload, june, april])).toEqual([april, june, upload]);
   });
 });
 
@@ -91,6 +103,20 @@ describe('privacy and export safety', () => {
       patient: '',
       patientName: '',
       orderNo: '',
+    });
+  });
+
+  it('drops unknown source fields from anonymized rows', () => {
+    expect(sanitizeExportRow({
+      doctor: 'Dr A',
+      service: 'Drug A',
+      patient: '123',
+      nationalId: 'SECRET-ID',
+      mobile: '0500000000',
+    }, { anonymize: true })).toEqual({
+      doctor: 'Dr A',
+      service: 'Drug A',
+      patient: '',
     });
   });
 });
