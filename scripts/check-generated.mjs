@@ -19,7 +19,10 @@ if (files[0].includes('/*__PHARMADASH_STYLES__*/') || files[0].includes('/*__PHA
 }
 
 const inlineScripts = [...files[0].matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
-if (inlineScripts.length < 2) throw new Error(`Expected at least two inline scripts, got ${inlineScripts.length}`);
+if (inlineScripts.length !== 1) throw new Error(`Expected one bundled inline script, got ${inlineScripts.length}`);
+for (const marker of ['id="mainContent"', 'id="dataContext"', 'id="skipLink"']) {
+  if (!files[0].includes(marker)) throw new Error(`Generated dashboard is missing ${marker}`);
+}
 
 const temp = await mkdtemp(join(tmpdir(), 'pharmadash-check-'));
 try {

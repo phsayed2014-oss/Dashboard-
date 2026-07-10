@@ -229,6 +229,8 @@
 
 /* ── RESET & BASE ── */
 *{margin:0;padding:0;box-sizing:border-box}
+.skip-link{position:fixed;top:8px;right:12px;z-index:20000;padding:10px 14px;border-radius:8px;background:#fff;color:#111;font-weight:800;transform:translateY(-160%);transition:transform .2s;}
+.skip-link:focus{transform:translateY(0);}
 html,body{height:100%;}
 body{
   font-family:'IBM Plex Sans Arabic',sans-serif;
@@ -300,6 +302,7 @@ body::before{
 .brand .sub .dot-sep{width:3px;height:3px;border-radius:50%;background:var(--text-muted);display:inline-block}
 .actions{display:flex;gap:9px;flex-wrap:wrap}
 .privacy-select{min-width:132px;max-width:160px;padding:8px 10px;font-size:11px;font-weight:700;}
+.privacy-select.sensitive{color:var(--rose-l);border-color:rgba(220,38,38,.45);background:rgba(220,38,38,.1);}
 .save-status{display:inline-flex;align-items:center;gap:5px;padding:7px 10px;border-radius:999px;font-size:10px;font-weight:800;color:var(--text-muted);background:var(--bg-glass2);border:1px solid var(--border);}
 .save-status::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;}
 .save-status[data-state="pending"]{color:var(--amber-l);}
@@ -307,6 +310,20 @@ body::before{
 .save-status[data-state="saving"]::before{animation:pulse 1s infinite;}
 .save-status[data-state="saved"]{color:var(--teal-l);}
 .save-status[data-state="error"]{color:var(--rose-l);}
+.data-context{display:inline-flex;align-items:center;max-width:240px;padding:7px 10px;border-radius:999px;font-size:10px;font-weight:700;color:var(--text-dim);background:var(--bg-glass2);border:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+@media(max-width:900px){
+  .new-topbar{flex-wrap:wrap;}
+  .new-topbar .actions{width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px;}
+  .data-context{max-width:200px;}
+}
+@media(max-width:560px){
+  .privacy-select{min-width:128px;}
+  .save-status,.data-context{font-size:9px;}
+  .new-topbar .actions>.btn,.new-topbar .actions>.select{min-height:40px;}
+}
+@media(pointer:coarse){
+  button,.btn,.sb-nav-item,input,select{min-height:44px;}
+}
 
 /* ── BUTTONS ── */
 .btn{
@@ -1056,6 +1073,7 @@ html{scroll-behavior:smooth;}
   border-radius:var(--r-xl);
   padding:28px 26px;
   width:min(360px,92vw);
+  max-height:90vh;overflow-y:auto;
   box-shadow:var(--shadow-lg);
   animation:panelIn .25s cubic-bezier(0.34,1.56,0.64,1);
 }
@@ -1431,9 +1449,10 @@ html{scroll-behavior:smooth;}
   cursor:pointer;transition:all var(--t);
   color:var(--sidebar-text);font-size:13px;font-weight:600;
   border:1px solid transparent;
-  position:relative;
+  position:relative;width:calc(100% - 16px);background:none;text-align:right;font-family:inherit;
 }
 .sb-nav-item:hover{background:var(--sidebar-hover);color:#fff;}
+.sb-nav-item:focus-visible{outline:2px solid #a5b4fc;outline-offset:2px;}
 .sb-nav-item.active{
   background:linear-gradient(135deg,rgba(37,99,235,.22),rgba(37,99,235,.10));
   color:#a5b4fc;border-color:rgba(37,99,235,.3);
@@ -2853,21 +2872,22 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 </style>
 </head>
 <body>
+<a class="skip-link" id="skipLink" href="#mainContent" tabindex="-1">تخطي إلى المحتوى الرئيسي</a>
 <!-- ══════════════ LOGIN SCREEN ══════════════ -->
-<div id="loginScreen">
-  <div class="login-box">
+<div id="loginScreen" role="dialog" aria-modal="true" aria-label="تسجيل الدخول">
+  <div class="login-box" aria-labelledby="loginTitle">
     <div class="login-logo">
       <div class="login-logo-icon">PD</div>
-      <h1>PharmaDash</h1>
+      <h1 id="loginTitle">PharmaDash</h1>
       <p>الإدارة التجارية — قطاع الصيدليات</p>
     </div>
-    <div class="login-error" id="loginError">❌ اسم المستخدم أو كلمة المرور غلط</div>
+    <div class="login-error" id="loginError" role="alert" aria-live="assertive">اسم المستخدم أو كلمة المرور غير صحيحة</div>
     <div class="login-field">
-      <label>اسم المستخدم</label>
+      <label for="loginUser">اسم المستخدم</label>
       <input class="login-input" id="loginUser" type="text" placeholder="أدخل اسم المستخدم" autocomplete="username" />
     </div>
     <div class="login-field">
-      <label>كلمة المرور</label>
+      <label for="loginPass">كلمة المرور</label>
       <input class="login-input" id="loginPass" type="password" placeholder="أدخل كلمة المرور" autocomplete="current-password" />
     </div>
     <button class="login-btn" onclick="doLogin()">تسجيل الدخول</button>
@@ -2880,12 +2900,12 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 <!-- ══════════════ END LOGIN ══════════════ -->
 <canvas id="bgCanvas"></canvas>
 <!-- Mobile overlay -->
-<div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+<div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()" aria-hidden="true"></div>
 
 <div class="app-shell">
 
 <!-- ══════════════ SIDEBAR ══════════════ -->
-<aside class="sidebar" id="mainSidebar">
+<aside class="sidebar" id="mainSidebar" aria-label="الشريط الجانبي" inert>
 
   <!-- Logo -->
   <div class="sb-logo">
@@ -2897,65 +2917,65 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
   </div>
 
   <!-- Nav -->
-  <nav style="flex:1;padding-bottom:8px;">
+  <nav style="flex:1;padding-bottom:8px;" aria-label="التنقل الرئيسي">
 
     <!-- ═══ الرئيسية ═══ -->
-    <div class="sb-nav-item active" data-tab="overview" onclick="sidebarNav(this,'overview')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>      <span>نظرة عامة</span>
-    </div>
-    <div class="sb-nav-item" data-tab="visitcard" onclick="sidebarNav(this,'visitcard')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><line x1="13" y1="9" x2="19" y2="9"/><line x1="13" y1="13" x2="19" y2="13"/></svg></span>      <span>بطاقة زيارة طبيب</span>
-    </div>
-    <div class="sb-nav-item" data-tab="dailytrack" onclick="sidebarNav(this,'dailytrack')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><polyline points="8 14 11 17 16 12"/></svg></span>      <span>متابعة يومية</span>
-    </div>
+    <button type="button" class="sb-nav-item active" data-tab="overview" onclick="sidebarNav(this,'overview')" aria-current="page"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>      <span>نظرة عامة</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="visitcard" onclick="sidebarNav(this,'visitcard')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><line x1="13" y1="9" x2="19" y2="9"/><line x1="13" y1="13" x2="19" y2="13"/></svg></span>      <span>بطاقة زيارة طبيب</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="dailytrack" onclick="sidebarNav(this,'dailytrack')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><polyline points="8 14 11 17 16 12"/></svg></span>      <span>متابعة يومية</span>
+    </button>
 
     <!-- ═══ المستهدفات ═══ -->
     <div class="sb-sec-label">المستهدفات</div>
-    <div class="sb-nav-item" data-tab="pureherb" onclick="sidebarNav(this,'pureherb')" style="border-right:2px solid rgba(124,58,237,.5);"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 20 12 12 22 4 12"/><line x1="12" y1="6" x2="12" y2="18"/></svg></span>      <span>PureHerb</span>
-    </div>
-    <div class="sb-nav-item" data-tab="featured" onclick="sidebarNav(this,'featured')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="8" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/></svg></span>      <span>NOSTRI</span>
-    </div>
-    <div class="sb-nav-item" data-tab="nearexpiry" onclick="sidebarNav(this,'nearexpiry')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 15 15"/><line x1="9" y1="2" x2="15" y2="2"/></svg></span>      <span>أصناف قرب الانتهاء</span>
-    </div>
-    <div class="sb-nav-item" data-tab="targeted" onclick="sidebarNav(this,'targeted')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 8 12 3 21 8 21 16 12 21 3 16"/><polyline points="3 8 12 13 21 8"/><line x1="12" y1="13" x2="12" y2="21"/></svg></span>      <span>أصناف أوفرستوك</span>
-    </div>
-    <div class="sb-nav-item" data-tab="targettrack" onclick="sidebarNav(this,'targettrack')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><polyline points="4 6 5 7 7 5"/><polyline points="4 12 5 13 7 11"/><polyline points="4 18 5 19 7 17"/></svg></span>      <span>متابعة أصناف الأوفرستوك</span>
-    </div>
+    <button type="button" class="sb-nav-item" data-tab="pureherb" onclick="sidebarNav(this,'pureherb')" style="border-right:2px solid rgba(124,58,237,.5);"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 20 12 12 22 4 12"/><line x1="12" y1="6" x2="12" y2="18"/></svg></span>      <span>PureHerb</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="featured" onclick="sidebarNav(this,'featured')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="8" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/></svg></span>      <span>NOSTRI</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="nearexpiry" onclick="sidebarNav(this,'nearexpiry')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 15 15"/><line x1="9" y1="2" x2="15" y2="2"/></svg></span>      <span>أصناف قرب الانتهاء</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="targeted" onclick="sidebarNav(this,'targeted')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 8 12 3 21 8 21 16 12 21 3 16"/><polyline points="3 8 12 13 21 8"/><line x1="12" y1="13" x2="12" y2="21"/></svg></span>      <span>أصناف أوفرستوك</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="targettrack" onclick="sidebarNav(this,'targettrack')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><polyline points="4 6 5 7 7 5"/><polyline points="4 12 5 13 7 11"/><polyline points="4 18 5 19 7 17"/></svg></span>      <span>متابعة أصناف الأوفرستوك</span>
+    </button>
 
     <!-- ═══ تحليلات ═══ -->
     <div class="sb-sec-label">تحليلات</div>
-    <div class="sb-nav-item" data-tab="doctors" onclick="sidebarNav(this,'doctors')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><rect x="6" y="14" width="12" height="9" rx="6"/></svg></span>      <span>الأطباء</span>
+    <button type="button" class="sb-nav-item" data-tab="doctors" onclick="sidebarNav(this,'doctors')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><rect x="6" y="14" width="12" height="9" rx="6"/></svg></span>      <span>الأطباء</span>
       <span class="sb-badge" id="sb-badge-doctors">0</span>
-    </div>
-    <div class="sb-nav-item" data-tab="drugs" onclick="sidebarNav(this,'drugs')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="8" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/></svg></span>      <span>الأدوية</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="drugs" onclick="sidebarNav(this,'drugs')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="8" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/></svg></span>      <span>الأدوية</span>
       <span class="sb-badge" id="sb-badge-drugs">0</span>
-    </div>
-    <div class="sb-nav-item" data-tab="sections" onclick="sidebarNav(this,'sections')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 8 12 14 2 8"/><polyline points="2 14 12 20 22 14"/></svg></span>      <span>الأقسام</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="sections" onclick="sidebarNav(this,'sections')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 8 12 14 2 8"/><polyline points="2 14 12 20 22 14"/></svg></span>      <span>الأقسام</span>
       <span class="sb-badge" id="sb-badge-sections">0</span>
-    </div>
-    <div class="sb-nav-item" data-tab="drugintel" onclick="sidebarNav(this,'drugintel')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg></span>      <span>بحث الأدوية</span>
-    </div>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="drugintel" onclick="sidebarNav(this,'drugintel')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg></span>      <span>بحث الأدوية</span>
+    </button>
 
     <!-- ═══ تحليلات متقدمة ═══ -->
     <div class="sb-sec-label">تحليلات متقدمة</div>
-    <div class="sb-nav-item" data-tab="trends" onclick="sidebarNav(this,'trends')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/></svg></span>      <span>اتجاه الأطباء</span>
-    </div>
-    <div class="sb-nav-item" data-tab="loyalty" onclick="sidebarNav(this,'loyalty')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="9" r="3.5"/><circle cx="15.5" cy="9" r="3.5"/><polygon points="4 10 12 21 20 10"/></svg></span>      <span>ولاء الأطباء</span>
-    </div>
-    <div class="sb-nav-item" data-tab="pareto" onclick="sidebarNav(this,'pareto')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="12"/><line x1="12" y1="12" x2="19" y2="7"/></svg></span>      <span>باريتو 80/20</span>
-    </div>
-    <div class="sb-nav-item" data-tab="basket" onclick="sidebarNav(this,'basket')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></span>      <span>تركّز الأطباء</span>
-    </div>
+    <button type="button" class="sb-nav-item" data-tab="trends" onclick="sidebarNav(this,'trends')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/></svg></span>      <span>اتجاه الأطباء</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="loyalty" onclick="sidebarNav(this,'loyalty')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="9" r="3.5"/><circle cx="15.5" cy="9" r="3.5"/><polygon points="4 10 12 21 20 10"/></svg></span>      <span>ولاء الأطباء</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="pareto" onclick="sidebarNav(this,'pareto')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="12"/><line x1="12" y1="12" x2="19" y2="7"/></svg></span>      <span>باريتو 80/20</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="basket" onclick="sidebarNav(this,'basket')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></span>      <span>تركّز الأطباء</span>
+    </button>
 
     <!-- ═══ تحليل مالي ═══ -->
     <div class="sb-sec-label">تحليل مالي</div>
-    <div class="sb-nav-item" data-tab="agedmeds" onclick="sidebarNav(this,'agedmeds')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>      <span>الأدوية آجل</span>
-    </div>
+    <button type="button" class="sb-nav-item" data-tab="agedmeds" onclick="sidebarNav(this,'agedmeds')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>      <span>الأدوية آجل</span>
+    </button>
 
     <!-- ═══ مقارنات ═══ -->
     <div class="sb-sec-label">مقارنات</div>
-    <div class="sb-nav-item" data-tab="compare" onclick="sidebarNav(this,'compare')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg></span>      <span>مقارنة الفروع</span>
-    </div>
-    <div class="sb-nav-item" data-tab="timecomp" onclick="sidebarNav(this,'timecomp')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 15 15"/><line x1="5" y1="3" x2="3" y2="5"/><line x1="19" y1="3" x2="21" y2="5"/></svg></span>      <span>مقارنة زمنية</span>
-    </div>
+    <button type="button" class="sb-nav-item" data-tab="compare" onclick="sidebarNav(this,'compare')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg></span>      <span>مقارنة الفروع</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="timecomp" onclick="sidebarNav(this,'timecomp')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 15 15"/><line x1="5" y1="3" x2="3" y2="5"/><line x1="19" y1="3" x2="21" y2="5"/></svg></span>      <span>مقارنة زمنية</span>
+    </button>
   </nav>
 
   <!-- User footer -->
@@ -2972,12 +2992,12 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 <!-- ══════════════ END SIDEBAR ══════════════ -->
 
 <!-- ══════════════ MAIN AREA ══════════════ -->
-<div class="main-area">
+<main class="main-area" id="mainContent" tabindex="-1" inert>
 
 <!-- NEW TOPBAR -->
 <div class="new-topbar">
   <!-- Mobile menu button -->
-  <button class="mob-menu-btn" onclick="toggleSidebar()">☰</button>
+  <button class="mob-menu-btn" type="button" onclick="toggleSidebar()" aria-controls="mainSidebar" aria-expanded="false" aria-label="فتح قائمة التنقل">☰</button>
 
   <!-- Title -->
   <div class="nb-title">
@@ -3002,6 +3022,7 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
     <!-- saved badge removed -->
     <button class="btn" id="themeBtn" onclick="toggleTheme()" title="Dark / Light">☀️</button>
     <span class="save-status" id="saveStatus" data-state="idle" role="status" aria-live="polite">جاهز</span>
+    <span class="data-context" id="dataContext" aria-live="polite">لا توجد بيانات</span>
     <select class="select privacy-select" id="exportPrivacyMode" title="مستوى خصوصية التصدير والمشاركة" aria-label="مستوى خصوصية التصدير والمشاركة">
       <option value="anonymized">مجهول الهوية</option>
       <option value="full">بيانات كاملة حساسة</option>
@@ -3014,7 +3035,7 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 </div>
 
 <div class="wrap">
-<div class="loading-bar" id="loadingBar"></div>
+<div class="loading-bar" id="loadingBar" role="progressbar" aria-label="جارٍ المعالجة" aria-hidden="true"></div>
 <div class="container">
 
 <div class="branch-bar">
@@ -3025,8 +3046,8 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
       <div class="meta" id="meta-T1">لم يتم رفع ملف بعد</div>
       <div class="branch-periods" id="periods-T1"></div>
     </div>
-    <button class="branch-upload-btn" data-upload="T1">رفع</button>
-    <button class="add-period-btn" onclick="startAddPeriod('T1')">+ فترة</button>
+    <button type="button" class="branch-upload-btn" data-upload="T1" aria-label="رفع ملف التعاون الأول">رفع</button>
+    <button type="button" class="add-period-btn" onclick="startAddPeriod('T1')" aria-label="إضافة فترة للتعاون الأول">+ فترة</button>
     <input type="file" class="file-input" id="file-T1" accept=".xlsx,.xls,.csv,.pdf">
     <div class="up-overlay" id="uprog-T1">
       <div class="up-icon">⚡</div>
@@ -3042,8 +3063,8 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
       <div class="meta" id="meta-T2">لم يتم رفع ملف بعد</div>
       <div class="branch-periods" id="periods-T2"></div>
     </div>
-    <button class="branch-upload-btn" data-upload="T2">رفع</button>
-    <button class="add-period-btn" onclick="startAddPeriod('T2')">+ فترة</button>
+    <button type="button" class="branch-upload-btn" data-upload="T2" aria-label="رفع ملف التعاون الثاني">رفع</button>
+    <button type="button" class="add-period-btn" onclick="startAddPeriod('T2')" aria-label="إضافة فترة للتعاون الثاني">+ فترة</button>
     <input type="file" class="file-input" id="file-T2" accept=".xlsx,.xls,.csv,.pdf">
     <div class="up-overlay" id="uprog-T2">
       <div class="up-icon">⚡</div>
@@ -3059,8 +3080,8 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
       <div class="meta" id="meta-T3">لم يتم رفع ملف بعد</div>
       <div class="branch-periods" id="periods-T3"></div>
     </div>
-    <button class="branch-upload-btn" data-upload="T3">رفع</button>
-    <button class="add-period-btn" onclick="startAddPeriod('T3')">+ فترة</button>
+    <button type="button" class="branch-upload-btn" data-upload="T3" aria-label="رفع ملف التعاون الثالث">رفع</button>
+    <button type="button" class="add-period-btn" onclick="startAddPeriod('T3')" aria-label="إضافة فترة للتعاون الثالث">+ فترة</button>
     <input type="file" class="file-input" id="file-T3" accept=".xlsx,.xls,.csv,.pdf">
     <div class="up-overlay" id="uprog-T3">
       <div class="up-icon">⚡</div>
@@ -3072,71 +3093,6 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 </div>
 
 <section class="data-quality-panel" id="dataQualityPanel" aria-live="polite" aria-label="جودة البيانات" hidden></section>
-
-<!-- PERIOD NAME POPUP -->
-<div class="period-popup" id="periodPopup">
-  <div class="period-popup-box">
-    <h3>اختر الشهر وارفع ملفه</h3>
-
-    <!-- خطوات واضحة -->
-    <div style="display:flex;gap:8px;margin-bottom:14px;">
-      <div style="flex:1;padding:10px;background:rgba(13,148,136,.08);border:1px solid rgba(13,148,136,.3);border-radius:10px;text-align:center;">
-        <div style="font-size:18px;margin-bottom:4px;">① </div>
-        <div style="font-size:11px;font-weight:800;color:var(--teal-l);">+ فترة</div>
-        <div style="font-size:10px;color:var(--text-dim);">مايو 2026</div>
-        <div style="font-size:10px;color:var(--text-dim);">ارفع ملف مايو</div>
-      </div>
-      <div style="display:flex;align-items:center;color:var(--text-muted);font-size:18px;">→</div>
-      <div style="flex:1;padding:10px;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.3);border-radius:10px;text-align:center;">
-        <div style="font-size:18px;margin-bottom:4px;">② </div>
-        <div style="font-size:11px;font-weight:800;color:var(--violet-l);">+ فترة</div>
-        <div style="font-size:10px;color:var(--text-dim);">أبريل 2026</div>
-        <div style="font-size:10px;color:var(--text-dim);">ارفع ملف أبريل</div>
-      </div>
-    </div>
-
-    <!-- اختيار سريع -->
-    <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px;">اختر الشهر:</div>
-    <div id="monthPickerGrid" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;"></div>
-    <script>
-    (function(){
-      var months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-      var colors=[
-        {bg:'rgba(37,99,235,.12)',bd:'rgba(37,99,235,.35)',cl:'var(--violet-l)'},{bg:'rgba(13,148,136,.12)',bd:'rgba(13,148,136,.35)',cl:'var(--teal-l)'},{bg:'rgba(2,132,199,.12)',bd:'rgba(2,132,199,.35)',cl:'var(--sky-l)'},{bg:'rgba(217,119,6,.12)',bd:'rgba(217,119,6,.35)',cl:'var(--amber-l)'}
-      ];
-      var grid=document.getElementById('monthPickerGrid');
-      var now=new Date();
-      var curMonth=now.getMonth();
-      var curYear=now.getFullYear();
-      var html='';
-      /* Current year label */
-      html+='<div style="width:100%;font-size:10px;font-weight:700;color:var(--text-muted);margin:4px 0 2px;letter-spacing:.5px;">'+curYear+':</div>';
-      for(var m=curMonth;m>=0;m--){
-        var ci=colors[(curMonth-m)%colors.length];
-        var label=months[m]+' '+curYear;
-        var isCurrent=(m===curMonth);
-        html+='<button onclick="document.getElementById(\'periodNameInput\').value=\''+label+'\'" style="padding:6px 12px;border-radius:999px;font-size:11.5px;font-weight:'+(isCurrent?'800':'600')+';background:'+ci.bg+';border:1px solid '+ci.bd+';color:'+ci.cl+';cursor:pointer;font-family:inherit;'+(isCurrent?'box-shadow:0 0 8px '+ci.bd+';':'')+'">'+(isCurrent?'● ':'')+label+'</button>';
-      }
-      /* Previous year */
-      var prevYear=curYear-1;
-      html+='<div style="width:100%;font-size:10px;font-weight:700;color:var(--text-muted);margin:8px 0 2px;letter-spacing:.5px;">'+prevYear+':</div>';
-      for(var m=11;m>=0;m--){
-        var ci=colors[m%colors.length];
-        var label=months[m]+' '+prevYear;
-        html+='<button onclick="document.getElementById(\'periodNameInput\').value=\''+label+'\'" style="padding:5px 10px;border-radius:999px;font-size:10.5px;font-weight:600;background:'+ci.bg+';border:1px solid '+ci.bd+';color:'+ci.cl+';cursor:pointer;font-family:inherit;opacity:.7;">'+label+'</button>';
-      }
-      grid.innerHTML=html;
-    })();
-    </script>
-
-    <input class="pp-inp" id="periodNameInput" placeholder="أو اكتب: مايو 2026" maxlength="30">
-    <div id="periodNameWarn" style="display:none;font-size:11px;color:var(--amber-l);margin:6px 0 0;padding:6px 10px;background:rgba(217,119,6,.1);border:1px solid rgba(217,119,6,.2);border-radius:6px;">⚠️ الاسم مش فيه شهر — المقارنة ممكن تطلع غلط. اختر من الأزرار فوق أو اكتب الشهر والسنة.</div>
-    <div class="pp-actions" style="margin-top:12px;">
-      <button class="btn" style="flex:1;background:var(--grad-p);color:#fff;border-color:transparent;font-size:14px;" onclick="confirmAddPeriod()">📂 رفع الملف ←</button>
-      <button class="btn" onclick="cancelAddPeriod()">إلغاء</button>
-    </div>
-  </div>
-</div>
 
 <!-- STICKY SUMMARY BAR -->
 <div class="summary-bar" id="summaryBar">
@@ -3202,20 +3158,47 @@ tbody td{padding:11px 15px;font-size:var(--text-sm);line-height:1.5;}
 </div>
 </div>
 
-</div><!-- end main-area -->
+</main><!-- end main-area -->
 </div><!-- end app-shell -->
 
-<div class="modal-bg" id="modalBg"><div class="modal"><button class="modal-close" id="modalClose">✕</button><div id="modalBody"></div></div></div>
-<div class="toast" id="toast"><div class="toast-ico" id="toastIco">✓</div><div class="toast-msg" id="toastMsg">تم</div>
+<!-- PERIOD NAME POPUP -->
+<div class="period-popup" id="periodPopup" role="dialog" aria-modal="true" aria-labelledby="periodPopupTitle" aria-hidden="true">
+  <div class="period-popup-box" tabindex="-1">
+    <h3 id="periodPopupTitle">اختر الشهر وارفع ملفه</h3>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <div style="flex:1;padding:10px;background:rgba(13,148,136,.08);border:1px solid rgba(13,148,136,.3);border-radius:10px;text-align:center;">
+        <div style="font-size:18px;margin-bottom:4px;">①</div>
+        <div style="font-size:11px;font-weight:800;color:var(--teal-l);">اختر الفترة</div>
+        <div style="font-size:10px;color:var(--text-dim);">مثال: مايو 2026</div>
+      </div>
+      <div aria-hidden="true" style="display:flex;align-items:center;color:var(--text-muted);font-size:18px;">←</div>
+      <div style="flex:1;padding:10px;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.3);border-radius:10px;text-align:center;">
+        <div style="font-size:18px;margin-bottom:4px;">②</div>
+        <div style="font-size:11px;font-weight:800;color:var(--violet-l);">ارفع التقرير</div>
+        <div style="font-size:10px;color:var(--text-dim);">PDF أو Excel أو CSV</div>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px;">اختر الشهر:</div>
+    <div id="monthPickerGrid" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;"></div>
+    <input class="pp-inp" id="periodNameInput" placeholder="أو اكتب: مايو 2026" maxlength="30" aria-describedby="periodNameWarn">
+    <div id="periodNameWarn" role="alert" style="display:none;font-size:11px;color:var(--amber-l);margin:6px 0 0;padding:6px 10px;background:rgba(217,119,6,.1);border:1px solid rgba(217,119,6,.2);border-radius:6px;">اختر شهراً وسنة صحيحة حتى تعمل المقارنات الزمنية بدقة.</div>
+    <div class="pp-actions" style="margin-top:12px;">
+      <button type="button" class="btn" style="flex:1;background:var(--grad-p);color:#fff;border-color:transparent;font-size:14px;" onclick="confirmAddPeriod()">رفع الملف ←</button>
+      <button type="button" class="btn" onclick="cancelAddPeriod()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg" aria-hidden="true"><div class="modal" role="dialog" aria-modal="true" aria-label="تفاصيل" tabindex="-1"><button class="modal-close" id="modalClose" type="button" aria-label="إغلاق النافذة">✕</button><div id="modalBody"></div></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"><div class="toast-ico" id="toastIco">✓</div><div class="toast-msg" id="toastMsg">تم</div></div>
 <!-- Footer -->
-<div style="text-align:center;padding:20px 16px 12px;margin-top:24px;border-top:1px solid var(--border);opacity:.6;">
+<div id="appFooter" style="text-align:center;padding:20px 16px 12px;margin-top:24px;border-top:1px solid var(--border);opacity:.6;">
   <div style="font-size:11px;color:var(--text-muted);font-weight:600;letter-spacing:.3px;">
     PharmaDash v2.0 — الإدارة التجارية · قطاع الصيدليات · مجمعات التعاون الطبية
   </div>
   <div style="font-size:10px;color:var(--text-muted);margin-top:4px;opacity:.7;">
     Dr. Elsayed Hassan — Business Development Manager
   </div>
-</div>
 </div>
 
 <script>
@@ -3742,12 +3725,72 @@ let charts={};
 
 function toast(msg,type){type=type||'success';const t=document.getElementById('toast'),i=document.getElementById('toastIco'),m=document.getElementById('toastMsg');t.className='toast show '+type;i.textContent=type==='success'?'✓':(type==='error'?'✕':'ℹ');m.textContent=msg;setTimeout(()=>t.classList.remove('show'),3500);}
 const lb=document.getElementById('loadingBar');let _loadCount=0;
-function showLoad(){_loadCount++;lb.classList.add('show');}
-function hideLoad(){_loadCount=Math.max(0,_loadCount-1);if(!_loadCount)lb.classList.remove('show');}
+function showLoad(){_loadCount++;lb.classList.add('show');lb.setAttribute('aria-hidden','false');}
+function hideLoad(){_loadCount=Math.max(0,_loadCount-1);if(!_loadCount){lb.classList.remove('show');lb.setAttribute('aria-hidden','true');}}
 const modalBg=document.getElementById('modalBg'),modalBody=document.getElementById('modalBody');
-document.getElementById('modalClose').onclick=()=>modalBg.classList.remove('show');
-modalBg.addEventListener('click',e=>{if(e.target===modalBg) modalBg.classList.remove('show');});
-document.addEventListener('keydown',e=>{if(e.key==='Escape') modalBg.classList.remove('show');});
+let _appShellUnlocked=false,_blockingUiOpen=false,_mobileSidebarOpen=false;
+function syncAppShellAccessibility(unlocked){
+  if(typeof unlocked==='boolean')_appShellUnlocked=unlocked;
+  const sidebar=document.getElementById('mainSidebar'),main=document.getElementById('mainContent'),login=document.getElementById('loginScreen');
+  const shellBlocked=!_appShellUnlocked||_blockingUiOpen;
+  if(sidebar)sidebar.toggleAttribute('inert',shellBlocked);
+  if(main)main.toggleAttribute('inert',shellBlocked||_mobileSidebarOpen);
+  if(login){
+    login.toggleAttribute('inert',_appShellUnlocked);
+    login.setAttribute('aria-hidden',String(_appShellUnlocked));
+  }
+  document.getElementById('skipLink')?.setAttribute('tabindex',_appShellUnlocked?'0':'-1');
+}
+function setBlockingUi(open){_blockingUiOpen=!!open;syncAppShellAccessibility();}
+let _modalReturnFocus=null;
+function openModal(label){
+  if(!modalBg.classList.contains('show'))_modalReturnFocus=document.activeElement;
+  const dialog=modalBg.querySelector('[role="dialog"]');
+  if(label)dialog.setAttribute('aria-label',label);
+  modalBg.classList.add('show');modalBg.setAttribute('aria-hidden','false');
+  setBlockingUi(true);
+  requestAnimationFrame(()=>document.getElementById('modalClose').focus());
+}
+function closeModal(){
+  if(!modalBg.classList.contains('show'))return;
+  modalBg.classList.remove('show');modalBg.setAttribute('aria-hidden','true');
+  modalBg.querySelector('.modal')?.classList.remove('wide');
+  setBlockingUi(false);
+  if(_modalReturnFocus&&document.contains(_modalReturnFocus))_modalReturnFocus.focus();
+  _modalReturnFocus=null;
+}
+function trapDialogTab(event,container){
+  if(event.key!=='Tab')return;
+  const focusable=[...container.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(el=>!el.hidden&&el.getClientRects().length);
+  if(!focusable.length){event.preventDefault();container.focus?.();return;}
+  const first=focusable[0],last=focusable[focusable.length-1];
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+}
+document.getElementById('modalClose').onclick=closeModal;
+modalBg.addEventListener('click',e=>{if(e.target===modalBg)closeModal();});
+document.addEventListener('keydown',e=>{
+  const login=document.getElementById('loginScreen');
+  if(!_appShellUnlocked){
+    if(e.key==='Tab')trapDialogTab(e,login);
+    return;
+  }
+  if(!modalBg.classList.contains('show')){
+    const share=document.getElementById('plShareOverlay')||document.getElementById('phShareOverlay');
+    const period=document.getElementById('periodPopup');
+    if(e.key==='Escape'){
+      if(document.getElementById('plShareOverlay'))closePLShareCard();
+      else if(document.getElementById('phShareOverlay'))closePHShareCard();
+      else if(period?.classList.contains('open'))cancelAddPeriod();
+      else if(_mobileSidebarOpen)closeSidebar();
+    }
+    else if(share)trapDialogTab(e,share);
+    else if(period?.classList.contains('open'))trapDialogTab(e,period);
+    return;
+  }
+  if(e.key==='Escape'){e.preventDefault();closeModal();return;}
+  trapDialogTab(e,modalBg);
+});
 function escapeHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function escapeAttr(s){return escapeHtml(s).replace(/'/g,'&#39;');}
 /* أرقام المرضى قد تتكرر بين أنظمة الفروع؛ لذلك الهوية المجمعة = الفرع + الرقم. */
@@ -3759,13 +3802,36 @@ function entityKey(value){return PharmaCore.normalizeEntityKey(value);}
 function sameEntity(a,b){return entityKey(a)===entityKey(b);}
 function rankBadge(i){const c=i===0?'gold':(i===1?'silver':(i===2?'bronze':'normal'));return '<span class="rank '+c+'">'+(i+1)+'</span>';}
 function barRow(v,m){const p=m>0?(v*100/m):0;return '<div class="bar-cell"><div class="bar" style="width:'+p+'%;"></div><div class="v">'+p.toFixed(1)+'%</div></div>';}
+function enhanceAccessibility(root){
+  const base=root&&root.querySelectorAll?root:document;
+  const interactive=[...(base.matches?.('tr.clickable,[onclick]:not(button):not(a):not(input):not(select)')?[base]:[]),...base.querySelectorAll('tr.clickable,[onclick]:not(button):not(a):not(input):not(select)')];
+  interactive.forEach(el=>{
+    if(el.dataset.a11yReady)return;
+    el.dataset.a11yReady='1';el.setAttribute('role','button');el.tabIndex=0;
+    el.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();el.click();}});
+  });
+  base.querySelectorAll('th:not([scope])').forEach(th=>th.setAttribute('scope','col'));
+  base.querySelectorAll('input:not([aria-label]),select:not([aria-label])').forEach(el=>{const label=el.placeholder||el.title;if(label)el.setAttribute('aria-label',label.replace(/[🔎📅]/g,'').trim());});
+  base.querySelectorAll('svg:not([aria-hidden])').forEach(svg=>svg.setAttribute('aria-hidden','true'));
+  base.querySelectorAll('canvas:not([role])').forEach(canvas=>{canvas.setAttribute('role','img');const title=canvas.closest('.card')?.querySelector('.card-title')?.textContent?.trim();canvas.setAttribute('aria-label',title||'رسم بياني للبيانات المعروضة');});
+  base.querySelectorAll('.panel').forEach(panel=>{panel.setAttribute('role','region');panel.setAttribute('aria-hidden',panel.classList.contains('active')?'false':'true');});
+}
+enhanceAccessibility(document);
+new MutationObserver(records=>records.forEach(record=>record.addedNodes.forEach(node=>{if(node.nodeType===1)enhanceAccessibility(node);}))).observe(document.body,{childList:true,subtree:true});
+document.querySelector('nav[aria-label="التنقل الرئيسي"]')?.addEventListener('keydown',event=>{
+  if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;
+  const items=[...document.querySelectorAll('.sb-nav-item')],current=items.indexOf(document.activeElement);if(current<0)return;
+  event.preventDefault();
+  const next=event.key==='Home'?0:event.key==='End'?items.length-1:(current+(event.key==='ArrowDown'?1:-1)+items.length)%items.length;
+  items[next].focus();
+});
 
 BRANCHES.forEach(b=>{
   const btn=document.querySelector('[data-upload="'+b+'"]'),inp=document.getElementById('file-'+b);
   const card=document.querySelector('.branch-card[data-branch="'+b+'"]');
 
   // Click to upload
-  btn.onclick=()=>{_pendingMode=null;inp.click();};
+  btn.onclick=()=>{_pendingMode=null;_pendingBranch=null;restorePeriodFocus();inp.click();};
 
   // Drag & Drop
   card.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation();card.classList.add('dragover');});
@@ -3777,7 +3843,7 @@ BRANCHES.forEach(b=>{
     if(file){
       if(_pendingMode==='period'&&_pendingBranch===b){
         const label=inp._pendingLabel||'فترة '+(STATE.periods[b].length+1);
-        inp._pendingLabel=null;_pendingMode=null;
+        inp._pendingLabel=null;_pendingMode=null;_pendingBranch=null;restorePeriodFocus();
         handlePeriodFile(b,label,file);
       } else {
         handleFile(b,file);
@@ -3791,12 +3857,17 @@ BRANCHES.forEach(b=>{
     inp.value='';
     if(_pendingMode==='period'&&_pendingBranch===b){
       const label=inp._pendingLabel||'فترة '+(STATE.periods[b].length+1);
-      inp._pendingLabel=null;_pendingMode=null;
+      inp._pendingLabel=null;_pendingMode=null;_pendingBranch=null;restorePeriodFocus();
       handlePeriodFile(b,label,file);
     } else {
       handleFile(b,file);
     }
   };
+  inp.addEventListener('cancel',()=>{
+    if(_pendingMode==='period'&&_pendingBranch===b){
+      inp._pendingLabel=null;_pendingMode=null;_pendingBranch=null;restorePeriodFocus();
+    }
+  });
 });
 
 async function handleFile(branch,file){
@@ -4042,7 +4113,21 @@ function renderBranchPicker(){
   const box=document.getElementById('branchPicker');const loaded=BRANCHES.filter(b=>STATE.data[b]);
   if(!STATE.active&&loaded.length) STATE.active=loaded[0];
   box.innerHTML=BRANCHES.map(b=>{const has=!!STATE.data[b],isActive=b===STATE.active;return '<button class="btn" data-pick="'+b+'" '+(has?'':'disabled')+' style="'+(isActive?'background:var(--grad-p);color:#fff;border-color:transparent;':'')+'">'+BRANCH_LABELS[b]+(has?' ✓':'')+'</button>';}).join('');
-  box.querySelectorAll('[data-pick]').forEach(btn=>{btn.onclick=()=>{STATE.active=btn.dataset.pick;renderBranchPicker();renderActive();};});
+  box.querySelectorAll('[data-pick]').forEach(btn=>{btn.onclick=()=>{STATE.active=btn.dataset.pick;renderBranchPicker();updateDataContext();renderActive();};});
+}
+function updateDataContext(){
+  const el=document.getElementById('dataContext');if(!el)return;
+  const loaded=BRANCHES.filter(b=>STATE.data[b]);if(!loaded.length){el.textContent='لا توجد بيانات';el.title='';return;}
+  const aggregateScope=NO_BRANCH_TABS.includes(window._activePanel||'overview');
+  if(aggregateScope){
+    const labels=loaded.map(b=>periodOldestNewest(STATE.periods[b]||[]).newest?.label).filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i);
+    const total=loaded.reduce((sum,b)=>sum+(STATE.data[b]?.totalRows||0),0);
+    el.textContent='كل الفروع · '+(labels.join(' / ')||'أحدث فترة')+' · '+fmt(total)+' وصفة';
+  }else{
+    const b=STATE.active&&STATE.data[STATE.active]?STATE.active:loaded[0],latest=periodOldestNewest(STATE.periods[b]||[]).newest;
+    el.textContent=BRANCH_LABELS[b]+' · '+(latest?.label||STATE.data[b].reportName||'أحدث فترة')+' · '+fmt(STATE.data[b].totalRows)+' وصفة';
+  }
+  el.title=el.textContent;
 }
 function renderDataQualityPanel(){
   const panel=document.getElementById('dataQualityPanel');if(!panel)return;
@@ -4090,6 +4175,7 @@ function removeExactDuplicates(branch){
 function renderAll(){
   renderBranchPicker();
   renderDataQualityPanel();
+  updateDataContext();
   renderActive();
   updateSummaryBar();
   setTimeout(()=>document.querySelectorAll('tbody').forEach(tb=>{
@@ -4697,17 +4783,25 @@ function chartColors(){const l=document.documentElement.getAttribute('data-theme
 if(window.Chart){try{Chart.defaults.font.family="'IBM Plex Sans Arabic',sans-serif";}catch(e){}}
 function tt(c){return{backgroundColor:c.ttBg,titleColor:c.ttFg,bodyColor:c.ttFg,borderColor:'rgba(108,99,255,0.35)',borderWidth:1,padding:12,titleFont:{family:'IBM Plex Sans Arabic',weight:'700'},bodyFont:{family:'IBM Plex Sans Arabic'},cornerRadius:10};}
 function destroyChart(n){if(charts[n]){charts[n].destroy();delete charts[n];}}
+function setChartSummary(canvas,data){
+  const title=canvas.closest('.card')?.querySelector('.card-title')?.textContent?.trim()||'رسم بياني';
+  const summary=(data||[]).slice(0,12).map(item=>item.label+': '+fmt(item.v)).join('، ');
+  canvas.setAttribute('role','img');canvas.setAttribute('aria-label',title+(summary?' — '+summary:''));
+}
 function drawBar(id,data,color,onClick){
   destroyChart(id);const ctx=document.getElementById(id);if(!ctx) return;const c=chartColors();
+  setChartSummary(ctx,data);
   const gctx=ctx.getContext('2d');const grad=gctx.createLinearGradient(0,0,400,0);grad.addColorStop(0,color);grad.addColorStop(1,color+'44');
   charts[id]=new Chart(ctx,{type:'bar',data:{labels:data.map(x=>x.label),datasets:[{data:data.map(x=>x.v),backgroundColor:grad,borderColor:color,borderWidth:1,borderRadius:6,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,onClick:(e,els)=>{if(els&&els.length&&onClick) onClick(els[0].index);},plugins:{legend:{display:false},tooltip:tt(c)},scales:{x:{ticks:{color:c.text,font:{family:'IBM Plex Sans Arabic',size:12}},grid:{color:c.grid}},y:{ticks:{color:c.text,font:{family:'IBM Plex Sans Arabic',size:12}},grid:{color:c.grid}}}}});
 }
 function drawDoughnut(id,data){
   destroyChart(id);const ctx=document.getElementById(id);if(!ctx) return;const c=chartColors();
+  setChartSummary(ctx,data);
   charts[id]=new Chart(ctx,{type:'doughnut',data:{labels:data.map(s=>s.label),datasets:[{data:data.map(s=>s.v),backgroundColor:data.map((_,i)=>PALETTE[i%PALETTE.length]),borderColor:'rgba(0,0,0,0.12)',borderWidth:2,hoverOffset:14}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:{color:c.text,font:{family:'IBM Plex Sans Arabic',size:11},boxWidth:11,padding:9}},tooltip:tt(c)}}});
 }
 function drawPolar(id,data){
   destroyChart(id);const ctx=document.getElementById(id);if(!ctx) return;const c=chartColors();
+  setChartSummary(ctx,data);
   charts[id]=new Chart(ctx,{type:'polarArea',data:{labels:data.map(s=>s.label),datasets:[{data:data.map(s=>s.v),backgroundColor:data.map((_,i)=>PALETTE[i%PALETTE.length]+'cc'),borderColor:'rgba(255,255,255,0.08)',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,scales:{r:{ticks:{color:c.text,backdropColor:'transparent'},grid:{color:c.grid},angleLines:{color:c.grid}}},plugins:{legend:{position:'right',labels:{color:c.text,font:{family:'IBM Plex Sans Arabic',size:12}}},tooltip:tt(c)}}});
 }
 function renderDocs(d){
@@ -5337,13 +5431,14 @@ function showPLShareCard(name){
     : '';
   var grandTotal = (d.total || 0) + ph.total;
   var ov = document.createElement('div');
+  window._shareReturnFocus=document.activeElement;
   ov.id = 'plShareOverlay';
   ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:' + _overlay + ';backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px;';
   ov.onclick = function(e){ if(e.target === ov) closePLShareCard(); };
-  ov.innerHTML = '<div style="width:100%;max-width:430px;border-radius:22px;padding:26px 24px;background:' + _bg + ';border:1px solid ' + _border + ';box-shadow:' + _shadow + ';">'
+  ov.innerHTML = '<div role="dialog" aria-modal="true" aria-label="بطاقة مشاركة NOSTRI" tabindex="-1" style="width:100%;max-width:430px;border-radius:22px;padding:26px 24px;background:' + _bg + ';border:1px solid ' + _border + ';box-shadow:' + _shadow + ';">'
     + '<div style="position:relative;text-align:center;padding:2px 0 4px;">'
     + '<span style="font-size:24px;font-weight:900;letter-spacing:5px;font-family:\'Inter\',sans-serif;background:linear-gradient(90deg,#60a5fa,#14b8a6);-webkit-background-clip:text;background-clip:text;color:transparent;">NOSTRI</span>'
-    + '<button onclick="closePLShareCard()" style="position:absolute;left:0;top:50%;transform:translateY(-50%);border:none;background:' + _closeBg + ';color:' + _closeColor + ';border-radius:9px;padding:5px 12px;cursor:pointer;font-family:inherit;font-size:12px;">إغلاق ✕</button></div>'
+    + '<button type="button" aria-label="إغلاق بطاقة المشاركة" onclick="closePLShareCard()" style="position:absolute;left:0;top:50%;transform:translateY(-50%);border:none;background:' + _closeBg + ';color:' + _closeColor + ';border-radius:9px;padding:5px 12px;cursor:pointer;font-family:inherit;font-size:12px;">إغلاق ✕</button></div>'
     + '<div style="font-size:20px;font-weight:900;color:' + _nameColor + ';margin-top:14px;line-height:1.5;text-align:center;">' + escapeHtml(d.name) + '</div>'
     + '<div style="font-size:12px;color:' + _secColor + ';margin-bottom:18px;text-align:center;">' + escapeHtml(d.section) + '</div>'
     + chips
@@ -5355,10 +5450,16 @@ function showPLShareCard(name){
     + '<div style="text-align:center;margin-top:10px;font-size:9.5px;color:' + _dateColor + ';">التقرير الدوري لرئيس مجلس الإدارة — ' + escapeHtml(currentReportPeriodLabel()) + '</div>'
     + '</div>';
   document.body.appendChild(ov);
+  setBlockingUi(true);
+  ov.querySelector('[role="dialog"]').focus();
 }
 function closePLShareCard(){
   var ov = document.getElementById('plShareOverlay');
-  if(ov) ov.remove();
+  if(!ov)return;
+  ov.remove();
+  setBlockingUi(false);
+  if(window._shareReturnFocus&&document.contains(window._shareReturnFocus))window._shareReturnFocus.focus();
+  window._shareReturnFocus=null;
 }
 /* عدّ كتابات منتجات PureHerb لطبيب معيّن عبر كل الفروع المرفوعة (نفس نطاق NOSTRI) */
 function getPureHerbForDoctor(name){
@@ -5512,13 +5613,14 @@ function showPHShareCard(name){
       + '<span style="width:12px;height:12px;border-radius:50%;background:'+pc+';flex-shrink:0;"></span></div>';
   }
   var ov = document.createElement('div');
+  window._shareReturnFocus=document.activeElement;
   ov.id = 'phShareOverlay';
   ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:'+_overlay+';backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px;';
   ov.onclick = function(e){ if(e.target === ov) closePHShareCard(); };
-  ov.innerHTML = '<div style="width:100%;max-width:430px;border-radius:22px;padding:26px 24px;background:'+_bg+';border:1px solid '+_border+';box-shadow:'+_shadow+';">'
+  ov.innerHTML = '<div role="dialog" aria-modal="true" aria-label="بطاقة مشاركة PureHerb" tabindex="-1" style="width:100%;max-width:430px;border-radius:22px;padding:26px 24px;background:'+_bg+';border:1px solid '+_border+';box-shadow:'+_shadow+';">'
     + '<div style="position:relative;text-align:center;padding:2px 0 4px;">'
     + '<span style="font-size:24px;font-weight:900;letter-spacing:4px;font-family:\'Inter\',sans-serif;background:linear-gradient(90deg,#a855f7,#7c3aed);-webkit-background-clip:text;background-clip:text;color:transparent;">PUREHERB</span>'
-    + '<button onclick="closePHShareCard()" style="position:absolute;left:0;top:50%;transform:translateY(-50%);border:none;background:'+_closeBg+';color:'+_closeColor+';border-radius:9px;padding:5px 12px;cursor:pointer;font-family:inherit;font-size:12px;">إغلاق ✕</button></div>'
+    + '<button type="button" aria-label="إغلاق بطاقة المشاركة" onclick="closePHShareCard()" style="position:absolute;left:0;top:50%;transform:translateY(-50%);border:none;background:'+_closeBg+';color:'+_closeColor+';border-radius:9px;padding:5px 12px;cursor:pointer;font-family:inherit;font-size:12px;">إغلاق ✕</button></div>'
     + '<div style="font-size:20px;font-weight:900;color:'+_nameColor+';margin-top:14px;line-height:1.5;text-align:center;">'+escapeHtml(name)+'</div>'
     + '<div style="font-size:12px;color:'+_secColor+';margin-bottom:18px;text-align:center;">'+escapeHtml(section)+'</div>'
     + chips
@@ -5529,8 +5631,10 @@ function showPHShareCard(name){
     + '<div style="text-align:center;margin-top:10px;font-size:9.5px;color:'+_dateColor+';">التقرير الدوري لرئيس مجلس الإدارة — '+escapeHtml(currentReportPeriodLabel())+'</div>'
     + '</div>';
   document.body.appendChild(ov);
+  setBlockingUi(true);
+  ov.querySelector('[role="dialog"]').focus();
 }
-function closePHShareCard(){ var ov = document.getElementById('phShareOverlay'); if(ov) ov.remove(); }
+function closePHShareCard(){var ov=document.getElementById('phShareOverlay');if(!ov)return;ov.remove();setBlockingUi(false);if(window._shareReturnFocus&&document.contains(window._shareReturnFocus))window._shareReturnFocus.focus();window._shareReturnFocus=null;}
 
 function renderPLDoctorsAgg(){
   const box = document.getElementById('plDoctorsAgg');
@@ -5829,7 +5933,7 @@ function showDoctorMulti(name){
       </div>
     </div>`;
 
-  modalBg.classList.add('show');
+  openModal('تفاصيل الطبيب');
 
   // Draw sparkline
   if(hasSpark) setTimeout(()=>{drawSparklineFull('miniSpark',sparkPts,'#6c63ff');},60);
@@ -5856,8 +5960,8 @@ function showDoctor(name){
 function showDrug(name){
   if(!STATE.active) return;const d=STATE.data[STATE.active];if(!d) return;const x=d.drugs.find(z=>sameEntity(z.name,name));if(!x) return;
   modalBody.innerHTML='<h2 style="font-size:22px;margin-bottom:6px;font-family:Inter,Alexandria,sans-serif">💊 '+escapeHtml(x.name)+' <span class="tag '+STATE.active.toLowerCase()+'" style="font-size:11px;">'+BRANCH_LABELS[STATE.active]+'</span></h2><div class="detail-grid" style="margin-top:16px"><div class="detail-card"><div class="l">الكتابات</div><div class="v">'+fmt(x.total)+'</div></div><div class="detail-card"><div class="l">الأطباء</div><div class="v">'+fmt(x.doctorCount)+'</div></div><div class="detail-card"><div class="l">المرضى</div><div class="v">'+fmt(x.patients)+'</div></div><div class="detail-card"><div class="l">النسبة</div><div class="v">'+pct(x.total,d.totalRows).toFixed(1)+'%</div></div></div><div class="mini-head"><h3>أعلى الأطباء</h3></div><div class="table-wrap" style="max-height:300px;overflow-y:auto;"><table><thead><tr><th style="width:50px;">#</th><th>الطبيب</th><th>الكتابات</th><th>النسبة</th></tr></thead><tbody>'+x.doctors.slice(0,30).map((y,i)=>'<tr class="clickable" data-doc="'+escapeAttr(y.name)+'"><td>'+rankBadge(i)+'</td><td>'+escapeHtml(y.name)+'</td><td class="num">'+fmt(y.count)+'</td><td class="num">'+pct(y.count,x.total).toFixed(1)+'%</td></tr>').join('')+'</tbody></table></div>';
-  modalBody.querySelectorAll('tr[data-doc]').forEach(tr=>tr.onclick=()=>{modalBg.classList.remove('show');setTimeout(()=>showDoctor(tr.dataset.doc),150);});
-  modalBg.classList.add('show');
+  modalBody.querySelectorAll('tr[data-doc]').forEach(tr=>tr.onclick=()=>{closeModal();setTimeout(()=>showDoctor(tr.dataset.doc),150);});
+  openModal('تفاصيل الدواء');
 }
 
 function getExportPrivacyMode(){
@@ -6149,7 +6253,7 @@ function showTargetedProduct(idx) {
       </tbody></table>
     </div>` : '<div class="feat-empty">لا توجد كتابات لهذا الصنف في الفروع المرفوعة</div>'}
   `;
-  modalBg.classList.add('show');
+  openModal('تفاصيل الصنف المستهدف');
 }
 
 /* ══════════════════════════════════════════
@@ -8628,35 +8732,82 @@ STATE.periods = { T1:[], T2:[], T3:[] };
 
 const PERIOD_COLORS = ['pc0','pc1','pc2','pc3','pc4'];
 /* _pending vars moved to top */
+let _periodReturnFocus=null;
+const PERIOD_MONTHS_AR=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function periodLabelForOffset(offset){
+  const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-(offset||0));
+  return PERIOD_MONTHS_AR[d.getMonth()]+' '+d.getFullYear();
+}
+function populatePeriodMonthPicker(){
+  const grid=document.getElementById('monthPickerGrid');if(!grid)return;
+  const colors=[
+    {bg:'rgba(37,99,235,.12)',bd:'rgba(37,99,235,.35)',cl:'var(--violet-l)'},
+    {bg:'rgba(13,148,136,.12)',bd:'rgba(13,148,136,.35)',cl:'var(--teal-l)'},
+    {bg:'rgba(2,132,199,.12)',bd:'rgba(2,132,199,.35)',cl:'var(--sky-l)'},
+    {bg:'rgba(217,119,6,.12)',bd:'rgba(217,119,6,.35)',cl:'var(--amber-l)'}
+  ];
+  grid.replaceChildren();
+  let lastYear=null;
+  for(let offset=0;offset<18;offset++){
+    const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-offset);
+    if(d.getFullYear()!==lastYear){
+      lastYear=d.getFullYear();
+      const heading=document.createElement('div');
+      heading.textContent=lastYear+':';heading.style.cssText='width:100%;font-size:10px;font-weight:700;color:var(--text-muted);margin:4px 0 2px;letter-spacing:.5px;';
+      grid.appendChild(heading);
+    }
+    const color=colors[offset%colors.length],label=PERIOD_MONTHS_AR[d.getMonth()]+' '+d.getFullYear();
+    const button=document.createElement('button');
+    button.type='button';button.textContent=(offset===0?'● ':'')+label;button.dataset.periodLabel=label;button.setAttribute('aria-pressed','false');
+    button.style.cssText='padding:'+(offset<12?'6px 12px':'5px 10px')+';border-radius:999px;font-size:'+(offset<12?'11.5px':'10.5px')+';font-weight:'+(offset===0?'800':'600')+';background:'+color.bg+';border:1px solid '+color.bd+';color:'+color.cl+';cursor:pointer;font-family:inherit;'+(offset===0?'box-shadow:0 0 8px '+color.bd+';':'');
+    button.addEventListener('click',()=>{
+      grid.querySelectorAll('button[aria-pressed]').forEach(x=>x.setAttribute('aria-pressed','false'));
+      button.setAttribute('aria-pressed','true');
+      document.getElementById('periodNameInput').value=label;
+      document.getElementById('periodNameWarn').style.display='none';
+    });
+    grid.appendChild(button);
+  }
+}
+function restorePeriodFocus(){
+  if(_periodReturnFocus&&document.contains(_periodReturnFocus))_periodReturnFocus.focus();
+  _periodReturnFocus=null;
+}
 
 
 /* ── مستمعو الرفع (onclick/onchange + السحب والإفلات) مُعرَّفون مرة واحدة أعلى الملف ── */
 
 /* ── Add-period flow ── */
 function startAddPeriod(branch) {
+  _periodReturnFocus=document.activeElement;
   _pendingBranch = branch;
   const idx = STATE.periods[branch].length;
-  const suggestions = ['مايو 2026','أبريل 2026','مارس 2026','فبراير 2026','Q2 2026','Q1 2026','الربع الأول','الربع الثاني'];
   const inp = document.getElementById('periodNameInput');
-  inp.value = suggestions[idx] || '';
-  document.getElementById('periodPopup').classList.add('open');
+  populatePeriodMonthPicker();
+  inp.value = periodLabelForOffset(idx);
+  document.getElementById('periodNameWarn').style.display='none';
+  const popup=document.getElementById('periodPopup');popup.classList.add('open');popup.setAttribute('aria-hidden','false');
+  setBlockingUi(true);
   setTimeout(() => inp.focus(), 120);
 }
 function cancelAddPeriod() {
   _pendingBranch = null; _pendingMode = null;
-  document.getElementById('periodPopup').classList.remove('open');
+  const popup=document.getElementById('periodPopup');popup.classList.remove('open');popup.setAttribute('aria-hidden','true');
+  setBlockingUi(false);
+  restorePeriodFocus();
 }
 function confirmAddPeriod() {
   const rawName = document.getElementById('periodNameInput').value.trim();
-  // تحذير لو مكتبش تاريخ (اختياري — مش بيمنع الرفع)
   const warn = document.getElementById('periodNameWarn');
-  if(rawName && periodDateScore(rawName)===0){
-    if(warn){ warn.style.display='block'; }
-    // نستنى ثانية للمستخدم يشوف التحذير قبل ما يكمل
-    setTimeout(()=>{ if(warn) warn.style.display='none'; }, 3000);
+  if(!rawName||periodDateScore(rawName)===0){
+    warn.style.display='block';
+    document.getElementById('periodNameInput').focus();
+    return;
   }
-  const name = rawName || ('فترة '+(STATE.periods[_pendingBranch].length+1));
-  document.getElementById('periodPopup').classList.remove('open');
+  warn.style.display='none';
+  const name = rawName;
+  const popup=document.getElementById('periodPopup');popup.classList.remove('open');popup.setAttribute('aria-hidden','true');
+  setBlockingUi(false);
   _pendingMode = 'period';
   const inp = document.getElementById('file-'+_pendingBranch);
   inp._pendingLabel = name;
@@ -8666,6 +8817,7 @@ document.getElementById('periodNameInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') confirmAddPeriod();
   if (e.key === 'Escape') cancelAddPeriod();
 });
+document.getElementById('periodNameInput').addEventListener('input',()=>{document.getElementById('periodNameWarn').style.display='none';});
 
 /* ── Process period file ── */
 async function handlePeriodFile(branch, label, file) {
@@ -9084,6 +9236,7 @@ function buildTimeComp() {
 
 /* ── KEYBOARD SHORTCUTS ── */
 document.addEventListener('keydown', e => {
+  if(!_appShellUnlocked||modalBg.classList.contains('show')||document.getElementById('plShareOverlay')||document.getElementById('phShareOverlay')||document.getElementById('periodPopup')?.classList.contains('open'))return;
   // Ctrl/Cmd+K → Global Search
   if ((e.ctrlKey||e.metaKey) && e.key==='k') {
     e.preventDefault();
@@ -9091,11 +9244,10 @@ document.addEventListener('keydown', e => {
     if (gs) { gs.focus(); gs.select(); }
     return;
   }
-  // Escape → close modal / search dropdown
+  // Escape → close transient navigation UI
   if (e.key==='Escape') {
-    document.getElementById('modalBg')?.classList.remove('show');
     document.getElementById('searchDropdown')?.classList.remove('open');
-    document.getElementById('periodPopup')?.classList.remove('open');
+    if(_mobileSidebarOpen)closeSidebar();
     return;
   }
   // ? → toggle hotkey panel
@@ -9104,12 +9256,12 @@ document.addEventListener('keydown', e => {
     if(hp) hp.classList.toggle('show');
     return;
   }
-  // 1-9 → switch tabs (when not in input)
+  // 1-9 → switch primary sidebar sections (when not in an input)
   if (!e.ctrlKey && !e.metaKey && !e.altKey && document.activeElement.tagName!=='INPUT' && document.activeElement.tagName!=='SELECT') {
     const n=parseInt(e.key);
     if (n>=1 && n<=9) {
-      const tabs=[...document.querySelectorAll('.tab')];
-      if(tabs[n-1]) tabs[n-1].click();
+      const items=[...document.querySelectorAll('.sb-nav-item[data-tab]')];
+      if(items[n-1]){e.preventDefault();items[n-1].click();items[n-1].focus();}
     }
   }
 });
@@ -9408,18 +9560,6 @@ function drawSparklineFull(id, data, color) {
   pts.forEach((p,i)=>ctx.fillText(data[i].toLocaleString(),p.x,p.y-8));
 }
 
-/* ── Reset modal wide class on close ── */
-document.getElementById('modalClose').addEventListener('click', () => {
-  document.getElementById('modalBg').classList.remove('show');
-  document.querySelector('.modal')?.classList.remove('wide');
-});
-document.getElementById('modalBg').addEventListener('click', e => {
-  if (e.target === e.currentTarget) {
-    e.currentTarget.classList.remove('show');
-    document.querySelector('.modal')?.classList.remove('wide');
-  }
-});
-
 /* ── THEME: handled by toggleTheme() ── */
 
 /* ══ SIDEBAR NAV ══ */
@@ -9464,41 +9604,55 @@ function sidebarNav(el, panel) {
   // Track active panel globally
   window._activePanel = panel;
   // Update sidebar active state
-  document.querySelectorAll('.sb-nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('.sb-nav-item').forEach(i=>{i.classList.remove('active');i.removeAttribute('aria-current');});
   el.classList.add('active');
+  el.setAttribute('aria-current','page');
   // Sync hidden tabs + panels
-  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-selected','false');});
+  document.querySelectorAll('.panel').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-hidden','true');});
   const tabBtn = document.querySelector('.tab[data-panel="'+panel+'"]');
-  if (tabBtn) tabBtn.classList.add('active');
+  if (tabBtn){tabBtn.classList.add('active');tabBtn.setAttribute('aria-selected','true');}
   const panelEl = document.getElementById('panel-'+panel);
-  if (panelEl) panelEl.classList.add('active');
+  if(panelEl){panelEl.classList.add('active');panelEl.setAttribute('aria-hidden','false');}
   document.getElementById('branchPickerCard').style.display =
     (NO_BRANCH_TABS.includes(panel))?'none':'block';
+  updateDataContext();
   renderActive();
   try{ setTimeout(function(){ animateNums(document.getElementById('panel-'+panel)); }, 40); }catch(e){}
   // العودة لأعلى الصفحة عند تبديل القسم
   const mainEl = document.querySelector('.main-content') || document.querySelector('main') || window;
   try{ (mainEl.scrollTo ? mainEl : window).scrollTo({top:0, behavior:'instant'}); }catch(e){ window.scrollTo(0,0); }
   // Close mobile sidebar
-  closeSidebar();
+  if(_mobileSidebarOpen)closeSidebar(false);
 }
 function toggleSidebar() {
   const sb = document.getElementById('mainSidebar');
-  const isMobile = window.innerWidth <= 900;
+  const isMobile = window.matchMedia('(max-width:700px)').matches;
   if(isMobile) {
     if(sb.classList.contains('mobile-open')) { closeSidebar(); } else { openSidebar(); }
   } else {
     sb.classList.toggle('collapsed');
+    const expanded=!sb.classList.contains('collapsed'),btn=document.querySelector('.mob-menu-btn');
+    btn?.setAttribute('aria-expanded',String(expanded));btn?.setAttribute('aria-label',expanded?'إخفاء قائمة التنقل':'إظهار قائمة التنقل');
   }
 }
 function openSidebar() {
+  if(!_appShellUnlocked)return;
+  _mobileSidebarOpen=true;
   document.getElementById('mainSidebar').classList.add('mobile-open');
-  document.getElementById('sbOverlay').classList.add('show');
+  const overlay=document.getElementById('sbOverlay');overlay.classList.add('show');overlay.setAttribute('aria-hidden','false');
+  syncAppShellAccessibility();
+  const btn=document.querySelector('.mob-menu-btn');btn?.setAttribute('aria-expanded','true');btn?.setAttribute('aria-label','إغلاق قائمة التنقل');
+  document.querySelector('.sb-nav-item.active')?.focus();
 }
-function closeSidebar() {
+function closeSidebar(restoreFocus) {
+  const wasOpen=_mobileSidebarOpen;
+  _mobileSidebarOpen=false;
   document.getElementById('mainSidebar').classList.remove('mobile-open');
-  document.getElementById('sbOverlay').classList.remove('show');
+  const overlay=document.getElementById('sbOverlay');overlay.classList.remove('show');overlay.setAttribute('aria-hidden','true');
+  syncAppShellAccessibility();
+  const btn=document.querySelector('.mob-menu-btn');btn?.setAttribute('aria-expanded','false');btn?.setAttribute('aria-label','فتح قائمة التنقل');
+  if(wasOpen&&restoreFocus!==false)btn?.focus();
 }
 
 /* Sync sidebar badges when tab badges update */
@@ -9592,6 +9746,13 @@ function updateThemeIcon(){
   btn.textContent=isLight?'🌙':'☀️';
   btn.title=isLight?'الوضع الداكن':'الوضع الفاتح';
 }
+function updateUserUI(user){
+  if(!user)return;
+  const name=document.querySelector('.sb-user-name'),role=document.querySelector('.sb-user-role'),avatar=document.querySelector('.sb-avatar');
+  if(name)name.textContent=user.name||user.username||'مستخدم';
+  if(role)role.textContent=user.role||'';
+  if(avatar)avatar.textContent=PharmaCore.normalizeWhitespace(user.name||user.username).split(' ').slice(0,2).map(part=>part[0]||'').join('').toUpperCase()||'U';
+}
 
 async function doLogin() {
   const u = document.getElementById('loginUser').value.trim().toLowerCase();
@@ -9612,11 +9773,14 @@ async function doLogin() {
     err.classList.remove('show');
     /* لا نخزّن كلمة المرور — فقط بيانات العرض */
     sessionStorage.setItem('pharmdash_user', JSON.stringify({ username: u, name: rec.name, role: rec.role }));
+    updateUserUI({username:u,name:rec.name,role:rec.role});
     const screen = document.getElementById('loginScreen');
     screen.style.transition = 'opacity .4s ease';
     screen.style.opacity = '0';
     setTimeout(() => { screen.style.display = 'none'; }, 400);
-    unlockStoredData();
+    syncAppShellAccessibility(true);
+    await unlockStoredData();
+    document.getElementById('mainContent')?.focus();
   } else {
     _loginFailures++;
     if(_loginFailures>=5){_loginLockedUntil=Date.now()+30000;_loginFailures=0;err.textContent='محاولات كثيرة. تم الإيقاف 30 ثانية';}
@@ -9627,16 +9791,20 @@ async function doLogin() {
   }
 }
 
-function doLogout() {
+async function doLogout() {
   sessionStorage.removeItem('pharmdash_user');
-  flushSaveData();
+  const pendingSave=flushSaveData();
   lockInMemoryData();
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
   const screen = document.getElementById('loginScreen');
+  closeSidebar(false);
+  setSaveStatus('idle','جاهز');
+  syncAppShellAccessibility(false);
   screen.style.opacity = '0';
   screen.style.display = 'flex';
-  requestAnimationFrame(() => { screen.style.transition = 'opacity .3s ease'; screen.style.opacity = '1'; });
+  requestAnimationFrame(() => { screen.style.transition = 'opacity .3s ease'; screen.style.opacity = '1';document.getElementById('loginUser')?.focus(); });
+  await pendingSave;
 }
 
 // Allow Enter key on login
@@ -9645,11 +9813,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   });
+  const privacy=document.getElementById('exportPrivacyMode');
+  privacy?.addEventListener('change',()=>{
+    if(privacy.value==='full'&&!confirm('الوضع الكامل يضم بيانات مرضى حساسة في أي تصدير أو مشاركة. تفعيله؟'))privacy.value='anonymized';
+    privacy.classList.toggle('sensitive',privacy.value==='full');
+  });
   // Check if already logged in this session
   if (window.__PHARMADASH_SHARED__ || sessionStorage.getItem('pharmdash_user')) {
     document.getElementById('loginScreen').style.display = 'none';
+    syncAppShellAccessibility(true);
+    try{updateUserUI(window.__PHARMADASH_SHARED__?{name:'عرض مشترك',role:window.__EMBEDDED_RX__?.privacy?.anonymized?'بيانات مجهولة الهوية':'بيانات حساسة'}:JSON.parse(sessionStorage.getItem('pharmdash_user')||'null'));}catch(e){}
     /* استعادة البيانات تتم في معالج window.load عبر loadSavedData() */
-  }
+  }else{syncAppShellAccessibility(false);document.getElementById('loginUser')?.focus();}
 });
 
 /* ══════════════════════════════════════════
@@ -9911,7 +10086,7 @@ function dtOpenUpload(dateStr){
     +'<div id="dtUpResult" style="display:none;margin-top:12px;padding:12px 16px;background:rgba(13,148,136,.08);border:1px solid rgba(13,148,136,.25);border-radius:var(--r-sm);font-size:12.5px;color:var(--teal-l);"></div>'
     +'<div id="dtUpError" style="display:none;margin-top:12px;padding:12px 16px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.25);border-radius:var(--r-sm);font-size:12.5px;color:var(--rose-l);"></div>'
     +'</div>';
-  modalBody.innerHTML=html; modalBg.classList.add('show');
+  modalBody.innerHTML=html;openModal('رفع تقرير المتابعة اليومية');
 }
 
 function dtHandleDrop(e){
@@ -9943,7 +10118,7 @@ async function dtHandleFile(file){
     res.innerHTML='✅ تم رفع '+BRANCH_LABELS[branch]+' — '+dtFmtAr(ds)+' ('+fmt(rows.length)+' كتابة)';
     res.style.display='block';
     toast('✓ '+dtFmtAr(ds)+' '+BRANCH_LABELS[branch]+' — '+fmt(rows.length)+' كتابة');
-    setTimeout(function(){ modalBg.classList.remove('show'); },1500);
+    setTimeout(closeModal,1500);
   }catch(e){
     document.getElementById('dtDropZone').innerHTML='<div style="font-size:32px;margin-bottom:8px;">📄</div><div style="font-size:13px;font-weight:700;color:var(--violet-l);margin-bottom:4px;">اسحب الملف هنا أو اضغط للاختيار</div><div style="font-size:11px;color:var(--text-muted);">PDF · Excel · CSV — كتابات الأطباء</div>';
     err.textContent='⚠️ '+e.message; err.style.display='block';
