@@ -2470,7 +2470,7 @@ document.getElementById('shareBtn').onclick=()=>{
   showLoad();
   try{
     let html=redactCredentialsFromSharedTemplate(SOURCE_TEMPLATE);
-    const payload={v:2,privacy:{anonymized:anonymize,createdAt:new Date().toISOString()},branches:{},periods:{},dt:sanitizeDailyStore((typeof DT!=='undefined'&&DT.store)?DT.store:{},anonymize)};
+    const payload={v:2,active:STATE.active,privacy:{anonymized:anonymize,createdAt:new Date().toISOString()},branches:{},periods:{},dt:sanitizeDailyStore((typeof DT!=='undefined'&&DT.store)?DT.store:{},anonymize)};
     BRANCHES.forEach(b=>{const d=STATE.data[b];if(d) payload.branches[b]={rows:sanitizeRowsForExport(d.rows,anonymize),reportName:d.reportName,reportDate:d.reportDate};});
     BRANCHES.forEach(b=>{payload.periods[b]=(STATE.periods[b]||[]).map(p=>({id:p.id,label:p.label,rows:sanitizeRowsForExport(p.rows,anonymize),parseMeta:p.parseMeta||null,_main:!!p._main}));});
     const closeToken='<'+'/scr'+'ipt>',openToken='<scr'+'ipt id="embedded-rx-data">';
@@ -2486,6 +2486,25 @@ document.getElementById('shareBtn').onclick=()=>{
   finally{hideLoad();}
 };
 
+async function prepareRestoredPeriods(periods){
+  const prepared={T1:[],T2:[],T3:[]};
+  for(const b of BRANCHES){
+    for(const p of periods[b]||[]){
+      prepared[b].push({id:p.id,label:p.label,rows:p.rows,parseMeta:p.parseMeta||null,_main:!!p._main,data:await aggregateAsync(p.rows||[])});
+    }
+  }
+  return prepared;
+}
+function commitRestoredSnapshot(prepared,dt,active){
+  BRANCHES.forEach(b=>{
+    STATE.periods[b]=prepared[b]||[];
+    if(STATE.periods[b].length){rebuildBranchFromPeriods(b);_restoreBranchUI(b);}
+    else{STATE.data[b]=null;STATE.quality[b]=null;_resetBranchUI(b);}
+  });
+  if(typeof DT!=='undefined')DT.store=dt||{};
+  STATE.active=active&&STATE.data[active]?active:(BRANCHES.find(b=>STATE.data[b])||null);
+  invalidateGlobalSearch();
+}
 async function loadEmbedded(){
   if(!window.__EMBEDDED_RX__)return;
   try{
@@ -2497,14 +2516,8 @@ async function loadEmbedded(){
     const candidate={v:d.v||1,periods,dt:d.dt||{}};
     const validation=PharmaCore.validateSnapshot(candidate);
     if(!validation.valid)throw new Error('ملف المشاركة غير صالح: '+validation.error);
-    for(const b of BRANCHES){
-      if(!periods[b].length)continue;
-      const restoredPeriods=[];
-      for(const p of periods[b])restoredPeriods.push({id:p.id,label:p.label,rows:p.rows,parseMeta:p.parseMeta||null,_main:!!p._main,data:await aggregateAsync(p.rows||[])});
-      STATE.periods[b]=restoredPeriods;
-      rebuildBranchFromPeriods(b);_restoreBranchUI(b);if(!STATE.active)STATE.active=b;
-    }
-    if(typeof DT!=='undefined')DT.store=d.dt||{};
+    const prepared=await prepareRestoredPeriods(periods);
+    commitRestoredSnapshot(prepared,d.dt||{},d.active);
     function tryRender(n){if(typeof Chart!=='undefined'){renderAll();}else if(n>0)setTimeout(()=>tryRender(n-1),200);else renderAll();}
     tryRender(25);
   }catch(e){console.error('loadEmbedded',e);toast(e.message||'تعذر فتح ملف المشاركة','error');}
@@ -5294,6 +5307,7 @@ async function handlePeriodFile(branch, label, file) {
     const entry={id,label,rows,data:agg,parseMeta:rows._parseMeta||null};
     if(existing>=0){
       if(!confirm('الفترة "'+label+'" موجودة بالفعل. استبدالها بالملف الجديد؟')){_upHide(branch);return;}
+      if(version!==_uploadVersion[branch])return;
       entry.id=STATE.periods[branch][existing].id;entry._main=!!STATE.periods[branch][existing]._main;
       STATE.periods[branch][existing]=entry;
     }else STATE.periods[branch].push(entry);
@@ -6336,6 +6350,7 @@ async function _sealSnapshot(snapshot){
 }
 async function _verifySnapshotIntegrity(snapshot){
   if(!snapshot?.integrity?.digest)return true;
+  if(typeof crypto==='undefined'||!crypto.subtle)throw new Error('التحقق من سلامة البيانات يحتاج تشغيل اللوحة عبر HTTPS أو localhost');
   const copy={...snapshot};delete copy.integrity;
   const bytes=new TextEncoder().encode(JSON.stringify(copy));
   const digest=await crypto.subtle.digest('SHA-256',bytes);
@@ -6350,9 +6365,10 @@ function _migrateSnapshot(snapshot){
   }
   return migrated;
 }
-let _saveTimer=null,_saveRevision=0,_saveChain=Promise.resolve(),_saveErrorShown=false;
+let _saveTimer=null,_saveRevision=0,_lastQueuedRevision=0,_saveChain=Promise.resolve(),_saveErrorShown=false;
 function _queueSnapshotWrite(revision){
   const snapshot=_buildSnapshot();
+  _lastQueuedRevision=Math.max(_lastQueuedRevision,revision);
   _saveChain=_saveChain.catch(()=>{}).then(async()=>{
     if(revision<_saveRevision)return;
     setSaveStatus('saving','جارٍ الحفظ');
@@ -6377,16 +6393,18 @@ function saveData(options){
   const revision=++_saveRevision;
   clearTimeout(_saveTimer);
   setSaveStatus('pending','تغييرات غير محفوظة');
-  if(immediate)return _queueSnapshotWrite(revision);
-  _saveTimer=setTimeout(()=>{_saveTimer=null;_queueSnapshotWrite(revision);},450);
+  if(immediate||document.visibilityState==='hidden')return _queueSnapshotWrite(revision);
+  _saveTimer=setTimeout(()=>{_saveTimer=null;_queueSnapshotWrite(revision);},250);
   return _saveChain;
 }
 function flushSaveData(){
   if(_saveTimer){clearTimeout(_saveTimer);_saveTimer=null;return _queueSnapshotWrite(_saveRevision);}
+  if(_saveRevision>_lastQueuedRevision)return _queueSnapshotWrite(_saveRevision);
   return _saveChain;
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushSaveData();});
 window.addEventListener('pagehide',()=>{flushSaveData();});
+document.addEventListener('freeze',()=>{flushSaveData();});
 /* استعادة واجهة كارت الفرع بعد تحميل الفترات */
 function _restoreBranchUI(branch){
   const periods=STATE.periods[branch]||[];
@@ -6417,28 +6435,22 @@ async function loadSavedData(){
   let snap;
   try{ snap=await _idbGet(_IDB_KEY); }catch(e){ console.error('loadSavedData',e); return false; }
   if(!snap) return false;
-  let any=false;
   try{
     if(!(await _verifySnapshotIntegrity(snap)))throw new Error('فشل التحقق من سلامة البيانات المحفوظة');
     snap=_migrateSnapshot(snap);
     const validation=PharmaCore.validateSnapshot(snap);
     if(!validation.valid)throw new Error('لقطة التخزين غير صالحة: '+validation.error);
-    for(const b of BRANCHES){
-      const ps=(snap.periods&&snap.periods[b])||[];
-      if(!ps.length)continue;
-      const restoredPeriods=[];
-      for(const p of ps)restoredPeriods.push({id:p.id,label:p.label,rows:p.rows,parseMeta:p.parseMeta||null,_main:!!p._main,data:await aggregateAsync(p.rows||[])});
-      STATE.periods[b]=restoredPeriods;
-      rebuildBranchFromPeriods(b);
-      _restoreBranchUI(b);
-      any=true;
-    }
-    if(snap.dt && typeof snap.dt==='object' && typeof DT!=='undefined') DT.store=snap.dt;
-    if(snap.active && STATE.data[snap.active]) STATE.active=snap.active;
-    else if(!STATE.active) STATE.active=BRANCHES.find(b=>STATE.data[b])||null;
+    const prepared=await prepareRestoredPeriods(snap.periods||{});
+    commitRestoredSnapshot(prepared,snap.dt||{},snap.active);
     setSaveStatus('saved','محفوظ');
-  }catch(e){console.error('loadSavedData',e);setSaveStatus('error','بيانات تالفة');toast(e.message||'تعذر استعادة البيانات المحفوظة','error');return false;}
-  return any || (snap.dt && Object.keys(snap.dt).length>0);
+  }catch(e){
+    console.error('loadSavedData',e);
+    setSaveStatus('error','بيانات تالفة');
+    toast((e.message||'تعذر استعادة البيانات المحفوظة')+' — استخدم زر «مسح» لإزالة النسخة التالفة','error');
+    return false;
+  }
+  const hasPeriods=BRANCHES.some(b=>(snap.periods?.[b]||[]).length);
+  return hasPeriods || (snap.dt && Object.keys(snap.dt).length>0);
 }
 function updateSavedBadge() { /* لا يوجد شارة في الواجهة الحالية */ }
 async function clearSavedData(){
@@ -6467,6 +6479,7 @@ async function clearSavedData(){
 
 /* تخزين: { "YYYY-MM-DD": { T1: {rows,label,loaded}, T2:…, T3:… } } */
 var DT = { store: {}, view: 'daily', selDate: null, selWeek: null, selMonth: null };
+let _dtUploadVersion=0;
 
 /* ── helpers ── */
 function dtDateStr(d){ return PharmaCore.localDateKey(d||new Date()); }
@@ -6513,6 +6526,7 @@ function dtProcessRows(rows){
 
 /* ── Modal لرفع ملف يوم معين ── */
 function dtOpenUpload(dateStr){
+  _dtUploadVersion++;
   var today=dtToday();
   var ds=dateStr||today;
   var html='<div style="padding:4px 0;">'
@@ -6551,16 +6565,19 @@ function dtHandleDrop(e){
 
 async function dtHandleFile(file){
   if(!file) return;
-  var res=document.getElementById('dtUpResult'), err=document.getElementById('dtUpError');
+  const version=++_dtUploadVersion;
+  var res=document.getElementById('dtUpResult'), err=document.getElementById('dtUpError'),zone=document.getElementById('dtDropZone');
+  if(!res||!err||!zone)return;
   res.style.display='none'; err.style.display='none';
-  document.getElementById('dtDropZone').innerHTML='<div style="font-size:24px;animation:spin 1s linear infinite;display:inline-block;">⚙️</div><div style="margin-top:8px;font-size:12px;color:var(--text-dim);">جاري القراءة…</div>';
+  zone.innerHTML='<div style="font-size:24px;animation:spin 1s linear infinite;display:inline-block;">⚙️</div><div style="margin-top:8px;font-size:12px;color:var(--text-dim);">جاري القراءة…</div>';
+  showLoad();
   try{
-    var rows; var n=file.name.toLowerCase();
-    if(n.endsWith('.xlsx')||n.endsWith('.xls')) rows=await parseExcel(file);
-    else if(n.endsWith('.csv')) rows=await parseCSV(file);
-    else if(n.endsWith('.pdf')) rows=await parsePDF(file);
-    else throw new Error('صيغة غير مدعومة — PDF/Excel/CSV فقط');
-    if(!rows||!rows.length) throw new Error('الملف لا يحتوي على بيانات كتابات');
+    var rows;const ext=validateUploadFile(file);
+    if(ext==='.xlsx'||ext==='.xls') rows=await parseExcel(file);
+    else if(ext==='.csv') rows=await parseCSV(file);
+    else rows=await parsePDF(file);
+    if(version!==_dtUploadVersion||!res.isConnected)return;
+    validateParsedRows(rows);
     var ds=document.getElementById('dtDateInp').value || dtToday();
     var branch=document.getElementById('dtBranchSel').value;
     if(!DT.store[ds]) DT.store[ds]={T1:null,T2:null,T3:null};
@@ -6568,16 +6585,18 @@ async function dtHandleFile(file){
     if(!DT.selDate) DT.selDate=ds;
     saveData();
     renderDailyTrack();
-    document.getElementById('dtDropZone').innerHTML='<div style="font-size:32px;margin-bottom:8px;">📄</div><div style="font-size:13px;font-weight:700;color:var(--violet-l);margin-bottom:4px;">اسحب الملف هنا أو اضغط للاختيار</div><div style="font-size:11px;color:var(--text-muted);">PDF · Excel · CSV — كتابات الأطباء</div>';
-    res.innerHTML='✅ تم رفع '+BRANCH_LABELS[branch]+' — '+dtFmtAr(ds)+' ('+fmt(rows.length)+' كتابة)';
+    zone.innerHTML='<div style="font-size:32px;margin-bottom:8px;">📄</div><div style="font-size:13px;font-weight:700;color:var(--violet-l);margin-bottom:4px;">اسحب الملف هنا أو اضغط للاختيار</div><div style="font-size:11px;color:var(--text-muted);">PDF · Excel · CSV — كتابات الأطباء</div>';
+    res.textContent='تم رفع '+BRANCH_LABELS[branch]+' — '+dtFmtAr(ds)+' ('+fmt(rows.length)+' كتابة)';
     res.style.display='block';
     toast('✓ '+dtFmtAr(ds)+' '+BRANCH_LABELS[branch]+' — '+fmt(rows.length)+' كتابة');
     setTimeout(closeModal,1500);
   }catch(e){
-    document.getElementById('dtDropZone').innerHTML='<div style="font-size:32px;margin-bottom:8px;">📄</div><div style="font-size:13px;font-weight:700;color:var(--violet-l);margin-bottom:4px;">اسحب الملف هنا أو اضغط للاختيار</div><div style="font-size:11px;color:var(--text-muted);">PDF · Excel · CSV — كتابات الأطباء</div>';
-    err.textContent='⚠️ '+e.message; err.style.display='block';
-    toast(e.message,'error');
-  }
+    if(version===_dtUploadVersion&&err.isConnected){
+      zone.innerHTML='<div style="font-size:32px;margin-bottom:8px;">📄</div><div style="font-size:13px;font-weight:700;color:var(--violet-l);margin-bottom:4px;">اسحب الملف هنا أو اضغط للاختيار</div><div style="font-size:11px;color:var(--text-muted);">PDF · Excel · CSV — كتابات الأطباء</div>';
+      err.textContent='⚠️ '+e.message; err.style.display='block';
+      toast(e.message,'error');
+    }
+  }finally{hideLoad();}
 }
 
 /* ── RENDER MAIN ── */

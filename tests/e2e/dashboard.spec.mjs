@@ -242,3 +242,59 @@ test('paginates large tables and searches the cached index', async ({ page }) =>
   await expect(page.locator('#docTbl tr')).toHaveCount(1);
   await expect(page.locator('#docTbl')).toContainText('Doctor 449');
 });
+
+test('rolls back the whole snapshot when one branch cannot be restored', async ({ page }) => {
+  await page.locator('#loginUser').fill('elsayed');
+  await page.locator('#loginPass').fill('pharma2026');
+  await page.locator('.login-btn').click();
+
+  const result = await page.evaluate(async () => {
+    lockInMemoryData();
+    await _idbPut(_IDB_KEY, {
+      v: 2,
+      active: 'T1',
+      periods: {
+        T1: [{ id: 1, label: 'مايو 2026', rows: [{ doctor: 'Dr Good', service: 'Drug A' }] }],
+        T2: [{ id: 2, label: 'مايو 2026', rows: [{ doctor: 'FAIL', service: 'Drug B' }] }],
+        T3: [],
+      },
+      dt: {},
+    });
+    const originalAggregate = aggregateAsync;
+    aggregateAsync = async (rows, onProgress) => {
+      if (rows[0]?.doctor === 'FAIL') throw new Error('forced restore failure');
+      return originalAggregate(rows, onProgress);
+    };
+    try {
+      const restored = await loadSavedData();
+      return {
+        restored,
+        dataEmpty: STATE.data.T1 === null && STATE.data.T2 === null,
+        periodsEmpty: STATE.periods.T1.length === 0 && STATE.periods.T2.length === 0,
+      };
+    } finally {
+      aggregateAsync = originalAggregate;
+    }
+  });
+
+  expect(result).toEqual({ restored: false, dataEmpty: true, periodsEmpty: true });
+  await expect(page.locator('#saveStatus')).toHaveAttribute('data-state', 'error');
+});
+
+test('enforces upload limits in daily tracking', async ({ page }) => {
+  await page.locator('#loginUser').fill('elsayed');
+  await page.locator('#loginPass').fill('pharma2026');
+  await page.locator('.login-btn').click();
+
+  await page.evaluate(() => dtOpenUpload('2026-07-09'));
+  await page.evaluate(async () => {
+    await dtHandleFile({
+      name: 'oversized.csv',
+      size: PharmaCore.MAX_UPLOAD_BYTES + 1,
+    });
+  });
+
+  await expect(page.locator('#dtUpError')).toContainText('50MB');
+  const stored = await page.evaluate(() => DT.store['2026-07-09']);
+  expect(stored).toBeUndefined();
+});

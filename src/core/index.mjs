@@ -313,7 +313,13 @@ export function validateSnapshot(snapshot) {
       for (const branch of ['T1', 'T2', 'T3']) {
         const entry = branches[branch];
         if (entry == null) continue;
-        if (!entry || typeof entry !== 'object' || !Array.isArray(entry.rows) || !entry.rows.every(validateRxRow)) {
+        if (
+          !entry
+          || typeof entry !== 'object'
+          || !Array.isArray(entry.rows)
+          || entry.rows.length > MAX_UPLOAD_ROWS
+          || !entry.rows.every(validateRxRow)
+        ) {
           return { valid: false, error: `invalid-daily-${branch}` };
         }
         totalRows += entry.rows.length;

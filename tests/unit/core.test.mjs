@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  MAX_UPLOAD_ROWS,
   escapeSpreadsheetFormula,
   assessRows,
   deduplicateExactRows,
@@ -134,6 +135,19 @@ describe('snapshot validation', () => {
       periods: { T1: [], T2: [], T3: [] },
       dt: { tomorrow: { T1: { rows: [] } } },
     })).toMatchObject({ valid: false, error: 'invalid-daily-date' });
+  });
+
+  it('applies the upload row cap to each daily entry', () => {
+    const repeatedRow = { doctor: 'Dr A', service: 'Drug' };
+    expect(validateSnapshot({
+      v: 2,
+      periods: { T1: [], T2: [], T3: [] },
+      dt: {
+        '2026-07-09': {
+          T1: { rows: Array(MAX_UPLOAD_ROWS + 1).fill(repeatedRow) },
+        },
+      },
+    })).toMatchObject({ valid: false, error: 'invalid-daily-T1' });
   });
 });
 
