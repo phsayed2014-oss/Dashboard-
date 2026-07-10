@@ -8,10 +8,10 @@
     "build": "node scripts/build.mjs",
     "check:generated": "node scripts/check-generated.mjs",
     "lint": "eslint src scripts tests",
-    "test": "npm run test:unit && npm run test:e2e",
+    "test": "npm run build && npm run test:unit && playwright test",
     "test:unit": "vitest run tests/unit",
-    "test:e2e": "playwright test",
-    "verify": "npm run build && npm run check:generated && npm run lint && npm run test"
+    "test:e2e": "npm run build && playwright test",
+    "verify": "npm run build && npm run check:generated && npm run lint && npm run test:unit && playwright test"
   },
   "repository": {
     "type": "git",
@@ -28,6 +28,9 @@
     "url": "https://github.com/phsayed2014-oss/dashboard-/issues"
   },
   "homepage": "https://github.com/phsayed2014-oss/dashboard-#readme",
+  "engines": {
+    "node": ">=22"
+  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.1",

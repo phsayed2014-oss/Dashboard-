@@ -1,18 +1,17 @@
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { outputPaths, renderDashboard } from './build-dashboard.mjs';
 
-const root = resolve(new URL('..', import.meta.url).pathname);
-const paths = [
-  join(root, 'PharmaDash-v3-medical-ready.html'),
-  join(root, 'pharmdash v3 medical.html'),
-  join(root, 'dist', 'PharmaDash-v3-medical-ready.html'),
-];
-const files = await Promise.all(paths.map((path) => readFile(path, 'utf8')));
+const files = await Promise.all(outputPaths.map((path) => readFile(path, 'utf8')));
 
 if (!files.every((file) => file === files[0])) {
   throw new Error('Generated dashboard files are not byte-identical');
+}
+const expected = await renderDashboard();
+if (files[0] !== expected) {
+  throw new Error('Generated dashboard is stale; run npm run build and commit all generated files');
 }
 if (files[0].includes('/*__PHARMADASH_STYLES__*/') || files[0].includes('/*__PHARMADASH_APP__*/')) {
   throw new Error('Generated dashboard still contains a build marker');

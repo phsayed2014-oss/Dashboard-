@@ -1,5 +1,10 @@
 import { defineConfig } from '@playwright/test';
 
+const launchOptions = {
+  args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+};
+if (process.env.CHROME_PATH) launchOptions.executablePath = process.env.CHROME_PATH;
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,
@@ -9,10 +14,7 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:8123',
     browserName: 'chromium',
     headless: true,
-    launchOptions: {
-      executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome-stable',
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-    },
+    launchOptions,
   },
   webServer: {
     command: 'python3 -m http.server 8123',
