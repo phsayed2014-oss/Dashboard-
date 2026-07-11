@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script>if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}</script>
+  <script>if(window.pdfjsLib&&pdfjsLib.GlobalWorkerOptions){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}</script>
   <style>
     :root{
       --void:#080d19;
@@ -129,6 +129,9 @@
     .import-foot>div{display:flex;gap:9px}
     .import-modal table{min-width:0}
     .import-modal .empty{padding:20px;font-size:11.5px}
+    .ir-type{font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;margin-right:6px;vertical-align:middle}
+    .ir-type.rx{color:#c4b4ff;background:rgba(157,122,255,.14);border:1px solid rgba(157,122,255,.3)}
+    .ir-type.sales{color:#74edd4;background:rgba(27,209,174,.12);border:1px solid rgba(27,209,174,.28)}
     @media(max-width:1080px){.entry-grid{grid-template-columns:repeat(3,1fr)}.kpis{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:680px){.app{padding:16px 13px 30px}.topbar{padding:16px;align-items:flex-start}.status{display:none}.brand h1{font-size:16px}.hero{padding:17px;align-items:flex-start;flex-direction:column}.hero h2{font-size:16px}.entry-card,.chart-card,.table-card{padding:15px}.entry-grid{grid-template-columns:1fr 1fr}.entry-grid .field:nth-child(3){grid-column:span 2}.entry-grid .btn{grid-column:span 2}.kpis{grid-template-columns:1fr 1fr;gap:9px}.kpi{padding:13px;min-height:104px}.kpi-value{font-size:22px}.chart-wrap{height:270px}.filters{width:100%}.filter{flex:1;min-width:132px}.filter select,.filter input{width:100%}.toast{left:14px;right:14px;bottom:14px;max-width:none}}
   </style>
@@ -424,7 +427,7 @@
           <div class="card-head">
             <div>
               <div class="card-title">${editing ? '✏️ تعديل سجل يومي' : '➕ إضافة سجل يومي'}</div>
-              <div class="card-help">أدخل يدوياً، أو استورد تقرير «مبيعات اصناف مورد» PDF وستُسحب الكمية والمبلغ تلقائياً لكل منتج.</div>
+              <div class="card-help">أدخل يدوياً، أو استورد PDF: تقرير «مبيعات اصناف مورد» (حبات + مبلغ) أو تقرير «Doctor's Medication Orders» (عدد مرات الكتابة) — وتُسحب الأرقام تلقائياً.</div>
             </div>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
               <button type="button" class="btn-import" id="importPdfBtn">📎 استيراد تقرير PDF</button>
@@ -511,12 +514,37 @@
     function parseReport(lines){
       const norm = lines.map(line => line.normalize('NFKC'));
       const joined = norm.join('\n');
+      // نوع التقرير: كتابات الأطباء أم مبيعات الأصناف
+      const isRx = /Service Name|Medication Orders/i.test(joined);
       let pharmacy = null;
       const pm = joined.match(/صيدلي[ةه]\s*رقم\s*(\d+)/) || joined.match(/صيدلي[ةه]\s*(\d+)/);
       if(pm){ const guess = 'صيدلية ' + pm[1]; if(PHARMACIES.includes(guess)) pharmacy = guess; }
       let date = '';
       const dm = joined.match(/(\d{2})-(\d{2})-(\d{4})/);
       if(dm) date = dm[3] + '-' + dm[2] + '-' + dm[1];
+
+      if(isRx){
+        // عدّ مرات كتابة كل صنف (بالاسم التجاري داخل Service Name)
+        // استبعاد الملغى (Canceled)، وإزالة الأسطر المتطابقة تماماً حتى لا يتكرر العدّ
+        const seen = new Set();
+        const counts = {};
+        norm.forEach(line => {
+          const up = line.toUpperCase();
+          const prod = PRODUCT_KEYWORDS.find(p => up.includes(p.kw));
+          if(!prod) return;
+          if(/\bCANCEL/i.test(up)) return;
+          const key = prod.key + '::' + line.replace(/\s+/g,' ').trim();
+          if(seen.has(key)) return;
+          seen.add(key);
+          counts[prod.key] = (counts[prod.key] || 0) + 1;
+        });
+        const rows = PRODUCT_KEYWORDS
+          .filter(p => counts[p.key])
+          .map(p => ({ product:p.key, prescriptions:counts[p.key], include:true }));
+        return { type:'rx', pharmacy, date, rows };
+      }
+
+      // تقرير مبيعات الأصناف: الكمية المباعة + المبلغ
       const rows = [];
       norm.forEach(line => {
         const up = line.toUpperCase();
@@ -527,7 +555,7 @@
         if(nums.length < 2) return;
         rows.push({ product:prod.key, amount:Math.round(nums[0]), units:Math.round(nums[nums.length-1]), include:true });
       });
-      return { pharmacy, date, rows };
+      return { type:'sales', pharmacy, date, rows };
     }
     async function handleImportFiles(event){
       const files = [...event.target.files];
@@ -576,15 +604,19 @@
           const existing = entries.find(entry => entry.date === report.date && entry.pharmacy === report.pharmacy && entry.product === row.product);
           const timestamp = new Date().toISOString();
           if(existing){
-            existing.units = row.units;
-            existing.amount = row.amount;
+            // ضبط (استبدال) القيمة القادمة من التقرير مع الحفاظ على باقي الحقول — يمنع التكرار عند إعادة الاستيراد
+            if(report.type === 'rx') existing.prescriptions = row.prescriptions;
+            else { existing.units = row.units; existing.amount = row.amount; }
             existing.updatedAt = timestamp;
             updated++;
           }else{
             entries.push({
               id:'sale-' + Date.now() + '-' + Math.random().toString(36).slice(2,8),
               date:report.date, pharmacy:report.pharmacy, product:row.product,
-              units:row.units, amount:row.amount, prescriptions:0, updatedAt:timestamp
+              units: report.type === 'rx' ? 0 : row.units,
+              amount: report.type === 'rx' ? 0 : row.amount,
+              prescriptions: report.type === 'rx' ? row.prescriptions : 0,
+              updatedAt:timestamp
             });
             added++;
           }
@@ -608,7 +640,7 @@
             <div class="import-head">
               <div>
                 <div class="import-title">📎 مراجعة التقارير قبل الاستيراد</div>
-                <div class="import-sub">الكمية المباعة والمبلغ مسحوبان تلقائياً من كل ملف. راجع الصيدلية والتاريخ لكل تقرير ثم استورد.</div>
+                <div class="import-sub">يتعرّف تلقائياً على نوع التقرير (مبيعات الأصناف = حبات ومبلغ · كتابات الأطباء = عدد مرات الكتابة) ويسحب الأرقام. راجع الصيدلية والتاريخ ثم استورد.</div>
               </div>
               <button class="btn btn-secondary" type="button" onclick="closeImport()">إغلاق</button>
             </div>
@@ -616,9 +648,17 @@
               ${IMPORT.reports.map((report,index) => {
                 if(report.error) return `<div class="import-report err">⚠️ تعذّر قراءة «${escapeHtml(report.fileName)}»: ${escapeHtml(report.error)}</div>`;
                 const valid = reportValid(report);
+                const isRx = report.type === 'rx';
+                const typeBadge = isRx
+                  ? '<span class="ir-type rx">كتابات الأطباء</span>'
+                  : '<span class="ir-type sales">مبيعات الأصناف</span>';
+                const head = isRx
+                  ? '<th style="text-align:center">استيراد</th><th>المنتج</th><th style="text-align:center;color:#c4b4ff">عدد مرات الكتابة</th>'
+                  : '<th style="text-align:center">استيراد</th><th>المنتج</th><th style="text-align:center;color:#71ecd3">الحبات المباعة</th><th style="text-align:center;color:#ffd382">المبلغ (ريال)</th>';
+                const emptyCols = isRx ? 3 : 4;
                 return `<div class="import-report">
                   <div class="import-report-head">
-                    <span class="ir-file">📄 ${escapeHtml(report.fileName)}</span>
+                    <span class="ir-file">📄 ${escapeHtml(report.fileName)} ${typeBadge}</span>
                     ${valid ? '<span class="ir-ok">جاهز</span>' : '<span class="ir-warn">راجع الصيدلية / التاريخ</span>'}
                   </div>
                   <div class="import-fields">
@@ -629,13 +669,14 @@
                     <div><label>التاريخ</label><input type="date" value="${report.date || ''}" onchange="updateReportField(${index},'date',this.value)"></div>
                   </div>
                   <div class="table-wrap"><table>
-                    <thead><tr><th style="text-align:center">استيراد</th><th>المنتج</th><th style="text-align:center;color:#71ecd3">الحبات المباعة</th><th style="text-align:center;color:#ffd382">المبلغ (ريال)</th></tr></thead>
+                    <thead><tr>${head}</tr></thead>
                     <tbody>${report.rows.length ? report.rows.map((row,rowIndex) => `<tr>
                       <td style="text-align:center"><input type="checkbox" ${row.include ? 'checked' : ''} onchange="toggleRow(${index},${rowIndex},this.checked)"></td>
                       <td>${escapeHtml(productName(row.product))}</td>
-                      <td class="num units">${format(row.units)}</td>
-                      <td class="num money">${format(row.amount)}</td>
-                    </tr>`).join('') : '<tr><td colspan="4" class="empty">لم يتم التعرف على أي منتج من منتجاتك في هذا الملف.</td></tr>'}</tbody>
+                      ${isRx
+                        ? `<td class="num rx">${format(row.prescriptions)}</td>`
+                        : `<td class="num units">${format(row.units)}</td><td class="num money">${format(row.amount)}</td>`}
+                    </tr>`).join('') : `<tr><td colspan="${emptyCols}" class="empty">لم يتم التعرف على أي منتج من منتجاتك في هذا الملف.</td></tr>`}</tbody>
                   </table></div>
                 </div>`;
               }).join('')}
