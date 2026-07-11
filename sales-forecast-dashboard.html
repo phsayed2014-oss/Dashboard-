@@ -108,6 +108,25 @@
     .toast{position:fixed;left:24px;bottom:24px;z-index:10;max-width:340px;padding:12px 15px;border-radius:11px;background:#1b2c46;border:1px solid rgba(99,149,255,.32);box-shadow:var(--shadow);color:var(--text);font-size:12px;font-weight:700;transform:translateY(90px);opacity:0;transition:.25s}
     .toast.show{transform:translateY(0);opacity:1}
     .btn-import{height:34px;padding:0 13px;background:rgba(99,149,255,.12);border:1px solid rgba(99,149,255,.3);color:#a9c1ff;border-radius:9px;font-size:12px;font-weight:800}
+    .analysis-card{padding:20px;margin-bottom:18px}
+    .analysis-head{margin-bottom:14px}
+    .forecast-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+    .fc{padding:15px;border-radius:14px;border:1px solid var(--line);background:rgba(8,13,25,.4);position:relative;overflow:hidden}
+    .fc::before{content:"";height:3px;position:absolute;right:0;left:0;top:0;background:var(--amber)}
+    .fc.teal::before{background:var(--teal)}.fc.blue::before{background:var(--blue)}.fc.violet::before{background:var(--violet)}
+    .fc .fc-label{font-size:11px;color:var(--dim);font-weight:700}
+    .fc .fc-value{font:800 23px/1.2 Alexandria,sans-serif;margin-top:9px;letter-spacing:-.03em}
+    .fc .fc-value .u{font-size:13px;color:var(--muted);font-weight:600}
+    .fc .fc-value.up{color:#71ecd3}.fc .fc-value.down{color:#ff9bab}
+    .fc .fc-foot{font-size:10px;color:var(--muted);margin-top:7px;font-weight:600}
+    .insight{padding:13px 15px;border-radius:11px;background:rgba(99,149,255,.07);border:1px solid rgba(99,149,255,.16);font-size:12.5px;line-height:1.9;color:#dce5f5;margin-bottom:14px}
+    .insight b{color:#fff}.insight .good{color:#71ecd3;font-weight:800}.insight .bad{color:#ff9bab;font-weight:800}
+    .analysis-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .an{padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(18,29,49,.6)}
+    .an .an-label{font-size:10.5px;color:var(--muted);font-weight:700}
+    .an .an-value{font-size:14px;font-weight:800;margin-top:6px}
+    .an .an-sub{font-size:10px;color:var(--muted);margin-top:4px}
+    @media(max-width:900px){.forecast-grid,.analysis-grid{grid-template-columns:1fr 1fr}}
     .import-overlay{position:fixed;inset:0;z-index:40;background:rgba(4,8,16,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px}
     .import-modal{background:var(--card);border:1px solid var(--line-strong);border-radius:18px;box-shadow:var(--shadow);width:min(760px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
     .import-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
@@ -331,7 +350,7 @@
       notify(message);
       render();
     }
-    function chart(period, entries){
+    function chart(period, entries, analysis){
       const canvas = document.getElementById('trendChart');
       if(!canvas || typeof Chart === 'undefined') return;
       if(trendChart) trendChart.destroy();
@@ -342,27 +361,33 @@
         aggregate[entry.date].amount += entry.amount;
         aggregate[entry.date].prescriptions += entry.prescriptions;
       });
-      const labels = [], units = [], amount = [], prescriptions = [];
+      // امتداد التوقع حتى نهاية الشهر عند عرض حتى اليوم
+      const forecastOn = analysis && analysis.hasData && analysis.runRateAmount > 0
+        && period.endDate >= analysis.todayStr && analysis.monthEndStr > period.endDate;
+      const chartEnd = forecastOn ? analysis.monthEndDate : period.end;
+      const labels = [], units = [], amount = [], prescriptions = [], forecast = [];
       const cursor = new Date(period.start);
-      while(cursor <= period.end){
+      while(cursor <= chartEnd){
         const key = localDateString(cursor);
         const totals = aggregate[key];   // الأيام بلا تسجيل = فجوة (null) بدل صفر
         labels.push(dateLabel(key, true));
         units.push(totals ? totals.units : null);
         amount.push(totals ? totals.amount : null);
         prescriptions.push(totals ? totals.prescriptions : null);
+        forecast.push(forecastOn && key >= analysis.todayStr && key <= analysis.monthEndStr ? Math.round(analysis.runRateAmount) : null);
         cursor.setDate(cursor.getDate() + 1);
+      }
+      const datasets = [
+        {label:'المبلغ (ريال)',data:amount,yAxisID:'yMoney',borderColor:'#f7bd57',backgroundColor:'rgba(247,189,87,.10)',borderWidth:3,tension:0,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#ffd382',fill:true,spanGaps:true},
+        {label:'الحبات المباعة',data:units,yAxisID:'yCount',borderColor:'#1bd1ae',backgroundColor:'transparent',borderWidth:3,tension:0,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#77eed6',fill:false,spanGaps:true},
+        {label:'كتابات الأطباء',data:prescriptions,yAxisID:'yCount',borderColor:'#6395ff',backgroundColor:'transparent',borderWidth:3,tension:0,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#a9c1ff',borderDash:[7,4],fill:false,spanGaps:true}
+      ];
+      if(forecastOn){
+        datasets.push({label:'توقع المبلغ (معدل يومي)',data:forecast,yAxisID:'yMoney',borderColor:'#74edd4',backgroundColor:'transparent',borderWidth:2,borderDash:[3,4],tension:0,pointRadius:0,fill:false,spanGaps:true});
       }
       trendChart = new Chart(canvas, {
         type:'line',
-        data:{
-          labels,
-          datasets:[
-            {label:'المبلغ (ريال)',data:amount,yAxisID:'yMoney',borderColor:'#f7bd57',backgroundColor:'rgba(247,189,87,.10)',borderWidth:3,tension:0,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#ffd382',fill:true,spanGaps:true},
-            {label:'الحبات المباعة',data:units,yAxisID:'yCount',borderColor:'#1bd1ae',backgroundColor:'transparent',borderWidth:3,tension:0,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#77eed6',fill:false,spanGaps:true},
-            {label:'كتابات الأطباء',data:prescriptions,yAxisID:'yCount',borderColor:'#6395ff',backgroundColor:'transparent',borderWidth:3,tension:0,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#a9c1ff',borderDash:[7,4],fill:false,spanGaps:true}
-          ]
-        },
+        data:{ labels, datasets },
         options:{
           responsive:true,maintainAspectRatio:false,animation:{duration:250},interaction:{intersect:false,mode:'index'},
           plugins:{
@@ -400,6 +425,93 @@
         impInput.addEventListener('change', handleImportFiles);
       }
     }
+    const AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    // ===== FORECAST & ANALYSIS (current calendar month, respects filters) =====
+    function computeAnalysis(){
+      const all = loadEntries().filter(matches);
+      const now = dateFromString(today());
+      const y = now.getFullYear(), m = now.getMonth();
+      const monthStartStr = localDateString(new Date(y, m, 1));
+      const monthEndDate = new Date(y, m + 1, 0);
+      const monthEndStr = localDateString(monthEndDate);
+      const daysInMonth = monthEndDate.getDate();
+      const todayStr = today();
+      const todayDay = now.getDate();
+      const monthEntries = all.filter(e => e.date >= monthStartStr && e.date <= monthEndStr);
+      const byDate = {};
+      monthEntries.forEach(e => {
+        (byDate[e.date] = byDate[e.date] || {a:0,u:0,p:0});
+        byDate[e.date].a += e.amount; byDate[e.date].u += e.units; byDate[e.date].p += e.prescriptions;
+      });
+      const recordedDays = Object.keys(byDate).length;
+      const achievedAmount = monthEntries.reduce((s,e) => s + e.amount, 0);
+      const achievedUnits = monthEntries.reduce((s,e) => s + e.units, 0);
+      const achievedRx = monthEntries.reduce((s,e) => s + e.prescriptions, 0);
+      const runRateAmount = recordedDays ? achievedAmount / recordedDays : 0;
+      const runRateUnits = recordedDays ? achievedUnits / recordedDays : 0;
+      const remainingDays = Math.max(0, daysInMonth - todayDay);
+      const projectedAmount = Math.round(achievedAmount + runRateAmount * remainingDays);
+      const projectedUnits = Math.round(achievedUnits + runRateUnits * remainingDays);
+      // trend: last 7 days vs previous 7 days (amount)
+      const shift = n => localDateString(new Date(now.getFullYear(), now.getMonth(), now.getDate() - n));
+      const sumBetween = (from,to) => all.filter(e => e.date >= from && e.date <= to).reduce((s,e) => s + e.amount, 0);
+      const last7 = sumBetween(shift(6), todayStr);
+      const prev7 = sumBetween(shift(13), shift(7));
+      const trendPct = prev7 > 0 ? ((last7 - prev7) / prev7 * 100) : (last7 > 0 ? 100 : 0);
+      // top product / pharmacy / best day (this month)
+      const byProduct = {}, byPharmacy = {};
+      monthEntries.forEach(e => { byProduct[e.product] = (byProduct[e.product]||0) + e.amount; byPharmacy[e.pharmacy] = (byPharmacy[e.pharmacy]||0) + e.amount; });
+      const topProduct = Object.entries(byProduct).sort((a,b) => b[1]-a[1])[0] || null;
+      const topPharmacy = Object.entries(byPharmacy).sort((a,b) => b[1]-a[1])[0] || null;
+      const bestDay = Object.entries(byDate).sort((a,b) => b[1].a-a[1].a)[0] || null;
+      const conversion = achievedRx > 0 ? (achievedUnits / achievedRx) : 0;
+      return {
+        monthName:AR_MONTHS[m], hasData:recordedDays>0,
+        achievedAmount, achievedUnits, achievedRx, runRateAmount, runRateUnits,
+        recordedDays, remainingDays, daysInMonth, projectedAmount, projectedUnits,
+        trendPct, last7, prev7, topProduct, topPharmacy, bestDay, conversion,
+        monthEndStr, todayStr, monthEndDate
+      };
+    }
+    function analysisSection(a){
+      if(!a.hasData){
+        return `<section class="card analysis-card"><div class="analysis-head"><div class="chart-title">🔮 التوقع والتحليل</div></div>
+          <div class="insight">أضِف سجلات هذا الشهر (يدوياً أو باستيراد PDF) ليظهر التوقع والتحليل تلقائياً.</div></section>`;
+      }
+      const trendUp = a.trendPct >= 0;
+      const convFlag = a.achievedRx > 0
+        ? (a.conversion >= 1
+            ? `<span class="good">جيد</span> — لكل كتابة تبيع ${a.conversion.toFixed(2)} حبة`
+            : `<span class="bad">تسرّب محتمل</span> — الكتابات أعلى من المبيعات (${a.conversion.toFixed(2)} حبة/كتابة)`)
+        : 'لا توجد كتابات مسجلة هذا الشهر';
+      const productName = key => { const it = product(key); return it ? it.name : key; };
+      const insight = [
+        `على معدلك الحالي <b>${format(a.runRateAmount)} ريال/يوم</b> (${format(a.recordedDays)} يوم مسجل)، المتوقع بنهاية ${a.monthName} حوالي <b>${format(a.projectedAmount)} ريال</b> و<b>${format(a.projectedUnits)} حبة</b>.`,
+        `أداء آخر ٧ أيام ${trendUp ? '<span class="good">⬆ أعلى</span>' : '<span class="bad">⬇ أقل</span>'} بنسبة <b>${Math.abs(a.trendPct).toFixed(0)}%</b> عن الأسبوع السابق.`,
+        a.topProduct ? `أعلى منتج: <b>${escapeHtml(productName(a.topProduct[0]))}</b> (${format(a.topProduct[1])} ريال)${a.topPharmacy ? ` · أعلى صيدلية: <b>${escapeHtml(a.topPharmacy[0])}</b>` : ''}.` : '',
+        `التحويل (حبات ÷ كتابات): ${convFlag}.`
+      ].filter(Boolean).join('<br>');
+      return `<section class="card analysis-card">
+        <div class="analysis-head">
+          <div class="chart-title">🔮 التوقع والتحليل — شهر ${a.monthName}</div>
+          <div class="range-copy">بناءً على المعدل الحالي · يتأثر بفلاتر الصيدلية والمنتج بالأعلى</div>
+        </div>
+        <div class="forecast-grid">
+          <div class="fc teal"><div class="fc-label">المتوقع بنهاية الشهر</div><div class="fc-value teal">${format(a.projectedAmount)} <span class="u">ريال</span></div><div class="fc-foot">محقق ${format(a.achievedAmount)} + متوقع ${format(a.projectedAmount - a.achievedAmount)}</div></div>
+          <div class="fc blue"><div class="fc-label">المعدل اليومي</div><div class="fc-value">${format(a.runRateAmount)} <span class="u">ريال</span></div><div class="fc-foot">${a.runRateUnits.toFixed(1)} حبة / يوم مسجل</div></div>
+          <div class="fc"><div class="fc-label">أيام متبقية بالشهر</div><div class="fc-value">${format(a.remainingDays)}</div><div class="fc-foot">من ${format(a.daysInMonth)} يوم</div></div>
+          <div class="fc violet"><div class="fc-label">اتجاه آخر ٧ أيام</div><div class="fc-value ${trendUp ? 'up' : 'down'}">${trendUp ? '+' : ''}${a.trendPct.toFixed(0)}%</div><div class="fc-foot">${format(a.last7)} مقابل ${format(a.prev7)} ريال</div></div>
+        </div>
+        <div class="insight">💡 ${insight}</div>
+        <div class="analysis-grid">
+          <div class="an"><div class="an-label">أعلى منتج (الشهر)</div><div class="an-value">${a.topProduct ? escapeHtml(productName(a.topProduct[0])) : '—'}</div><div class="an-sub">${a.topProduct ? format(a.topProduct[1]) + ' ريال' : ''}</div></div>
+          <div class="an"><div class="an-label">أعلى صيدلية (الشهر)</div><div class="an-value">${a.topPharmacy ? escapeHtml(a.topPharmacy[0]) : '—'}</div><div class="an-sub">${a.topPharmacy ? format(a.topPharmacy[1]) + ' ريال' : ''}</div></div>
+          <div class="an"><div class="an-label">معدل التحويل</div><div class="an-value">${a.achievedRx > 0 ? a.conversion.toFixed(2) + ' حبة/كتابة' : '—'}</div><div class="an-sub">${format(a.achievedUnits)} حبة · ${format(a.achievedRx)} كتابة</div></div>
+          <div class="an"><div class="an-label">أفضل يوم (الشهر)</div><div class="an-value">${a.bestDay ? dateLabel(a.bestDay[0], true) : '—'}</div><div class="an-sub">${a.bestDay ? format(a.bestDay[1].a) + ' ريال' : ''}</div></div>
+        </div>
+      </section>`;
+    }
+
     function render(){
       if(!UI.endDate) UI.endDate = today();
       const root = document.getElementById('dashboard');
@@ -424,6 +536,7 @@
       const activePharmacy = UI.pharmacy === 'all' ? 'كل الصيدليات' : UI.pharmacy;
       const activeProduct = UI.product === 'all' ? 'كل المنتجات' : product(UI.product).name;
       const avgPerDay = totals.days.size ? totals.amount / totals.days.size : 0;
+      const analysis = computeAnalysis();
 
       root.innerHTML = `
         <section class="card entry-card">
@@ -468,6 +581,7 @@
           <div class="filter-summary">الفلاتر الحالية: <b>${escapeHtml(activePharmacy)}</b> · <b>${escapeHtml(activeProduct)}</b></div>
           <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
         </section>
+        ${analysisSection(analysis)}
         <section class="card table-card">
           <div class="table-head">
             <div><div class="table-title">السجلات ضمن فترة العرض</div><div class="table-sub">${format(records.length)} سجل · يمكنك تعديل أو حذف أي سجل.</div></div>
@@ -488,7 +602,7 @@
             '<div class="empty"><div class="empty-icon">📝</div>لا توجد سجلات ضمن هذه الفترة أو الفلاتر.<br>أضف أول سجل من النموذج أعلاه ليظهر في الرسم مباشرة.</div>'}
         </section>`;
       bindEvents();
-      chart(period, entries);
+      chart(period, entries, analysis);
     }
     // ===== PDF IMPORT (تقرير مبيعات اصناف مورد) =====
     const PRODUCT_KEYWORDS = [
