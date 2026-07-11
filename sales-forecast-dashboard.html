@@ -172,7 +172,8 @@
     ];
     const PHARMACIES = ['صيدلية 1','صيدلية 7','صيدلية 18'];
     const STORAGE_KEY = 'private_label_sales_dashboard_v1';
-    const UI = { endDate:null, pharmacy:'all', product:'all', editingId:null };
+    const UI = { endDate:null, days:30, pharmacy:'all', product:'all', editingId:null };
+    const PERIODS = [{days:7,label:'أسبوع'},{days:14,label:'أسبوعين'},{days:30,label:'شهر'},{days:90,label:'٣ شهور'}];
     const IMPORT = { reports:[] };
     let trendChart = null;
 
@@ -241,8 +242,9 @@
     }
     function range(){
       const end = dateFromString(UI.endDate || today()) || new Date();
+      const span = (PERIODS.find(p => p.days === UI.days) || {days:30}).days;
       const start = new Date(end);
-      start.setDate(start.getDate() - 89);
+      start.setDate(start.getDate() - (span - 1));
       return { start, end, startDate:localDateString(start), endDate:localDateString(end) };
     }
     function matches(entry){
@@ -344,11 +346,11 @@
       const cursor = new Date(period.start);
       while(cursor <= period.end){
         const key = localDateString(cursor);
-        const totals = aggregate[key] || {units:0,amount:0,prescriptions:0};
+        const totals = aggregate[key];   // الأيام بلا تسجيل = فجوة (null) بدل صفر
         labels.push(dateLabel(key, true));
-        units.push(totals.units);
-        amount.push(totals.amount);
-        prescriptions.push(totals.prescriptions);
+        units.push(totals ? totals.units : null);
+        amount.push(totals ? totals.amount : null);
+        prescriptions.push(totals ? totals.prescriptions : null);
         cursor.setDate(cursor.getDate() + 1);
       }
       trendChart = new Chart(canvas, {
@@ -356,9 +358,9 @@
         data:{
           labels,
           datasets:[
-            {label:'المبلغ (ريال)',data:amount,yAxisID:'yMoney',borderColor:'#f7bd57',backgroundColor:'rgba(247,189,87,.12)',borderWidth:3,tension:.32,pointRadius:2,pointHoverRadius:5,pointBackgroundColor:'#ffd382',fill:true},
-            {label:'الحبات المباعة',data:units,yAxisID:'yCount',borderColor:'#1bd1ae',backgroundColor:'rgba(27,209,174,.05)',borderWidth:3,tension:.32,pointRadius:2,pointHoverRadius:5,pointBackgroundColor:'#77eed6',fill:false},
-            {label:'كتابات الأطباء',data:prescriptions,yAxisID:'yCount',borderColor:'#6395ff',backgroundColor:'transparent',borderWidth:3,tension:.32,pointRadius:2,pointHoverRadius:5,pointBackgroundColor:'#a9c1ff',borderDash:[7,4],fill:false}
+            {label:'المبلغ (ريال)',data:amount,yAxisID:'yMoney',borderColor:'#f7bd57',backgroundColor:'rgba(247,189,87,.10)',borderWidth:3,tension:0,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#ffd382',fill:true,spanGaps:true},
+            {label:'الحبات المباعة',data:units,yAxisID:'yCount',borderColor:'#1bd1ae',backgroundColor:'transparent',borderWidth:3,tension:0,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#77eed6',fill:false,spanGaps:true},
+            {label:'كتابات الأطباء',data:prescriptions,yAxisID:'yCount',borderColor:'#6395ff',backgroundColor:'transparent',borderWidth:3,tension:0,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#a9c1ff',borderDash:[7,4],fill:false,spanGaps:true}
           ]
         },
         options:{
@@ -383,6 +385,7 @@
     }
     function bindEvents(){
       document.getElementById('entryForm').addEventListener('submit', submitEntry);
+      document.getElementById('rangePeriod').addEventListener('change', event => { UI.days = Number(event.target.value) || 30; render(); });
       document.getElementById('rangeEnd').addEventListener('change', event => setRangeEnd(event.target.value));
       document.getElementById('filterPharmacy').addEventListener('change', event => setFilter('pharmacy', event.target.value));
       document.getElementById('filterProduct').addEventListener('change', event => setFilter('product', event.target.value));
@@ -454,8 +457,9 @@
         </section>
         <section class="card chart-card">
           <div class="chart-top">
-            <div><div class="chart-title">مسار المبلغ والحبات والكتابات — آخر 3 أشهر</div><div class="range-copy">من ${dateLabel(period.startDate)} إلى ${dateLabel(period.endDate)}</div></div>
+            <div><div class="chart-title">مسار المبلغ والحبات والكتابات — ${(PERIODS.find(p => p.days === UI.days) || {label:''}).label}</div><div class="range-copy">من ${dateLabel(period.startDate)} إلى ${dateLabel(period.endDate)}</div></div>
             <div class="filters">
+              <div class="filter"><label for="rangePeriod">المدة</label><select id="rangePeriod">${PERIODS.map(p => `<option value="${p.days}" ${p.days === UI.days ? 'selected' : ''}>${p.label}</option>`).join('')}</select></div>
               <div class="filter"><label for="rangeEnd">نهاية المسار</label><input id="rangeEnd" type="date" value="${period.endDate}"></div>
               <div class="filter"><label for="filterPharmacy">الصيدلية</label><select id="filterPharmacy">${pharmacyOptions(UI.pharmacy,true)}</select></div>
               <div class="filter"><label for="filterProduct">المنتج</label><select id="filterProduct">${productOptions(UI.product,true)}</select></div>
