@@ -4101,6 +4101,11 @@ async function parsePDF(file,options){
       const keys=new Set(headerFields(ws).map(item=>item.key));
       return keys.size>=2&&(keys.has('patient')||keys.has('service')||keys.has('doctorSection'));
     }
+    function isFooterLine(ws){
+      /* أسطر تذييل تقارير Oracle المتكرّرة في كل صفحة (ترقيم/عنوان/طابع الطباعة) — ليست بيانات */
+      const text=ws.map(word=>word.s).join(' ');
+      return /Page\s+\d+\s+of\s+\d+/i.test(text)||/Printed\s+By\s*:/i.test(text)||/P\.?\s*O\.?\s*Box/i.test(text);
+    }
     function normalizeDigits(value){
       return String(value||'').replace(/[٠-٩]/g,d=>'0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]).replace(/[۰-۹]/g,d=>'0123456789'['۰۱۲۳۴۵۶۷۸۹'.indexOf(d)]);
     }
@@ -4153,7 +4158,7 @@ async function parsePDF(file,options){
       };
       for(const line of lines){
         const ws=line.words;
-        if(isHeaderLine(ws))continue;
+        if(isHeaderLine(ws)||isFooterLine(ws))continue;
         const cells={
           patient:joinCell(ws,cols.patient),
           patientName:joinCell(ws,cols.patientName),
@@ -4163,12 +4168,25 @@ async function parsePDF(file,options){
           doctorSection:joinCell(ws,cols.doctorSection),
           section:joinCell(ws,cols.section),
         };
-        const patientToken=normalizeDigits(cells.patient).replace(/\s+/g,'');
-        if(patientToken){
-          finalizePending();
-          if(!/^[\p{L}\p{N}][\p{L}\p{N}._/-]{0,31}$/u.test(patientToken)){sourceRows++;rejectedRows++;continue;}
-          pending={...cells,patient:patientToken,lastY:line.y};
-          continue;
+        /* عمود «رقم المريض» قد يلتقط الرقم واسم المريض معاً؛ نأخذ المعرِّف الأول
+           كبداية صفّ جديد ونحوّل بقية النص إلى اسم المريض بدل رفض الصف كاملاً */
+        const patientCell=normalizeDigits(cells.patient).trim();
+        const patientLead=patientCell.split(/\s+/)[0]||'';
+        if(patientCell){
+          if(/^[\p{L}\p{N}][\p{L}\p{N}._/-]{0,31}$/u.test(patientLead)){
+            finalizePending();
+            const patientRest=patientCell.slice(patientLead.length).trim();
+            pending={...cells,patient:patientLead,patientName:patientRest?appendValue(patientRest,cells.patientName):cells.patientName,lastY:line.y};
+            continue;
+          }
+          /* الخلية تبدأ بنص غير معرِّف — عاملها كتكملة سطر ملتفّ إن وُجد صفّ قيد التجميع */
+          if(pending&&Math.abs(pending.lastY-line.y)<=24){
+            ['patientName','service','orderNo','status','doctorSection','section'].forEach(field=>{pending[field]=appendValue(pending[field],cells[field]);});
+            pending.patientName=appendValue(pending.patientName,patientCell);
+            pending.lastY=line.y;
+            continue;
+          }
+          sourceRows++;rejectedRows++;continue;
         }
         if(pending&&Math.abs(pending.lastY-line.y)<=24){
           ['patientName','service','orderNo','status','doctorSection','section'].forEach(field=>{pending[field]=appendValue(pending[field],cells[field]);});
