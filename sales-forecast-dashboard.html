@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}</script>
   <style>
     :root{
       --void:#080d19;
@@ -105,6 +107,28 @@
     .footer{text-align:center;color:var(--muted);font-size:10.5px;font-weight:600;margin-top:19px}
     .toast{position:fixed;left:24px;bottom:24px;z-index:10;max-width:340px;padding:12px 15px;border-radius:11px;background:#1b2c46;border:1px solid rgba(99,149,255,.32);box-shadow:var(--shadow);color:var(--text);font-size:12px;font-weight:700;transform:translateY(90px);opacity:0;transition:.25s}
     .toast.show{transform:translateY(0);opacity:1}
+    .btn-import{height:34px;padding:0 13px;background:rgba(99,149,255,.12);border:1px solid rgba(99,149,255,.3);color:#a9c1ff;border-radius:9px;font-size:12px;font-weight:800}
+    .import-overlay{position:fixed;inset:0;z-index:40;background:rgba(4,8,16,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px}
+    .import-modal{background:var(--card);border:1px solid var(--line-strong);border-radius:18px;box-shadow:var(--shadow);width:min(760px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+    .import-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
+    .import-title{font-family:Alexandria,sans-serif;font-weight:800;font-size:15px}
+    .import-sub{color:var(--muted);font-size:11px;margin-top:5px;line-height:1.6;max-width:520px}
+    .import-body{padding:16px 20px;overflow:auto}
+    .import-report{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;background:rgba(8,13,25,.35)}
+    .import-report.err{border-color:rgba(252,113,133,.4);color:#ff9bab;font-size:12px;font-weight:700}
+    .import-report-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:11px}
+    .ir-file{font-size:12.5px;font-weight:800}
+    .ir-ok{font-size:10.5px;font-weight:800;color:#74edd4;background:rgba(27,209,174,.12);border:1px solid rgba(27,209,174,.28);padding:4px 9px;border-radius:999px}
+    .ir-warn{font-size:10.5px;font-weight:800;color:#ffd382;background:rgba(247,189,87,.12);border:1px solid rgba(247,189,87,.3);padding:4px 9px;border-radius:999px}
+    .import-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+    .import-fields label{font-size:11px;color:var(--dim);font-weight:700;display:block;margin-bottom:5px}
+    .import-fields select,.import-fields input{width:100%;height:38px;border:1px solid var(--line);border-radius:8px;background:var(--base);color:var(--text);padding:0 10px;font-size:12.5px;font-weight:600;outline:none}
+    .import-fields select:focus,.import-fields input:focus{border-color:var(--blue)}
+    .import-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 20px;border-top:1px solid var(--line)}
+    .import-count{font-size:12px;font-weight:800;color:var(--dim)}
+    .import-foot>div{display:flex;gap:9px}
+    .import-modal table{min-width:0}
+    .import-modal .empty{padding:20px;font-size:11.5px}
     @media(max-width:1080px){.entry-grid{grid-template-columns:repeat(3,1fr)}.kpis{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:680px){.app{padding:16px 13px 30px}.topbar{padding:16px;align-items:flex-start}.status{display:none}.brand h1{font-size:16px}.hero{padding:17px;align-items:flex-start;flex-direction:column}.hero h2{font-size:16px}.entry-card,.chart-card,.table-card{padding:15px}.entry-grid{grid-template-columns:1fr 1fr}.entry-grid .field:nth-child(3){grid-column:span 2}.entry-grid .btn{grid-column:span 2}.kpis{grid-template-columns:1fr 1fr;gap:9px}.kpi{padding:13px;min-height:104px}.kpi-value{font-size:22px}.chart-wrap{height:270px}.filters{width:100%}.filter{flex:1;min-width:132px}.filter select,.filter input{width:100%}.toast{left:14px;right:14px;bottom:14px;max-width:none}}
   </style>
@@ -146,6 +170,7 @@
     const PHARMACIES = ['صيدلية 1','صيدلية 7','صيدلية 18'];
     const STORAGE_KEY = 'private_label_sales_dashboard_v1';
     const UI = { endDate:null, pharmacy:'all', product:'all', editingId:null };
+    const IMPORT = { reports:[] };
     let trendChart = null;
 
     function localDateString(date){
@@ -362,6 +387,12 @@
       document.querySelectorAll('[data-delete]').forEach(button => button.addEventListener('click', () => removeEntry(button.dataset.delete)));
       const cancel = document.getElementById('cancelEdit');
       if(cancel) cancel.addEventListener('click', cancelEdit);
+      const impBtn = document.getElementById('importPdfBtn');
+      const impInput = document.getElementById('importPdfInput');
+      if(impBtn && impInput){
+        impBtn.addEventListener('click', () => impInput.click());
+        impInput.addEventListener('change', handleImportFiles);
+      }
     }
     function render(){
       if(!UI.endDate) UI.endDate = today();
@@ -393,9 +424,13 @@
           <div class="card-head">
             <div>
               <div class="card-title">${editing ? '✏️ تعديل سجل يومي' : '➕ إضافة سجل يومي'}</div>
-              <div class="card-help">حفظ نفس التاريخ والصيدلية والمنتج يحدّث السجل تلقائياً، بدون تكرار.</div>
+              <div class="card-help">أدخل يدوياً، أو استورد تقرير «مبيعات اصناف مورد» PDF وستُسحب الكمية والمبلغ تلقائياً لكل منتج.</div>
             </div>
-            ${editing ? '<button type="button" class="btn btn-secondary" id="cancelEdit">إلغاء التعديل</button>' : ''}
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <button type="button" class="btn-import" id="importPdfBtn">📎 استيراد تقرير PDF</button>
+              <input type="file" id="importPdfInput" accept="application/pdf,.pdf" multiple hidden>
+              ${editing ? '<button type="button" class="btn btn-secondary" id="cancelEdit">إلغاء التعديل</button>' : ''}
+            </div>
           </div>
           ${editing ? '<div class="edit-banner">أنت تعدّل سجلاً قائماً. احفظ التعديل لتحديث الرسم والمؤشرات فوراً.</div>' : ''}
           <form id="entryForm" class="entry-grid" style="${editing ? 'margin-top:12px' : ''}">
@@ -447,6 +482,173 @@
         </section>`;
       bindEvents();
       chart(period, entries);
+    }
+    // ===== PDF IMPORT (تقرير مبيعات اصناف مورد) =====
+    const PRODUCT_KEYWORDS = [
+      {key:'reflex', kw:'REFLEX'},{key:'rizer', kw:'RIZER'},{key:'oracure', kw:'ORACURE'},
+      {key:'intimo', kw:'INTIMO'},{key:'nostriderm', kw:'NOSTRIDERM'},{key:'nostricure', kw:'NOSTRICURE'}
+    ];
+    async function readPdfLines(file){
+      const buffer = await file.arrayBuffer();
+      const doc = await pdfjsLib.getDocument({data:buffer}).promise;
+      const lines = [];
+      for(let i=1;i<=doc.numPages;i++){
+        const page = await doc.getPage(i);
+        const content = await page.getTextContent();
+        const byY = {};
+        content.items.forEach(item => {
+          if(!item.str) return;
+          const y = Math.round(item.transform[5]);
+          (byY[y] = byY[y] || []).push({s:item.str, x:item.transform[4]});
+        });
+        Object.keys(byY).map(Number).sort((a,b) => b-a).forEach(y => {
+          const line = byY[y].sort((a,b) => a.x-b.x).map(t => t.s).join(' ').replace(/\s+/g,' ').trim();
+          if(line) lines.push(line);
+        });
+      }
+      return lines;
+    }
+    function parseReport(lines){
+      const norm = lines.map(line => line.normalize('NFKC'));
+      const joined = norm.join('\n');
+      let pharmacy = null;
+      const pm = joined.match(/صيدلي[ةه]\s*رقم\s*(\d+)/) || joined.match(/صيدلي[ةه]\s*(\d+)/);
+      if(pm){ const guess = 'صيدلية ' + pm[1]; if(PHARMACIES.includes(guess)) pharmacy = guess; }
+      let date = '';
+      const dm = joined.match(/(\d{2})-(\d{2})-(\d{4})/);
+      if(dm) date = dm[3] + '-' + dm[2] + '-' + dm[1];
+      const rows = [];
+      norm.forEach(line => {
+        const up = line.toUpperCase();
+        const prod = PRODUCT_KEYWORDS.find(p => up.includes(p.kw));
+        if(!prod) return;
+        const before = line.slice(0, up.indexOf(prod.kw));
+        const nums = (before.match(/\d+(?:\.\d+)?/g) || []).map(Number);
+        if(nums.length < 2) return;
+        rows.push({ product:prod.key, amount:Math.round(nums[0]), units:Math.round(nums[nums.length-1]), include:true });
+      });
+      return { pharmacy, date, rows };
+    }
+    async function handleImportFiles(event){
+      const files = [...event.target.files];
+      event.target.value = '';
+      if(!files.length) return;
+      if(typeof pdfjsLib === 'undefined'){ notify('تعذّر تحميل مكتبة قراءة PDF — تأكد من الاتصال بالإنترنت'); return; }
+      notify('جارٍ قراءة ' + files.length + ' ملف PDF...');
+      const reports = [];
+      for(const file of files){
+        try{
+          const report = parseReport(await readPdfLines(file));
+          report.fileName = file.name;
+          reports.push(report);
+        }catch(error){
+          reports.push({ fileName:file.name, error:String((error && error.message) || error), rows:[] });
+        }
+      }
+      IMPORT.reports = reports;
+      renderImportModal();
+    }
+    function reportValid(report){
+      return report.pharmacy && PHARMACIES.includes(report.pharmacy) && /^\d{4}-\d{2}-\d{2}$/.test(report.date || '');
+    }
+    function totalImportRows(){
+      return IMPORT.reports.reduce((sum,report) => sum + (reportValid(report) ? report.rows.filter(row => row.include).length : 0), 0);
+    }
+    function updateReportField(index, field, value){
+      if(IMPORT.reports[index]){ IMPORT.reports[index][field] = value; renderImportModal(); }
+    }
+    function toggleRow(reportIndex, rowIndex, checked){
+      const report = IMPORT.reports[reportIndex];
+      if(report && report.rows[rowIndex]){ report.rows[rowIndex].include = checked; renderImportModal(); }
+    }
+    function closeImport(){
+      IMPORT.reports = [];
+      const host = document.getElementById('importHost');
+      if(host) host.remove();
+    }
+    function applyImport(){
+      let entries = loadEntries();
+      let added = 0, updated = 0;
+      IMPORT.reports.forEach(report => {
+        if(!reportValid(report)) return;
+        report.rows.forEach(row => {
+          if(!row.include || !product(row.product)) return;
+          const existing = entries.find(entry => entry.date === report.date && entry.pharmacy === report.pharmacy && entry.product === row.product);
+          const timestamp = new Date().toISOString();
+          if(existing){
+            existing.units = row.units;
+            existing.amount = row.amount;
+            existing.updatedAt = timestamp;
+            updated++;
+          }else{
+            entries.push({
+              id:'sale-' + Date.now() + '-' + Math.random().toString(36).slice(2,8),
+              date:report.date, pharmacy:report.pharmacy, product:row.product,
+              units:row.units, amount:row.amount, prescriptions:0, updatedAt:timestamp
+            });
+            added++;
+          }
+        });
+      });
+      if(added === 0 && updated === 0){ notify('لا توجد سجلات صالحة للاستيراد — راجع الصيدلية والتاريخ'); return; }
+      if(!saveEntries(entries)) return;
+      const latest = IMPORT.reports.map(report => report.date).filter(Boolean).sort().pop();
+      if(latest && latest > UI.endDate) UI.endDate = latest;
+      closeImport();
+      notify('تم الاستيراد: ' + added + ' جديد و' + updated + ' محدّث ✓');
+      render();
+    }
+    function renderImportModal(){
+      let host = document.getElementById('importHost');
+      if(!host){ host = document.createElement('div'); host.id = 'importHost'; document.body.appendChild(host); }
+      const productName = key => { const item = product(key); return item ? item.name : key; };
+      host.innerHTML = `
+        <div class="import-overlay" onclick="if(event.target===this)closeImport()">
+          <div class="import-modal">
+            <div class="import-head">
+              <div>
+                <div class="import-title">📎 مراجعة التقارير قبل الاستيراد</div>
+                <div class="import-sub">الكمية المباعة والمبلغ مسحوبان تلقائياً من كل ملف. راجع الصيدلية والتاريخ لكل تقرير ثم استورد.</div>
+              </div>
+              <button class="btn btn-secondary" type="button" onclick="closeImport()">إغلاق</button>
+            </div>
+            <div class="import-body">
+              ${IMPORT.reports.map((report,index) => {
+                if(report.error) return `<div class="import-report err">⚠️ تعذّر قراءة «${escapeHtml(report.fileName)}»: ${escapeHtml(report.error)}</div>`;
+                const valid = reportValid(report);
+                return `<div class="import-report">
+                  <div class="import-report-head">
+                    <span class="ir-file">📄 ${escapeHtml(report.fileName)}</span>
+                    ${valid ? '<span class="ir-ok">جاهز</span>' : '<span class="ir-warn">راجع الصيدلية / التاريخ</span>'}
+                  </div>
+                  <div class="import-fields">
+                    <div><label>الصيدلية</label><select onchange="updateReportField(${index},'pharmacy',this.value)">
+                      <option value="">— اختر الصيدلية —</option>
+                      ${PHARMACIES.map(ph => `<option value="${ph}" ${ph === report.pharmacy ? 'selected' : ''}>${ph}</option>`).join('')}
+                    </select></div>
+                    <div><label>التاريخ</label><input type="date" value="${report.date || ''}" onchange="updateReportField(${index},'date',this.value)"></div>
+                  </div>
+                  <div class="table-wrap"><table>
+                    <thead><tr><th style="text-align:center">استيراد</th><th>المنتج</th><th style="text-align:center;color:#71ecd3">الحبات المباعة</th><th style="text-align:center;color:#ffd382">المبلغ (ريال)</th></tr></thead>
+                    <tbody>${report.rows.length ? report.rows.map((row,rowIndex) => `<tr>
+                      <td style="text-align:center"><input type="checkbox" ${row.include ? 'checked' : ''} onchange="toggleRow(${index},${rowIndex},this.checked)"></td>
+                      <td>${escapeHtml(productName(row.product))}</td>
+                      <td class="num units">${format(row.units)}</td>
+                      <td class="num money">${format(row.amount)}</td>
+                    </tr>`).join('') : '<tr><td colspan="4" class="empty">لم يتم التعرف على أي منتج من منتجاتك في هذا الملف.</td></tr>'}</tbody>
+                  </table></div>
+                </div>`;
+              }).join('')}
+            </div>
+            <div class="import-foot">
+              <span class="import-count">${format(totalImportRows())} سجل جاهز للاستيراد</span>
+              <div>
+                <button class="btn btn-secondary" type="button" onclick="closeImport()">إلغاء</button>
+                <button class="btn btn-primary" type="button" onclick="applyImport()">✅ استيراد الكل</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
     }
     document.addEventListener('DOMContentLoaded', render);
   </script>
