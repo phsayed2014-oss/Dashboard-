@@ -1,1959 +1,454 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>متابعة المبيعات والتوقع | Dr.Elsayed Hassan</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<style>
-:root{
-  --bg-void:#050811;
-  --bg-base:#0a0f1c;
-  --bg-card:#0f1626;
-  --bg-card2:#141c30;
-  --bg-elevated:#1a2440;
-  --border:rgba(255,255,255,0.08);
-  --border-h:rgba(255,255,255,0.16);
-  --text:#e8ecf4;
-  --text-dim:#8b97b8;
-  --text-muted:#525d80;
-  --violet:#6366f1;
-  --violet-l:#818cf8;
-  --teal:#00c9a7;
-  --teal-l:#34d399;
-  --rose:#f43f5e;
-  --rose-l:#fb7185;
-  --amber:#f59e0b;
-  --amber-l:#fbbf24;
-  --sky:#0ea5e9;
-  --sky-l:#38bdf8;
-  --purple:#a855f7;
-  --gv:linear-gradient(135deg,#6366f1,#818cf8);
-  --gt:linear-gradient(135deg,#00c9a7,#34d399);
-  --gr:linear-gradient(135deg,#f43f5e,#fb7185);
-  --ga:linear-gradient(135deg,#f59e0b,#fbbf24);
-  --gs:linear-gradient(135deg,#0ea5e9,#38bdf8);
-  --gp:linear-gradient(135deg,#a855f7,#c084fc);
-}
-
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{font-family:'Tajawal','Cairo',sans-serif;background:var(--bg-void);color:var(--text);direction:rtl;min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
-
-body::before{
-  content:'';position:fixed;inset:0;z-index:-1;
-  background:
-    radial-gradient(ellipse at 20% 10%, rgba(99,102,241,0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 80%, rgba(0,201,167,0.10) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 50%, rgba(244,63,94,0.06) 0%, transparent 60%);
-}
-
-.app{max-width:1400px;margin:0 auto;padding:24px}
-
-/* Header */
-.topbar{
-  display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;
-  background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(0,201,167,0.05));
-  border:1px solid var(--border);border-radius:20px;padding:18px 24px;
-  backdrop-filter:blur(20px);
-}
-.brand{display:flex;align-items:center;gap:14px}
-.brand-icon{
-  width:48px;height:48px;border-radius:14px;background:var(--gv);
-  display:grid;place-items:center;font-size:24px;
-  box-shadow:0 8px 24px rgba(99,102,241,0.35);
-  animation:float 4s ease-in-out infinite;
-}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-.brand-text h1{font-size:20px;font-weight:900;font-family:'Cairo',sans-serif;background:linear-gradient(135deg,#fff,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.brand-text p{font-size:12px;color:var(--text-dim);font-weight:600}
-.month-badge{
-  background:var(--bg-elevated);border:1px solid var(--border);
-  padding:10px 18px;border-radius:12px;display:flex;align-items:center;gap:10px;
-  font-size:13px;font-weight:700;
-}
-.month-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 12px var(--teal);animation:pulse 2s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-
-/* Setup panel */
-.setup-panel{
-  background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px;
-}
-.setup-panel h2{font-size:16px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--text)}
-.setup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
-.field{display:flex;flex-direction:column;gap:6px}
-.field label{font-size:12px;color:var(--text-dim);font-weight:700}
-.field input,.field select{
-  background:var(--bg-base);border:1px solid var(--border);
-  color:var(--text);padding:11px 14px;border-radius:10px;
-  font-family:'Tajawal',sans-serif;font-size:14px;font-weight:600;
-  outline:none;transition:all .2s;
-}
-.field input:focus,.field select:focus{border-color:var(--violet);box-shadow:0 0 0 3px rgba(99,102,241,0.15)}
-.field input[type="date"]{color-scheme:dark}
-
-/* KPI Cards */
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:24px}
-.kpi{
-  background:var(--bg-card);border:1px solid var(--border);border-radius:18px;padding:20px;
-  position:relative;overflow:hidden;transition:all .3s;
-}
-.kpi:hover{transform:translateY(-3px);border-color:var(--border-h)}
-.kpi::before{content:'';position:absolute;top:0;right:0;width:100%;height:3px;background:var(--gv)}
-.kpi.teal::before{background:var(--gt)}
-.kpi.rose::before{background:var(--gr)}
-.kpi.amber::before{background:var(--ga)}
-.kpi.sky::before{background:var(--gs)}
-.kpi.purple::before{background:var(--gp)}
-.kpi-label{font-size:12px;color:var(--text-dim);font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.kpi-icon{width:32px;height:32px;border-radius:9px;background:rgba(99,102,241,0.12);color:var(--violet-l);display:grid;place-items:center;font-size:16px;float:left}
-.kpi.teal .kpi-icon{background:rgba(0,201,167,0.12);color:var(--teal-l)}
-.kpi.rose .kpi-icon{background:rgba(244,63,94,0.12);color:var(--rose-l)}
-.kpi.amber .kpi-icon{background:rgba(245,158,11,0.12);color:var(--amber-l)}
-.kpi.sky .kpi-icon{background:rgba(14,165,233,0.12);color:var(--sky-l)}
-.kpi.purple .kpi-icon{background:rgba(168,85,247,0.12);color:#c084fc}
-.kpi-value{font-size:28px;font-weight:900;font-family:'Cairo',sans-serif;line-height:1.1;margin-bottom:6px}
-.kpi-sub{font-size:11px;color:var(--text-muted);font-weight:600}
-.kpi-delta{font-size:12px;font-weight:800;margin-top:6px;display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px}
-.delta-up{background:rgba(0,201,167,0.12);color:var(--teal-l)}
-.delta-down{background:rgba(244,63,94,0.12);color:var(--rose-l)}
-
-/* Progress bar */
-.target-progress{
-  background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px;
-}
-.progress-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.progress-head h3{font-size:15px;font-weight:800}
-.progress-head .pct{font-size:24px;font-weight:900;font-family:'Cairo',sans-serif;background:var(--gt);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.progress-bar{
-  height:14px;background:var(--bg-base);border-radius:8px;overflow:hidden;position:relative;
-  border:1px solid var(--border);
-}
-.progress-fill{
-  height:100%;background:var(--gt);border-radius:8px;transition:width 1s cubic-bezier(.4,0,.2,1);
-  box-shadow:0 0 16px rgba(0,201,167,0.4);
-  position:relative;
-}
-.progress-fill::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);
-  animation:shimmer 2s linear infinite;
-}
-@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-.progress-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim);font-weight:700;margin-top:10px}
-
-/* Scenarios */
-.scenarios{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px;
-}
-.scenario{
-  background:var(--bg-card);border:1px solid var(--border);border-radius:18px;padding:22px;
-  position:relative;transition:all .3s;
-}
-.scenario:hover{transform:translateY(-3px);border-color:var(--border-h)}
-.scenario.recommended{
-  border-color:var(--teal);
-  box-shadow:0 0 0 1px var(--teal),0 12px 32px rgba(0,201,167,0.15);
-}
-.scenario.recommended::before{
-  content:'⭐ الواقعي';position:absolute;top:-12px;right:18px;
-  background:var(--gt);color:#000;font-size:11px;font-weight:900;padding:4px 12px;border-radius:99px;
-}
-.scenario-icon{font-size:30px;margin-bottom:10px;display:block}
-.scenario h4{font-size:14px;color:var(--text-dim);font-weight:700;margin-bottom:6px}
-.scenario .amount{font-size:32px;font-weight:900;font-family:'Cairo',sans-serif;line-height:1;margin-bottom:6px}
-.scenario .qty{font-size:13px;color:var(--text-dim);font-weight:600;margin-bottom:14px}
-.scenario .pct-target{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);font-weight:700;padding-top:12px;border-top:1px dashed var(--border)}
-.scenario .pct-target b{font-size:14px;color:var(--text)}
-
-/* Daily entry */
-.entry-section{
-  background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px;
-}
-.entry-section h2{font-size:16px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:10px}
-.entry-form{
-  display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;
-  background:var(--bg-base);padding:18px;border-radius:14px;border:1px solid var(--border);
-}
-.btn{
-  background:var(--gv);color:#fff;border:none;padding:11px 22px;border-radius:10px;
-  font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;cursor:pointer;
-  transition:all .2s;display:inline-flex;align-items:center;gap:8px;justify-content:center;
-}
-.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(99,102,241,0.35)}
-.btn.teal{background:var(--gt);color:#000}
-.btn.rose{background:var(--gr)}
-.btn.ghost{background:var(--bg-elevated);color:var(--text-dim);border:1px solid var(--border)}
-.btn.ghost:hover{color:var(--text);border-color:var(--border-h)}
-.btn.sm{padding:7px 12px;font-size:12px;border-radius:8px}
-
-/* Days table */
-.days-table-wrap{overflow-x:auto;margin-top:18px;border-radius:14px;border:1px solid var(--border)}
-.days-table{width:100%;border-collapse:collapse;font-size:13px}
-.days-table thead{background:var(--bg-elevated)}
-.days-table th{padding:12px 14px;text-align:right;color:var(--text-dim);font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border)}
-.days-table td{padding:12px 14px;border-bottom:1px solid var(--border);font-weight:600}
-.days-table tr:last-child td{border-bottom:none}
-.days-table tr:hover{background:var(--bg-base)}
-.days-table tr.friday{background:rgba(244,63,94,0.05)}
-.days-table tr.holiday{background:rgba(245,158,11,0.06)}
-.day-badge{font-size:10px;padding:3px 7px;border-radius:5px;font-weight:800}
-.badge-work{background:rgba(0,201,167,0.12);color:var(--teal-l)}
-.badge-friday{background:rgba(244,63,94,0.12);color:var(--rose-l)}
-.badge-holiday{background:rgba(245,158,11,0.15);color:var(--amber-l)}
-.empty-state{padding:40px;text-align:center;color:var(--text-muted)}
-.empty-state .icon{font-size:48px;margin-bottom:10px;opacity:0.4}
-
-/* Chart */
-.chart-section{
-  background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px;
-}
-.chart-section h2{font-size:16px;font-weight:800;margin-bottom:18px;display:flex;align-items:center;gap:10px}
-.chart-box{height:340px;position:relative}
-
-/* Insight box */
-.insight-box{
-  background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(0,201,167,0.05));
-  border:1px solid rgba(99,102,241,0.2);border-radius:16px;padding:18px;margin-top:18px;
-}
-.insight-box .insight-title{font-size:13px;font-weight:800;color:var(--violet-l);margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.insight-box .insight-text{font-size:14px;line-height:1.8;color:var(--text)}
-.insight-box .insight-text strong{color:var(--teal-l);font-weight:800}
-
-/* Comparison */
-.comparison{
-  background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px;
-}
-.comparison h2{font-size:16px;font-weight:800;margin-bottom:18px;display:flex;align-items:center;gap:10px}
-.compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
-.compare-card{
-  background:var(--bg-base);border:1px solid var(--border);border-radius:12px;padding:16px;
-}
-.compare-card .label{font-size:11px;color:var(--text-dim);font-weight:700;margin-bottom:8px}
-.compare-card .val{font-size:22px;font-weight:900;font-family:'Cairo',sans-serif}
-.compare-card .change{font-size:12px;font-weight:800;margin-top:6px}
-
-/* Footer */
-.footer{text-align:center;padding:24px;color:var(--text-muted);font-size:12px;font-weight:600;margin-top:24px}
-.footer b{color:var(--violet-l)}
-
-/* Responsive */
-@media(max-width:768px){
-  .app{padding:16px}
-  .topbar{flex-direction:column;align-items:stretch;gap:12px;padding:14px}
-  .brand-text h1{font-size:17px}
-  .entry-form{grid-template-columns:1fr 1fr;gap:10px}
-  .entry-form .btn{grid-column:span 2}
-  .kpi-value{font-size:24px}
-  .scenario .amount{font-size:26px}
-}
-
-/* Alert pill */
-.alert-pill{
-  display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;
-  font-size:12px;font-weight:800;margin-top:10px;
-}
-.alert-pill.warn{background:rgba(245,158,11,0.12);color:var(--amber-l);border:1px solid rgba(245,158,11,0.3)}
-.alert-pill.good{background:rgba(0,201,167,0.12);color:var(--teal-l);border:1px solid rgba(0,201,167,0.3)}
-.alert-pill.bad{background:rgba(244,63,94,0.12);color:var(--rose-l);border:1px solid rgba(244,63,94,0.3)}
-
-/* Quick actions */
-.quick-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-
-/* Per-branch daily entry */
-.entry-form2{background:var(--bg-base);padding:18px;border-radius:14px;border:1px solid var(--border)}
-.entry-branches-head{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:10px;margin:14px 0 8px;font-size:12px;color:var(--text-dim);font-weight:800;padding:0 4px}
-.entry-branch-row{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px}
-.entry-branch-row .eb-name{font-size:13px;font-weight:800;display:flex;align-items:center;gap:8px}
-.entry-branch-row .eb-name .pc-dot{width:9px;height:9px;border-radius:3px;background:var(--violet-l)}
-.entry-branch-row input{background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:9px;font-family:'Tajawal';font-weight:700;font-size:14px;outline:none}
-.entry-branch-row input:focus{border-color:var(--violet)}
-.entry-total-row{margin:12px 0;font-size:13px;color:var(--text-dim);font-weight:700;padding:10px 14px;background:var(--bg-card);border:1px dashed var(--border);border-radius:10px}
-.entry-total-row b{color:var(--teal-l);font-size:15px}
-.days-table .brk{font-size:10px;color:var(--text-muted);font-weight:600;margin-top:3px;line-height:1.5}
-@media(max-width:640px){
-  .entry-branches-head,.entry-branch-row{grid-template-columns:1fr 1fr;}
-  .entry-branches-head span:first-child,.entry-branch-row .eb-name{grid-column:span 2}
-}
-
-/* Product bar */
-.product-bar{
-  display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:24px;
-  background:linear-gradient(135deg,rgba(168,85,247,0.10),rgba(99,102,241,0.06));
-  border:1px solid var(--border);border-radius:16px;padding:14px 20px;
-}
-.product-bar .pb-label{font-size:14px;font-weight:800}
-.product-bar select{
-  background:var(--bg-base);border:1px solid var(--border-h);color:var(--text);
-  padding:9px 14px;border-radius:10px;font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;
-  min-width:180px;outline:none;cursor:pointer;
-}
-.product-bar select:focus{border-color:var(--purple)}
-.product-bar .pb-hint{font-size:12px;color:var(--text-muted);font-weight:600;margin-inline-start:auto}
-@media(max-width:768px){ .product-bar .pb-hint{display:none} }
-
-/* All-products aggregate mode */
-.all-banner{display:none;background:linear-gradient(135deg,rgba(168,85,247,0.14),rgba(14,165,233,0.10));border:1px solid rgba(168,85,247,0.3);color:var(--text);border-radius:12px;padding:12px 18px;font-size:13px;font-weight:700;margin-bottom:24px}
-body.all-mode .all-banner{display:block}
-body.all-mode .entry-form2{opacity:.5;pointer-events:none}
-body.all-mode .pharma-editor > .btn{display:none}
-
-/* Pharmacy comparison */
-.pharma-compare{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px}
-.pharma-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:8px}
-.pharma-head h2{font-size:16px;font-weight:800;display:flex;align-items:center;gap:10px}
-.pharma-legend{display:flex;gap:16px;font-size:12px;color:var(--text-dim);font-weight:700;flex-wrap:wrap}
-.pharma-legend i{display:inline-block;width:22px;height:0;vertical-align:middle;margin-left:6px}
-.pharma-legend .ln-sales{border-top:3px solid var(--sky-l)}
-.pharma-legend .ln-rx{border-top:3px dotted var(--teal-l)}
-.pharma-hint{font-size:13px;color:var(--text-dim);font-weight:600;line-height:1.7;margin-bottom:18px}
-.pharma-hint b{color:var(--text)}
-.pharma-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-.pharma-card{background:var(--bg-base);border:1px solid var(--border);border-radius:16px;padding:18px;transition:all .3s}
-.pharma-card:hover{border-color:var(--border-h);transform:translateY(-3px)}
-.pharma-card.ok{border-color:rgba(0,201,167,0.4)}
-.pharma-card.bad{border-color:rgba(244,63,94,0.45)}
-.pharma-card.warn{border-color:rgba(245,158,11,0.4)}
-.pharma-card .pc-name{font-size:15px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px}
-.pharma-card .pc-dot{width:10px;height:10px;border-radius:3px;display:inline-block}
-.pharma-card svg{width:100%;height:150px;display:block;margin:6px 0}
-.pc-verdict{font-size:12px;font-weight:800;padding:6px 10px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;margin-top:4px;line-height:1.4}
-.pc-verdict.ok{background:rgba(0,201,167,0.12);color:var(--teal-l)}
-.pc-verdict.bad{background:rgba(244,63,94,0.12);color:var(--rose-l)}
-.pc-verdict.warn{background:rgba(245,158,11,0.12);color:var(--amber-l)}
-.pc-verdict.flat{background:rgba(139,151,184,0.12);color:var(--text-dim)}
-.pc-metrics{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);font-weight:700;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)}
-.pharma-summary{margin-top:18px}
-.pharma-summary .ps-row{display:flex;gap:10px;flex-wrap:wrap}
-.pharma-summary .ps-chip{background:var(--bg-base);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:12px;font-weight:800;flex:1;min-width:140px}
-.pharma-summary .ps-chip .n{font-size:20px;font-family:'Cairo',sans-serif;display:block;margin-top:2px}
-.pharma-editor{margin-top:18px;border-top:1px solid var(--border);padding-top:14px}
-.pharma-editor summary{cursor:pointer;font-size:13px;font-weight:800;color:var(--violet-l)}
-.pharma-editor input{width:100%;min-width:56px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:8px;font-family:'Tajawal';font-weight:600;font-size:13px;text-align:center}
-.pharma-editor input:focus{border-color:var(--violet);outline:none}
-.pharma-table th{text-align:center !important;white-space:nowrap}
-.pharma-table td{padding:6px 8px}
-
-/* Archive trend */
-.archive-bars{display:flex;align-items:flex-end;gap:14px;height:180px;padding:10px 0;overflow-x:auto}
-.archive-bar{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:60px;flex:1}
-.archive-bar .ab-col{width:100%;max-width:54px;background:var(--gv);border-radius:8px 8px 0 0;position:relative;transition:height .6s cubic-bezier(.4,0,.2,1)}
-.archive-bar .ab-col.hit{background:var(--gt)}
-.archive-bar .ab-val{font-size:11px;font-weight:800;color:var(--text)}
-.archive-bar .ab-label{font-size:11px;color:var(--text-dim);font-weight:700}
-.archive-bar .ab-pct{font-size:10px;font-weight:800}
-
-/* Print / PDF */
-@media print{
-  body::before{display:none}
-  html,body{background:#fff;color:#111}
-  .app{max-width:100%;padding:0}
-  .quick-actions,.entry-form2,.days-table td:last-child,.days-table th:last-child{display:none}
-  .topbar,.setup-panel,.kpi,.target-progress,.scenario,.comparison,.entry-section,.chart-section,.insight-box,.pharma-compare,.pharma-card{
-    background:#fff !important;border:1px solid #ddd !important;box-shadow:none !important;color:#111 !important;
-  }
-  .pharma-editor{display:none}
-  .kpi-value,.scenario .amount,.brand-text h1,.progress-head .pct{-webkit-text-fill-color:#111 !important;color:#111 !important;background:none !important}
-  .days-table th,.days-table td{color:#111 !important}
-  @page{margin:1cm}
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10182b">
+  <title>مبيعات Private Label | متابعة يومية وتوقع</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    :root{
+      --void:#080d19;
+      --base:#0d1424;
+      --card:#121d31;
+      --raised:#192640;
+      --line:rgba(216,226,255,.11);
+      --line-strong:rgba(216,226,255,.2);
+      --text:#f2f6ff;
+      --dim:#9aa9c5;
+      --muted:#6b7894;
+      --blue:#6395ff;
+      --teal:#1bd1ae;
+      --amber:#f7bd57;
+      --rose:#fc7185;
+      --violet:#9d7aff;
+      --shadow:0 18px 48px rgba(0,0,0,.28);
+    }
+    *{box-sizing:border-box}
+    html{background:var(--void)}
+    body{margin:0;min-height:100vh;background:
+      radial-gradient(circle at 12% 0%,rgba(99,149,255,.16),transparent 31rem),
+      radial-gradient(circle at 94% 93%,rgba(27,209,174,.12),transparent 28rem),
+      var(--void);color:var(--text);font-family:"IBM Plex Sans Arabic",Arial,sans-serif}
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .app{max-width:1320px;margin:auto;padding:28px 24px 42px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:20px 24px;background:rgba(18,29,49,.8);border:1px solid var(--line);border-radius:22px;backdrop-filter:blur(18px);box-shadow:var(--shadow);margin-bottom:20px}
+    .brand{display:flex;align-items:center;gap:14px}
+    .brand-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:15px;background:linear-gradient(135deg,var(--blue),var(--teal));box-shadow:0 10px 24px rgba(80,129,255,.32);font-size:23px}
+    .brand h1{font-family:Alexandria,sans-serif;font-size:20px;line-height:1.35;margin:0;font-weight:800}
+    .brand p{margin:3px 0 0;color:var(--dim);font-size:12px;font-weight:600}
+    .status{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:8px 12px;background:rgba(27,209,174,.1);border:1px solid rgba(27,209,174,.23);font-size:11px;color:#74edd4;font-weight:800;white-space:nowrap}
+    .status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 12px var(--teal)}
+    .hero{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;padding:22px 24px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(135deg,rgba(99,149,255,.1),rgba(27,209,174,.05));margin-bottom:20px}
+    .eyebrow{color:#86aaff;font-size:11px;font-weight:800;letter-spacing:.04em;margin-bottom:7px}
+    .hero h2{font-family:Alexandria,sans-serif;font-size:19px;line-height:1.5;margin:0}
+    .hero p{color:var(--dim);font-size:12.5px;margin:7px 0 0;line-height:1.7}
+    .hero-note{font-size:11px;font-weight:700;color:var(--dim);padding:9px 12px;background:rgba(8,13,25,.35);border:1px solid var(--line);border-radius:10px}
+    .card{background:rgba(18,29,49,.88);border:1px solid var(--line);border-radius:19px;box-shadow:var(--shadow)}
+    .entry-card{padding:20px;margin-bottom:18px}
+    .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+    .card-title{font-family:Alexandria,sans-serif;font-weight:800;font-size:14px}
+    .card-help{color:var(--muted);font-size:11px;margin-top:5px;line-height:1.6}
+    .entry-grid{display:grid;grid-template-columns:repeat(6,minmax(130px,1fr)) auto;gap:11px;align-items:end}
+    .field{display:grid;gap:6px}
+    .field label{font-size:11px;color:var(--dim);font-weight:700}
+    .field input,.field select{width:100%;height:42px;border:1px solid var(--line);border-radius:9px;background:var(--base);color:var(--text);padding:0 11px;outline:none;font-size:12.5px;font-weight:600}
+    .field input:focus,.field select:focus{border-color:rgba(99,149,255,.8);box-shadow:0 0 0 3px rgba(99,149,255,.12)}
+    input[type="date"]{color-scheme:dark}
+    .btn{height:42px;border:0;border-radius:9px;padding:0 16px;font-size:12.5px;font-weight:800;transition:transform .15s,filter .15s}
+    .btn:hover{transform:translateY(-1px);filter:brightness(1.1)}
+    .btn-primary{color:#06130f;background:linear-gradient(135deg,#74edd4,var(--teal));box-shadow:0 8px 18px rgba(27,209,174,.17)}
+    .btn-secondary{height:34px;padding:0 12px;background:var(--raised);border:1px solid var(--line);color:var(--dim)}
+    .btn-danger{height:34px;padding:0 12px;background:rgba(252,113,133,.1);border:1px solid rgba(252,113,133,.25);color:#ff9bab}
+    .edit-banner{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;background:rgba(157,122,255,.1);border:1px solid rgba(157,122,255,.26);color:#cabaff;font-size:11.5px;font-weight:700}
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px}
+    .kpi{padding:17px;border-radius:16px;border:1px solid var(--line);background:rgba(18,29,49,.88);min-height:118px;position:relative;overflow:hidden}
+    .kpi::before{content:"";height:3px;position:absolute;right:0;left:0;top:0;background:var(--blue)}
+    .kpi.teal::before{background:var(--teal)}
+    .kpi.violet::before{background:var(--violet)}
+    .kpi.amber::before{background:var(--amber)}
+    .kpi-label{color:var(--dim);font-size:11px;font-weight:700}
+    .kpi-value{font:800 28px/1.25 Alexandria,sans-serif;margin-top:10px;letter-spacing:-.04em}
+    .kpi-value.teal{color:#71ecd3}.kpi-value.violet{color:#c4b4ff}.kpi-value.amber{color:#ffd382}
+    .kpi-unit{font-size:14px;color:var(--muted);font-weight:600}
+    .kpi-foot{font-size:10.5px;color:var(--muted);margin-top:7px;font-weight:600}
+    .chart-card{padding:20px;margin-bottom:18px}
+    .chart-top{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+    .chart-title{font-family:Alexandria,sans-serif;font-size:14px;font-weight:800}
+    .range-copy{font-size:11px;color:var(--muted);margin-top:4px}
+    .filters{display:flex;gap:9px;flex-wrap:wrap;align-items:end}
+    .filter{display:grid;gap:5px}
+    .filter label{font-size:10px;font-weight:700;color:var(--muted)}
+    .filter input,.filter select{height:35px;border-radius:8px;border:1px solid var(--line);background:var(--base);color:var(--text);padding:0 9px;font-size:11.5px;font-weight:600;outline:none}
+    .filter input:focus,.filter select:focus{border-color:var(--blue)}
+    .filter-summary{padding:8px 11px;background:rgba(99,149,255,.08);border:1px solid rgba(99,149,255,.16);border-radius:8px;font-size:11px;color:var(--dim);margin-bottom:13px}
+    .filter-summary b{color:var(--text)}
+    .chart-wrap{height:330px;position:relative}
+    .table-card{padding:20px}
+    .table-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:13px}
+    .table-title{font-family:Alexandria,sans-serif;font-size:14px;font-weight:800}
+    .table-sub{font-size:11px;color:var(--muted);margin-top:4px}
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:11px}
+    table{width:100%;min-width:780px;border-collapse:collapse;font-size:12px}
+    th{padding:11px 12px;text-align:right;background:rgba(25,38,64,.58);color:var(--dim);font-size:10.5px;font-weight:800;white-space:nowrap}
+    td{padding:11px 12px;border-top:1px solid var(--line);color:#dce5f5;font-weight:600}
+    tr:hover td{background:rgba(255,255,255,.017)}
+    .num{text-align:center;font-family:Alexandria,sans-serif;font-weight:800}.num.units{color:#71ecd3}.num.rx{color:#c4b4ff}.num.money{color:#ffd382}
+    .product{display:flex;align-items:center;gap:8px}.product-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}.product small{display:block;font-size:10px;color:var(--muted);margin-top:2px;font-weight:500}
+    .row-actions{white-space:nowrap;text-align:left}.row-actions button{height:28px;padding:0 8px;border-radius:6px;font-size:10.5px;font-weight:800;margin-right:4px}
+    .empty{padding:42px 15px;text-align:center;color:var(--muted);font-size:12px;line-height:1.8}
+    .empty .empty-icon{font-size:31px;margin-bottom:7px}
+    .footer{text-align:center;color:var(--muted);font-size:10.5px;font-weight:600;margin-top:19px}
+    .toast{position:fixed;left:24px;bottom:24px;z-index:10;max-width:340px;padding:12px 15px;border-radius:11px;background:#1b2c46;border:1px solid rgba(99,149,255,.32);box-shadow:var(--shadow);color:var(--text);font-size:12px;font-weight:700;transform:translateY(90px);opacity:0;transition:.25s}
+    .toast.show{transform:translateY(0);opacity:1}
+    @media(max-width:1080px){.entry-grid{grid-template-columns:repeat(3,1fr)}.kpis{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:680px){.app{padding:16px 13px 30px}.topbar{padding:16px;align-items:flex-start}.status{display:none}.brand h1{font-size:16px}.hero{padding:17px;align-items:flex-start;flex-direction:column}.hero h2{font-size:16px}.entry-card,.chart-card,.table-card{padding:15px}.entry-grid{grid-template-columns:1fr 1fr}.entry-grid .field:nth-child(3){grid-column:span 2}.entry-grid .btn{grid-column:span 2}.kpis{grid-template-columns:1fr 1fr;gap:9px}.kpi{padding:13px;min-height:104px}.kpi-value{font-size:22px}.chart-wrap{height:270px}.filters{width:100%}.filter{flex:1;min-width:132px}.filter select,.filter input{width:100%}.toast{left:14px;right:14px;bottom:14px;max-width:none}}
+  </style>
 </head>
 <body>
-
-<div class="app">
-
-  <!-- Topbar -->
-  <div class="topbar">
-    <div class="brand">
-      <div class="brand-icon">📊</div>
-      <div class="brand-text">
-        <h1>متابعة المبيعات والتوقع</h1>
-        <p>إدارة الـ Private Label · Dr.Elsayed Hassan</p>
-      </div>
-    </div>
-    <div class="month-badge">
-      <div class="dot"></div>
-      <span id="currentMonthLabel">يونيو 2026</span>
-    </div>
-  </div>
-
-  <!-- Product bar -->
-  <div class="product-bar">
-    <span class="pb-label">📦 المنتج:</span>
-    <select id="productSelect" onchange="switchProduct(this.value)"></select>
-    <button class="btn ghost sm" onclick="addProduct()">➕ منتج جديد</button>
-    <button class="btn ghost sm" onclick="renameProduct()">✏️ إعادة تسمية</button>
-    <button class="btn ghost sm" onclick="deleteProduct()">🗑️ حذف</button>
-    <span class="pb-hint">اختر «كل المنتجات» لعرض مجمّع، أو منتجاً واحداً للتعديل</span>
-  </div>
-  <div class="all-banner" id="allBanner">🌐 وضع العرض المجمّع — كل الأرقام حاصل جمع المنتجات الستة (للعرض فقط؛ اختر منتجاً محدداً للتعديل)</div>
-
-  <!-- Setup Panel -->
-  <div class="setup-panel">
-    <h2>⚙️ إعدادات الشهر</h2>
-    <div class="setup-grid">
-      <div class="field">
-        <label>الشهر</label>
-        <input type="month" id="monthInput" value="2026-06">
-      </div>
-      <div class="field">
-        <label>التارجت (ريال)</label>
-        <input type="number" id="targetInput" value="60000" min="0">
-      </div>
-      <div class="field">
-        <label>متوسط سعر الحبة (ريال)</label>
-        <input type="number" id="avgPriceInput" value="58" min="0" step="0.5">
-      </div>
-      <div class="field">
-        <label>أيام إجازة (مفصولة بفاصلة)</label>
-        <input type="text" id="holidaysInput" placeholder="مثال: 25,26,27,28,29">
-      </div>
-      <div class="field">
-        <label>أعتبر الجمعة عطلة؟</label>
-        <select id="fridayMode">
-          <option value="zero">عطلة (0 إنتاج)</option>
-          <option value="reduced" selected>إنتاج منخفض (20%)</option>
-          <option value="normal">يوم عادي</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>الشهر السابق - المبيعات (ريال)</label>
-        <input type="number" id="prevMonthSales" value="35550" min="0">
-      </div>
-      <div class="field">
-        <label>نمط التوقع</label>
-        <select id="forecastMode">
-          <option value="weighted">مرجّح (يركّز على أحدث الأيام)</option>
-          <option value="simple">بسيط (متوسط كل الأيام)</option>
-        </select>
-      </div>
-    </div>
-    <div class="quick-actions">
-      <button class="btn ghost sm" onclick="applyEidPreset()">🌙 إجازة عيد (5 أيام آخر الشهر)</button>
-      <button class="btn ghost sm" onclick="clearHolidays()">🗑️ مسح الإجازات</button>
-      <button class="btn ghost sm" onclick="exportData()">💾 تصدير JSON</button>
-      <button class="btn ghost sm" onclick="exportCSV()">📊 تصدير CSV</button>
-      <button class="btn ghost sm" onclick="document.getElementById('importFile').click()">📥 استيراد</button>
-      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-      <button class="btn ghost sm" onclick="window.print()">🖨️ طباعة / PDF</button>
-      <button class="btn ghost sm" onclick="resetAll()">♻️ تصفير الشهر</button>
-    </div>
-  </div>
-
-  <!-- KPIs -->
-  <div class="kpi-grid">
-    <div class="kpi">
-      <div class="kpi-icon">💰</div>
-      <div class="kpi-label">المحقق حتى الآن</div>
-      <div class="kpi-value" id="kpiAchieved">0 ريال</div>
-      <div class="kpi-sub" id="kpiAchievedQty">0 حبة</div>
-    </div>
-    <div class="kpi teal">
-      <div class="kpi-icon">📈</div>
-      <div class="kpi-label">المعدل اليومي (أيام العمل)</div>
-      <div class="kpi-value" id="kpiAvgDaily">0 ريال</div>
-      <div class="kpi-sub" id="kpiAvgDailyQty">0 حبة/يوم</div>
-    </div>
-    <div class="kpi amber">
-      <div class="kpi-icon">📅</div>
-      <div class="kpi-label">أيام العمل المتبقية</div>
-      <div class="kpi-value" id="kpiRemainingDays">0</div>
-      <div class="kpi-sub" id="kpiRemainingDetails">من أصل 0</div>
-    </div>
-    <div class="kpi rose">
-      <div class="kpi-icon">🎯</div>
-      <div class="kpi-label">المطلوب يومياً للتارجت</div>
-      <div class="kpi-value" id="kpiNeededDaily">0 ريال</div>
-      <div class="kpi-sub" id="kpiNeededFeasibility">0 حبة/يوم</div>
-    </div>
-  </div>
-
-  <!-- Target progress -->
-  <div class="target-progress">
-    <div class="progress-head">
-      <h3>🎯 التقدم نحو التارجت</h3>
-      <div class="pct" id="progressPct">0%</div>
-    </div>
-    <div class="progress-bar">
-      <div class="progress-fill" id="progressFill" style="width:0%"></div>
-    </div>
-    <div class="progress-meta">
-      <span>المحقق: <b id="progressAchieved">0</b> ريال</span>
-      <span>التارجت: <b id="progressTarget">60,000</b> ريال</span>
-    </div>
-    <div class="progress-meta" style="margin-top:6px">
-      <span>المفترض حتى الآن (حسب الإيقاع): <b id="progressPace">0</b> ريال</span>
-      <span>الهدف الأسبوعي: <b id="progressWeekly">0</b> ريال</span>
-    </div>
-    <div id="progressAlert"></div>
-  </div>
-
-  <!-- Forecast scenarios -->
-  <div class="scenarios">
-    <div class="scenario">
-      <span class="scenario-icon">🛡️</span>
-      <h4>السيناريو المتحفظ</h4>
-      <div class="amount" id="scConservativeAmount">0 ريال</div>
-      <div class="qty" id="scConservativeQty">0 حبة · افتراض تباطؤ</div>
-      <div class="pct-target">
-        <span>من التارجت</span>
-        <b id="scConservativePct">0%</b>
-      </div>
-    </div>
-    <div class="scenario recommended">
-      <span class="scenario-icon">📊</span>
-      <h4>السيناريو الواقعي</h4>
-      <div class="amount" id="scRealisticAmount">0 ريال</div>
-      <div class="qty" id="scRealisticQty">0 حبة · بنفس المعدل الحالي</div>
-      <div class="pct-target">
-        <span>من التارجت</span>
-        <b id="scRealisticPct">0%</b>
-      </div>
-    </div>
-    <div class="scenario">
-      <span class="scenario-icon">🚀</span>
-      <h4>السيناريو الطموح</h4>
-      <div class="amount" id="scAmbitiousAmount">0 ريال</div>
-      <div class="qty" id="scAmbitiousQty">0 حبة · +20% فوق المعدل</div>
-      <div class="pct-target">
-        <span>من التارجت</span>
-        <b id="scAmbitiousPct">0%</b>
-      </div>
-    </div>
-  </div>
-
-  <!-- AI Insight -->
-  <div class="insight-box" id="insightBox" style="display:none">
-    <div class="insight-title">💡 ملاحظات وتحليل</div>
-    <div class="insight-text" id="insightText"></div>
-  </div>
-
-  <!-- Comparison -->
-  <div class="comparison">
-    <h2>📊 المقارنة مع الشهر السابق</h2>
-    <div class="compare-grid">
-      <div class="compare-card">
-        <div class="label">الشهر السابق</div>
-        <div class="val" id="compPrev">0 ريال</div>
-      </div>
-      <div class="compare-card">
-        <div class="label">الشهر الحالي (المتوقع)</div>
-        <div class="val" id="compCurrent">0 ريال</div>
-        <div class="change" id="compChange">—</div>
-      </div>
-      <div class="compare-card">
-        <div class="label">الفرق المتوقع</div>
-        <div class="val" id="compDiff">0 ريال</div>
-      </div>
-      <div class="compare-card">
-        <div class="label">النمو الفعلي حتى الآن</div>
-        <div class="val" id="compActualGrowth">—</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Pharmacy comparison: Sales vs Prescriptions -->
-  <div class="pharma-compare">
-    <div class="pharma-head">
-      <h2>🏥 مقارنة الصيدليات: البيع الفعلي مقابل كتابات الطبيب</h2>
-      <div class="pharma-legend">
-        <span><i class="ln-sales"></i> البيع الفعلي (حبة)</span>
-        <span><i class="ln-rx"></i> كتابات الطبيب (مرة)</span>
-      </div>
-    </div>
-    <p class="pharma-hint">قارن أداء كل فرع خلال آخر <b>٣ شهور</b> (<b id="pharmaPrevLabel">—</b> → <b id="pharmaCurrLabel">—</b>): البيع الفعلي مقابل كتابات الطبيب. اتساع الفجوة = تسرّب مبيعات (المريض يشتري من مكان آخر). عدّل الأرقام بالأسفل ويتحدّث المؤشر فوراً.</p>
-
-    <div class="pharma-cards" id="pharmaCards"></div>
-
-    <div class="pharma-summary" id="pharmaSummary"></div>
-
-    <!-- Editable data table -->
-    <details class="pharma-editor" open>
-      <summary>✏️ إدخال يدوي: إجمالي البيع وإجمالي الكتابات لكل صيدلية عبر ٣ شهور</summary>
-      <div class="days-table-wrap" style="margin-top:14px">
-        <table class="days-table pharma-table">
-          <thead id="pharmaTableHead"></thead>
-          <tbody id="pharmaTableBody"></tbody>
-        </table>
-      </div>
-      <button class="btn ghost sm" style="margin-top:12px" onclick="addPharmacy()">➕ إضافة صيدلية</button>
-      <button class="btn ghost sm" style="margin-top:12px" onclick="copyBranchesToAll()">📋 نسخ الفروع لباقي المنتجات</button>
-    </details>
-  </div>
-
-  <!-- Monthly trend archive -->
-  <div class="comparison">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px">
-      <h2 style="margin:0">📚 اتجاه الشهور المحفوظة</h2>
-      <button class="btn ghost sm" onclick="archiveMonth()">💾 حفظ لقطة هذا الشهر</button>
-    </div>
-    <div id="archiveWrap"></div>
-  </div>
-
-  <!-- Entry -->
-  <div class="entry-section">
-    <h2>➕ إضافة مبيعات اليوم (لكل فرع)</h2>
-    <div class="entry-form2">
-      <div class="field" style="max-width:220px">
-        <label>التاريخ</label>
-        <input type="date" id="entryDate">
-      </div>
-      <div class="entry-branches-head">
-        <span>الفرع</span><span>عدد الحبات</span><span>المبلغ (ريال)</span>
-      </div>
-      <div id="entryBranches"></div>
-      <div class="entry-total-row">
-        الإجمالي اليومي: <b id="entryTotalQty">0</b> حبة · <b id="entryTotalAmount">0</b> ريال
-      </div>
-      <button class="btn teal" onclick="addEntry()">💾 حفظ اليوم</button>
-    </div>
-
-    <!-- Table -->
-    <div class="days-table-wrap">
-      <table class="days-table">
-        <thead>
-          <tr>
-            <th>اليوم</th>
-            <th>التاريخ</th>
-            <th>النوع</th>
-            <th>الكمية</th>
-            <th>المبلغ</th>
-            <th>تراكمي</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="daysTableBody">
-          <tr><td colspan="7" class="empty-state"><div class="icon">📋</div>لم يتم إضافة أي يوم بعد. ابدأ بإضافة مبيعات اليوم.</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Chart -->
-  <div class="chart-section">
-    <h2>📈 مسار المبيعات اليومية</h2>
-    <div class="chart-box">
-      <canvas id="dailyChart"></canvas>
-    </div>
-  </div>
-
-  <div class="footer">
-    البيانات تُحفظ تلقائياً على الجهاز · صُمم بواسطة <b>Dr.Elsayed Hassan</b>
-  </div>
-
-</div>
-
-<script>
-// ═══════════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════════
-const STATE = {
-  // ── إعدادات مشتركة بين كل المنتجات ──
-  month: '2026-06',           // يُضبط تلقائياً على الشهر الحالي ما لم يختر المستخدم شهراً
-  monthTouched: false,        // يصبح true بمجرد أن يغيّر المستخدم الشهر يدوياً
-  holidays: [],
-  fridayMode: 'reduced',
-  forecastMode: 'weighted',   // 'simple' متوسط بسيط | 'weighted' مرجّح لأحدث الأيام
-
-  // ── حقول المنتج النشِط (نسخة عمل مرآة للمنتج المختار) ──
-  target: 0,
-  avgPrice: 58,
-  prevMonthSales: 0,
-  entries: {},                // {date: {qty, amount}}
-  // مقارنة الصيدليات: كل صيدلية لها 3 شهور {sales: بيع فعلي, rx: كتابات الطبيب}
-  pharmacies: [],
-  archive: {},                // {'YYYY-MM': {target, achieved, realistic, qty}}
-
-  // ── مخزن المنتجات (كل منتج بياناته المستقلة) ──
-  activeProduct: 'reflex',
-  products: {}                // {id: {name, target, avgPrice, prevMonthSales, entries, pharmacies, archive}}
-};
-
-// الحقول الخاصة بكل منتج على حِدة
-const PRODUCT_FIELDS = ['target','avgPrice','prevMonthSales','entries','pharmacies','archive'];
-
-// منتجات الـ Private Label الستة (من الداشبورد الأساسية)
-const PL_PRODUCTS = [
-  { key:'reflex',     label:'Reflex · Massage Emulgel 100ML' },
-  { key:'rizer',      label:'Rizer · Apply Cream 75ML' },
-  { key:'oracure',    label:'Oracure · Mouth Wash 300ML' },
-  { key:'intimo',     label:'Intimo · Vaginal Wash 250ML' },
-  { key:'nostriderm', label:'Nostriderm · Ointment 50ML' },
-  { key:'nostricure', label:'Nostricure · Oral Gel 30ML' }
-];
-
-const STORAGE_KEY = 'sales_forecast_v2';
-
-// ═══════════════════════════════════════════════════════════════
-// PERSISTENCE
-// ═══════════════════════════════════════════════════════════════
-function saveState(){
-  try{ commitActiveProduct(); localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); }catch(e){ console.warn('Save failed', e); }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// MULTI-PRODUCT
-// ═══════════════════════════════════════════════════════════════
-const ALL_ID = '__all__';
-function isAllMode(){ return STATE.activeProduct === ALL_ID; }
-
-// كتابة حقول المنتج النشِط من نسخة العمل إلى المخزن
-function commitActiveProduct(){
-  if(!STATE.products) STATE.products = {};
-  const id = STATE.activeProduct;
-  if(!id || id === ALL_ID) return;   // وضع "الكل" مجمّع للعرض فقط — لا يُكتب
-  const existing = STATE.products[id] || {};
-  const p = { name: existing.name || 'منتج' };
-  PRODUCT_FIELDS.forEach(f => p[f] = STATE[f]);
-  STATE.products[id] = p;
-}
-// تحميل حقول المنتج النشِط من المخزن إلى نسخة العمل
-function loadActiveProduct(){
-  const p = STATE.products[STATE.activeProduct];
-  if(!p) return;
-  PRODUCT_FIELDS.forEach(f => { STATE[f] = (p[f] !== undefined ? p[f] : STATE[f]); });
-}
-// صيدليات تجريبية بثلاثة شهور (توضّح المؤشر)
-function demoPharmacies(){
-  return [
-    { id:1, name:'صيدلية 1',  months:[{sales:340,rx:260},{sales:361,rx:300},{sales:378,rx:333}] },
-    { id:2, name:'صيدلية 18', months:[{sales:180,rx:60}, {sales:166,rx:78}, {sales:147,rx:97}] },
-    { id:3, name:'صيدلية 7',  months:[{sales:90,rx:48},  {sales:87,rx:57},  {sales:84,rx:71}] }
-  ];
-}
-// بناء المنتجات الستة الافتراضية
-function buildDefaultProducts(){
-  const products = {};
-  PL_PRODUCTS.forEach((p,i)=>{
-    products[p.key] = {
-      name:p.label, target:0, avgPrice:58, prevMonthSales:0,
-      entries:{}, archive:{},
-      pharmacies: i===0 ? demoPharmacies() : []
-    };
-  });
-  return products;
-}
-// تحويل شكل الصيدلية القديم (شهرين) إلى الشكل الجديد (٣ شهور) وضمان 3 شهور دائماً
-function normalizePharmacy(ph){
-  if(ph && Array.isArray(ph.months)){
-    let m = ph.months.map(x=>({ sales:Number(x.sales)||0, rx:Number(x.rx)||0 }));
-    while(m.length < 3) m.unshift({sales:0,rx:0});
-    if(m.length > 3) m = m.slice(-3);
-    return { id:ph.id, name:ph.name, months:m };
-  }
-  return { id:ph.id, name:ph.name, months:[
-    { sales:ph.prevSales||0, rx:ph.prevRx||0 },
-    { sales:ph.prevSales||0, rx:ph.prevRx||0 },
-    { sales:ph.currSales||0, rx:ph.currRx||0 }
-  ]};
-}
-// إنشاء المنتجات الافتراضية / ترحيل البيانات القديمة
-function ensureProducts(){
-  if(!STATE.products || Object.keys(STATE.products).length === 0){
-    STATE.products = buildDefaultProducts();
-    STATE.activeProduct = PL_PRODUCTS[0].key;
-  }
-  if(!STATE.activeProduct || (STATE.activeProduct !== ALL_ID && !STATE.products[STATE.activeProduct])){
-    STATE.activeProduct = Object.keys(STATE.products)[0];
-  }
-  // توحيد شكل الصيدليات لكل المنتجات (٣ شهور)
-  Object.values(STATE.products).forEach(pr => { pr.pharmacies = (pr.pharmacies||[]).map(normalizePharmacy); });
-  if(isAllMode()) populateAggregate(); else loadActiveProduct();
-}
-
-// حساب العرض المجمّع لكل المنتجات
-function buildAggregate(){
-  const entries = {}, phByName = {}, archive = {};
-  let target = 0, prevMonthSales = 0, priceSum = 0, priceN = 0;
-  Object.values(STATE.products).forEach(pr => {
-    target += Number(pr.target) || 0;
-    prevMonthSales += Number(pr.prevMonthSales) || 0;
-    if(pr.avgPrice){ priceSum += Number(pr.avgPrice); priceN++; }
-    Object.entries(pr.entries || {}).forEach(([d,e])=>{
-      const t = entryTotal(e);
-      if(!entries[d]) entries[d] = { branches:{ __agg__:{ qty:0, amount:0 } } };
-      entries[d].branches.__agg__.qty += t.qty;
-      entries[d].branches.__agg__.amount += t.amount;
-    });
-    (pr.pharmacies || []).forEach(ph=>{
-      const key = ((ph.name||'').trim()) || ('#'+ph.id);
-      if(!phByName[key]) phByName[key] = { name:ph.name||key, months:[{sales:0,rx:0},{sales:0,rx:0},{sales:0,rx:0}] };
-      (ph.months||[]).forEach((m,i)=>{ if(i<3){ phByName[key].months[i].sales += Number(m.sales)||0; phByName[key].months[i].rx += Number(m.rx)||0; } });
-    });
-    Object.entries(pr.archive || {}).forEach(([mo,a])=>{
-      if(!archive[mo]) archive[mo] = { target:0, achieved:0, realistic:0, qty:0 };
-      archive[mo].target += a.target||0; archive[mo].achieved += a.achieved||0;
-      archive[mo].realistic += a.realistic||0; archive[mo].qty += a.qty||0;
-    });
-  });
-  const pharmacies = Object.values(phByName).map((p,i)=>({ id:i+1, name:p.name, months:p.months }));
-  return { target, prevMonthSales, avgPrice: priceN?Math.round(priceSum/priceN):58, entries, pharmacies, archive };
-}
-function populateAggregate(){
-  const a = buildAggregate();
-  STATE.target = a.target; STATE.avgPrice = a.avgPrice; STATE.prevMonthSales = a.prevMonthSales;
-  STATE.entries = a.entries; STATE.pharmacies = a.pharmacies; STATE.archive = a.archive;
-}
-
-// تفعيل/تعطيل عناصر التعديل حسب وضع الكل
-function applyAllModeUI(){
-  const all = isAllMode();
-  document.body.classList.toggle('all-mode', all);
-  ['targetInput','avgPriceInput','prevMonthSales','entryDate'].forEach(id=>{
-    const e = document.getElementById(id); if(e) e.disabled = all;
-  });
-  const saveBtn = document.querySelector('.entry-form2 .btn.teal'); if(saveBtn) saveBtn.disabled = all;
-}
-
-function renderProductSelector(){
-  const sel = document.getElementById('productSelect');
-  if(!sel) return;
-  const allOpt = `<option value="${ALL_ID}" ${isAllMode()?'selected':''}>🌐 كل المنتجات (مجمّع)</option>`;
-  sel.innerHTML = allOpt + Object.entries(STATE.products)
-    .map(([id,p]) => `<option value="${id}" ${id===STATE.activeProduct?'selected':''}>${p.name||id}</option>`)
-    .join('');
-}
-
-function switchProduct(id){
-  if(id === STATE.activeProduct) return;
-  commitActiveProduct();               // احفظ المنتج الحالي (يُتجاهل لو كنا في وضع الكل)
-  STATE.activeProduct = id;
-  if(id === ALL_ID) populateAggregate(); else loadActiveProduct();
-  applyAllModeUI();
-  syncSetupUI();
-  renderProductSelector();
-  render();
-  saveState();
-}
-
-function addProduct(){
-  const name = prompt('اسم المنتج الجديد:');
-  if(!name) return;
-  commitActiveProduct();
-  const id = 'p' + Date.now();
-  STATE.products[id] = {
-    name, target:0, avgPrice:STATE.avgPrice, prevMonthSales:0,
-    entries:{}, pharmacies:[], archive:{}
-  };
-  STATE.activeProduct = id;
-  loadActiveProduct();
-  syncSetupUI();
-  renderProductSelector();
-  render();
-  saveState();
-}
-
-function renameProduct(){
-  if(isAllMode()){ alert('اختر منتجاً محدداً لإعادة التسمية.'); return; }
-  const p = STATE.products[STATE.activeProduct];
-  if(!p) return;
-  const name = prompt('اسم المنتج:', p.name);
-  if(!name) return;
-  p.name = name;
-  renderProductSelector();
-  saveState();
-}
-
-function deleteProduct(){
-  if(isAllMode()){ alert('اختر منتجاً محدداً لحذفه.'); return; }
-  if(Object.keys(STATE.products).length <= 1){ alert('لا يمكن حذف المنتج الوحيد.'); return; }
-  const p = STATE.products[STATE.activeProduct];
-  if(!confirm(`حذف المنتج «${p.name}» وكل بياناته نهائياً؟`)) return;
-  delete STATE.products[STATE.activeProduct];
-  STATE.activeProduct = Object.keys(STATE.products)[0];
-  loadActiveProduct();
-  syncSetupUI();
-  renderProductSelector();
-  render();
-  saveState();
-}
-function loadState(){
-  try{
-    const s = localStorage.getItem(STORAGE_KEY);
-    if(s){
-      const loaded = JSON.parse(s);
-      Object.assign(STATE, loaded);
-    }
-  }catch(e){ console.warn('Load failed', e); }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// DATE HELPERS
-// ═══════════════════════════════════════════════════════════════
-const AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-const AR_DAYS = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-
-function getMonthInfo(monthStr){
-  const [y,m] = monthStr.split('-').map(Number);
-  const daysInMonth = new Date(y, m, 0).getDate();
-  const today = getToday();
-  const days = [];
-  for(let d=1; d<=daysInMonth; d++){
-    const dt = new Date(y, m-1, d);
-    const dow = dt.getDay(); // 0=Sun, 5=Fri
-    const isFriday = dow === 5;
-    const isHoliday = STATE.holidays.includes(d);
-    const dateStr = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    days.push({
-      day:d, date:dateStr, dow, dayName:AR_DAYS[dow],
-      isFriday, isHoliday,
-      isPast: dateStr < today,      // يوم انقضى بالفعل
-      isToday: dateStr === today,   // اليوم الحالي
-      isFuture: dateStr > today,    // يوم قادم
-      isWorkDay: !isHoliday && (!isFriday || STATE.fridayMode==='normal'),
-      monthLabel: `${AR_MONTHS[m-1]} ${y}`
-    });
-  }
-  return { year:y, month:m, daysInMonth, days, monthLabel: `${AR_MONTHS[m-1]} ${y}` };
-}
-
-// التاريخ المحلي (وليس UTC) حتى لا تختلف الأيام في التوقيت السعودي
-function getToday(){
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-function fmtNum(n, dec=0){
-  if(n==null || isNaN(n)) return '0';
-  return Number(n).toLocaleString('en-US', {minimumFractionDigits:dec, maximumFractionDigits:dec});
-}
-
-// إجمالي يوم واحد = مجموع الفروع. يدعم الشكل الجديد {branches:{..}} والقديم {qty,amount}
-function entryTotal(e){
-  if(!e) return { qty:0, amount:0 };
-  if(e.branches){
-    let q=0, a=0;
-    Object.values(e.branches).forEach(b=>{ q += Number(b.qty)||0; a += Number(b.amount)||0; });
-    return { qty:q, amount:a };
-  }
-  return { qty:Number(e.qty)||0, amount:Number(e.amount)||0 };
-}
-// مفتاح الفرع للإدخال اليومي (id الصيدلية) أو إجمالي واحد إن لم توجد فروع
-function entryBranchKeys(){
-  const phs = STATE.pharmacies || [];
-  return phs.length ? phs.map(p=>String(p.id)) : ['__total__'];
-}
-function branchName(key){
-  if(key === '__total__' || key === '__agg__') return 'إجمالي';
-  const p = (STATE.pharmacies||[]).find(x=>String(x.id)===String(key));
-  return p ? (p.name||'صيدلية') : 'إجمالي';
-}
-
-// ═══════════════════════════════════════════════════════════════
-// CORE CALCULATIONS
-// ═══════════════════════════════════════════════════════════════
-function calculate(){
-  const info = getMonthInfo(STATE.month);
-  const today = getToday();
-  const todayDay = (today.startsWith(STATE.month)) ? Number(today.split('-')[2]) : 999;
-
-  // Collect entries within month (per-branch entries summed to a daily total)
-  const monthEntries = [];
-  info.days.forEach(d=>{
-    const e = STATE.entries[d.date];
-    if(e){
-      const t = entryTotal(e);
-      monthEntries.push({...d, qty: t.qty, amount: t.amount, branches: e.branches || null});
-    }
-  });
-
-  // Achieved totals
-  const achievedAmount = monthEntries.reduce((s,e)=>s+e.amount, 0);
-  const achievedQty = monthEntries.reduce((s,e)=>s+e.qty, 0);
-  const daysWithData = monthEntries.length;
-
-  // Calc avg daily — only on entered work days (exclude Fridays if not normal mode + holidays)
-  const enteredWorkDays = monthEntries.filter(e=>e.isWorkDay).sort((a,b)=>a.day-b.day);
-  const enteredWorkDaysCount = enteredWorkDays.length;
-  const workDayAmount = enteredWorkDays.reduce((s,e)=>s+e.amount, 0);
-  const workDayQty = enteredWorkDays.reduce((s,e)=>s+e.qty, 0);
-  let avgDailyAmount = enteredWorkDaysCount > 0 ? workDayAmount / enteredWorkDaysCount : 0;
-  let avgDailyQty = enteredWorkDaysCount > 0 ? workDayQty / enteredWorkDaysCount : 0;
-
-  // التوقع المرجّح: نعطي وزناً أكبر لأحدث الأيام (1,2,3,...N) ليعكس الاتجاه الحالي
-  if(STATE.forecastMode === 'weighted' && enteredWorkDaysCount >= 2){
-    let wSum=0, wAmt=0, wQty=0;
-    enteredWorkDays.forEach((e,i)=>{ const w=i+1; wSum+=w; wAmt+=e.amount*w; wQty+=e.qty*w; });
-    avgDailyAmount = wAmt / wSum;
-    avgDailyQty = wQty / wSum;
-  }
-
-  // If no work days entered but there are entries, use overall avg
-  const fallbackAvg = daysWithData>0 ? achievedAmount/daysWithData : 0;
-  const fallbackAvgQty = daysWithData>0 ? achievedQty/daysWithData : 0;
-  const effectiveAvg = avgDailyAmount > 0 ? avgDailyAmount : fallbackAvg;
-  const effectiveAvgQty = avgDailyQty > 0 ? avgDailyQty : fallbackAvgQty;
-
-  // Friday factor
-  const fridayFactor = STATE.fridayMode==='zero' ? 0 : (STATE.fridayMode==='reduced' ? 0.20 : 1.0);
-
-  // الأيام المتبقية = أيام لم تُسجَّل بعد ولم تنقضِ (اليوم الحالي + المستقبل فقط)
-  // بهذا لا نُسقط توقعاً على أيام فائتة بلا بيانات فيتضخّم التوقع
-  const enteredDays = new Set(Object.keys(STATE.entries));
-  const remaining = info.days.filter(d => !enteredDays.has(d.date) && !d.isPast);
-
-  const remainingWorkDays = remaining.filter(d => d.isWorkDay).length;
-  const remainingFridays = remaining.filter(d => d.isFriday && !d.isHoliday).length;
-  const remainingHolidays = remaining.filter(d => d.isHoliday).length;
-
-  // أيام عمل انقضت بلا تسجيل (فرص فائتة) — للتنبيه فقط
-  const missedWorkDays = info.days.filter(d => !enteredDays.has(d.date) && d.isPast && d.isWorkDay).length;
-
-  // === SCENARIOS ===
-  // Realistic: at current avg
-  const realisticAdd = (remainingWorkDays * effectiveAvg) + (remainingFridays * effectiveAvg * fridayFactor);
-  const realisticTotal = achievedAmount + realisticAdd;
-  const realisticQty = achievedQty + (remainingWorkDays * effectiveAvgQty) + (remainingFridays * effectiveAvgQty * fridayFactor);
-
-  // Conservative: 80% of current
-  const conservativeAdd = (remainingWorkDays * effectiveAvg * 0.80) + (remainingFridays * effectiveAvg * 0.10);
-  const conservativeTotal = achievedAmount + conservativeAdd;
-  const conservativeQty = achievedQty + (remainingWorkDays * effectiveAvgQty * 0.80) + (remainingFridays * effectiveAvgQty * 0.10);
-
-  // Ambitious: 120% of current
-  const ambitiousAdd = (remainingWorkDays * effectiveAvg * 1.20) + (remainingFridays * effectiveAvg * fridayFactor * 1.2);
-  const ambitiousTotal = achievedAmount + ambitiousAdd;
-  const ambitiousQty = achievedQty + (remainingWorkDays * effectiveAvgQty * 1.20) + (remainingFridays * effectiveAvgQty * fridayFactor * 1.2);
-
-  // Total work days in month
-  const totalWorkDays = info.days.filter(d=>d.isWorkDay).length;
-  const totalFridays = info.days.filter(d=>d.isFriday && !d.isHoliday).length;
-
-  // Needed daily for target
-  const remaining_to_target = STATE.target - achievedAmount;
-  const remainingCapacity = remainingWorkDays + remainingFridays * fridayFactor;
-  const neededDaily = remainingCapacity > 0 ? remaining_to_target / remainingCapacity : 0;
-  const neededQty = STATE.avgPrice > 0 ? neededDaily / STATE.avgPrice : 0;
-
-  // Progress
-  const progressPct = STATE.target > 0 ? (achievedAmount / STATE.target) * 100 : 0;
-
-  // إيقاع التقدّم: أين يجب أن تكون الآن حسب نسبة أيام العمل المنقضية
-  const totalCapacity = totalWorkDays + totalFridays * fridayFactor;
-  const elapsedCapacity = Math.max(0, totalCapacity - remainingCapacity);
-  const paceTarget = totalCapacity > 0 ? STATE.target * (elapsedCapacity / totalCapacity) : 0;
-  const paceDelta = achievedAmount - paceTarget; // موجب = متقدّم عن الإيقاع
-
-  // هدف أسبوعي تقريبي
-  const weeksInMonth = Math.ceil(info.daysInMonth / 7);
-  const weeklyTarget = weeksInMonth > 0 ? STATE.target / weeksInMonth : 0;
-
-  return {
-    paceTarget, paceDelta, weeklyTarget, weeksInMonth,
-    info, today, todayDay,
-    achievedAmount, achievedQty, daysWithData,
-    avgDailyAmount: effectiveAvg, avgDailyQty: effectiveAvgQty,
-    enteredWorkDaysCount,
-    remainingWorkDays, remainingFridays, remainingHolidays, missedWorkDays,
-    totalWorkDays, totalFridays,
-    realisticTotal, realisticQty,
-    conservativeTotal, conservativeQty,
-    ambitiousTotal, ambitiousQty,
-    neededDaily, neededQty, progressPct,
-    fridayFactor, monthEntries
-  };
-}
-
-// ═══════════════════════════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════════════════════════
-function render(){
-  const c = calculate();
-  document.getElementById('currentMonthLabel').textContent = c.info.monthLabel;
-
-  // KPIs
-  document.getElementById('kpiAchieved').textContent = fmtNum(c.achievedAmount) + ' ريال';
-  document.getElementById('kpiAchievedQty').textContent = fmtNum(c.achievedQty) + ' حبة · ' + c.daysWithData + ' يوم مسجل';
-
-  document.getElementById('kpiAvgDaily').textContent = fmtNum(c.avgDailyAmount, 0) + ' ريال';
-  document.getElementById('kpiAvgDailyQty').textContent = c.avgDailyQty.toFixed(1) + ' حبة/يوم عمل';
-
-  document.getElementById('kpiRemainingDays').textContent = c.remainingWorkDays + (c.remainingFridays > 0 ? ` + ${c.remainingFridays}ج` : '');
-  document.getElementById('kpiRemainingDetails').innerHTML = `من أصل ${c.totalWorkDays} يوم عمل · ${c.remainingHolidays} إجازة`
-    + (c.missedWorkDays > 0 ? ` · <span style="color:var(--rose-l)">${c.missedWorkDays} يوم بلا تسجيل</span>` : '');
-
-  document.getElementById('kpiNeededDaily').textContent = fmtNum(Math.max(0,c.neededDaily), 0) + ' ريال';
-  const feasibilityFactor = c.avgDailyAmount > 0 ? (c.neededDaily / c.avgDailyAmount) : 0;
-  let feasMsg = c.neededQty.toFixed(1) + ' حبة/يوم';
-  if(c.avgDailyAmount > 0){
-    if(feasibilityFactor <= 1.0) feasMsg += ' ✅ ممكن';
-    else if(feasibilityFactor <= 1.3) feasMsg += ' 💪 يحتاج جهد';
-    else if(feasibilityFactor <= 1.7) feasMsg += ' ⚡ تحدٍ كبير';
-    else feasMsg += ' ⚠️ صعب جداً';
-  }
-  document.getElementById('kpiNeededFeasibility').textContent = feasMsg;
-
-  // Progress
-  document.getElementById('progressPct').textContent = c.progressPct.toFixed(1) + '%';
-  document.getElementById('progressFill').style.width = Math.min(100, c.progressPct) + '%';
-  document.getElementById('progressAchieved').textContent = fmtNum(c.achievedAmount);
-  document.getElementById('progressTarget').textContent = fmtNum(STATE.target);
-  document.getElementById('progressPace').textContent = fmtNum(c.paceTarget, 0);
-  document.getElementById('progressWeekly').textContent = fmtNum(c.weeklyTarget, 0);
-
-  // Progress alert
-  const palertEl = document.getElementById('progressAlert');
-  if(c.daysWithData === 0){
-    palertEl.innerHTML = '';
-  } else if(Math.abs(c.paceDelta) > STATE.target*0.02){
-    // تنبيه الإيقاع: متقدّم أو متأخّر عن الخط المفترض
-    if(c.paceDelta > 0){
-      palertEl.innerHTML = `<div class="alert-pill good">🚀 متقدّم عن الإيقاع المطلوب بـ ${fmtNum(c.paceDelta,0)} ريال</div>`;
-    } else {
-      palertEl.innerHTML = `<div class="alert-pill warn">⏱️ متأخّر عن الإيقاع بـ ${fmtNum(Math.abs(c.paceDelta),0)} ريال — تحتاج تعويض</div>`;
-    }
-  } else if(c.realisticTotal >= STATE.target){
-    palertEl.innerHTML = '<div class="alert-pill good">🎉 على المسار الصحيح — التارجت متوقع تحقيقه</div>';
-  } else if(c.ambitiousTotal >= STATE.target){
-    palertEl.innerHTML = '<div class="alert-pill warn">💪 التارجت ممكن لكن يحتاج جهد إضافي</div>';
-  } else {
-    const gap = STATE.target - c.realisticTotal;
-    palertEl.innerHTML = `<div class="alert-pill bad">⚠️ فجوة متوقعة: ${fmtNum(gap, 0)} ريال — راجع الاستراتيجية</div>`;
-  }
-
-  // Scenarios
-  document.getElementById('scConservativeAmount').textContent = fmtNum(c.conservativeTotal, 0) + ' ريال';
-  document.getElementById('scConservativeQty').textContent = fmtNum(c.conservativeQty, 0) + ' حبة · افتراض تباطؤ (-20%)';
-  document.getElementById('scConservativePct').textContent = STATE.target>0 ? ((c.conservativeTotal/STATE.target)*100).toFixed(0)+'%' : '—';
-
-  document.getElementById('scRealisticAmount').textContent = fmtNum(c.realisticTotal, 0) + ' ريال';
-  document.getElementById('scRealisticQty').textContent = fmtNum(c.realisticQty, 0) + ' حبة · بنفس المعدل الحالي';
-  document.getElementById('scRealisticPct').textContent = STATE.target>0 ? ((c.realisticTotal/STATE.target)*100).toFixed(0)+'%' : '—';
-
-  document.getElementById('scAmbitiousAmount').textContent = fmtNum(c.ambitiousTotal, 0) + ' ريال';
-  document.getElementById('scAmbitiousQty').textContent = fmtNum(c.ambitiousQty, 0) + ' حبة · +20% فوق المعدل';
-  document.getElementById('scAmbitiousPct').textContent = STATE.target>0 ? ((c.ambitiousTotal/STATE.target)*100).toFixed(0)+'%' : '—';
-
-  // Insight
-  renderInsight(c);
-
-  // Comparison
-  document.getElementById('compPrev').textContent = fmtNum(STATE.prevMonthSales, 0) + ' ريال';
-  document.getElementById('compCurrent').textContent = fmtNum(c.realisticTotal, 0) + ' ريال';
-  const growthExpected = STATE.prevMonthSales > 0 ? ((c.realisticTotal - STATE.prevMonthSales) / STATE.prevMonthSales * 100) : 0;
-  const compChangeEl = document.getElementById('compChange');
-  compChangeEl.textContent = (growthExpected >= 0 ? '⬆ +' : '⬇ ') + growthExpected.toFixed(1) + '%';
-  compChangeEl.className = 'change ' + (growthExpected >= 0 ? 'delta-up' : 'delta-down');
-  compChangeEl.style.padding = '2px 8px';
-  compChangeEl.style.borderRadius = '6px';
-  compChangeEl.style.display = 'inline-block';
-  document.getElementById('compDiff').textContent = fmtNum(c.realisticTotal - STATE.prevMonthSales, 0) + ' ريال';
-
-  // Actual growth (achieved so far vs prev)
-  const actualGrowthEl = document.getElementById('compActualGrowth');
-  if(c.daysWithData > 0 && STATE.prevMonthSales > 0){
-    const actualGrowth = ((c.achievedAmount - STATE.prevMonthSales) / STATE.prevMonthSales * 100);
-    actualGrowthEl.textContent = (actualGrowth >= 0 ? '+' : '') + actualGrowth.toFixed(1) + '%';
-    actualGrowthEl.style.color = actualGrowth >= 0 ? 'var(--teal-l)' : 'var(--rose-l)';
-  } else {
-    actualGrowthEl.textContent = '—';
-  }
-
-  // Table
-  renderTable(c);
-
-  // Per-branch daily entry form
-  renderEntryBranches();
-
-  // Pharmacy comparison + archive trend
-  renderPharmacies();
-  renderArchive();
-
-  // Chart
-  renderChart(c);
-}
-
-function renderInsight(c){
-  const box = document.getElementById('insightBox');
-  if(c.daysWithData === 0){
-    box.style.display = 'none';
-    return;
-  }
-  box.style.display = 'block';
-  const lines = [];
-
-  // 1. Trend vs prev month
-  if(STATE.prevMonthSales > 0 && c.avgDailyAmount > 0){
-    // Estimate prev avg
-    const prevAvg = STATE.prevMonthSales / (c.totalWorkDays || 22);
-    const growth = ((c.avgDailyAmount - prevAvg) / prevAvg * 100);
-    if(growth > 10){
-      lines.push(`📈 معدلك اليومي <strong>${c.avgDailyAmount.toFixed(0)} ريال</strong> — أعلى بـ <strong>${growth.toFixed(0)}%</strong> عن متوسط الشهر السابق. أداء قوي.`);
-    } else if(growth > -10){
-      lines.push(`➖ معدلك اليومي قريب من معدل الشهر السابق (${growth>=0?'+':''}${growth.toFixed(0)}%).`);
-    } else {
-      lines.push(`📉 معدلك اليومي أقل بـ <strong>${Math.abs(growth).toFixed(0)}%</strong> عن الشهر السابق — يحتاج مراجعة.`);
-    }
-  }
-
-  // 2. Target feasibility
-  if(c.realisticTotal >= STATE.target){
-    lines.push(`🎯 بناءً على المعدل الحالي، أنت <strong>متجاوز التارجت</strong> بمقدار ${fmtNum(c.realisticTotal-STATE.target,0)} ريال.`);
-  } else {
-    const gap = STATE.target - c.realisticTotal;
-    const factor = c.avgDailyAmount > 0 ? (c.neededDaily/c.avgDailyAmount).toFixed(1) : 0;
-    lines.push(`🎯 الفجوة المتوقعة عن التارجت: <strong>${fmtNum(gap,0)} ريال</strong>. يحتاج رفع المعدل اليومي ${factor}× للوصول.`);
-  }
-
-  // 3. Remaining capacity
-  if(c.remainingWorkDays > 0){
-    const remCapacity = c.remainingWorkDays * c.avgDailyAmount + c.remainingFridays * c.avgDailyAmount * c.fridayFactor;
-    lines.push(`📅 متبقي <strong>${c.remainingWorkDays} يوم عمل</strong> + ${c.remainingFridays} جمعة. السعة المتوقعة: <strong>${fmtNum(remCapacity,0)} ريال</strong>.`);
-  }
-
-  // 4. Best & worst day
-  if(c.monthEntries.length >= 3){
-    const sortedDays = [...c.monthEntries].sort((a,b)=>b.amount-a.amount);
-    const bestDay = sortedDays[0];
-    const worstDay = sortedDays[sortedDays.length-1];
-    lines.push(`🏆 أعلى يوم: <strong>${bestDay.day} ${c.info.monthLabel}</strong> (${bestDay.dayName}) بـ <strong>${fmtNum(bestDay.amount,0)} ريال</strong> · أضعف يوم: ${worstDay.day} (${worstDay.dayName}) بـ ${fmtNum(worstDay.amount,0)} ريال.`);
-  }
-
-  // 5. أداء أيام الأسبوع (أي أيام الأسبوع تبيع أكثر)
-  if(c.monthEntries.length >= 5){
-    const byDow = {};
-    c.monthEntries.forEach(e=>{
-      if(!byDow[e.dow]) byDow[e.dow] = {sum:0, n:0};
-      byDow[e.dow].sum += e.amount; byDow[e.dow].n++;
-    });
-    const dowAvgs = Object.entries(byDow).map(([dow,v])=>({dow:+dow, avg:v.sum/v.n})).sort((a,b)=>b.avg-a.avg);
-    if(dowAvgs.length >= 2){
-      const top = dowAvgs[0], low = dowAvgs[dowAvgs.length-1];
-      lines.push(`📆 أقوى أيام الأسبوع لديك: <strong>${AR_DAYS[top.dow]}</strong> (متوسط ${fmtNum(top.avg,0)} ريال)، وأضعفها ${AR_DAYS[low.dow]} (${fmtNum(low.avg,0)} ريال). ركّز حملاتك في الأيام القوية.`);
-    }
-  }
-
-  // 6. تنبيه أيام العمل الفائتة بلا تسجيل
-  if(c.missedWorkDays > 0){
-    lines.push(`⏳ يوجد <strong>${c.missedWorkDays} يوم عمل</strong> انقضى دون تسجيل مبيعات — سجّلها لتقدير أدق أو اعتبرها فرصاً فائتة.`);
-  }
-
-  document.getElementById('insightText').innerHTML = lines.join('<br><br>');
-}
-
-function renderTable(c){
-  const tbody = document.getElementById('daysTableBody');
-  if(c.monthEntries.length === 0){
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="icon">📋</div>لم يتم إضافة أي يوم بعد. ابدأ بإضافة مبيعات اليوم.</td></tr>';
-    return;
-  }
-  // Sort by date asc
-  const sorted = [...c.monthEntries].sort((a,b)=>a.day-b.day);
-  let cumulative = 0;
-  const rows = sorted.map(e=>{
-    cumulative += e.amount;
-    const cls = e.isHoliday ? 'holiday' : (e.isFriday ? 'friday' : '');
-    const badge = e.isHoliday
-      ? '<span class="day-badge badge-holiday">إجازة</span>'
-      : (e.isFriday ? '<span class="day-badge badge-friday">جمعة</span>' : '<span class="day-badge badge-work">عمل</span>');
-    // تفصيل الفروع (إن وجد)
-    let brk = '';
-    if(e.branches){
-      const parts = Object.entries(e.branches)
-        .filter(([k,v])=>(v.qty||v.amount))
-        .map(([k,v])=>`${branchName(k)}: ${fmtNum(v.qty)}ح/${fmtNum(v.amount,0)}ر`);
-      if(parts.length) brk = `<div class="brk">${parts.join(' · ')}</div>`;
-    }
-    return `<tr class="${cls}">
-      <td>${e.dayName}</td>
-      <td>${e.day} ${c.info.monthLabel}</td>
-      <td>${badge}</td>
-      <td>${fmtNum(e.qty)}${brk}</td>
-      <td><strong>${fmtNum(e.amount, 0)} ريال</strong></td>
-      <td style="color:var(--text-dim)">${fmtNum(cumulative, 0)}</td>
-      <td style="white-space:nowrap">${isAllMode() ? '' : `
-        <button class="btn ghost sm" onclick="editEntry('${e.date}')" title="تعديل">✏️</button>
-        <button class="btn rose sm" onclick="deleteEntry('${e.date}')" title="حذف">🗑</button>`}
-      </td>
-    </tr>`;
-  }).join('');
-  tbody.innerHTML = rows;
-}
-
-// ═══════════════════════════════════════════════════════════════
-// PHARMACY COMPARISON (Sales vs Prescriptions)
-// ═══════════════════════════════════════════════════════════════
-// أسماء آخر n شهور منتهية بالشهر الحالي (short)
-function lastNMonthLabels(monthStr, n){
-  const [y,m] = monthStr.split('-').map(Number);
-  const out = [];
-  for(let i=n-1; i>=0; i--){
-    let mm = m-i, yy = y;
-    while(mm <= 0){ mm += 12; yy--; }
-    out.push(AR_MONTHS[mm-1]);
-  }
-  return out;
-}
-
-// تشخيص حالة الصيدلية بمقارنة اتجاه البيع مع اتجاه الكتابات عبر الـ3 شهور (الأول → الأخير)
-// نطاق غير متماثل: النمو يُعتبر من +2%، والثبات حتى -5% (تراجع بسيط = "ثابت")
-function classifyPharmacy(p){
-  const m = p.months;
-  const s0 = m[0].sales, s2 = m[2].sales, r0 = m[0].rx, r2 = m[2].rx;
-  const sPct = s0 > 0 ? (s2 - s0) / s0 * 100 : (s2>0?100:0);
-  const rPct = r0 > 0 ? (r2 - r0) / r0 * 100 : (r2>0?100:0);
-  const UP = 2, DOWN = -5;
-
-  if(sPct < DOWN && rPct > UP)
-    return { type:'bad',  icon:'❌', title:'انخفاض البيع مع ارتفاع الطلب — تسرّب واضح للمبيعات', sPct, rPct };
-  if(sPct <= UP && rPct > UP)
-    return { type:'warn', icon:'⚠️', title:'مبيعات ثابتة والكتابات ترتفع — قد يشتري المريض من الخارج؟', sPct, rPct };
-  if(sPct > UP && rPct > UP)
-    return { type:'ok',   icon:'✅', title:'أداء مثالي — البيع والطلب يرتفعان معاً', sPct, rPct };
-  if(sPct > UP)
-    return { type:'ok',   icon:'⬆️', title:'البيع في ارتفاع', sPct, rPct };
-  if(sPct < DOWN)
-    return { type:'warn', icon:'📉', title:'تراجع في البيع — يحتاج متابعة', sPct, rPct };
-  return { type:'flat', icon:'➖', title:'أداء مستقر', sPct, rPct };
-}
-
-// رسم مخطط منحدر (slope) بثلاث نقاط بـ SVG — يعمل بدون إنترنت
-function slopeSVG(p, monthLbls){
-  const m = p.months;
-  const vals = [];
-  m.forEach(x=>{ vals.push(x.sales, x.rx); });
-  let max = Math.max(...vals), min = Math.min(...vals);
-  if(max===min){ max+=1; min-=1; }
-  const pad = (max-min)*0.18; max+=pad; min-=pad;
-  const xs = [56, 130, 204], yT=20, yB=108;
-  const Y = v => yB - ((v-min)/(max-min))*(yB-yT);
-  const t = (x,y,txt,anchor,color,size)=>`<text x="${x}" y="${y}" text-anchor="${anchor}" font-size="${size||12}" font-weight="800" fill="${color}" font-family="Cairo,sans-serif">${txt}</text>`;
-  const salesPts = xs.map((x,i)=>`${x},${Y(m[i].sales)}`).join(' ');
-  const rxPts    = xs.map((x,i)=>`${x},${Y(m[i].rx)}`).join(' ');
-  const dots = (field,color,dash)=> xs.map((x,i)=>`<circle cx="${x}" cy="${Y(m[i][field])}" r="4" fill="${color}"/>`).join('');
-  // labels: sales above points, rx below points (with edge anchoring)
-  const lbl = (field,color,dy)=> xs.map((x,i)=>{
-    const anchor = i===0?'start':(i===2?'end':'middle');
-    const dx = i===0?-2:(i===2?2:0);
-    return t(x+dx, Y(m[i][field])+dy, fmtNum(m[i][field]), anchor, color, 11);
-  }).join('');
-  return `<svg viewBox="0 0 260 150" preserveAspectRatio="xMidYMid meet">
-    <line x1="46" y1="124" x2="214" y2="124" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
-    <polyline points="${salesPts}" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-    <polyline points="${rxPts}" fill="none" stroke="#34d399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 5"/>
-    ${dots('sales','#38bdf8')}
-    ${dots('rx','#34d399')}
-    ${lbl('sales','#7dd3fc',-9)}
-    ${lbl('rx','#6ee7b7',16)}
-    ${xs.map((x,i)=>t(x, 143, monthLbls[i]||'', 'middle', '#8b97b8', 11)).join('')}
-  </svg>`;
-}
-
-function renderPharmacies(){
-  renderPharmaCards();
-  renderPharmaEditor();
-}
-
-// الجزء المرئي فقط (الكروت + الشارت + الملخّص) — آمن للتحديث الحيّ أثناء الكتابة
-function renderPharmaCards(){
-  const mLbls = lastNMonthLabels(STATE.month, 3);
-  document.getElementById('pharmaPrevLabel').textContent = mLbls[0];
-  document.getElementById('pharmaCurrLabel').textContent = mLbls[2];
-
-  const cardsEl = document.getElementById('pharmaCards');
-  const list = STATE.pharmacies || [];
-  if(list.length === 0){
-    cardsEl.innerHTML = '<div class="empty-state"><div class="icon">🏥</div>لا توجد صيدليات لهذا المنتج. أضِف صيدلية من الجدول بالأسفل وأدخل أرقام الـ3 شهور.</div>';
-  } else {
-    const dotColor = t => t==='ok'?'var(--teal)':t==='bad'?'var(--rose)':t==='warn'?'var(--amber)':'var(--text-muted)';
-    cardsEl.innerHTML = list.map(p=>{
-      const v = classifyPharmacy(p);
-      const last = p.months[2], prev = p.months[1];
-      const convLast = last.rx>0 ? (last.sales/last.rx) : 0;
-      const convPrev = prev.rx>0 ? (prev.sales/prev.rx) : 0;
-      return `<div class="pharma-card ${v.type}">
-        <div class="pc-name"><span class="pc-dot" style="background:${dotColor(v.type)}"></span>${p.name||'صيدلية'}</div>
-        ${slopeSVG(p, mLbls)}
-        <div class="pc-verdict ${v.type}">${v.icon} ${v.title}</div>
-        <div class="pc-metrics">
-          <span>البيع: ${v.sPct>=0?'+':''}${v.sPct.toFixed(0)}%</span>
-          <span>الكتابات: ${v.rPct>=0?'+':''}${v.rPct.toFixed(0)}%</span>
-          <span>تحويل: ${convPrev.toFixed(2)}→${convLast.toFixed(2)}</span>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">📈</div>
+        <div>
+          <h1>Private Label Sales</h1>
+          <p>لوحة مستقلة لمتابعة المبيعات والمبلغ والكتابات اليومية</p>
         </div>
-      </div>`;
-    }).join('');
-  }
+      </div>
+      <div class="status">حفظ تلقائي على هذا الجهاز</div>
+    </header>
+    <section class="hero">
+      <div>
+        <div class="eyebrow">DAILY SALES TRACKING</div>
+        <h2>متابعة 6 منتجات عبر الصيدليات 1 و7 و18</h2>
+        <p>سجّل الحبات المباعة والمبلغ (ريال) وكتابات الأطباء لكل منتج وصيدلية، ثم راقب المسار المتغير لآخر ثلاثة أشهر.</p>
+      </div>
+      <div class="hero-note">السجل الواحد = تاريخ × صيدلية × منتج</div>
+    </section>
+    <div id="dashboard"></div>
+    <div class="footer">Private Label Sales Dashboard · البيانات محفوظة محلياً في المتصفح</div>
+  </main>
+  <div class="toast" id="toast"></div>
 
-  // Summary — الاتجاه من الشهر الأول إلى الأخير
-  const counts = { ok:0, warn:0, bad:0, flat:0 };
-  let s0=0,s2=0,r0=0,r2=0;
-  list.forEach(p=>{ counts[classifyPharmacy(p).type]++; s0+=p.months[0].sales; s2+=p.months[2].sales; r0+=p.months[0].rx; r2+=p.months[2].rx; });
-  const sTrend = s0>0 ? ((s2-s0)/s0*100) : 0;
-  const rTrend = r0>0 ? ((r2-r0)/r0*100) : 0;
-  document.getElementById('pharmaSummary').innerHTML = list.length===0 ? '' : `<div class="ps-row">
-    <div class="ps-chip" style="color:var(--teal-l)">فروع ممتازة<span class="n">${counts.ok}</span></div>
-    <div class="ps-chip" style="color:var(--amber-l)">تحتاج انتباه<span class="n">${counts.warn}</span></div>
-    <div class="ps-chip" style="color:var(--rose-l)">تسرّب مبيعات<span class="n">${counts.bad}</span></div>
-    <div class="ps-chip">إجمالي البيع<span class="n">${sTrend>=0?'+':''}${sTrend.toFixed(0)}%</span></div>
-    <div class="ps-chip">إجمالي الكتابات<span class="n">${rTrend>=0?'+':''}${rTrend.toFixed(0)}%</span></div>
-  </div>`;
-}
+  <script>
+    const PRODUCTS = [
+      { key:'reflex', name:'Reflex', form:'Massage Emulgel · 100ML', color:'#6395ff' },
+      { key:'rizer', name:'Rizer', form:'Apply Cream · 75ML', color:'#1bd1ae' },
+      { key:'oracure', name:'Oracure', form:'Mouth Wash · 300ML', color:'#f7bd57' },
+      { key:'intimo', name:'Intimo', form:'Vaginal Wash · 250ML', color:'#fc7185' },
+      { key:'nostriderm', name:'Nostriderm', form:'Ointment · 50ML', color:'#9d7aff' },
+      { key:'nostricure', name:'Nostricure', form:'Oral Gel · 30ML', color:'#47c9f3' }
+    ];
+    const PHARMACIES = ['صيدلية 1','صيدلية 7','صيدلية 18'];
+    const STORAGE_KEY = 'private_label_sales_dashboard_v1';
+    const UI = { endDate:null, pharmacy:'all', product:'all', editingId:null };
+    let trendChart = null;
 
-// جدول الإدخال — يُبنى فقط عند تغيّر البنية (إضافة/حذف/تبديل منتج) حتى لا يفقد الحقلُ التركيزَ أثناء الكتابة
-function renderPharmaEditor(){
-  const mLbls = lastNMonthLabels(STATE.month, 3);
-  const list = STATE.pharmacies || [];
-  const thead = document.getElementById('pharmaTableHead');
-  if(thead){
-    thead.innerHTML = `<tr>
-      <th rowspan="2" style="vertical-align:bottom">الصيدلية</th>
-      <th colspan="2">${mLbls[0]}</th>
-      <th colspan="2">${mLbls[1]}</th>
-      <th colspan="2">${mLbls[2]}</th>
-      <th rowspan="2"></th>
-    </tr>
-    <tr>
-      <th>بيع</th><th>كتابات</th>
-      <th>بيع</th><th>كتابات</th>
-      <th>بيع</th><th>كتابات</th>
-    </tr>`;
-  }
-  const ro = isAllMode() ? 'disabled' : '';
-  const tb = document.getElementById('pharmaTableBody');
-  // oninput = تحديث حيّ للشارت أثناء الكتابة
-  const cell = (id,mi,field,val)=>`<td><input type="number" inputmode="numeric" value="${val}" ${ro} oninput="updatePharmacyMonth(${id},${mi},'${field}',this.value)"></td>`;
-  tb.innerHTML = list.map(p=>`<tr>
-    <td style="min-width:120px"><input value="${p.name||''}" ${ro} oninput="updatePharmacy(${p.id},'name',this.value)"></td>
-    ${cell(p.id,0,'sales',p.months[0].sales)}${cell(p.id,0,'rx',p.months[0].rx)}
-    ${cell(p.id,1,'sales',p.months[1].sales)}${cell(p.id,1,'rx',p.months[1].rx)}
-    ${cell(p.id,2,'sales',p.months[2].sales)}${cell(p.id,2,'rx',p.months[2].rx)}
-    <td>${isAllMode() ? '' : `<button class="btn rose sm" onclick="removePharmacy(${p.id})">🗑</button>`}</td>
-  </tr>`).join('') || '<tr><td colspan="8" class="empty-state">لا توجد صيدليات</td></tr>';
-}
-
-function addPharmacy(){
-  if(isAllMode()){ alert('اختر منتجاً محدداً لإضافة صيدلية.'); return; }
-  if(!STATE.pharmacies) STATE.pharmacies = [];
-  const id = STATE.pharmacies.reduce((m,p)=>Math.max(m,p.id),0)+1;
-  STATE.pharmacies.push({ id, name:'صيدلية جديدة', months:[{sales:0,rx:0},{sales:0,rx:0},{sales:0,rx:0}] });
-  saveState();
-  renderPharmacies();
-  renderEntryBranches();   // الفرع الجديد يظهر في الإدخال اليومي
-}
-function removePharmacy(id){
-  if(isAllMode()) return;
-  STATE.pharmacies = (STATE.pharmacies||[]).filter(p=>p.id!==id);
-  saveState();
-  renderPharmacies();
-  renderEntryBranches();
-}
-// نسخ أسماء فروع المنتج الحالي (بأرقام صفرية) إلى باقي المنتجات التي لا تحتويها
-function copyBranchesToAll(){
-  if(isAllMode()){ alert('اختر منتجاً محدداً أولاً.'); return; }
-  const src = STATE.pharmacies || [];
-  if(!src.length){ alert('لا توجد فروع في هذا المنتج لنسخها.'); return; }
-  if(!confirm('نسخ أسماء فروع هذا المنتج (بأرقام صفرية) إلى باقي المنتجات التي لا تحتويها؟')) return;
-  commitActiveProduct();
-  Object.entries(STATE.products).forEach(([id,pr])=>{
-    if(id === STATE.activeProduct) return;
-    pr.pharmacies = pr.pharmacies || [];
-    const names = new Set(pr.pharmacies.map(p=>(p.name||'').trim()));
-    let nextId = pr.pharmacies.reduce((m,p)=>Math.max(m,p.id),0)+1;
-    src.forEach(s=>{
-      const nm = (s.name||'').trim();
-      if(nm && !names.has(nm)){
-        pr.pharmacies.push({ id:nextId++, name:s.name, months:[{sales:0,rx:0},{sales:0,rx:0},{sales:0,rx:0}] });
+    function localDateString(date){
+      return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
+    }
+    function today(){ return localDateString(new Date()); }
+    function dateFromString(value){
+      const bits = String(value || '').split('-').map(Number);
+      return bits.length === 3 ? new Date(bits[0], bits[1] - 1, bits[2]) : null;
+    }
+    function dateLabel(value, short){
+      const date = dateFromString(value);
+      if(!date) return '—';
+      const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+      return short ? date.getDate() + ' ' + months[date.getMonth()].slice(0,3) : date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
+    }
+    function number(value){
+      const parsed = Number(value);
+      return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : 0;
+    }
+    function format(value){ return Number(value || 0).toLocaleString('en-US', {maximumFractionDigits:0}); }
+    function product(key){ return PRODUCTS.find(item => item.key === key) || null; }
+    function escapeHtml(value){
+      return String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+    }
+    function notify(message){
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(notify.timer);
+      notify.timer = setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+    function loadEntries(){
+      try{
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        if(!Array.isArray(saved)) return [];
+        return saved.map((entry,index) => {
+          if(!entry || !/^\d{4}-\d{2}-\d{2}$/.test(String(entry.date || ''))) return null;
+          const safeId = String(entry.id || ('legacy-' + index)).replace(/[^a-zA-Z0-9_-]/g,'') || ('legacy-' + index);
+          if(!product(entry.product) || !PHARMACIES.includes(entry.pharmacy)) return null;
+          return {
+            id:safeId,
+            date:entry.date,
+            pharmacy:entry.pharmacy,
+            product:entry.product,
+            units:number(entry.units),
+            amount:number(entry.amount),
+            prescriptions:number(entry.prescriptions),
+            updatedAt:String(entry.updatedAt || '')
+          };
+        }).filter(Boolean);
+      }catch(error){
+        console.warn('Unable to load sales records', error);
+        return [];
       }
-    });
-  });
-  saveState();
-  alert('تم نسخ الفروع لباقي المنتجات.');
-}
-function updatePharmacy(id, field, value){
-  if(isAllMode()) return;
-  const p = (STATE.pharmacies||[]).find(x=>x.id===id);
-  if(!p) return;
-  p[field] = value;
-  saveState();
-  renderPharmaCards();   // حدّث الشارت فقط دون إعادة بناء حقول الإدخال
-}
-function updatePharmacyMonth(id, monthIdx, field, value){
-  if(isAllMode()) return;
-  const p = (STATE.pharmacies||[]).find(x=>x.id===id);
-  if(!p || !p.months[monthIdx]) return;
-  p.months[monthIdx][field] = parseFloat(value)||0;
-  saveState();
-  renderPharmaCards();   // تحديث حيّ للشارت أثناء الكتابة (يحافظ على تركيز الحقل)
-}
+    }
+    function saveEntries(entries){
+      try{
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+        return true;
+      }catch(error){
+        notify('تعذر حفظ البيانات على هذا الجهاز');
+        return false;
+      }
+    }
+    function range(){
+      const end = dateFromString(UI.endDate || today()) || new Date();
+      const start = new Date(end);
+      start.setDate(start.getDate() - 89);
+      return { start, end, startDate:localDateString(start), endDate:localDateString(end) };
+    }
+    function matches(entry){
+      return (UI.pharmacy === 'all' || entry.pharmacy === UI.pharmacy)
+        && (UI.product === 'all' || entry.product === UI.product);
+    }
+    function visibleEntries(){
+      const period = range();
+      return loadEntries().filter(entry => entry.date >= period.startDate && entry.date <= period.endDate && matches(entry));
+    }
+    function productOptions(selected, withAll){
+      const first = withAll ? '<option value="all">كل المنتجات</option>' : '';
+      return first + PRODUCTS.map(item => '<option value="' + item.key + '" ' + (item.key === selected ? 'selected' : '') + '>' + item.name + ' — ' + item.form + '</option>').join('');
+    }
+    function pharmacyOptions(selected, withAll){
+      const first = withAll ? '<option value="all">كل الصيدليات</option>' : '';
+      return first + PHARMACIES.map(item => '<option value="' + item + '" ' + (item === selected ? 'selected' : '') + '>' + item + '</option>').join('');
+    }
+    function setFilter(field, value){
+      UI[field] = value;
+      render();
+    }
+    function setRangeEnd(value){
+      if(/^\d{4}-\d{2}-\d{2}$/.test(value)) UI.endDate = value;
+      render();
+    }
+    function beginEdit(id){
+      if(loadEntries().some(entry => entry.id === id)){
+        UI.editingId = id;
+        render();
+        document.getElementById('units').focus();
+      }
+    }
+    function cancelEdit(){
+      UI.editingId = null;
+      render();
+    }
+    function removeEntry(id){
+      if(!confirm('هل تريد حذف هذا السجل؟')) return;
+      saveEntries(loadEntries().filter(entry => entry.id !== id));
+      if(UI.editingId === id) UI.editingId = null;
+      notify('تم حذف السجل');
+      render();
+    }
+    function submitEntry(event){
+      event.preventDefault();
+      const date = document.getElementById('date').value;
+      const pharmacy = document.getElementById('pharmacy').value;
+      const productKey = document.getElementById('product').value;
+      const units = number(document.getElementById('units').value);
+      const amount = number(document.getElementById('amount').value);
+      const prescriptions = number(document.getElementById('prescriptions').value);
+      if(!date || !product(productKey) || !PHARMACIES.includes(pharmacy)){
+        notify('أكمل التاريخ والصيدلية والمنتج أولاً');
+        return;
+      }
+      if(units === 0 && amount === 0 && prescriptions === 0){
+        notify('أدخل الحبات أو المبلغ أو كتابات الأطباء');
+        return;
+      }
 
-// ═══════════════════════════════════════════════════════════════
-// MONTHLY ARCHIVE / TREND
-// ═══════════════════════════════════════════════════════════════
-function archiveMonth(){
-  if(isAllMode()){ alert('اختر منتجاً محدداً لحفظ لقطته.'); return; }
-  const c = calculate();
-  if(!STATE.archive) STATE.archive = {};
-  STATE.archive[STATE.month] = {
-    target: STATE.target,
-    achieved: Math.round(c.achievedAmount),
-    realistic: Math.round(c.realisticTotal),
-    qty: Math.round(c.achievedQty)
-  };
-  saveState();
-  renderArchive();
-  alert('تم حفظ لقطة ' + getMonthInfo(STATE.month).monthLabel);
-}
+      let entries = loadEntries();
+      const current = UI.editingId ? entries.find(entry => entry.id === UI.editingId) : null;
+      const duplicate = entries.find(entry => entry.id !== UI.editingId && entry.date === date && entry.pharmacy === pharmacy && entry.product === productKey);
+      const timestamp = new Date().toISOString();
+      let message = 'تمت إضافة السجل ✓';
 
-function renderArchive(){
-  const wrap = document.getElementById('archiveWrap');
-  const arch = STATE.archive || {};
-  const keys = Object.keys(arch).sort();
-  if(keys.length === 0){
-    wrap.innerHTML = '<div class="empty-state"><div class="icon">📚</div>لا توجد شهور محفوظة بعد. اضغط «حفظ لقطة هذا الشهر» لبناء اتجاه زمني.</div>';
-    return;
-  }
-  const maxVal = Math.max(...keys.map(k=>Math.max(arch[k].achieved, arch[k].target)));
-  const bars = keys.map(k=>{
-    const a = arch[k];
-    const [y,m] = k.split('-').map(Number);
-    const pct = a.target>0 ? (a.achieved/a.target*100) : 0;
-    const h = maxVal>0 ? (a.achieved/maxVal*140) : 0;
-    const hit = a.achieved >= a.target;
-    return `<div class="archive-bar">
-      <div class="ab-val">${fmtNum(a.achieved)}</div>
-      <div class="ab-col ${hit?'hit':''}" style="height:${h}px" title="${fmtNum(a.achieved)} من ${fmtNum(a.target)}"></div>
-      <div class="ab-pct" style="color:${hit?'var(--teal-l)':'var(--amber-l)'}">${pct.toFixed(0)}%</div>
-      <div class="ab-label">${AR_MONTHS[m-1]}</div>
-    </div>`;
-  }).join('');
-  wrap.innerHTML = `<div class="archive-bars">${bars}</div>`;
-}
-
-// ═══════════════════════════════════════════════════════════════
-// CHART
-// ═══════════════════════════════════════════════════════════════
-let chartInstance = null;
-function renderChart(c){
-  // إن تعذّر تحميل مكتبة الرسم (وضع بدون إنترنت) نعرض رسالة بدل تعطّل الصفحة
-  if(typeof Chart === 'undefined'){
-    const box = document.querySelector('.chart-box');
-    if(box) box.innerHTML = '<div class="empty-state"><div class="icon">📡</div>تعذّر تحميل مكتبة الرسم — تحقق من اتصال الإنترنت لعرض المخطط.</div>';
-    return;
-  }
-  const ctx = document.getElementById('dailyChart').getContext('2d');
-  if(chartInstance) chartInstance.destroy();
-
-  const labels = c.info.days.map(d=>d.day);
-  const actualData = c.info.days.map(d=>{
-    const e = STATE.entries[d.date];
-    return e ? entryTotal(e).amount : null;
-  });
-
-  // Build forecast line (only future days, starting from last actual)
-  const enteredDates = new Set(Object.keys(STATE.entries));
-  const forecastData = c.info.days.map(d=>{
-    if(enteredDates.has(d.date)) return null;
-    if(d.isPast) return null;            // لا نرسم توقعاً على أيام فائتة
-    if(!c.avgDailyAmount) return null;
-    if(d.isHoliday) return 0;
-    if(d.isFriday) return c.avgDailyAmount * c.fridayFactor;
-    return c.avgDailyAmount;
-  });
-
-  // Target daily line
-  const targetDaily = c.totalWorkDays > 0 ? STATE.target / c.totalWorkDays : 0;
-  const targetLine = c.info.days.map(d=>{
-    if(d.isHoliday) return 0;
-    if(d.isFriday) return targetDaily * c.fridayFactor;
-    return targetDaily;
-  });
-
-  chartInstance = new Chart(ctx, {
-    type:'line',
-    data:{
-      labels,
-      datasets:[
-        {
-          label:'الفعلي',
-          data:actualData,
-          borderColor:'#00c9a7',
-          backgroundColor:'rgba(0,201,167,0.15)',
-          borderWidth:3,
-          tension:0.35,
-          pointRadius:5,
-          pointBackgroundColor:'#00c9a7',
-          pointBorderColor:'#fff',
-          pointBorderWidth:2,
-          fill:true,
-          spanGaps:false
+      if(current && duplicate){
+        Object.assign(duplicate, {date,pharmacy,product:productKey,units,amount,prescriptions,updatedAt:timestamp});
+        entries = entries.filter(entry => entry.id !== current.id);
+        message = 'تم دمج وتحديث السجل ✓';
+      }else if(current || duplicate){
+        Object.assign(current || duplicate, {date,pharmacy,product:productKey,units,amount,prescriptions,updatedAt:timestamp});
+        message = 'تم تحديث السجل ✓';
+      }else{
+        entries.push({
+          id:'sale-' + Date.now() + '-' + Math.random().toString(36).slice(2,8),
+          date, pharmacy, product:productKey, units, amount, prescriptions, updatedAt:timestamp
+        });
+      }
+      if(!saveEntries(entries)) return;
+      UI.editingId = null;
+      if(date > UI.endDate) UI.endDate = date;
+      notify(message);
+      render();
+    }
+    function chart(period, entries){
+      const canvas = document.getElementById('trendChart');
+      if(!canvas || typeof Chart === 'undefined') return;
+      if(trendChart) trendChart.destroy();
+      const aggregate = {};
+      entries.forEach(entry => {
+        if(!aggregate[entry.date]) aggregate[entry.date] = {units:0,amount:0,prescriptions:0};
+        aggregate[entry.date].units += entry.units;
+        aggregate[entry.date].amount += entry.amount;
+        aggregate[entry.date].prescriptions += entry.prescriptions;
+      });
+      const labels = [], units = [], amount = [], prescriptions = [];
+      const cursor = new Date(period.start);
+      while(cursor <= period.end){
+        const key = localDateString(cursor);
+        const totals = aggregate[key] || {units:0,amount:0,prescriptions:0};
+        labels.push(dateLabel(key, true));
+        units.push(totals.units);
+        amount.push(totals.amount);
+        prescriptions.push(totals.prescriptions);
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      trendChart = new Chart(canvas, {
+        type:'line',
+        data:{
+          labels,
+          datasets:[
+            {label:'المبلغ (ريال)',data:amount,yAxisID:'yMoney',borderColor:'#f7bd57',backgroundColor:'rgba(247,189,87,.12)',borderWidth:3,tension:.32,pointRadius:2,pointHoverRadius:5,pointBackgroundColor:'#ffd382',fill:true},
+            {label:'الحبات المباعة',data:units,yAxisID:'yCount',borderColor:'#1bd1ae',backgroundColor:'rgba(27,209,174,.05)',borderWidth:3,tension:.32,pointRadius:2,pointHoverRadius:5,pointBackgroundColor:'#77eed6',fill:false},
+            {label:'كتابات الأطباء',data:prescriptions,yAxisID:'yCount',borderColor:'#6395ff',backgroundColor:'transparent',borderWidth:3,tension:.32,pointRadius:2,pointHoverRadius:5,pointBackgroundColor:'#a9c1ff',borderDash:[7,4],fill:false}
+          ]
         },
-        {
-          label:'التوقع',
-          data:forecastData,
-          borderColor:'#818cf8',
-          backgroundColor:'rgba(99,102,241,0.08)',
-          borderWidth:2,
-          borderDash:[6,4],
-          tension:0.3,
-          pointRadius:3,
-          pointBackgroundColor:'#818cf8',
-          fill:false,
-          spanGaps:false
-        },
-        {
-          label:'المطلوب للتارجت',
-          data:targetLine,
-          borderColor:'#f59e0b',
-          backgroundColor:'transparent',
-          borderWidth:2,
-          borderDash:[3,3],
-          tension:0,
-          pointRadius:0,
-          fill:false
-        }
-      ]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      interaction:{ intersect:false, mode:'index' },
-      plugins:{
-        legend:{
-          labels:{ color:'#e8ecf4', font:{family:'Tajawal', size:13, weight:'700'}, padding:14, usePointStyle:true, pointStyle:'circle' }
-        },
-        tooltip:{
-          backgroundColor:'rgba(15,22,38,0.95)',
-          titleColor:'#fff',
-          bodyColor:'#e8ecf4',
-          borderColor:'rgba(255,255,255,0.1)',
-          borderWidth:1,
-          padding:12,
-          titleFont:{family:'Tajawal',weight:'800',size:13},
-          bodyFont:{family:'Tajawal',weight:'600',size:12},
-          callbacks:{
-            title:(items)=>`اليوم ${items[0].label} ${c.info.monthLabel}`,
-            label:(item)=>{
-              const v = item.raw;
-              if(v===null) return null;
-              return `${item.dataset.label}: ${fmtNum(v, 0)} ريال`;
+        options:{
+          responsive:true,maintainAspectRatio:false,animation:{duration:250},interaction:{intersect:false,mode:'index'},
+          plugins:{
+            legend:{labels:{color:'#c9d4e8',font:{family:'IBM Plex Sans Arabic',size:12,weight:'700'},usePointStyle:true,padding:16}},
+            tooltip:{
+              backgroundColor:'rgba(8,13,25,.96)',titleColor:'#fff',bodyColor:'#dce5f5',borderColor:'rgba(255,255,255,.14)',borderWidth:1,padding:12,
+              callbacks:{
+                title(items){ const date = new Date(period.start); date.setDate(date.getDate() + items[0].dataIndex); return dateLabel(localDateString(date)); },
+                label(item){ return item.dataset.label + ': ' + format(item.raw) + (item.dataset.yAxisID === 'yMoney' ? ' ريال' : ''); }
+              }
             }
+          },
+          scales:{
+            x:{ticks:{color:'#9aa9c5',font:{family:'IBM Plex Sans Arabic',size:10},maxTicksLimit:12},grid:{display:false}},
+            yCount:{position:'right',beginAtZero:true,ticks:{color:'#9aa9c5',font:{family:'Alexandria',size:10},callback:value => format(value)},grid:{color:'rgba(216,226,255,.09)'},title:{display:true,text:'حبات / كتابات',color:'#9aa9c5',font:{family:'IBM Plex Sans Arabic',size:10,weight:'700'}}},
+            yMoney:{position:'left',beginAtZero:true,ticks:{color:'#ffd382',font:{family:'Alexandria',size:10},callback:value => format(value)},grid:{display:false},title:{display:true,text:'ريال',color:'#ffd382',font:{family:'IBM Plex Sans Arabic',size:10,weight:'700'}}}
           }
         }
-      },
-      scales:{
-        x:{
-          ticks:{ color:'#8b97b8', font:{family:'Tajawal', weight:'600'} },
-          grid:{ color:'rgba(255,255,255,0.04)' }
-        },
-        y:{
-          ticks:{ color:'#8b97b8', font:{family:'Tajawal', weight:'600'}, callback:(v)=>fmtNum(v,0) },
-          grid:{ color:'rgba(255,255,255,0.04)' },
-          beginAtZero:true
-        }
-      }
-    }
-  });
-}
-
-// ═══════════════════════════════════════════════════════════════
-// ENTRY MANAGEMENT
-// ═══════════════════════════════════════════════════════════════
-// بناء صفوف الإدخال اليومي لكل فرع (يُعاد بناؤه فقط عند تغيّر مجموعة الفروع)
-function renderEntryBranches(){
-  const wrap = document.getElementById('entryBranches');
-  if(!wrap) return;
-  const keys = entryBranchKeys();
-  const sig = (isAllMode()?'ALL|':'') + keys.map(k=>k+':'+branchName(k)).join('|');
-  if(wrap.dataset.sig === sig) return;   // لم تتغيّر الفروع — أبقِ ما كتبه المستخدم
-  wrap.dataset.sig = sig;
-  const ro = isAllMode() ? 'disabled' : '';
-  wrap.innerHTML = keys.map(k=>`
-    <div class="entry-branch-row">
-      <span class="eb-name"><span class="pc-dot"></span>${branchName(k)}</span>
-      <input type="number" inputmode="numeric" min="0" id="qty_${k}" placeholder="حبات" ${ro} oninput="updateEntryTotalPreview()">
-      <input type="number" inputmode="decimal" min="0" step="0.01" id="amt_${k}" placeholder="مبلغ" ${ro} oninput="updateEntryTotalPreview()">
-    </div>`).join('');
-  updateEntryTotalPreview();
-}
-
-// معاينة الإجمالي اليومي أثناء الكتابة
-function updateEntryTotalPreview(){
-  let q=0, a=0;
-  entryBranchKeys().forEach(k=>{
-    q += parseFloat((document.getElementById('qty_'+k)||{}).value)||0;
-    a += parseFloat((document.getElementById('amt_'+k)||{}).value)||0;
-  });
-  const qEl=document.getElementById('entryTotalQty'), aEl=document.getElementById('entryTotalAmount');
-  if(qEl) qEl.textContent = fmtNum(q);
-  if(aEl) aEl.textContent = fmtNum(a,0);
-}
-
-function addEntry(){
-  if(isAllMode()){ alert('اختر منتجاً محدداً لإضافة مبيعات.'); return; }
-  const date = document.getElementById('entryDate').value;
-  if(!date){ alert('من فضلك اختر التاريخ'); return; }
-
-  const keys = entryBranchKeys();
-  const branches = {};
-  let totalQty = 0, totalAmount = 0;
-  keys.forEach(k=>{
-    const qty = parseFloat((document.getElementById('qty_'+k)||{}).value) || 0;
-    let amount = parseFloat((document.getElementById('amt_'+k)||{}).value) || 0;
-    // إن أُدخلت الحبات دون المبلغ نحسبه من متوسط السعر
-    if(amount <= 0 && qty > 0 && STATE.avgPrice > 0) amount = qty * STATE.avgPrice;
-    if(qty > 0 || amount > 0){ branches[k] = { qty, amount }; totalQty += qty; totalAmount += amount; }
-  });
-
-  if(totalQty <= 0 && totalAmount <= 0){ alert('من فضلك أدخل الحبات أو المبلغ لفرع واحد على الأقل'); return; }
-  if(STATE.entries[date] && !confirm('هذا اليوم مسجّل مسبقاً — سيتم استبدال قيمته. متابعة؟')) return;
-  if(!date.startsWith(STATE.month) && !confirm('التاريخ خارج الشهر المختار. تريد المتابعة؟')) return;
-
-  STATE.entries[date] = { branches };
-  saveState();
-  render();
-
-  // Clear inputs
-  keys.forEach(k=>{
-    const q=document.getElementById('qty_'+k), a=document.getElementById('amt_'+k);
-    if(q) q.value=''; if(a) a.value='';
-  });
-  updateEntryTotalPreview();
-
-  // Suggest next date
-  const next = new Date(date);
-  next.setDate(next.getDate()+1);
-  document.getElementById('entryDate').value = next.toISOString().slice(0,10);
-}
-
-function deleteEntry(date){
-  if(isAllMode()) return;
-  if(!confirm('حذف هذا اليوم؟')) return;
-  delete STATE.entries[date];
-  saveState();
-  render();
-}
-
-// تحميل يوم مسجَّل إلى النموذج لتعديله
-function editEntry(date){
-  if(isAllMode()) return;
-  const e = STATE.entries[date];
-  if(!e) return;
-  document.getElementById('entryDate').value = date;
-  const keys = entryBranchKeys();
-  const b = e.branches || null;
-  keys.forEach((k,i)=>{
-    const q=document.getElementById('qty_'+k), a=document.getElementById('amt_'+k);
-    let qv='', av='';
-    if(b && b[k]){ qv=b[k].qty||''; av=b[k].amount||''; }
-    else if(!b && i===0){ qv=e.qty||''; av=e.amount||''; } // توافق مع الشكل القديم
-    if(q) q.value=qv; if(a) a.value=av;
-  });
-  updateEntryTotalPreview();
-  document.getElementById('entryDate').scrollIntoView({behavior:'smooth', block:'center'});
-}
-
-// ═══════════════════════════════════════════════════════════════
-// SETUP HANDLERS
-// ═══════════════════════════════════════════════════════════════
-function attachSetupHandlers(){
-  document.getElementById('monthInput').addEventListener('change', (e)=>{
-    STATE.month = e.target.value;
-    STATE.monthTouched = true;   // احترم اختيار المستخدم ولا تُعِده تلقائياً
-    saveState();
-    render();
-    // Set today's date in entry if in current month
-    const today = getToday();
-    if(today.startsWith(STATE.month)){
-      document.getElementById('entryDate').value = today;
-    } else {
-      document.getElementById('entryDate').value = STATE.month + '-01';
-    }
-  });
-  document.getElementById('targetInput').addEventListener('input', (e)=>{
-    STATE.target = parseFloat(e.target.value) || 0;
-    saveState();
-    render();
-  });
-  document.getElementById('avgPriceInput').addEventListener('input', (e)=>{
-    STATE.avgPrice = parseFloat(e.target.value) || 0;
-    saveState();
-    render();
-  });
-  document.getElementById('holidaysInput').addEventListener('change', (e)=>{
-    STATE.holidays = e.target.value.split(',').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n) && n>=1 && n<=31);
-    saveState();
-    render();
-  });
-  document.getElementById('fridayMode').addEventListener('change', (e)=>{
-    STATE.fridayMode = e.target.value;
-    saveState();
-    render();
-  });
-  document.getElementById('prevMonthSales').addEventListener('input', (e)=>{
-    STATE.prevMonthSales = parseFloat(e.target.value) || 0;
-    saveState();
-    render();
-  });
-  document.getElementById('forecastMode').addEventListener('change', (e)=>{
-    STATE.forecastMode = e.target.value;
-    saveState();
-    render();
-  });
-}
-
-function syncSetupUI(){
-  document.getElementById('monthInput').value = STATE.month;
-  document.getElementById('targetInput').value = STATE.target;
-  document.getElementById('avgPriceInput').value = STATE.avgPrice;
-  document.getElementById('holidaysInput').value = STATE.holidays.join(',');
-  document.getElementById('fridayMode').value = STATE.fridayMode;
-  document.getElementById('prevMonthSales').value = STATE.prevMonthSales;
-  document.getElementById('forecastMode').value = STATE.forecastMode || 'weighted';
-}
-
-function applyEidPreset(){
-  // Last 5 days of current month
-  const info = getMonthInfo(STATE.month);
-  const last5 = [];
-  for(let i=4; i>=0; i--){
-    last5.push(info.daysInMonth - i);
-  }
-  STATE.holidays = last5;
-  document.getElementById('holidaysInput').value = last5.join(',');
-  saveState();
-  render();
-}
-
-function clearHolidays(){
-  STATE.holidays = [];
-  document.getElementById('holidaysInput').value = '';
-  saveState();
-  render();
-}
-
-// تصفير مبيعات الشهر الحالي فقط (مع الاحتفاظ بالإعدادات)
-function resetAll(){
-  if(isAllMode()){ alert('اختر منتجاً محدداً لتصفير بياناته.'); return; }
-  if(!confirm(`سيتم حذف كل الأيام المسجّلة لمنتج «${STATE.products[STATE.activeProduct].name}». هل أنت متأكد؟`)) return;
-  STATE.entries = {};
-  saveState();
-  render();
-}
-
-// ═══════════════════════════════════════════════════════════════
-// EXPORT / IMPORT
-// ═══════════════════════════════════════════════════════════════
-function exportData(){
-  const data = JSON.stringify(STATE, null, 2);
-  const blob = new Blob([data], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `sales-${STATE.month}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function exportCSV(){
-  const info = getMonthInfo(STATE.month);
-  const rows = [['التاريخ','اليوم','النوع','الفرع','الحبات','المبلغ (ريال)']];
-  info.days.forEach(d=>{
-    const e = STATE.entries[d.date];
-    if(!e) return;
-    const type = d.isHoliday?'إجازة':(d.isFriday?'جمعة':'عمل');
-    if(e.branches){
-      Object.entries(e.branches).forEach(([k,v])=>{
-        if(v.qty||v.amount) rows.push([d.date, d.dayName, type, branchName(k), v.qty||0, v.amount||0]);
       });
-    } else {
-      rows.push([d.date, d.dayName, type, 'إجمالي', e.qty||0, e.amount||0]);
     }
-  });
-  // ﻿ = BOM حتى يفتح Excel العربية بشكل صحيح
-  const csv = '﻿' + rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\r\n');
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `sales-${STATE.month}.csv`; a.click();
-  URL.revokeObjectURL(url);
-}
-
-function importData(event){
-  const file = event.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = (e)=>{
-    try{
-      const data = JSON.parse(e.target.result);
-      if(confirm('استيراد سيستبدل البيانات الحالية. تريد المتابعة؟')){
-        Object.assign(STATE, data);
-        ensureProducts();
-        syncSetupUI();
-        renderProductSelector();
-        applyAllModeUI();
-        render();
-        saveState();
-        alert('تم الاستيراد بنجاح');
-      }
-    } catch(err){
-      alert('ملف غير صالح: ' + err.message);
+    function bindEvents(){
+      document.getElementById('entryForm').addEventListener('submit', submitEntry);
+      document.getElementById('rangeEnd').addEventListener('change', event => setRangeEnd(event.target.value));
+      document.getElementById('filterPharmacy').addEventListener('change', event => setFilter('pharmacy', event.target.value));
+      document.getElementById('filterProduct').addEventListener('change', event => setFilter('product', event.target.value));
+      document.querySelectorAll('[data-edit]').forEach(button => button.addEventListener('click', () => beginEdit(button.dataset.edit)));
+      document.querySelectorAll('[data-delete]').forEach(button => button.addEventListener('click', () => removeEntry(button.dataset.delete)));
+      const cancel = document.getElementById('cancelEdit');
+      if(cancel) cancel.addEventListener('click', cancelEdit);
     }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-}
+    function render(){
+      if(!UI.endDate) UI.endDate = today();
+      const root = document.getElementById('dashboard');
+      const all = loadEntries();
+      const editing = UI.editingId ? all.find(entry => entry.id === UI.editingId) : null;
+      if(UI.editingId && !editing) UI.editingId = null;
+      const period = range();
+      const entries = visibleEntries();
+      const totals = entries.reduce((result, entry) => {
+        result.units += entry.units;
+        result.amount += entry.amount;
+        result.prescriptions += entry.prescriptions;
+        result.days.add(entry.date);
+        result.pharmacies.add(entry.pharmacy);
+        result.products.add(entry.product);
+        return result;
+      }, {units:0,amount:0,prescriptions:0,days:new Set(),pharmacies:new Set(),products:new Set()});
+      const records = [...entries].sort((a,b) => b.date.localeCompare(a.date) || b.updatedAt.localeCompare(a.updatedAt));
+      const selectedProduct = editing ? editing.product : PRODUCTS[0].key;
+      const selectedPharmacy = editing ? editing.pharmacy : PHARMACIES[0];
+      const selectedDate = editing ? editing.date : UI.endDate;
+      const activePharmacy = UI.pharmacy === 'all' ? 'كل الصيدليات' : UI.pharmacy;
+      const activeProduct = UI.product === 'all' ? 'كل المنتجات' : product(UI.product).name;
+      const avgPerDay = totals.days.size ? totals.amount / totals.days.size : 0;
 
-// ═══════════════════════════════════════════════════════════════
-// PRE-LOAD JUNE 2026 DATA (current context)
-// ═══════════════════════════════════════════════════════════════
-function preloadIfEmpty(){
-  // بيانات تجريبية تُزرع مرة واحدة فقط عند أول استخدام (لا تعود بعد التصفير)
-  if(localStorage.getItem('sales_seeded_v2')) return;
-  if(Object.keys(STATE.entries).length === 0){
-    // بيانات تجريبية في أوائل الشهر الحالي موزّعة على الفروع
-    const m = STATE.month;
-    const phs = STATE.pharmacies || [];
-    const mkDay = (perBranch)=>{
-      const branches = {};
-      if(phs.length){ phs.forEach((ph,i)=>{ if(perBranch[i]) branches[ph.id] = perBranch[i]; }); }
-      else { branches['__total__'] = perBranch.reduce((s,b)=>({qty:s.qty+b.qty,amount:s.amount+b.amount}),{qty:0,amount:0}); }
-      return { branches };
-    };
-    STATE.entries = {
-      [`${m}-01`]: mkDay([{qty:12,amount:720},{qty:8,amount:480},{qty:12,amount:750}]),
-      [`${m}-02`]: mkDay([{qty:13,amount:780},{qty:7,amount:420},{qty:12,amount:750}]),
-      [`${m}-03`]: mkDay([{qty:14,amount:840},{qty:9,amount:540},{qty:10,amount:575}])
-    };
-    saveState();
-  }
-  localStorage.setItem('sales_seeded_v2', '1');
-}
-
-// ═══════════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════════
-function init(){
-  loadState();
-  ensureProducts();
-  // افتراضياً افتح على الشهر الحالي ما لم يكن المستخدم قد اختار شهراً بنفسه
-  if(!STATE.monthTouched){ STATE.month = getToday().slice(0,7); }
-  preloadIfEmpty();
-  saveState();
-  syncSetupUI();
-  renderProductSelector();
-  applyAllModeUI();
-  attachSetupHandlers();
-
-  // Default entry date = today (if in month) else first day of month
-  const today = getToday();
-  document.getElementById('entryDate').value = today.startsWith(STATE.month) ? today : (STATE.month + '-01');
-
-  // حفظ سريع بالضغط على Enter داخل التاريخ أو أي حقل فرع (تفويض الحدث)
-  const entrySection = document.querySelector('.entry-form2');
-  if(entrySection){
-    entrySection.addEventListener('keydown', (ev)=>{
-      if(ev.key === 'Enter' && ev.target.tagName === 'INPUT'){ ev.preventDefault(); addEntry(); }
-    });
-  }
-
-  render();
-}
-
-document.addEventListener('DOMContentLoaded', init);
-</script>
-
+      root.innerHTML = `
+        <section class="card entry-card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">${editing ? '✏️ تعديل سجل يومي' : '➕ إضافة سجل يومي'}</div>
+              <div class="card-help">حفظ نفس التاريخ والصيدلية والمنتج يحدّث السجل تلقائياً، بدون تكرار.</div>
+            </div>
+            ${editing ? '<button type="button" class="btn btn-secondary" id="cancelEdit">إلغاء التعديل</button>' : ''}
+          </div>
+          ${editing ? '<div class="edit-banner">أنت تعدّل سجلاً قائماً. احفظ التعديل لتحديث الرسم والمؤشرات فوراً.</div>' : ''}
+          <form id="entryForm" class="entry-grid" style="${editing ? 'margin-top:12px' : ''}">
+            <div class="field"><label for="date">التاريخ</label><input id="date" type="date" required value="${selectedDate}"></div>
+            <div class="field"><label for="pharmacy">الصيدلية</label><select id="pharmacy">${pharmacyOptions(selectedPharmacy,false)}</select></div>
+            <div class="field"><label for="product">المنتج</label><select id="product">${productOptions(selectedProduct,false)}</select></div>
+            <div class="field"><label for="units">الحبات المباعة</label><input id="units" type="number" min="0" step="1" inputmode="numeric" placeholder="مثال: 25" value="${editing ? (editing.units || '') : ''}"></div>
+            <div class="field"><label for="amount">المبلغ (ريال)</label><input id="amount" type="number" min="0" step="1" inputmode="numeric" placeholder="مثال: 1450" value="${editing ? (editing.amount || '') : ''}"></div>
+            <div class="field"><label for="prescriptions">كتابات الأطباء</label><input id="prescriptions" type="number" min="0" step="1" inputmode="numeric" placeholder="مثال: 12" value="${editing ? (editing.prescriptions || '') : ''}"></div>
+            <button class="btn btn-primary" type="submit">${editing ? '💾 حفظ التعديل' : '💾 حفظ السجل'}</button>
+          </form>
+        </section>
+        <section class="kpis">
+          <article class="kpi teal"><div class="kpi-label">إجمالي المبلغ</div><div class="kpi-value teal">${format(totals.amount)} <span class="kpi-unit">ريال</span></div><div class="kpi-foot">قيمة المبيعات ضمن الفترة والفلاتر</div></article>
+          <article class="kpi"><div class="kpi-label">إجمالي الحبات</div><div class="kpi-value">${format(totals.units)}</div><div class="kpi-foot">متوسط ${format(totals.days.size ? totals.units / totals.days.size : 0)} حبة / يوم مسجل</div></article>
+          <article class="kpi violet"><div class="kpi-label">إجمالي الكتابات</div><div class="kpi-value violet">${format(totals.prescriptions)}</div><div class="kpi-foot">كتابات الأطباء المسجلة</div></article>
+          <article class="kpi amber"><div class="kpi-label">أيام مسجلة</div><div class="kpi-value amber">${format(totals.days.size)}</div><div class="kpi-foot">متوسط ${format(avgPerDay)} ريال / يوم مسجل</div></article>
+        </section>
+        <section class="card chart-card">
+          <div class="chart-top">
+            <div><div class="chart-title">مسار المبلغ والحبات والكتابات — آخر 3 أشهر</div><div class="range-copy">من ${dateLabel(period.startDate)} إلى ${dateLabel(period.endDate)}</div></div>
+            <div class="filters">
+              <div class="filter"><label for="rangeEnd">نهاية المسار</label><input id="rangeEnd" type="date" value="${period.endDate}"></div>
+              <div class="filter"><label for="filterPharmacy">الصيدلية</label><select id="filterPharmacy">${pharmacyOptions(UI.pharmacy,true)}</select></div>
+              <div class="filter"><label for="filterProduct">المنتج</label><select id="filterProduct">${productOptions(UI.product,true)}</select></div>
+            </div>
+          </div>
+          <div class="filter-summary">الفلاتر الحالية: <b>${escapeHtml(activePharmacy)}</b> · <b>${escapeHtml(activeProduct)}</b></div>
+          <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+        </section>
+        <section class="card table-card">
+          <div class="table-head">
+            <div><div class="table-title">السجلات ضمن فترة العرض</div><div class="table-sub">${format(records.length)} سجل · يمكنك تعديل أو حذف أي سجل.</div></div>
+          </div>
+          ${records.length ? `
+            <div class="table-wrap"><table>
+              <thead><tr><th>التاريخ</th><th>الصيدلية</th><th>المنتج</th><th style="text-align:center;color:#71ecd3">الحبات</th><th style="text-align:center;color:#ffd382">المبلغ</th><th style="text-align:center;color:#c4b4ff">الكتابات</th><th></th></tr></thead>
+              <tbody>${records.map(entry => {
+                const item = product(entry.product);
+                return `<tr>
+                  <td>${dateLabel(entry.date)}</td><td>${entry.pharmacy}</td>
+                  <td><div class="product"><i class="product-dot" style="background:${item.color}"></i><span>${item.name}<small>${item.form}</small></span></div></td>
+                  <td class="num units">${format(entry.units)}</td><td class="num money">${format(entry.amount)}</td><td class="num rx">${format(entry.prescriptions)}</td>
+                  <td class="row-actions"><button class="btn-secondary" type="button" data-edit="${entry.id}">تعديل</button><button class="btn-danger" type="button" data-delete="${entry.id}">حذف</button></td>
+                </tr>`;
+              }).join('')}</tbody>
+            </table></div>` :
+            '<div class="empty"><div class="empty-icon">📝</div>لا توجد سجلات ضمن هذه الفترة أو الفلاتر.<br>أضف أول سجل من النموذج أعلاه ليظهر في الرسم مباشرة.</div>'}
+        </section>`;
+      bindEvents();
+      chart(period, entries);
+    }
+    document.addEventListener('DOMContentLoaded', render);
+  </script>
 </body>
 </html>
