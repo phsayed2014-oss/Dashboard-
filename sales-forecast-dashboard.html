@@ -108,6 +108,10 @@
     .toast{position:fixed;left:24px;bottom:24px;z-index:10;max-width:340px;padding:12px 15px;border-radius:11px;background:#1b2c46;border:1px solid rgba(99,149,255,.32);box-shadow:var(--shadow);color:var(--text);font-size:12px;font-weight:700;transform:translateY(90px);opacity:0;transition:.25s}
     .toast.show{transform:translateY(0);opacity:1}
     .btn-import{height:34px;padding:0 13px;background:rgba(99,149,255,.12);border:1px solid rgba(99,149,255,.3);color:#a9c1ff;border-radius:9px;font-size:12px;font-weight:800}
+    .topbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .btn-tool{height:32px;padding:0 11px;background:var(--raised);border:1px solid var(--line);color:var(--dim);border-radius:8px;font-size:11.5px;font-weight:800}
+    .btn-tool:hover{color:var(--text);border-color:var(--line-strong)}
+    @media(max-width:680px){.topbar-actions .status{display:none}.btn-tool{font-size:11px;padding:0 9px}}
     .analysis-card{padding:20px;margin-bottom:18px}
     .analysis-head{margin-bottom:14px}
     .forecast-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
@@ -127,6 +131,17 @@
     .an .an-value{font-size:14px;font-weight:800;margin-top:6px}
     .an .an-sub{font-size:10px;color:var(--muted);margin-top:4px}
     @media(max-width:900px){.forecast-grid,.analysis-grid{grid-template-columns:1fr 1fr}}
+    .target-box{padding:14px 15px;border:1px solid var(--line);border-radius:13px;background:rgba(27,209,174,.05);margin-bottom:14px}
+    .target-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+    .target-label{font-size:12.5px;font-weight:800}
+    .target-top input{height:36px;width:150px;border:1px solid var(--line);border-radius:8px;background:var(--base);color:var(--text);padding:0 11px;font-size:13px;font-weight:700;outline:none}
+    .target-top input:focus{border-color:var(--teal)}
+    .target-pct{margin-inline-start:auto;font:800 20px/1 Alexandria,sans-serif;color:#71ecd3}
+    .target-bar{position:relative;height:12px;background:var(--base);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+    .target-fill{position:absolute;inset:0 0 0 auto;height:100%;background:linear-gradient(90deg,#1bd1ae,#74edd4);border-radius:99px;transition:width .5s}
+    .target-proj{position:absolute;top:-3px;width:2px;height:18px;background:#ffd382;box-shadow:0 0 6px #ffd382}
+    .target-meta{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);font-weight:700;margin-top:8px}
+    .target-status{font-size:11.5px;font-weight:700;color:var(--dim);margin-top:8px;line-height:1.7}
     .import-overlay{position:fixed;inset:0;z-index:40;background:rgba(4,8,16,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px}
     .import-modal{background:var(--card);border:1px solid var(--line-strong);border-radius:18px;box-shadow:var(--shadow);width:min(760px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
     .import-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
@@ -165,7 +180,13 @@
           <p>لوحة مستقلة لمتابعة المبيعات والمبلغ والكتابات اليومية</p>
         </div>
       </div>
-      <div class="status">حفظ تلقائي على هذا الجهاز</div>
+      <div class="topbar-actions">
+        <button type="button" class="btn-tool" id="backupBtn" title="حفظ نسخة احتياطية (JSON) على جهازك">💾 نسخة احتياطية</button>
+        <button type="button" class="btn-tool" id="restoreBtn" title="استعادة نسخة احتياطية سابقة">📥 استعادة</button>
+        <button type="button" class="btn-tool" id="csvBtn" title="تصدير السجلات كملف Excel/CSV">📊 CSV</button>
+        <input type="file" id="restoreInput" accept="application/json,.json" hidden>
+        <span class="status">حفظ تلقائي على هذا الجهاز</span>
+      </div>
     </header>
     <section class="hero">
       <div>
@@ -191,6 +212,7 @@
     ];
     const PHARMACIES = ['صيدلية 1','صيدلية 7','صيدلية 18'];
     const STORAGE_KEY = 'private_label_sales_dashboard_v1';
+    const TARGET_KEY = 'private_label_monthly_target';
     const UI = { endDate:null, days:30, pharmacy:'all', product:'all', editingId:null };
     const PERIODS = [{days:7,label:'أسبوع'},{days:14,label:'أسبوعين'},{days:30,label:'شهر'},{days:90,label:'٣ شهور'}];
     const IMPORT = { reports:[] };
@@ -259,6 +281,64 @@
         return false;
       }
     }
+    function getTarget(){ return number(localStorage.getItem(TARGET_KEY)); }
+    function setTarget(value){ try{ localStorage.setItem(TARGET_KEY, String(number(value))); }catch(e){} }
+
+    // ===== BACKUP / RESTORE / CSV =====
+    function backupData(){
+      const data = localStorage.getItem(STORAGE_KEY) || '[]';
+      const blob = new Blob([data], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'private-label-backup-' + today() + '.json'; a.click();
+      URL.revokeObjectURL(a.href);
+      notify('تم تنزيل نسخة احتياطية ✓');
+    }
+    function exportCSV(){
+      const rows = [['التاريخ','الصيدلية','المنتج','الحبات','المبلغ','الكتابات']];
+      loadEntries().sort((a,b) => a.date.localeCompare(b.date)).forEach(e => {
+        const it = product(e.product);
+        rows.push([e.date, e.pharmacy, it ? it.name : e.product, e.units, e.amount, e.prescriptions]);
+      });
+      const csv = '﻿' + rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\r\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'private-label-' + today() + '.csv'; a.click();
+      URL.revokeObjectURL(a.href);
+      notify('تم تصدير CSV ✓');
+    }
+    function restoreData(event){
+      const file = event.target.files[0];
+      event.target.value = '';
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        let imported;
+        try{ imported = JSON.parse(e.target.result); }catch(err){ notify('ملف غير صالح'); return; }
+        if(!Array.isArray(imported)){ notify('ملف النسخة غير صالح'); return; }
+        const valid = imported.filter(x => x && /^\d{4}-\d{2}-\d{2}$/.test(String(x.date || '')) && product(x.product) && PHARMACIES.includes(x.pharmacy));
+        if(!valid.length){ notify('لا توجد سجلات صالحة في الملف'); return; }
+        if(!confirm('دمج ' + valid.length + ' سجل من النسخة مع بياناتك الحالية؟')) return;
+        const current = loadEntries();
+        const keyOf = r => r.date + '|' + r.pharmacy + '|' + r.product;
+        const map = {}; current.forEach(r => map[keyOf(r)] = r);
+        let added = 0, updated = 0;
+        valid.forEach(x => {
+          const rec = {
+            id:(String(x.id || '').replace(/[^a-zA-Z0-9_-]/g,'')) || ('sale-' + Date.now() + '-' + Math.random().toString(36).slice(2,8)),
+            date:x.date, pharmacy:x.pharmacy, product:x.product,
+            units:number(x.units), amount:number(x.amount), prescriptions:number(x.prescriptions), updatedAt:String(x.updatedAt || '')
+          };
+          const k = keyOf(rec), ex = map[k];
+          if(ex){ if((rec.updatedAt || '') >= (ex.updatedAt || '')){ Object.assign(ex, {units:rec.units, amount:rec.amount, prescriptions:rec.prescriptions, updatedAt:rec.updatedAt}); updated++; } }
+          else { current.push(rec); map[k] = rec; added++; }
+        });
+        if(!saveEntries(current)) return;
+        notify('تم الاستعادة: ' + added + ' جديد و' + updated + ' محدّث ✓');
+        render();
+      };
+      reader.readAsText(file);
+    }
+
     function range(){
       const end = dateFromString(UI.endDate || today()) || new Date();
       const span = (PERIODS.find(p => p.days === UI.days) || {days:30}).days;
@@ -361,9 +441,9 @@
         aggregate[entry.date].amount += entry.amount;
         aggregate[entry.date].prescriptions += entry.prescriptions;
       });
-      // امتداد التوقع حتى نهاية الشهر عند عرض حتى اليوم
+      // امتداد التوقع حتى نهاية الشهر (في عرض الشهر/٣ شهور فقط حتى لا يُزحم العرض القصير)
       const forecastOn = analysis && analysis.hasData && analysis.runRateAmount > 0
-        && period.endDate >= analysis.todayStr && analysis.monthEndStr > period.endDate;
+        && UI.days >= 30 && period.endDate >= analysis.todayStr && analysis.monthEndStr > period.endDate;
       const chartEnd = forecastOn ? analysis.monthEndDate : period.end;
       const labels = [], units = [], amount = [], prescriptions = [], forecast = [];
       const cursor = new Date(period.start);
@@ -418,6 +498,8 @@
       document.querySelectorAll('[data-delete]').forEach(button => button.addEventListener('click', () => removeEntry(button.dataset.delete)));
       const cancel = document.getElementById('cancelEdit');
       if(cancel) cancel.addEventListener('click', cancelEdit);
+      const mt = document.getElementById('monthTarget');
+      if(mt) mt.addEventListener('change', event => { setTarget(event.target.value); render(); });
       const impBtn = document.getElementById('importPdfBtn');
       const impInput = document.getElementById('importPdfInput');
       if(impBtn && impInput){
@@ -485,6 +567,26 @@
             : `<span class="bad">تسرّب محتمل</span> — الكتابات أعلى من المبيعات (${a.conversion.toFixed(2)} حبة/كتابة)`)
         : 'لا توجد كتابات مسجلة هذا الشهر';
       const productName = key => { const it = product(key); return it ? it.name : key; };
+      // هدف الشهر
+      const target = getTarget();
+      const achievedPct = target > 0 ? Math.min(100, a.achievedAmount / target * 100) : 0;
+      const projPct = target > 0 ? Math.min(100, a.projectedAmount / target * 100) : 0;
+      const onTrack = target > 0 && a.projectedAmount >= target;
+      const targetStatus = target > 0
+        ? (onTrack
+            ? `<span class="good">على المسار ✅</span> — المتوقع ${format(a.projectedAmount)} ريال يبلغ الهدف`
+            : `<span class="bad">أقل من الهدف</span> — المتوقع ${format(a.projectedAmount)} ريال · فجوة ${format(target - a.projectedAmount)} ريال (يلزم ${format(Math.ceil((target - a.achievedAmount) / Math.max(1, a.remainingDays)))} ريال/يوم للوصول)`)
+        : 'حدّد هدف الشهر لعرض نسبة الإنجاز والتوقع مقابل الهدف.';
+      const targetBox = `<div class="target-box">
+        <div class="target-top">
+          <div class="target-label">🎯 هدف الشهر (ريال)</div>
+          <input id="monthTarget" type="number" min="0" inputmode="numeric" placeholder="مثال: 50000" value="${target || ''}">
+          <div class="target-pct">${target > 0 ? (a.achievedAmount / target * 100).toFixed(0) + '%' : '—'}</div>
+        </div>
+        <div class="target-bar"><div class="target-fill" style="width:${achievedPct}%"></div>${target > 0 ? `<div class="target-proj" style="right:${projPct}%" title="المتوقع"></div>` : ''}</div>
+        <div class="target-meta"><span>المحقق ${format(a.achievedAmount)}</span><span>المتوقع ${format(a.projectedAmount)}</span><span>الهدف ${format(target) || '—'}</span></div>
+        <div class="target-status">${targetStatus}</div>
+      </div>`;
       const insight = [
         `على معدلك الحالي <b>${format(a.runRateAmount)} ريال/يوم</b> (${format(a.recordedDays)} يوم مسجل)، المتوقع بنهاية ${a.monthName} حوالي <b>${format(a.projectedAmount)} ريال</b> و<b>${format(a.projectedUnits)} حبة</b>.`,
         `أداء آخر ٧ أيام ${trendUp ? '<span class="good">⬆ أعلى</span>' : '<span class="bad">⬇ أقل</span>'} بنسبة <b>${Math.abs(a.trendPct).toFixed(0)}%</b> عن الأسبوع السابق.`,
@@ -496,6 +598,7 @@
           <div class="chart-title">🔮 التوقع والتحليل — شهر ${a.monthName}</div>
           <div class="range-copy">بناءً على المعدل الحالي · يتأثر بفلاتر الصيدلية والمنتج بالأعلى</div>
         </div>
+        ${(UI.pharmacy === 'all' && UI.product === 'all') ? targetBox : ''}
         <div class="forecast-grid">
           <div class="fc teal"><div class="fc-label">المتوقع بنهاية الشهر</div><div class="fc-value teal">${format(a.projectedAmount)} <span class="u">ريال</span></div><div class="fc-foot">محقق ${format(a.achievedAmount)} + متوقع ${format(a.projectedAmount - a.achievedAmount)}</div></div>
           <div class="fc blue"><div class="fc-label">المعدل اليومي</div><div class="fc-value">${format(a.runRateAmount)} <span class="u">ريال</span></div><div class="fc-foot">${a.runRateUnits.toFixed(1)} حبة / يوم مسجل</div></div>
@@ -809,7 +912,14 @@
           </div>
         </div>`;
     }
-    document.addEventListener('DOMContentLoaded', render);
+    document.addEventListener('DOMContentLoaded', () => {
+      const bind = (id, fn, ev) => { const el = document.getElementById(id); if(el) el.addEventListener(ev || 'click', fn); };
+      bind('backupBtn', backupData);
+      bind('csvBtn', exportCSV);
+      bind('restoreBtn', () => document.getElementById('restoreInput').click());
+      bind('restoreInput', restoreData, 'change');
+      render();
+    });
   </script>
 </body>
 </html>
