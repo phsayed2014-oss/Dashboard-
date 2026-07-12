@@ -142,6 +142,21 @@
     .target-proj{position:absolute;top:-3px;width:2px;height:18px;background:#ffd382;box-shadow:0 0 6px #ffd382}
     .target-meta{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);font-weight:700;margin-top:8px}
     .target-status{font-size:11.5px;font-weight:700;color:var(--dim);margin-top:8px;line-height:1.7}
+    .ptarget-input{width:92px;height:32px;border:1px solid var(--line);border-radius:7px;background:var(--base);color:var(--text);padding:0 8px;font-size:12px;font-weight:700;text-align:center;outline:none}
+    .ptarget-input:focus{border-color:var(--teal)}
+    .mini-bar{position:relative;height:9px;background:var(--base);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+    .mini-fill{position:absolute;inset:0 0 0 auto;height:100%;background:linear-gradient(90deg,#1bd1ae,#74edd4);border-radius:99px}
+    .mini-proj{position:absolute;top:-3px;width:2px;height:15px;background:#ffd382}
+    .mini-pct{font-size:9.5px;color:var(--muted);font-weight:700;margin-top:4px}
+    .leak-list{display:grid;gap:10px}
+    .leak-item{padding:12px 14px;border-radius:11px;border:1px solid var(--line);background:rgba(18,29,49,.6)}
+    .leak-item.high{border-color:rgba(252,113,133,.4);background:rgba(252,113,133,.07)}
+    .leak-item.mid{border-color:rgba(247,189,87,.35);background:rgba(247,189,87,.06)}
+    .leak-main{font-size:13px;font-weight:800}
+    .leak-nums{font-size:11.5px;color:var(--dim);font-weight:700;margin-top:5px}
+    .leak-nums b{color:var(--text)}
+    .leak-msg{font-size:11px;color:var(--muted);font-weight:600;margin-top:5px;line-height:1.6}
+    .leak-ok{padding:14px;border-radius:11px;border:1px solid rgba(27,209,174,.25);background:rgba(27,209,174,.06);color:#8fecdb;font-size:12.5px;font-weight:700;line-height:1.7}
     .import-overlay{position:fixed;inset:0;z-index:40;background:rgba(4,8,16,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px}
     .import-modal{background:var(--card);border:1px solid var(--line-strong);border-radius:18px;box-shadow:var(--shadow);width:min(760px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
     .import-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
@@ -281,8 +296,37 @@
         return false;
       }
     }
-    function getTarget(){ return number(localStorage.getItem(TARGET_KEY)); }
-    function setTarget(value){ try{ localStorage.setItem(TARGET_KEY, String(number(value))); }catch(e){} }
+    // أهداف: إجمالي + لكل منتج + لكل صيدلية (مع توافق مع النسخة القديمة كرقم واحد)
+    function getTargets(){
+      const raw = localStorage.getItem(TARGET_KEY);
+      if(!raw) return {total:0, products:{}, pharmacies:{}};
+      try{
+        const v = JSON.parse(raw);
+        if(typeof v === 'number') return {total:v, products:{}, pharmacies:{}};
+        return {total:number(v.total), products:v.products||{}, pharmacies:v.pharmacies||{}};
+      }catch(e){ return {total:number(raw), products:{}, pharmacies:{}}; }
+    }
+    function saveTargets(t){ try{ localStorage.setItem(TARGET_KEY, JSON.stringify(t)); }catch(e){} }
+    function setProductTarget(key, val){ const t=getTargets(); const n=number(val); if(n) t.products[key]=n; else delete t.products[key]; saveTargets(t); }
+    function setPharmacyTarget(key, val){ const t=getTargets(); const n=number(val); if(n) t.pharmacies[key]=n; else delete t.pharmacies[key]; saveTargets(t); }
+    function setTotalTarget(val){ const t=getTargets(); t.total=number(val); saveTargets(t); }
+    function effectiveTotalTarget(){
+      const t=getTargets();
+      if(t.total>0) return t.total;
+      return Object.values(t.products).reduce((s,v)=>s+number(v),0);
+    }
+    // الهدف حسب سياق الفلاتر الحالية
+    function contextTarget(){
+      const t=getTargets();
+      if(UI.product !== 'all') return number(t.products[UI.product]);
+      if(UI.pharmacy !== 'all') return number(t.pharmacies[UI.pharmacy]);
+      return effectiveTotalTarget();
+    }
+    function setContextTarget(val){
+      if(UI.product !== 'all') setProductTarget(UI.product, val);
+      else if(UI.pharmacy !== 'all') setPharmacyTarget(UI.pharmacy, val);
+      else setTotalTarget(val);
+    }
 
     // ===== BACKUP / RESTORE / CSV =====
     function backupData(){
@@ -499,7 +543,10 @@
       const cancel = document.getElementById('cancelEdit');
       if(cancel) cancel.addEventListener('click', cancelEdit);
       const mt = document.getElementById('monthTarget');
-      if(mt) mt.addEventListener('change', event => { setTarget(event.target.value); render(); });
+      if(mt) mt.addEventListener('change', event => { setContextTarget(event.target.value); render(); });
+      document.querySelectorAll('[data-ptarget]').forEach(input => {
+        input.addEventListener('change', event => { setProductTarget(event.target.dataset.ptarget, event.target.value); render(); });
+      });
       const impBtn = document.getElementById('importPdfBtn');
       const impInput = document.getElementById('importPdfInput');
       if(impBtn && impInput){
@@ -567,8 +614,11 @@
             : `<span class="bad">تسرّب محتمل</span> — الكتابات أعلى من المبيعات (${a.conversion.toFixed(2)} حبة/كتابة)`)
         : 'لا توجد كتابات مسجلة هذا الشهر';
       const productName = key => { const it = product(key); return it ? it.name : key; };
-      // هدف الشهر
-      const target = getTarget();
+      // هدف الشهر (حسب سياق الفلاتر: إجمالي / منتج / صيدلية)
+      const target = contextTarget();
+      const targetScope = UI.product !== 'all' ? ('منتج ' + productName(UI.product))
+                        : UI.pharmacy !== 'all' ? UI.pharmacy
+                        : 'الشهر (إجمالي)';
       const achievedPct = target > 0 ? Math.min(100, a.achievedAmount / target * 100) : 0;
       const projPct = target > 0 ? Math.min(100, a.projectedAmount / target * 100) : 0;
       const onTrack = target > 0 && a.projectedAmount >= target;
@@ -579,7 +629,7 @@
         : 'حدّد هدف الشهر لعرض نسبة الإنجاز والتوقع مقابل الهدف.';
       const targetBox = `<div class="target-box">
         <div class="target-top">
-          <div class="target-label">🎯 هدف الشهر (ريال)</div>
+          <div class="target-label">🎯 هدف ${escapeHtml(targetScope)} (ريال)</div>
           <input id="monthTarget" type="number" min="0" inputmode="numeric" placeholder="مثال: 50000" value="${target || ''}">
           <div class="target-pct">${target > 0 ? (a.achievedAmount / target * 100).toFixed(0) + '%' : '—'}</div>
         </div>
@@ -598,7 +648,7 @@
           <div class="chart-title">🔮 التوقع والتحليل — شهر ${a.monthName}</div>
           <div class="range-copy">بناءً على المعدل الحالي · يتأثر بفلاتر الصيدلية والمنتج بالأعلى</div>
         </div>
-        ${(UI.pharmacy === 'all' && UI.product === 'all') ? targetBox : ''}
+        ${targetBox}
         <div class="forecast-grid">
           <div class="fc teal"><div class="fc-label">المتوقع بنهاية الشهر</div><div class="fc-value teal">${format(a.projectedAmount)} <span class="u">ريال</span></div><div class="fc-foot">محقق ${format(a.achievedAmount)} + متوقع ${format(a.projectedAmount - a.achievedAmount)}</div></div>
           <div class="fc blue"><div class="fc-label">المعدل اليومي</div><div class="fc-value">${format(a.runRateAmount)} <span class="u">ريال</span></div><div class="fc-foot">${a.runRateUnits.toFixed(1)} حبة / يوم مسجل</div></div>
@@ -612,6 +662,103 @@
           <div class="an"><div class="an-label">معدل التحويل</div><div class="an-value">${a.achievedRx > 0 ? a.conversion.toFixed(2) + ' حبة/كتابة' : '—'}</div><div class="an-sub">${format(a.achievedUnits)} حبة · ${format(a.achievedRx)} كتابة</div></div>
           <div class="an"><div class="an-label">أفضل يوم (الشهر)</div><div class="an-value">${a.bestDay ? dateLabel(a.bestDay[0], true) : '—'}</div><div class="an-sub">${a.bestDay ? format(a.bestDay[1].a) + ' ريال' : ''}</div></div>
         </div>
+      </section>`;
+    }
+
+    // ===== PRODUCTS COMPARISON (this month, respects pharmacy filter) =====
+    function computeProductBreakdown(){
+      const now = dateFromString(today());
+      const monthStartStr = localDateString(new Date(now.getFullYear(), now.getMonth(), 1));
+      const monthEndStr = localDateString(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const remainingDays = Math.max(0, daysInMonth - now.getDate());
+      const targets = getTargets();
+      const all = loadEntries().filter(e => e.date >= monthStartStr && e.date <= monthEndStr && (UI.pharmacy === 'all' || e.pharmacy === UI.pharmacy));
+      const shift = n => localDateString(new Date(now.getFullYear(), now.getMonth(), now.getDate() - n));
+      return PRODUCTS.map(pr => {
+        const es = all.filter(e => e.product === pr.key);
+        const amount = es.reduce((s,e) => s + e.amount, 0);
+        const units = es.reduce((s,e) => s + e.units, 0);
+        const prescriptions = es.reduce((s,e) => s + e.prescriptions, 0);
+        const days = new Set(es.map(e => e.date)).size;
+        const runRate = days ? amount / days : 0;
+        const projected = Math.round(amount + runRate * remainingDays);
+        const target = number(targets.products[pr.key]);
+        const pct = target > 0 ? amount / target * 100 : null;
+        const projPct = target > 0 ? projected / target * 100 : null;
+        const between = (f,t) => es.filter(e => e.date >= f && e.date <= t).reduce((s,e) => s + e.amount, 0);
+        const l7 = between(shift(6), today()), p7 = between(shift(13), shift(7));
+        const trendPct = p7 > 0 ? (l7 - p7) / p7 * 100 : (l7 > 0 ? 100 : 0);
+        return { key:pr.key, name:pr.name, color:pr.color, amount, units, prescriptions, projected, target, pct, projPct, trendPct, hasData:es.length > 0 };
+      }).sort((a,b) => b.amount - a.amount);
+    }
+    function productComparisonSection(){
+      const rows = computeProductBreakdown();
+      const scope = UI.pharmacy === 'all' ? 'كل الصيدليات' : UI.pharmacy;
+      const body = rows.map(r => {
+        const pct = r.pct;
+        const barPct = pct == null ? 0 : Math.min(100, pct);
+        const projMark = (r.projPct != null) ? Math.min(100, r.projPct) : null;
+        const trendCls = r.trendPct >= 0 ? 'up' : 'down';
+        return `<tr>
+          <td><div class="product"><i class="product-dot" style="background:${r.color}"></i><span>${escapeHtml(r.name)}</span></div></td>
+          <td class="num money">${format(r.amount)}</td>
+          <td class="num">${format(r.projected)}</td>
+          <td><input class="ptarget-input" type="number" min="0" inputmode="numeric" placeholder="—" value="${r.target || ''}" data-ptarget="${r.key}"></td>
+          <td style="min-width:150px">
+            <div class="mini-bar"><div class="mini-fill" style="width:${barPct}%"></div>${projMark != null ? `<div class="mini-proj" style="right:${projMark}%"></div>` : ''}</div>
+            <div class="mini-pct">${pct == null ? 'بدون هدف' : pct.toFixed(0) + '%' + (r.projPct != null ? ' · متوقع ' + r.projPct.toFixed(0) + '%' : '')}</div>
+          </td>
+          <td class="num ${trendCls}" style="color:${r.trendPct >= 0 ? '#71ecd3' : '#ff9bab'}">${r.trendPct >= 0 ? '+' : ''}${r.trendPct.toFixed(0)}%</td>
+        </tr>`;
+      }).join('');
+      return `<section class="card table-card">
+        <div class="table-head"><div><div class="table-title">📦 مقارنة المنتجات — الشهر الحالي</div><div class="table-sub">${escapeHtml(scope)} · حدّد هدفاً لكل منتج لعرض نسبة الإنجاز والمتوقع مقابله</div></div></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>المنتج</th><th style="text-align:center;color:#ffd382">المحقق (ريال)</th><th style="text-align:center">المتوقع</th><th style="text-align:center">الهدف</th><th>نسبة الإنجاز</th><th style="text-align:center">اتجاه ٧ أيام</th></tr></thead>
+          <tbody>${body}</tbody>
+        </table></div>
+      </section>`;
+    }
+
+    // ===== LEAKAGE ALERTS (high prescriptions, low sales) =====
+    function computeLeakage(){
+      const now = dateFromString(today());
+      const monthStartStr = localDateString(new Date(now.getFullYear(), now.getMonth(), 1));
+      const monthEndStr = localDateString(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+      const all = loadEntries().filter(e => e.date >= monthStartStr && e.date <= monthEndStr && matches(e));
+      const map = {};
+      all.forEach(e => {
+        const k = e.pharmacy + '|' + e.product;
+        (map[k] = map[k] || {pharmacy:e.pharmacy, product:e.product, units:0, rx:0});
+        map[k].units += e.units; map[k].rx += e.prescriptions;
+      });
+      const alerts = [];
+      Object.values(map).forEach(v => {
+        if(v.rx >= 2){
+          const conv = v.rx > 0 ? v.units / v.rx : 0;
+          if(conv < 0.8) alerts.push({...v, conv, gap:v.rx - v.units});
+        }
+      });
+      return alerts.sort((a,b) => b.gap - a.gap);
+    }
+    function leakageSection(){
+      const alerts = computeLeakage();
+      const scope = (UI.pharmacy === 'all' ? 'كل الصيدليات' : UI.pharmacy) + ' · ' + (UI.product === 'all' ? 'كل المنتجات' : product(UI.product).name);
+      const productName = key => { const it = product(key); return it ? it.name : key; };
+      const body = alerts.length
+        ? alerts.map(a => {
+            const sev = a.conv < 0.4 ? 'high' : 'mid';
+            return `<div class="leak-item ${sev}">
+              <div class="leak-main"><b>${escapeHtml(a.pharmacy)}</b> · ${escapeHtml(productName(a.product))}</div>
+              <div class="leak-nums">كتابات <b>${format(a.rx)}</b> · مبيعات <b>${format(a.units)}</b> · تحويل <b>${a.conv.toFixed(2)}</b></div>
+              <div class="leak-msg">${format(a.gap)} وصفة لم تتحول إلى بيع — راجع توفّر المنتج أو الشراء من خارج الفرع.</div>
+            </div>`;
+          }).join('')
+        : '<div class="leak-ok">✅ لا توجد مؤشرات تسرّب واضحة هذا الشهر ضمن هذا النطاق — الكتابات تتحول إلى مبيعات بشكل جيد.</div>';
+      return `<section class="card analysis-card">
+        <div class="analysis-head"><div class="chart-title">⚠️ تنبيهات التسرّب — الشهر الحالي</div><div class="range-copy">${escapeHtml(scope)} · فروع كتاباتها أعلى من مبيعاتها (تحويل أقل من 0.8)</div></div>
+        <div class="leak-list">${body}</div>
       </section>`;
     }
 
@@ -685,6 +832,8 @@
           <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
         </section>
         ${analysisSection(analysis)}
+        ${productComparisonSection()}
+        ${leakageSection()}
         <section class="card table-card">
           <div class="table-head">
             <div><div class="table-title">السجلات ضمن فترة العرض</div><div class="table-sub">${format(records.length)} سجل · يمكنك تعديل أو حذف أي سجل.</div></div>
