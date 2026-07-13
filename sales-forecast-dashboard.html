@@ -228,7 +228,7 @@
     const PHARMACIES = ['صيدلية 1','صيدلية 7','صيدلية 18'];
     const STORAGE_KEY = 'private_label_sales_dashboard_v1';
     const TARGET_KEY = 'private_label_monthly_target';
-    const UI = { endDate:null, days:30, pharmacy:'all', product:'all', editingId:null };
+    const UI = { startDate:null, endDate:null, days:30, pharmacy:'all', product:'all', editingId:null };
     const PERIODS = [{days:7,label:'أسبوع'},{days:14,label:'أسبوعين'},{days:30,label:'شهر'},{days:90,label:'٣ شهور'}];
     const IMPORT = { reports:[] };
     let trendChart = null;
@@ -385,10 +385,22 @@
 
     function range(){
       const end = dateFromString(UI.endDate || today()) || new Date();
-      const span = (PERIODS.find(p => p.days === UI.days) || {days:30}).days;
+      let start = dateFromString(UI.startDate);
+      if(!start || start > end){   // لا تاريخ بداية مخصص أو غير صالح → استخدم المدة السريعة
+        const span = (PERIODS.find(p => p.days === UI.days) || {days:30}).days;
+        start = new Date(end);
+        start.setDate(start.getDate() - (span - 1));
+      }
+      const spanDays = Math.round((end - start) / 86400000) + 1;
+      return { start, end, startDate:localDateString(start), endDate:localDateString(end), spanDays };
+    }
+    function setPeriodPreset(days){
+      UI.days = days || 30;
+      const end = dateFromString(UI.endDate || today()) || new Date();
       const start = new Date(end);
-      start.setDate(start.getDate() - (span - 1));
-      return { start, end, startDate:localDateString(start), endDate:localDateString(end) };
+      start.setDate(start.getDate() - (UI.days - 1));
+      UI.startDate = localDateString(start);
+      render();
     }
     function matches(entry){
       return (UI.pharmacy === 'all' || entry.pharmacy === UI.pharmacy)
@@ -487,7 +499,7 @@
       });
       // امتداد التوقع حتى نهاية الشهر (في عرض الشهر/٣ شهور فقط حتى لا يُزحم العرض القصير)
       const forecastOn = analysis && analysis.hasData && analysis.runRateAmount > 0
-        && UI.days >= 30 && period.endDate >= analysis.todayStr && analysis.monthEndStr > period.endDate;
+        && period.spanDays >= 28 && period.endDate >= analysis.todayStr && analysis.monthEndStr > period.endDate;
       const chartEnd = forecastOn ? analysis.monthEndDate : period.end;
       const labels = [], units = [], amount = [], prescriptions = [], forecast = [];
       const cursor = new Date(period.start);
@@ -534,7 +546,8 @@
     }
     function bindEvents(){
       document.getElementById('entryForm').addEventListener('submit', submitEntry);
-      document.getElementById('rangePeriod').addEventListener('change', event => { UI.days = Number(event.target.value) || 30; render(); });
+      document.getElementById('rangePreset').addEventListener('change', event => { if(event.target.value !== 'custom') setPeriodPreset(Number(event.target.value)); });
+      document.getElementById('rangeStart').addEventListener('change', event => { if(/^\d{4}-\d{2}-\d{2}$/.test(event.target.value)) UI.startDate = event.target.value; render(); });
       document.getElementById('rangeEnd').addEventListener('change', event => setRangeEnd(event.target.value));
       document.getElementById('filterPharmacy').addEventListener('change', event => setFilter('pharmacy', event.target.value));
       document.getElementById('filterProduct').addEventListener('change', event => setFilter('product', event.target.value));
@@ -820,10 +833,11 @@
         </section>
         <section class="card chart-card">
           <div class="chart-top">
-            <div><div class="chart-title">مسار المبلغ والحبات والكتابات — ${(PERIODS.find(p => p.days === UI.days) || {label:''}).label}</div><div class="range-copy">من ${dateLabel(period.startDate)} إلى ${dateLabel(period.endDate)}</div></div>
+            <div><div class="chart-title">مسار المبلغ والحبات والكتابات</div><div class="range-copy">من ${dateLabel(period.startDate)} إلى ${dateLabel(period.endDate)} · ${format(period.spanDays)} يوم</div></div>
             <div class="filters">
-              <div class="filter"><label for="rangePeriod">المدة</label><select id="rangePeriod">${PERIODS.map(p => `<option value="${p.days}" ${p.days === UI.days ? 'selected' : ''}>${p.label}</option>`).join('')}</select></div>
-              <div class="filter"><label for="rangeEnd">نهاية المسار</label><input id="rangeEnd" type="date" value="${period.endDate}"></div>
+              <div class="filter"><label for="rangePreset">مدة سريعة</label><select id="rangePreset">${PERIODS.map(p => `<option value="${p.days}" ${p.days === period.spanDays ? 'selected' : ''}>${p.label}</option>`).join('')}${PERIODS.some(p => p.days === period.spanDays) ? '' : '<option value="custom" selected>مخصص</option>'}</select></div>
+              <div class="filter"><label for="rangeStart">من تاريخ</label><input id="rangeStart" type="date" value="${period.startDate}" max="${period.endDate}"></div>
+              <div class="filter"><label for="rangeEnd">إلى تاريخ</label><input id="rangeEnd" type="date" value="${period.endDate}"></div>
               <div class="filter"><label for="filterPharmacy">الصيدلية</label><select id="filterPharmacy">${pharmacyOptions(UI.pharmacy,true)}</select></div>
               <div class="filter"><label for="filterProduct">المنتج</label><select id="filterProduct">${productOptions(UI.product,true)}</select></div>
             </div>
