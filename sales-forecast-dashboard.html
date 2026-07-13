@@ -95,6 +95,8 @@
     .table-title{font-family:Alexandria,sans-serif;font-size:14px;font-weight:800}
     .table-sub{font-size:11px;color:var(--muted);margin-top:4px}
     .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:11px}
+    .records-wrap{max-height:430px;overflow-y:auto}
+    .records-wrap thead th{position:sticky;top:0;z-index:1;background:#141f33}
     table{width:100%;min-width:780px;border-collapse:collapse;font-size:12px}
     th{padding:11px 12px;text-align:right;background:rgba(25,38,64,.58);color:var(--dim);font-size:10.5px;font-weight:800;white-space:nowrap}
     td{padding:11px 12px;border-top:1px solid var(--line);color:#dce5f5;font-weight:600}
@@ -589,8 +591,17 @@
       const achievedAmount = monthEntries.reduce((s,e) => s + e.amount, 0);
       const achievedUnits = monthEntries.reduce((s,e) => s + e.units, 0);
       const achievedRx = monthEntries.reduce((s,e) => s + e.prescriptions, 0);
-      const runRateAmount = recordedDays ? achievedAmount / recordedDays : 0;
-      const runRateUnits = recordedDays ? achievedUnits / recordedDays : 0;
+      // المعدل اليومي محسوب على المدة المختارة (تؤثر مباشرة على التوقع)
+      const period = range();
+      const rangeEntries = all.filter(e => e.date >= period.startDate && e.date <= period.endDate);
+      const rangeByDate = {};
+      rangeEntries.forEach(e => { (rangeByDate[e.date] = rangeByDate[e.date] || {a:0,u:0}); rangeByDate[e.date].a += e.amount; rangeByDate[e.date].u += e.units; });
+      const rangeRecordedDays = Object.keys(rangeByDate).length;
+      const rangeAmount = rangeEntries.reduce((s,e) => s + e.amount, 0);
+      const rangeUnits = rangeEntries.reduce((s,e) => s + e.units, 0);
+      const rateBasisDays = rangeRecordedDays || recordedDays;
+      const runRateAmount = rangeRecordedDays ? rangeAmount / rangeRecordedDays : (recordedDays ? achievedAmount / recordedDays : 0);
+      const runRateUnits = rangeRecordedDays ? rangeUnits / rangeRecordedDays : (recordedDays ? achievedUnits / recordedDays : 0);
       const remainingDays = Math.max(0, daysInMonth - todayDay);
       const projectedAmount = Math.round(achievedAmount + runRateAmount * remainingDays);
       const projectedUnits = Math.round(achievedUnits + runRateUnits * remainingDays);
@@ -610,7 +621,7 @@
       return {
         monthName:AR_MONTHS[m], hasData:recordedDays>0,
         achievedAmount, achievedUnits, achievedRx, runRateAmount, runRateUnits,
-        recordedDays, remainingDays, daysInMonth, projectedAmount, projectedUnits,
+        recordedDays, rateBasisDays, rangeSpanDays:period.spanDays, remainingDays, daysInMonth, projectedAmount, projectedUnits,
         trendPct, last7, prev7, topProduct, topPharmacy, bestDay, conversion,
         monthEndStr, todayStr, monthEndDate
       };
@@ -651,7 +662,7 @@
         <div class="target-status">${targetStatus}</div>
       </div>`;
       const insight = [
-        `على معدلك الحالي <b>${format(a.runRateAmount)} ريال/يوم</b> (${format(a.recordedDays)} يوم مسجل)، المتوقع بنهاية ${a.monthName} حوالي <b>${format(a.projectedAmount)} ريال</b> و<b>${format(a.projectedUnits)} حبة</b>.`,
+        `على معدل المدة المختارة <b>${format(a.runRateAmount)} ريال/يوم</b> (${format(a.rateBasisDays)} يوم مسجل)، المتوقع بنهاية ${a.monthName} حوالي <b>${format(a.projectedAmount)} ريال</b> و<b>${format(a.projectedUnits)} حبة</b>.`,
         `أداء آخر ٧ أيام ${trendUp ? '<span class="good">⬆ أعلى</span>' : '<span class="bad">⬇ أقل</span>'} بنسبة <b>${Math.abs(a.trendPct).toFixed(0)}%</b> عن الأسبوع السابق.`,
         a.topProduct ? `أعلى منتج: <b>${escapeHtml(productName(a.topProduct[0]))}</b> (${format(a.topProduct[1])} ريال)${a.topPharmacy ? ` · أعلى صيدلية: <b>${escapeHtml(a.topPharmacy[0])}</b>` : ''}.` : '',
         `التحويل (حبات ÷ كتابات): ${convFlag}.`
@@ -659,12 +670,12 @@
       return `<section class="card analysis-card">
         <div class="analysis-head">
           <div class="chart-title">🔮 التوقع والتحليل — شهر ${a.monthName}</div>
-          <div class="range-copy">بناءً على المعدل الحالي · يتأثر بفلاتر الصيدلية والمنتج بالأعلى</div>
+          <div class="range-copy">المعدل والتوقع محسوبان على المدة المختارة (${format(a.rangeSpanDays)} يوم) · يتأثر بالفلاتر بالأعلى</div>
         </div>
         ${targetBox}
         <div class="forecast-grid">
           <div class="fc teal"><div class="fc-label">المتوقع بنهاية الشهر</div><div class="fc-value teal">${format(a.projectedAmount)} <span class="u">ريال</span></div><div class="fc-foot">محقق ${format(a.achievedAmount)} + متوقع ${format(a.projectedAmount - a.achievedAmount)}</div></div>
-          <div class="fc blue"><div class="fc-label">المعدل اليومي</div><div class="fc-value">${format(a.runRateAmount)} <span class="u">ريال</span></div><div class="fc-foot">${a.runRateUnits.toFixed(1)} حبة / يوم مسجل</div></div>
+          <div class="fc blue"><div class="fc-label">المعدل اليومي</div><div class="fc-value">${format(a.runRateAmount)} <span class="u">ريال</span></div><div class="fc-foot">${a.runRateUnits.toFixed(1)} حبة/يوم · على ${format(a.rateBasisDays)} يوم مسجل بالمدة</div></div>
           <div class="fc"><div class="fc-label">أيام متبقية بالشهر</div><div class="fc-value">${format(a.remainingDays)}</div><div class="fc-foot">من ${format(a.daysInMonth)} يوم</div></div>
           <div class="fc violet"><div class="fc-label">اتجاه آخر ٧ أيام</div><div class="fc-value ${trendUp ? 'up' : 'down'}">${trendUp ? '+' : ''}${a.trendPct.toFixed(0)}%</div><div class="fc-foot">${format(a.last7)} مقابل ${format(a.prev7)} ريال</div></div>
         </div>
@@ -853,7 +864,7 @@
             <div><div class="table-title">السجلات ضمن فترة العرض</div><div class="table-sub">${format(records.length)} سجل · يمكنك تعديل أو حذف أي سجل.</div></div>
           </div>
           ${records.length ? `
-            <div class="table-wrap"><table>
+            <div class="table-wrap records-wrap"><table>
               <thead><tr><th>التاريخ</th><th>الصيدلية</th><th>المنتج</th><th style="text-align:center;color:#71ecd3">الحبات</th><th style="text-align:center;color:#ffd382">المبلغ</th><th style="text-align:center;color:#c4b4ff">الكتابات</th><th></th></tr></thead>
               <tbody>${records.map(entry => {
                 const item = product(entry.product);
