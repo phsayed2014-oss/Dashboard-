@@ -172,6 +172,12 @@
     .brand-target{font-size:10px;color:var(--muted);font-weight:700;margin-top:5px}
     @media(max-width:900px){.brand-grid{grid-template-columns:1fr}}
     .product small{white-space:nowrap}
+    .brand-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+    .brand-tab{height:40px;padding:0 20px;border-radius:11px;background:rgba(18,29,49,.7);border:1px solid var(--line);color:var(--dim);font-size:13px;font-weight:800;transition:all .15s}
+    .brand-tab:hover{color:var(--text);border-color:var(--line-strong)}
+    .brand-tab.active{color:#06121f;background:linear-gradient(135deg,var(--bt,#6395ff),var(--bt,#6395ff));border-color:transparent;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+    .brand-tab[data-brand="all"].active{--bt:#f7bd57;color:#1c1403}
+    @media(max-width:680px){.brand-tab{flex:1;padding:0 10px;font-size:12px}}
     .import-overlay{position:fixed;inset:0;z-index:40;background:rgba(4,8,16,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px}
     .import-modal{background:var(--card);border:1px solid var(--line-strong);border-radius:18px;box-shadow:var(--shadow);width:min(760px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
     .import-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
@@ -253,7 +259,7 @@
     const PHARMACIES = ['صيدلية 1','صيدلية 7','صيدلية 18'];
     const STORAGE_KEY = 'private_label_sales_dashboard_v1';
     const TARGET_KEY = 'private_label_monthly_target';
-    const UI = { startDate:null, endDate:null, days:30, pharmacy:'all', product:'all', editingId:null };
+    const UI = { startDate:null, endDate:null, days:30, brand:'all', pharmacy:'all', product:'all', editingId:null };
     const PERIODS = [{days:7,label:'أسبوع'},{days:14,label:'أسبوعين'},{days:30,label:'شهر'},{days:90,label:'٣ شهور'}];
     const IMPORT = { reports:[] };
     let trendChart = null;
@@ -429,20 +435,33 @@
     }
     function matches(entry){
       return (UI.pharmacy === 'all' || entry.pharmacy === UI.pharmacy)
-        && (UI.product === 'all' || entry.product === UI.product);
+        && (UI.product === 'all' || entry.product === UI.product)
+        && (UI.brand === 'all' || (product(entry.product) || {}).brand === UI.brand);
+    }
+    function setBrand(brand){
+      UI.brand = brand;
+      if(brand !== 'all' && UI.product !== 'all' && (product(UI.product) || {}).brand !== brand) UI.product = 'all';
+      render();
     }
     function visibleEntries(){
       const period = range();
       return loadEntries().filter(entry => entry.date >= period.startDate && entry.date <= period.endDate && matches(entry));
     }
-    function productOptions(selected, withAll){
+    function productOptions(selected, withAll, respectBrand){
       const first = withAll ? '<option value="all">كل المنتجات</option>' : '';
-      const groups = BRANDS.map(brand => {
+      const brandsToShow = (respectBrand && UI.brand !== 'all') ? [UI.brand] : BRANDS;
+      const groups = brandsToShow.map(brand => {
         const opts = PRODUCTS.filter(item => item.brand === brand)
           .map(item => '<option value="' + item.key + '" ' + (item.key === selected ? 'selected' : '') + '>' + item.name + ' — ' + item.form + '</option>').join('');
         return '<optgroup label="' + brand + '">' + opts + '</optgroup>';
       }).join('');
       return first + groups;
+    }
+    function brandTabs(){
+      return '<div class="brand-tabs">'
+        + '<button type="button" class="brand-tab ' + (UI.brand === 'all' ? 'active' : '') + '" data-brand="all">كل العلامات</button>'
+        + BRANDS.map(bn => '<button type="button" class="brand-tab ' + (UI.brand === bn ? 'active' : '') + '" data-brand="' + bn + '" style="--bt:' + (BRAND_COLOR[bn] || '#8b97b8') + '">' + bn + '</button>').join('')
+        + '</div>';
     }
     function pharmacyOptions(selected, withAll){
       const first = withAll ? '<option value="all">كل الصيدليات</option>' : '';
@@ -596,6 +615,7 @@
         impBtn.addEventListener('click', () => impInput.click());
         impInput.addEventListener('change', handleImportFiles);
       }
+      document.querySelectorAll('.brand-tab').forEach(btn => btn.addEventListener('click', () => setBrand(btn.dataset.brand)));
     }
     const AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
     // ===== FORECAST & ANALYSIS (current calendar month, respects filters) =====
@@ -727,7 +747,8 @@
       const targets = getTargets();
       const all = loadEntries().filter(e => e.date >= monthStartStr && e.date <= monthEndStr && (UI.pharmacy === 'all' || e.pharmacy === UI.pharmacy));
       const shift = n => localDateString(new Date(now.getFullYear(), now.getMonth(), now.getDate() - n));
-      return PRODUCTS.map(pr => {
+      const list = UI.brand === 'all' ? PRODUCTS : PRODUCTS.filter(p => p.brand === UI.brand);
+      return list.map(pr => {
         const es = all.filter(e => e.product === pr.key);
         const amount = es.reduce((s,e) => s + e.amount, 0);
         const units = es.reduce((s,e) => s + e.units, 0);
@@ -871,7 +892,8 @@
         return result;
       }, {units:0,amount:0,prescriptions:0,days:new Set(),pharmacies:new Set(),products:new Set()});
       const records = [...entries].sort((a,b) => b.date.localeCompare(a.date) || b.updatedAt.localeCompare(a.updatedAt));
-      const selectedProduct = editing ? editing.product : PRODUCTS[0].key;
+      const brandDefaultProduct = UI.brand !== 'all' ? (PRODUCTS.find(p => p.brand === UI.brand) || PRODUCTS[0]).key : PRODUCTS[0].key;
+      const selectedProduct = editing ? editing.product : brandDefaultProduct;
       const selectedPharmacy = editing ? editing.pharmacy : PHARMACIES[0];
       const selectedDate = editing ? editing.date : UI.endDate;
       const activePharmacy = UI.pharmacy === 'all' ? 'كل الصيدليات' : UI.pharmacy;
@@ -880,6 +902,7 @@
       const analysis = computeAnalysis();
 
       root.innerHTML = `
+        ${brandTabs()}
         <section class="card entry-card">
           <div class="card-head">
             <div>
@@ -917,14 +940,14 @@
               <div class="filter"><label for="rangeStart">من تاريخ</label><input id="rangeStart" type="date" value="${period.startDate}" max="${period.endDate}"></div>
               <div class="filter"><label for="rangeEnd">إلى تاريخ</label><input id="rangeEnd" type="date" value="${period.endDate}"></div>
               <div class="filter"><label for="filterPharmacy">الصيدلية</label><select id="filterPharmacy">${pharmacyOptions(UI.pharmacy,true)}</select></div>
-              <div class="filter"><label for="filterProduct">المنتج</label><select id="filterProduct">${productOptions(UI.product,true)}</select></div>
+              <div class="filter"><label for="filterProduct">المنتج</label><select id="filterProduct">${productOptions(UI.product,true,true)}</select></div>
             </div>
           </div>
           <div class="filter-summary">الفلاتر الحالية: <b>${escapeHtml(activePharmacy)}</b> · <b>${escapeHtml(activeProduct)}</b></div>
           <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
         </section>
         ${analysisSection(analysis)}
-        ${brandSummarySection()}
+        ${UI.brand === 'all' ? brandSummarySection() : ''}
         ${productComparisonSection()}
         ${leakageSection()}
         <section class="card table-card">
