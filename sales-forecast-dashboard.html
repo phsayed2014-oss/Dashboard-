@@ -159,6 +159,19 @@
     .leak-nums b{color:var(--text)}
     .leak-msg{font-size:11px;color:var(--muted);font-weight:600;margin-top:5px;line-height:1.6}
     .leak-ok{padding:14px;border-radius:11px;border:1px solid rgba(27,209,174,.25);background:rgba(27,209,174,.06);color:#8fecdb;font-size:12.5px;font-weight:700;line-height:1.7}
+    .brand-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+    .brand-card{padding:16px;border-radius:14px;border:1px solid var(--line);border-top:3px solid var(--blue);background:rgba(8,13,25,.4)}
+    .brand-name{font-size:13px;font-weight:800;display:flex;align-items:center;gap:8px}
+    .brand-dot{width:10px;height:10px;border-radius:3px}
+    .brand-amount{font:800 24px/1.2 Alexandria,sans-serif;margin-top:10px;letter-spacing:-.03em}
+    .brand-amount .u{font-size:13px;color:var(--muted);font-weight:600}
+    .brand-sub{font-size:11px;color:var(--dim);font-weight:700;margin-top:7px}
+    .brand-sub b{color:var(--text)}
+    .brand-bar{height:7px;background:var(--base);border:1px solid var(--line);border-radius:99px;overflow:hidden;margin-top:10px}
+    .brand-fill{height:100%;border-radius:99px}
+    .brand-target{font-size:10px;color:var(--muted);font-weight:700;margin-top:5px}
+    @media(max-width:900px){.brand-grid{grid-template-columns:1fr}}
+    .product small{white-space:nowrap}
     .import-overlay{position:fixed;inset:0;z-index:40;background:rgba(4,8,16,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px}
     .import-modal{background:var(--card);border:1px solid var(--line-strong);border-radius:18px;box-shadow:var(--shadow);width:min(760px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
     .import-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
@@ -220,13 +233,23 @@
 
   <script>
     const PRODUCTS = [
-      { key:'reflex', name:'Reflex', form:'Massage Emulgel · 100ML', color:'#6395ff' },
-      { key:'rizer', name:'Rizer', form:'Apply Cream · 75ML', color:'#1bd1ae' },
-      { key:'oracure', name:'Oracure', form:'Mouth Wash · 300ML', color:'#f7bd57' },
-      { key:'intimo', name:'Intimo', form:'Vaginal Wash · 250ML', color:'#fc7185' },
-      { key:'nostriderm', name:'Nostriderm', form:'Ointment · 50ML', color:'#9d7aff' },
-      { key:'nostricure', name:'Nostricure', form:'Oral Gel · 30ML', color:'#47c9f3' }
+      // Private Label
+      { key:'reflex', name:'Reflex', form:'Massage Emulgel · 100ML', color:'#6395ff', brand:'Private Label' },
+      { key:'rizer', name:'Rizer', form:'Apply Cream · 75ML', color:'#1bd1ae', brand:'Private Label' },
+      { key:'oracure', name:'Oracure', form:'Mouth Wash · 300ML', color:'#f7bd57', brand:'Private Label' },
+      { key:'intimo', name:'Intimo', form:'Vaginal Wash · 250ML', color:'#fc7185', brand:'Private Label' },
+      { key:'nostriderm', name:'Nostriderm', form:'Ointment · 50ML', color:'#9d7aff', brand:'Private Label' },
+      { key:'nostricure', name:'Nostricure', form:'Oral Gel · 30ML', color:'#47c9f3', brand:'Private Label' },
+      // PureHerb
+      { key:'pure_omega', name:'Pure Omega-3', form:'Syrup · 240ML', color:'#22c55e', brand:'PureHerb' },
+      { key:'purefeel', name:'PureFeel', form:'Tablet · 30Tab', color:'#f472b6', brand:'PureHerb' },
+      { key:'centrozon_w', name:'Centrozon Women', form:'Tablet · 30Tab', color:'#e879f9', brand:'PureHerb' },
+      { key:'centrozon', name:'Centrozon', form:'Tablet · 30Tab', color:'#a855f7', brand:'PureHerb' },
+      { key:'zincolive', name:'Zincolive', form:'Syrup · 150ML', color:'#14b8a6', brand:'PureHerb' },
+      { key:'bonefriend', name:'BoneFriend', form:'Tablet · 30Tab', color:'#eab308', brand:'PureHerb' },
+      { key:'argigrow', name:'ArgiGrow', form:'Syrup · 150ML', color:'#f97316', brand:'PureHerb' }
     ];
+    const BRANDS = ['Private Label', 'PureHerb'];
     const PHARMACIES = ['صيدلية 1','صيدلية 7','صيدلية 18'];
     const STORAGE_KEY = 'private_label_sales_dashboard_v1';
     const TARGET_KEY = 'private_label_monthly_target';
@@ -414,7 +437,12 @@
     }
     function productOptions(selected, withAll){
       const first = withAll ? '<option value="all">كل المنتجات</option>' : '';
-      return first + PRODUCTS.map(item => '<option value="' + item.key + '" ' + (item.key === selected ? 'selected' : '') + '>' + item.name + ' — ' + item.form + '</option>').join('');
+      const groups = BRANDS.map(brand => {
+        const opts = PRODUCTS.filter(item => item.brand === brand)
+          .map(item => '<option value="' + item.key + '" ' + (item.key === selected ? 'selected' : '') + '>' + item.name + ' — ' + item.form + '</option>').join('');
+        return '<optgroup label="' + brand + '">' + opts + '</optgroup>';
+      }).join('');
+      return first + groups;
     }
     function pharmacyOptions(selected, withAll){
       const first = withAll ? '<option value="all">كل الصيدليات</option>' : '';
@@ -713,8 +741,8 @@
         const between = (f,t) => es.filter(e => e.date >= f && e.date <= t).reduce((s,e) => s + e.amount, 0);
         const l7 = between(shift(6), today()), p7 = between(shift(13), shift(7));
         const trendPct = p7 > 0 ? (l7 - p7) / p7 * 100 : (l7 > 0 ? 100 : 0);
-        return { key:pr.key, name:pr.name, color:pr.color, amount, units, prescriptions, projected, target, pct, projPct, trendPct, hasData:es.length > 0 };
-      }).sort((a,b) => b.amount - a.amount);
+        return { key:pr.key, name:pr.name, color:pr.color, brand:pr.brand, amount, units, prescriptions, projected, target, pct, projPct, trendPct, hasData:es.length > 0 };
+      }).sort((a,b) => (BRANDS.indexOf(a.brand) - BRANDS.indexOf(b.brand)) || (b.amount - a.amount));
     }
     function productComparisonSection(){
       const rows = computeProductBreakdown();
@@ -725,7 +753,7 @@
         const projMark = (r.projPct != null) ? Math.min(100, r.projPct) : null;
         const trendCls = r.trendPct >= 0 ? 'up' : 'down';
         return `<tr>
-          <td><div class="product"><i class="product-dot" style="background:${r.color}"></i><span>${escapeHtml(r.name)}</span></div></td>
+          <td><div class="product"><i class="product-dot" style="background:${r.color}"></i><span>${escapeHtml(r.name)}<small>${escapeHtml(r.brand)}</small></span></div></td>
           <td class="num money">${format(r.amount)}</td>
           <td class="num">${format(r.projected)}</td>
           <td><input class="ptarget-input" type="number" min="0" inputmode="numeric" placeholder="—" value="${r.target || ''}" data-ptarget="${r.key}"></td>
@@ -738,10 +766,49 @@
       }).join('');
       return `<section class="card table-card">
         <div class="table-head"><div><div class="table-title">📦 مقارنة المنتجات — الشهر الحالي</div><div class="table-sub">${escapeHtml(scope)} · حدّد هدفاً لكل منتج لعرض نسبة الإنجاز والمتوقع مقابله</div></div></div>
-        <div class="table-wrap"><table>
+        <div class="table-wrap records-wrap"><table>
           <thead><tr><th>المنتج</th><th style="text-align:center;color:#ffd382">المحقق (ريال)</th><th style="text-align:center">المتوقع</th><th style="text-align:center">الهدف</th><th>نسبة الإنجاز</th><th style="text-align:center">اتجاه ٧ أيام</th></tr></thead>
           <tbody>${body}</tbody>
         </table></div>
+      </section>`;
+    }
+
+    // ===== BRANDS SUMMARY (all products you work on, by brand) =====
+    const BRAND_COLOR = { 'Private Label':'#6395ff', 'PureHerb':'#22c55e' };
+    function computeBrandSummary(){
+      const now = dateFromString(today());
+      const monthStartStr = localDateString(new Date(now.getFullYear(), now.getMonth(), 1));
+      const monthEndStr = localDateString(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+      const all = loadEntries().filter(e => e.date >= monthStartStr && e.date <= monthEndStr && (UI.pharmacy === 'all' || e.pharmacy === UI.pharmacy));
+      const targets = getTargets();
+      const res = {};
+      BRANDS.forEach(bn => res[bn] = { brand:bn, amount:0, units:0, rx:0, active:new Set(), target:0, total:PRODUCTS.filter(p => p.brand === bn).length });
+      all.forEach(e => {
+        const pr = product(e.product); if(!pr || !res[pr.brand]) return;
+        res[pr.brand].amount += e.amount; res[pr.brand].units += e.units; res[pr.brand].rx += e.prescriptions;
+        if(e.amount > 0 || e.units > 0) res[pr.brand].active.add(e.product);
+      });
+      PRODUCTS.forEach(p => { if(res[p.brand]) res[p.brand].target += number(targets.products[p.key]); });
+      return BRANDS.map(bn => ({ ...res[bn], activeCount:res[bn].active.size }));
+    }
+    function brandSummarySection(){
+      const brands = computeBrandSummary();
+      const scope = UI.pharmacy === 'all' ? 'كل الصيدليات' : UI.pharmacy;
+      const grand = brands.reduce((s,b) => ({ amount:s.amount+b.amount, units:s.units+b.units, rx:s.rx+b.rx, active:s.active+b.activeCount, total:s.total+b.total }), {amount:0,units:0,rx:0,active:0,total:0});
+      const card = (name, color, amount, units, rx, active, total, target) => {
+        const pct = target > 0 ? Math.min(100, amount / target * 100) : null;
+        return `<div class="brand-card" style="border-top-color:${color}">
+          <div class="brand-name"><span class="brand-dot" style="background:${color}"></span>${escapeHtml(name)}</div>
+          <div class="brand-amount">${format(amount)} <span class="u">ريال</span></div>
+          <div class="brand-sub">${format(units)} حبة · ${format(rx)} كتابة · <b>${format(active)}/${format(total)}</b> منتج شغّال</div>
+          ${pct != null ? `<div class="brand-bar"><div class="brand-fill" style="width:${pct}%;background:${color}"></div></div><div class="brand-target">${pct.toFixed(0)}% من هدف ${format(target)} ريال</div>` : ''}
+        </div>`;
+      };
+      const brandCards = brands.map(b => card(b.brand, BRAND_COLOR[b.brand] || '#8b97b8', b.amount, b.units, b.rx, b.activeCount, b.total, b.target)).join('');
+      const totalCard = card('الإجمالي (كل العلامات)', '#f7bd57', grand.amount, grand.units, grand.rx, grand.active, grand.total, 0);
+      return `<section class="card analysis-card">
+        <div class="analysis-head"><div class="chart-title">📊 ملخص العلامات — الشهر الحالي</div><div class="range-copy">${escapeHtml(scope)} · إجمالي المبالغ لكل علامة والمنتجات الشغّالة</div></div>
+        <div class="brand-grid">${brandCards}${totalCard}</div>
       </section>`;
     }
 
@@ -857,6 +924,7 @@
           <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
         </section>
         ${analysisSection(analysis)}
+        ${brandSummarySection()}
         ${productComparisonSection()}
         ${leakageSection()}
         <section class="card table-card">
@@ -884,7 +952,11 @@
     // ===== PDF IMPORT (تقرير مبيعات اصناف مورد) =====
     const PRODUCT_KEYWORDS = [
       {key:'reflex', kw:'REFLEX'},{key:'rizer', kw:'RIZER'},{key:'oracure', kw:'ORACURE'},
-      {key:'intimo', kw:'INTIMO'},{key:'nostriderm', kw:'NOSTRIDERM'},{key:'nostricure', kw:'NOSTRICURE'}
+      {key:'intimo', kw:'INTIMO'},{key:'nostriderm', kw:'NOSTRIDERM'},{key:'nostricure', kw:'NOSTRICURE'},
+      // PureHerb — «CENTROZON WOMEN» قبل «CENTROZON» ليُطابق الأخصّ أولاً
+      {key:'pure_omega', kw:'PURE OMEGA'},{key:'purefeel', kw:'PUREFEEL'},
+      {key:'centrozon_w', kw:'CENTROZON WOMEN'},{key:'centrozon', kw:'CENTROZON'},
+      {key:'zincolive', kw:'ZINCOLIVE'},{key:'bonefriend', kw:'BONEFRIEND'},{key:'argigrow', kw:'ARGIGROW'}
     ];
     async function readPdfLines(file){
       const buffer = await file.arrayBuffer();
