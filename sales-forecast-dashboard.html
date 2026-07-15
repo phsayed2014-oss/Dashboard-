@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#10182b">
-  <title>مبيعات Private Label | متابعة يومية وتوقع</title>
+  <title>مبيعات Private Label و PureHerb | متابعة يومية وتوقع</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -212,7 +212,7 @@
       <div class="brand">
         <div class="brand-icon">📈</div>
         <div>
-          <h1>Private Label Sales</h1>
+          <h1>Private Label &amp; PureHerb</h1>
           <p>لوحة مستقلة لمتابعة المبيعات والمبلغ والكتابات اليومية</p>
         </div>
       </div>
@@ -227,7 +227,7 @@
     <section class="hero">
       <div>
         <div class="eyebrow">DAILY SALES TRACKING</div>
-        <h2>متابعة 6 منتجات عبر الصيدليات 1 و7 و18</h2>
+        <h2 id="heroTitle">متابعة 13 منتج عبر الصيدليات 1 و7 و18</h2>
         <p>سجّل الحبات المباعة والمبلغ (ريال) وكتابات الأطباء لكل منتج وصيدلية، ثم راقب المسار المتغير لآخر ثلاثة أشهر.</p>
       </div>
       <div class="hero-note">السجل الواحد = تاريخ × صيدلية × منتج</div>
@@ -876,6 +876,16 @@
 
     function render(){
       if(!UI.endDate) UI.endDate = today();
+      // عنوان الهيدر حسب العلامة المختارة (ديناميكي)
+      const heroEl = document.getElementById('heroTitle');
+      if(heroEl){
+        const plCount = PRODUCTS.filter(p => p.brand === 'Private Label').length;
+        const phCount = PRODUCTS.filter(p => p.brand === 'PureHerb').length;
+        const word = n => (n >= 3 && n <= 10) ? 'منتجات' : 'منتج';
+        heroEl.textContent = UI.brand === 'all'
+          ? `متابعة ${PRODUCTS.length} ${word(PRODUCTS.length)} (${plCount} Private Label + ${phCount} PureHerb) عبر الصيدليات 1 و7 و18`
+          : `متابعة ${PRODUCTS.filter(p => p.brand === UI.brand).length} ${word(PRODUCTS.filter(p => p.brand === UI.brand).length)} ${UI.brand} عبر الصيدليات 1 و7 و18`;
+      }
       const root = document.getElementById('dashboard');
       const all = loadEntries();
       const editing = UI.editingId ? all.find(entry => entry.id === UI.editingId) : null;
