@@ -55,7 +55,7 @@
     .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
     .card-title{font-family:Alexandria,sans-serif;font-weight:800;font-size:14px}
     .card-help{color:var(--muted);font-size:11px;margin-top:5px;line-height:1.6}
-    .entry-grid{display:grid;grid-template-columns:repeat(6,minmax(130px,1fr)) auto;gap:11px;align-items:end}
+    .entry-grid{display:grid;grid-template-columns:repeat(7,minmax(112px,1fr)) auto;gap:11px;align-items:end}
     .field{display:grid;gap:6px}
     .field label{font-size:11px;color:var(--dim);font-weight:700}
     .field input,.field select{width:100%;height:42px;border:1px solid var(--line);border-radius:9px;background:var(--base);color:var(--text);padding:0 11px;outline:none;font-size:12.5px;font-weight:600}
@@ -67,7 +67,9 @@
     .btn-secondary{height:34px;padding:0 12px;background:var(--raised);border:1px solid var(--line);color:var(--dim)}
     .btn-danger{height:34px;padding:0 12px;background:rgba(252,113,133,.1);border:1px solid rgba(252,113,133,.25);color:#ff9bab}
     .edit-banner{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;background:rgba(157,122,255,.1);border:1px solid rgba(157,122,255,.26);color:#cabaff;font-size:11.5px;font-weight:700}
-    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px}
+    .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin-bottom:18px}
+    .kpi.rose::before{background:var(--rose)}
+    .kpi-value.rose{color:#ff9bab}
     .kpi{padding:17px;border-radius:16px;border:1px solid var(--line);background:rgba(18,29,49,.88);min-height:118px;position:relative;overflow:hidden}
     .kpi::before{content:"";height:3px;position:absolute;right:0;left:0;top:0;background:var(--blue)}
     .kpi.teal::before{background:var(--teal)}
@@ -309,6 +311,7 @@
             product:entry.product,
             units:number(entry.units),
             amount:number(entry.amount),
+            cost:number(entry.cost),
             prescriptions:number(entry.prescriptions),
             updatedAt:String(entry.updatedAt || '')
           };
@@ -369,10 +372,10 @@
       notify('تم تنزيل نسخة احتياطية ✓');
     }
     function exportCSV(){
-      const rows = [['التاريخ','الصيدلية','المنتج','الحبات','المبلغ','الكتابات']];
+      const rows = [['التاريخ','الصيدلية','المنتج','العلامة','الحبات','المبلغ','التكلفة','الربح','الكتابات']];
       loadEntries().sort((a,b) => a.date.localeCompare(b.date)).forEach(e => {
         const it = product(e.product);
-        rows.push([e.date, e.pharmacy, it ? it.name : e.product, e.units, e.amount, e.prescriptions]);
+        rows.push([e.date, e.pharmacy, it ? it.name : e.product, it ? it.brand : '', e.units, e.amount, e.cost, e.amount - e.cost, e.prescriptions]);
       });
       const csv = '﻿' + rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\r\n');
       const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
@@ -401,10 +404,10 @@
           const rec = {
             id:(String(x.id || '').replace(/[^a-zA-Z0-9_-]/g,'')) || ('sale-' + Date.now() + '-' + Math.random().toString(36).slice(2,8)),
             date:x.date, pharmacy:x.pharmacy, product:x.product,
-            units:number(x.units), amount:number(x.amount), prescriptions:number(x.prescriptions), updatedAt:String(x.updatedAt || '')
+            units:number(x.units), amount:number(x.amount), cost:number(x.cost), prescriptions:number(x.prescriptions), updatedAt:String(x.updatedAt || '')
           };
           const k = keyOf(rec), ex = map[k];
-          if(ex){ if((rec.updatedAt || '') >= (ex.updatedAt || '')){ Object.assign(ex, {units:rec.units, amount:rec.amount, prescriptions:rec.prescriptions, updatedAt:rec.updatedAt}); updated++; } }
+          if(ex){ if((rec.updatedAt || '') >= (ex.updatedAt || '')){ Object.assign(ex, {units:rec.units, amount:rec.amount, cost:rec.cost, prescriptions:rec.prescriptions, updatedAt:rec.updatedAt}); updated++; } }
           else { current.push(rec); map[k] = rec; added++; }
         });
         if(!saveEntries(current)) return;
@@ -500,6 +503,7 @@
       const productKey = document.getElementById('product').value;
       const units = number(document.getElementById('units').value);
       const amount = number(document.getElementById('amount').value);
+      const cost = number(document.getElementById('cost').value);
       const prescriptions = number(document.getElementById('prescriptions').value);
       if(!date || !product(productKey) || !PHARMACIES.includes(pharmacy)){
         notify('أكمل التاريخ والصيدلية والمنتج أولاً');
@@ -517,16 +521,16 @@
       let message = 'تمت إضافة السجل ✓';
 
       if(current && duplicate){
-        Object.assign(duplicate, {date,pharmacy,product:productKey,units,amount,prescriptions,updatedAt:timestamp});
+        Object.assign(duplicate, {date,pharmacy,product:productKey,units,amount,cost,prescriptions,updatedAt:timestamp});
         entries = entries.filter(entry => entry.id !== current.id);
         message = 'تم دمج وتحديث السجل ✓';
       }else if(current || duplicate){
-        Object.assign(current || duplicate, {date,pharmacy,product:productKey,units,amount,prescriptions,updatedAt:timestamp});
+        Object.assign(current || duplicate, {date,pharmacy,product:productKey,units,amount,cost,prescriptions,updatedAt:timestamp});
         message = 'تم تحديث السجل ✓';
       }else{
         entries.push({
           id:'sale-' + Date.now() + '-' + Math.random().toString(36).slice(2,8),
-          date, pharmacy, product:productKey, units, amount, prescriptions, updatedAt:timestamp
+          date, pharmacy, product:productKey, units, amount, cost, prescriptions, updatedAt:timestamp
         });
       }
       if(!saveEntries(entries)) return;
@@ -751,6 +755,9 @@
       return list.map(pr => {
         const es = all.filter(e => e.product === pr.key);
         const amount = es.reduce((s,e) => s + e.amount, 0);
+        const cost = es.reduce((s,e) => s + e.cost, 0);
+        const profit = amount - cost;
+        const margin = cost > 0 && amount > 0 ? (profit / amount * 100) : null;
         const units = es.reduce((s,e) => s + e.units, 0);
         const prescriptions = es.reduce((s,e) => s + e.prescriptions, 0);
         const days = new Set(es.map(e => e.date)).size;
@@ -762,7 +769,7 @@
         const between = (f,t) => es.filter(e => e.date >= f && e.date <= t).reduce((s,e) => s + e.amount, 0);
         const l7 = between(shift(6), today()), p7 = between(shift(13), shift(7));
         const trendPct = p7 > 0 ? (l7 - p7) / p7 * 100 : (l7 > 0 ? 100 : 0);
-        return { key:pr.key, name:pr.name, color:pr.color, brand:pr.brand, amount, units, prescriptions, projected, target, pct, projPct, trendPct, hasData:es.length > 0 };
+        return { key:pr.key, name:pr.name, color:pr.color, brand:pr.brand, amount, cost, profit, margin, units, prescriptions, projected, target, pct, projPct, trendPct, hasData:es.length > 0 };
       }).sort((a,b) => (BRANDS.indexOf(a.brand) - BRANDS.indexOf(b.brand)) || (b.amount - a.amount));
     }
     function productComparisonSection(){
@@ -776,6 +783,7 @@
         return `<tr>
           <td><div class="product"><i class="product-dot" style="background:${r.color}"></i><span>${escapeHtml(r.name)}<small>${escapeHtml(r.brand)}</small></span></div></td>
           <td class="num money">${format(r.amount)}</td>
+          <td class="num" style="color:#ff9bab">${r.cost > 0 ? format(r.profit) + (r.margin != null ? ' (' + r.margin.toFixed(0) + '%)' : '') : '—'}</td>
           <td class="num">${format(r.projected)}</td>
           <td><input class="ptarget-input" type="number" min="0" inputmode="numeric" placeholder="—" value="${r.target || ''}" data-ptarget="${r.key}"></td>
           <td style="min-width:150px">
@@ -788,7 +796,7 @@
       return `<section class="card table-card">
         <div class="table-head"><div><div class="table-title">📦 مقارنة المنتجات — الشهر الحالي</div><div class="table-sub">${escapeHtml(scope)} · حدّد هدفاً لكل منتج لعرض نسبة الإنجاز والمتوقع مقابله</div></div></div>
         <div class="table-wrap records-wrap"><table>
-          <thead><tr><th>المنتج</th><th style="text-align:center;color:#ffd382">المحقق (ريال)</th><th style="text-align:center">المتوقع</th><th style="text-align:center">الهدف</th><th>نسبة الإنجاز</th><th style="text-align:center">اتجاه ٧ أيام</th></tr></thead>
+          <thead><tr><th>المنتج</th><th style="text-align:center;color:#ffd382">المحقق (ريال)</th><th style="text-align:center;color:#ff9bab">الربح (هامش)</th><th style="text-align:center">المتوقع</th><th style="text-align:center">الهدف</th><th>نسبة الإنجاز</th><th style="text-align:center">اتجاه ٧ أيام</th></tr></thead>
           <tbody>${body}</tbody>
         </table></div>
       </section>`;
@@ -803,10 +811,10 @@
       const all = loadEntries().filter(e => e.date >= monthStartStr && e.date <= monthEndStr && (UI.pharmacy === 'all' || e.pharmacy === UI.pharmacy));
       const targets = getTargets();
       const res = {};
-      BRANDS.forEach(bn => res[bn] = { brand:bn, amount:0, units:0, rx:0, active:new Set(), target:0, total:PRODUCTS.filter(p => p.brand === bn).length });
+      BRANDS.forEach(bn => res[bn] = { brand:bn, amount:0, cost:0, units:0, rx:0, active:new Set(), target:0, total:PRODUCTS.filter(p => p.brand === bn).length });
       all.forEach(e => {
         const pr = product(e.product); if(!pr || !res[pr.brand]) return;
-        res[pr.brand].amount += e.amount; res[pr.brand].units += e.units; res[pr.brand].rx += e.prescriptions;
+        res[pr.brand].amount += e.amount; res[pr.brand].cost += e.cost; res[pr.brand].units += e.units; res[pr.brand].rx += e.prescriptions;
         if(e.amount > 0 || e.units > 0) res[pr.brand].active.add(e.product);
       });
       PRODUCTS.forEach(p => { if(res[p.brand]) res[p.brand].target += number(targets.products[p.key]); });
@@ -815,18 +823,21 @@
     function brandSummarySection(){
       const brands = computeBrandSummary();
       const scope = UI.pharmacy === 'all' ? 'كل الصيدليات' : UI.pharmacy;
-      const grand = brands.reduce((s,b) => ({ amount:s.amount+b.amount, units:s.units+b.units, rx:s.rx+b.rx, active:s.active+b.activeCount, total:s.total+b.total }), {amount:0,units:0,rx:0,active:0,total:0});
-      const card = (name, color, amount, units, rx, active, total, target) => {
+      const grand = brands.reduce((s,b) => ({ amount:s.amount+b.amount, cost:s.cost+b.cost, units:s.units+b.units, rx:s.rx+b.rx, active:s.active+b.activeCount, total:s.total+b.total }), {amount:0,cost:0,units:0,rx:0,active:0,total:0});
+      const card = (name, color, amount, cost, units, rx, active, total, target) => {
         const pct = target > 0 ? Math.min(100, amount / target * 100) : null;
+        const profit = amount - cost;
+        const margin = cost > 0 && amount > 0 ? (profit / amount * 100) : null;
         return `<div class="brand-card" style="border-top-color:${color}">
           <div class="brand-name"><span class="brand-dot" style="background:${color}"></span>${escapeHtml(name)}</div>
           <div class="brand-amount">${format(amount)} <span class="u">ريال</span></div>
           <div class="brand-sub">${format(units)} حبة · ${format(rx)} كتابة · <b>${format(active)}/${format(total)}</b> منتج شغّال</div>
+          <div class="brand-sub" style="color:#ff9bab">${cost > 0 ? 'ربح ' + format(profit) + ' ريال · هامش ' + margin.toFixed(0) + '%' : 'الربح: أضِف التكلفة'}</div>
           ${pct != null ? `<div class="brand-bar"><div class="brand-fill" style="width:${pct}%;background:${color}"></div></div><div class="brand-target">${pct.toFixed(0)}% من هدف ${format(target)} ريال</div>` : ''}
         </div>`;
       };
-      const brandCards = brands.map(b => card(b.brand, BRAND_COLOR[b.brand] || '#8b97b8', b.amount, b.units, b.rx, b.activeCount, b.total, b.target)).join('');
-      const totalCard = card('الإجمالي (كل العلامات)', '#f7bd57', grand.amount, grand.units, grand.rx, grand.active, grand.total, 0);
+      const brandCards = brands.map(b => card(b.brand, BRAND_COLOR[b.brand] || '#8b97b8', b.amount, b.cost, b.units, b.rx, b.activeCount, b.total, b.target)).join('');
+      const totalCard = card('الإجمالي (كل العلامات)', '#f7bd57', grand.amount, grand.cost, grand.units, grand.rx, grand.active, grand.total, 0);
       return `<section class="card analysis-card">
         <div class="analysis-head"><div class="chart-title">📊 ملخص العلامات — الشهر الحالي</div><div class="range-copy">${escapeHtml(scope)} · إجمالي المبالغ لكل علامة والمنتجات الشغّالة</div></div>
         <div class="brand-grid">${brandCards}${totalCard}</div>
@@ -895,12 +906,15 @@
       const totals = entries.reduce((result, entry) => {
         result.units += entry.units;
         result.amount += entry.amount;
+        result.cost += entry.cost;
         result.prescriptions += entry.prescriptions;
         result.days.add(entry.date);
         result.pharmacies.add(entry.pharmacy);
         result.products.add(entry.product);
         return result;
-      }, {units:0,amount:0,prescriptions:0,days:new Set(),pharmacies:new Set(),products:new Set()});
+      }, {units:0,amount:0,cost:0,prescriptions:0,days:new Set(),pharmacies:new Set(),products:new Set()});
+      const profit = totals.amount - totals.cost;
+      const margin = totals.cost > 0 && totals.amount > 0 ? (profit / totals.amount * 100) : null;
       const records = [...entries].sort((a,b) => b.date.localeCompare(a.date) || b.updatedAt.localeCompare(a.updatedAt));
       const brandDefaultProduct = UI.brand !== 'all' ? (PRODUCTS.find(p => p.brand === UI.brand) || PRODUCTS[0]).key : PRODUCTS[0].key;
       const selectedProduct = editing ? editing.product : brandDefaultProduct;
@@ -932,12 +946,14 @@
             <div class="field"><label for="product">المنتج</label><select id="product">${productOptions(selectedProduct,false)}</select></div>
             <div class="field"><label for="units">الحبات المباعة</label><input id="units" type="number" min="0" step="1" inputmode="numeric" placeholder="مثال: 25" value="${editing ? (editing.units || '') : ''}"></div>
             <div class="field"><label for="amount">المبلغ (ريال)</label><input id="amount" type="number" min="0" step="1" inputmode="numeric" placeholder="مثال: 1450" value="${editing ? (editing.amount || '') : ''}"></div>
+            <div class="field"><label for="cost">التكلفة (ريال)</label><input id="cost" type="number" min="0" step="1" inputmode="numeric" placeholder="اختياري" value="${editing ? (editing.cost || '') : ''}"></div>
             <div class="field"><label for="prescriptions">كتابات الأطباء</label><input id="prescriptions" type="number" min="0" step="1" inputmode="numeric" placeholder="مثال: 12" value="${editing ? (editing.prescriptions || '') : ''}"></div>
             <button class="btn btn-primary" type="submit">${editing ? '💾 حفظ التعديل' : '💾 حفظ السجل'}</button>
           </form>
         </section>
         <section class="kpis">
           <article class="kpi teal"><div class="kpi-label">إجمالي المبلغ</div><div class="kpi-value teal">${format(totals.amount)} <span class="kpi-unit">ريال</span></div><div class="kpi-foot">قيمة المبيعات ضمن الفترة والفلاتر</div></article>
+          <article class="kpi rose"><div class="kpi-label">صافي الربح</div><div class="kpi-value rose">${totals.cost > 0 ? format(profit) : '—'} <span class="kpi-unit">${totals.cost > 0 ? 'ريال' : ''}</span></div><div class="kpi-foot">${margin != null ? 'هامش ' + margin.toFixed(0) + '% · تكلفة ' + format(totals.cost) : 'أضِف التكلفة (يدوياً أو من PDF) لحساب الربح'}</div></article>
           <article class="kpi"><div class="kpi-label">إجمالي الحبات</div><div class="kpi-value">${format(totals.units)}</div><div class="kpi-foot">متوسط ${format(totals.days.size ? totals.units / totals.days.size : 0)} حبة / يوم مسجل</div></article>
           <article class="kpi violet"><div class="kpi-label">إجمالي الكتابات</div><div class="kpi-value violet">${format(totals.prescriptions)}</div><div class="kpi-foot">كتابات الأطباء المسجلة</div></article>
           <article class="kpi amber"><div class="kpi-label">أيام مسجلة</div><div class="kpi-value amber">${format(totals.days.size)}</div><div class="kpi-foot">متوسط ${format(avgPerDay)} ريال / يوم مسجل</div></article>
@@ -1053,7 +1069,14 @@
         const before = line.slice(0, up.indexOf(prod.kw));
         const nums = (before.match(/\d+(?:\.\d+)?/g) || []).map(Number);
         if(nums.length < 2) return;
-        rows.push({ product:prod.key, amount:Math.round(nums[0]), units:Math.round(nums[nums.length-1]), include:true });
+        // الأعمدة قبل اسم الصنف: [القيمة بسعر البيع, القيمة بالتكلفة, الكمية الحالية, الكمية المباعة]
+        rows.push({
+          product:prod.key,
+          amount:Math.round(nums[0]),
+          cost:nums.length >= 3 ? Math.round(nums[1]) : 0,
+          units:Math.round(nums[nums.length-1]),
+          include:true
+        });
       });
       return { type:'sales', pharmacy, date, rows };
     }
@@ -1106,7 +1129,7 @@
           if(existing){
             // ضبط (استبدال) القيمة القادمة من التقرير مع الحفاظ على باقي الحقول — يمنع التكرار عند إعادة الاستيراد
             if(report.type === 'rx') existing.prescriptions = row.prescriptions;
-            else { existing.units = row.units; existing.amount = row.amount; }
+            else { existing.units = row.units; existing.amount = row.amount; existing.cost = row.cost || 0; }
             existing.updatedAt = timestamp;
             updated++;
           }else{
@@ -1115,6 +1138,7 @@
               date:report.date, pharmacy:report.pharmacy, product:row.product,
               units: report.type === 'rx' ? 0 : row.units,
               amount: report.type === 'rx' ? 0 : row.amount,
+              cost: report.type === 'rx' ? 0 : (row.cost || 0),
               prescriptions: report.type === 'rx' ? row.prescriptions : 0,
               updatedAt:timestamp
             });
@@ -1154,8 +1178,8 @@
                   : '<span class="ir-type sales">مبيعات الأصناف</span>';
                 const head = isRx
                   ? '<th style="text-align:center">استيراد</th><th>المنتج</th><th style="text-align:center;color:#c4b4ff">عدد مرات الكتابة</th>'
-                  : '<th style="text-align:center">استيراد</th><th>المنتج</th><th style="text-align:center;color:#71ecd3">الحبات المباعة</th><th style="text-align:center;color:#ffd382">المبلغ (ريال)</th>';
-                const emptyCols = isRx ? 3 : 4;
+                  : '<th style="text-align:center">استيراد</th><th>المنتج</th><th style="text-align:center;color:#71ecd3">الحبات المباعة</th><th style="text-align:center;color:#ffd382">المبلغ (ريال)</th><th style="text-align:center;color:#ff9bab">التكلفة</th>';
+                const emptyCols = isRx ? 3 : 5;
                 return `<div class="import-report">
                   <div class="import-report-head">
                     <span class="ir-file">📄 ${escapeHtml(report.fileName)} ${typeBadge}</span>
@@ -1175,7 +1199,7 @@
                       <td>${escapeHtml(productName(row.product))}</td>
                       ${isRx
                         ? `<td class="num rx">${format(row.prescriptions)}</td>`
-                        : `<td class="num units">${format(row.units)}</td><td class="num money">${format(row.amount)}</td>`}
+                        : `<td class="num units">${format(row.units)}</td><td class="num money">${format(row.amount)}</td><td class="num" style="color:#ff9bab">${format(row.cost)}</td>`}
                     </tr>`).join('') : `<tr><td colspan="${emptyCols}" class="empty">لم يتم التعرف على أي منتج من منتجاتك في هذا الملف.</td></tr>`}</tbody>
                   </table></div>
                 </div>`;
