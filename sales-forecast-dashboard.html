@@ -115,6 +115,8 @@
     .topbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
     .btn-tool{height:32px;padding:0 11px;background:var(--raised);border:1px solid var(--line);color:var(--dim);border-radius:8px;font-size:11.5px;font-weight:800}
     .btn-tool:hover{color:var(--text);border-color:var(--line-strong)}
+    .btn-tool.danger{background:rgba(252,113,133,.1);border-color:rgba(252,113,133,.28);color:#ff9bab}
+    .btn-tool.danger:hover{background:rgba(252,113,133,.18);color:#ffb3bf}
     @media(max-width:680px){.topbar-actions .status{display:none}.btn-tool{font-size:11px;padding:0 9px}}
     .analysis-card{padding:20px;margin-bottom:18px}
     .analysis-head{margin-bottom:14px}
@@ -222,6 +224,7 @@
         <button type="button" class="btn-tool" id="backupBtn" title="حفظ نسخة احتياطية (JSON) على جهازك">💾 نسخة احتياطية</button>
         <button type="button" class="btn-tool" id="restoreBtn" title="استعادة نسخة احتياطية سابقة">📥 استعادة</button>
         <button type="button" class="btn-tool" id="csvBtn" title="تصدير السجلات كملف Excel/CSV">📊 CSV</button>
+        <button type="button" class="btn-tool danger" id="clearBtn" title="مسح كل السجلات للبدء من جديد">🗑️ مسح الكل</button>
         <input type="file" id="restoreInput" accept="application/json,.json" hidden>
         <span class="status">حفظ تلقائي على هذا الجهاز</span>
       </div>
@@ -383,6 +386,15 @@
       a.href = URL.createObjectURL(blob); a.download = 'private-label-' + today() + '.csv'; a.click();
       URL.revokeObjectURL(a.href);
       notify('تم تصدير CSV ✓');
+    }
+    function clearAllData(){
+      const count = loadEntries().length;
+      if(count === 0){ notify('لا توجد سجلات لمسحها'); return; }
+      if(!confirm('سيتم حذف كل سجلات المبيعات (' + count + ' سجل) نهائياً من هذا الجهاز.\nيُفضّل أخذ «نسخة احتياطية» أولاً.\n\nهل تريد المتابعة؟')) return;
+      try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+      UI.editingId = null;
+      notify('تم مسح كل السجلات ✓ — ابدأ من جديد');
+      render();
     }
     function restoreData(event){
       const file = event.target.files[0];
@@ -1219,6 +1231,7 @@
       const bind = (id, fn, ev) => { const el = document.getElementById(id); if(el) el.addEventListener(ev || 'click', fn); };
       bind('backupBtn', backupData);
       bind('csvBtn', exportCSV);
+      bind('clearBtn', clearAllData);
       bind('restoreBtn', () => document.getElementById('restoreInput').click());
       bind('restoreInput', restoreData, 'change');
       render();
