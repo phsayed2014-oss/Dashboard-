@@ -3098,7 +3098,7 @@ body::after, body::before,
   font-weight:700!important; font-size:13px!important; flex-shrink:0!important;
 }
 .sb-user-name{ font-size:13px!important; font-weight:700!important; color:var(--vd-ink)!important; }
-.sb-user-role{ font-size:11px!important; color:var(--vd-ink-3)!important; }
+.sb-user-role{ font-size:10.5px!important; color:var(--vd-ink-3)!important; line-height:1.45!important; white-space:normal!important; }
 
 /* ══ MAIN AREA ══ */
 .main-area{ flex:1!important; min-width:0!important; display:flex!important; flex-direction:column!important;
@@ -3494,7 +3494,7 @@ tr.clickable:hover{ background:var(--vd-accent-soft)!important; }
       <div class="sb-avatar">EH</div>
       <div style="flex:1;min-width:0;">
         <div class="sb-user-name">Dr. Elsayed Hassan</div>
-        <div class="sb-user-role">مدير تطوير الأعمال</div>
+        <div class="sb-user-role">إدارة تطوير الأعمال · الإدارة التجارية · قطاع الصيدليات</div>
       </div>
     </div>
   </div>
@@ -10517,7 +10517,7 @@ window.renderActive = function() {
 /* كلمات المرور مخزّنة كـ SHA-256 (hex) حتى لا تظهر النصوص الصريحة في مصدر الصفحة.
    ملاحظة: هذه بوابة عرض على جهة العميل فقط لملف HTML ثابت، وليست حماية خادم حقيقية. */
 const USERS = {
-  'elsayed':  { hash: '0e8aea9b26ebdc3a3c2d02fd44dd58580cc9a02948f565286e8bf002927b6015', name: 'Dr. Elsayed Hassan',  role: 'مدير تطوير الأعمال' },
+  'elsayed':  { hash: '0e8aea9b26ebdc3a3c2d02fd44dd58580cc9a02948f565286e8bf002927b6015', name: 'Dr. Elsayed Hassan',  role: 'إدارة تطوير الأعمال · الإدارة التجارية · قطاع الصيدليات' },
   'admin':    { hash: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', name: 'Admin',               role: 'مدير النظام' },
   'manager':  { hash: '866485796cfa8d7c0cf7111640205b83076433547577511d81f8030ae99ecea5', name: 'المدير',              role: 'مدير قطاع الصيدليات' },
 };
