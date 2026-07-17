@@ -3406,6 +3406,18 @@ tr.clickable:hover{ background:var(--vd-accent-soft)!important; }
 .global-search-wrap{ max-width:320px!important; }
 .new-topbar .actions .btn{ height:34px!important; padding:0 10px!important; font-size:12px!important; }
 
+/* ---- review polish: branch card vertical layout (no overlap) ---- */
+.branch-card{ position:relative!important; display:block!important; padding:14px 16px!important; overflow:visible!important; }
+.branch-card::after,.branch-card::before{ display:none!important; }
+.branch-num{ position:absolute!important; top:14px!important; inset-inline-end:16px!important; margin:0!important; }
+.branch-info{ padding-inline-end:44px!important; }
+.branch-info .name{ font-size:14.5px!important; }
+.branch-info .meta{ white-space:normal!important; line-height:1.5!important; }
+.branch-periods{ margin-top:8px!important; display:flex!important; flex-wrap:wrap!important; gap:6px!important; }
+.branch-periods:empty{ display:none!important; }
+.branch-upload-btn{ margin-top:12px!important; }
+.add-period-btn{ margin-top:12px!important; margin-inline-start:8px!important; }
+
 /* ===== VD REDESIGN LAYER END ===== */
 </style>
 </head>
@@ -5096,7 +5108,7 @@ function renderAgedMeds() {
 function renderActive(){
   const at=window._activePanel||(document.querySelector('.tab.active')?.dataset.panel)||'overview';
   /* ── SECTION ROUTING: panels that don't need branch picker ── */
-  document.getElementById('branchPickerCard').style.display=NO_BRANCH_TABS.includes(at)?'none':'block';
+  document.getElementById('branchPickerCard').style.display=(NO_BRANCH_TABS.includes(at)||BRANCHES.filter(b=>STATE.data[b]).length<=1)?'none':'block';
 
   /* ── NO-BRANCH panels ── */
   if(at==='featured'){renderFeatured();return;} /* FIX: تجديد كل كروت القسم عند الفتح بما فيها الجدول المجمّع */
@@ -5212,7 +5224,7 @@ function injectOverviewHero(d){
 }
 function renderOverview(d){
   renderOverviewCore(d);
-  injectOverviewHero(d);
+  /* welcome hero removed per request */
 }
 function renderOverviewCore(d){
   const avg=d.doctors.length?Math.round(d.totalRows/d.doctors.length):0;const top=d.doctors[0];
@@ -5480,7 +5492,7 @@ function renderOverviewCore(d){
   function _drawOverviewCharts(){
     if((window._activePanel||'overview')!=='overview')return;
     ['cTopDocs','cTopDrugs','cSecs','cStatus'].forEach(id=>destroyChart(id));
-    drawBar('cTopDocs',_docsData.map(x=>({label:x.name.slice(0,18),v:x.total})),'#6c63ff',i=>showDoctorMulti(_docsData[i].name));
+    drawBar('cTopDocs',_docsData.map(x=>({label:x.name.slice(0,18),v:x.total})),'#0d9488',i=>showDoctorMulti(_docsData[i].name));
     drawBar('cTopDrugs',_drugsData.map(x=>({label:x.name.slice(0,22),v:x.total})),'#00d4a0',i=>showDrug(_drugsData[i].name));
     drawDoughnut('cSecs',_secsData.map(s=>({label:s.name,v:s.total})));
     drawPolar('cStatus',Object.entries(_scData).map(([k,v])=>({label:k,v})));
@@ -6553,6 +6565,7 @@ function updateFeaturedGrid(){
 }
 
 function showDoctorMulti(name){
+  if(typeof window.vdShowDoctor==='function' && window.vdShowDoctor(name)) return; /* unified slide-over drawer */
   const blocks=[];let combined={total:0,drugs:new Map()};
   BRANCHES.forEach(b=>{const d=STATE.data[b];if(!d)return;const doc=d.doctors.find(x=>sameEntity(x.name,name));if(!doc)return;combined.total+=doc.total;doc.drugs.forEach(x=>{const k=entityKey(x.name),item=combined.drugs.get(k)||{name:x.name,count:0};item.count+=x.count;combined.drugs.set(k,item);});blocks.push({b,doc});});
   if(!blocks.length) return;
@@ -6673,6 +6686,7 @@ function openDrugDetail(x,scopeLabel,totalRows,scopeClass){
   openModal('تفاصيل الدواء');
 }
 function showDrug(name,branch){
+  if(typeof window.vdShowDrug==='function' && window.vdShowDrug(name)) return; /* unified slide-over drawer */
   const selected=branch||STATE.active,d=selected&&STATE.data[selected];if(!d)return;
   const x=d.drugs.find(drug=>sameEntity(drug.name,name));if(!x)return;
   openDrugDetail(x,BRANCH_LABELS[selected],d.totalRows,selected.toLowerCase());
@@ -6683,6 +6697,7 @@ function showDrugFromPeriod(name,branch,periodId){
   openDrugDetail(x,BRANCH_LABELS[branch]+' · '+period.label,period.data.totalRows,branch.toLowerCase());
 }
 function showDrugMulti(name){
+  if(typeof window.vdShowDrug==='function' && window.vdShowDrug(name)) return; /* unified slide-over drawer */
   const loaded=BRANCHES.filter(branch=>STATE.data[branch]),doctorMap=new Map(),patients=new Set();
   let total=0,totalRows=0,displayName=name;
   loaded.forEach(branch=>{
@@ -10333,7 +10348,7 @@ function switchDocView(mode, btn) {
   } else {
     wrap.innerHTML = `<div class="chart-box"><canvas id="cTopDocs"></canvas></div>`;
     destroyChart('cTopDocs');
-    drawBar('cTopDocs', docs.map(x=>({label:x.name.slice(0,18),v:x.total})), '#6c63ff', i=>showDoctorMulti(docs[i].name));
+    drawBar('cTopDocs', docs.map(x=>({label:x.name.slice(0,18),v:x.total})), '#0d9488', i=>showDoctorMulti(docs[i].name));
   }
 }
 
@@ -10520,7 +10535,7 @@ function sidebarNav(el, panel) {
   if(panelEl){panelEl.classList.add('active');panelEl.setAttribute('aria-hidden','false');}
   pruneChartsForPanel(panel);
   document.getElementById('branchPickerCard').style.display =
-    (NO_BRANCH_TABS.includes(panel))?'none':'block';
+    (NO_BRANCH_TABS.includes(panel)||BRANCHES.filter(b=>STATE.data[b]).length<=1)?'none':'block';
   updateDataContext();
   renderActive();
   try{ setTimeout(function(){ var pe=document.getElementById('panel-'+panel); animateNums(pe); swapEmojiIcons(pe); }, 40); }catch(e){}
@@ -11729,6 +11744,13 @@ function renderPureHerb(){
       listBlock('أعلى الأدوية في القسم','💊',drugs,rec.total,'count');
     openDrawer('🏥 ملف قسم', body);
   }
+
+  // Expose openers so legacy detail functions can route into the drawer everywhere.
+  function _branchWithData(){ if(typeof STATE==='undefined')return null; if(STATE.active&&STATE.data[STATE.active])return STATE.active; return (typeof BRANCHES!=='undefined'?BRANCHES:[]).find(function(x){return STATE.data[x];})||null; }
+  function _findRec(list,name){ return (list||[]).find(function(x){ return (typeof sameEntity==='function')? sameEntity(x.name,name) : x.name===name; }); }
+  window.vdShowDoctor=function(name){ var b=_branchWithData(); var d=b&&STATE.data[b]; if(!d)return false; var rec=_findRec(d.doctors,name); if(!rec)return false; openDoctor(rec,d); return true; };
+  window.vdShowDrug=function(name){ var b=_branchWithData(); var d=b&&STATE.data[b]; if(!d)return false; var rec=_findRec(d.drugs,name); if(!rec)return false; openDrug(rec,d); return true; };
+  window.vdShowSection=function(name){ var b=_branchWithData(); var d=b&&STATE.data[b]; if(!d)return false; var rec=_findRec(d.sections,name); if(!rec)return false; openSection(rec,d); return true; };
 
   // Capture-phase delegation: intercept clicks on the MAIN doctors/drugs/sections tables only.
   document.addEventListener('click', function(e){
