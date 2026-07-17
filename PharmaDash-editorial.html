@@ -3350,6 +3350,62 @@ tr.clickable:hover{ background:var(--vd-accent-soft)!important; }
 .vd-list-row .mini-bar{ width:70px; height:6px; border-radius:99px; background:var(--vd-line-2); overflow:hidden; }
 .vd-list-row .mini-bar > i{ display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#3b82f6,#60a5fa); }
 
+/* ---- round 2: kpi cards + sidebar polish + breadcrumb + segmented bar ---- */
+
+/* KPI cards → video style */
+.kpi-grid{ display:grid!important; grid-template-columns:repeat(auto-fit,minmax(178px,1fr))!important; gap:13px!important; margin-bottom:18px!important; }
+.kpi{
+  background:var(--vd-panel)!important; border:1px solid var(--vd-line)!important; border-radius:var(--vd-radius)!important;
+  box-shadow:var(--vd-shadow-card)!important; padding:16px 16px 15px!important; position:relative!important; overflow:hidden!important;
+}
+.kpi::before,.kpi::after{ display:none!important; }
+.kpi-head{ margin-bottom:10px!important; }
+.kpi-label{ color:var(--vd-ink-3)!important; font-size:12px!important; font-weight:600!important; letter-spacing:0!important; text-transform:none!important; }
+.kpi-ico{ width:30px!important; height:30px!important; border-radius:9px!important; background:var(--vd-accent-soft)!important; color:var(--vd-accent)!important; box-shadow:none!important; display:flex!important; align-items:center!important; justify-content:center!important; }
+.kpi-value{ color:var(--vd-ink)!important; -webkit-text-fill-color:var(--vd-ink)!important; font-size:30px!important; font-weight:800!important; letter-spacing:-1px!important; font-family:"Inter",var(--vd-font)!important; line-height:1.1!important; }
+.kpi-foot{ color:var(--vd-ink-3)!important; font-weight:500!important; font-size:11.5px!important; margin-top:3px!important; }
+.kpi:nth-child(1) .kpi-ico{ background:var(--vd-blue-bg)!important; color:var(--vd-blue-fg)!important; }
+.kpi:nth-child(2) .kpi-ico{ background:var(--vd-green-bg)!important; color:var(--vd-green-fg)!important; }
+.kpi:nth-child(3) .kpi-ico{ background:var(--vd-amber-bg)!important; color:var(--vd-amber-fg)!important; }
+.kpi:nth-child(4) .kpi-ico{ background:#eaf6ff!important; color:#0284c7!important; }
+.kpi:nth-child(5) .kpi-ico{ background:var(--vd-violet-bg)!important; color:var(--vd-violet-fg)!important; }
+.kpi:nth-child(6) .kpi-ico{ background:var(--vd-rose-bg)!important; color:var(--vd-rose-fg)!important; }
+
+/* SIDEBAR: thinner icons + per-item colored icons for المستهدفات (image-inspired) */
+.sb-ico svg{ stroke-width:1.7px!important; }
+.sb-nav-item[data-tab="pureherb"] .sb-ico{ color:#7c3aed!important; opacity:1; }
+.sb-nav-item[data-tab="featured"] .sb-ico{ color:#0d9488!important; opacity:1; }
+.sb-nav-item[data-tab="nearexpiry"] .sb-ico{ color:#e11d48!important; opacity:1; }
+.sb-nav-item[data-tab="targeted"] .sb-ico{ color:#c2790b!important; opacity:1; }
+.sb-nav-item[data-tab="targettrack"] .sb-ico{ color:#c2790b!important; opacity:.9; }
+.sb-nav-item.active[data-tab] .sb-ico{ color:var(--vd-accent)!important; }
+/* inline meta value (e.g. counts) subtle like the reference */
+.sb-badge{ font-weight:700!important; }
+
+/* TOPBAR breadcrumb feel */
+.new-topbar .nb-title h1{ font-size:17px!important; }
+.vd-crumb{ font-size:11px!important; color:var(--vd-ink-3)!important; font-weight:600!important; margin-bottom:1px!important; display:flex; align-items:center; gap:5px; }
+.vd-crumb b{ color:var(--vd-ink-2)!important; font-weight:700; }
+.vd-crumb .sep{ opacity:.5; }
+
+/* SEGMENTED STATUS BAR (Review-Queue inspired) */
+.vd-segwrap{ margin-bottom:14px; }
+.vd-seg{ display:flex; height:14px; border-radius:99px; overflow:hidden; background:var(--vd-line-2); gap:2px; padding:0; }
+.vd-seg > span{ display:block; height:100%; }
+.vd-seg > span:first-child{ border-radius:0 99px 99px 0; }
+.vd-seg > span:last-child{ border-radius:99px 0 0 99px; }
+.vd-seg-legend{ display:flex; gap:18px; flex-wrap:wrap; margin-top:10px; }
+.vd-seg-legend > span{ display:inline-flex; align-items:center; gap:7px; font-size:12px; color:var(--vd-ink-2); font-weight:600; }
+.vd-seg-legend i{ width:9px; height:9px; border-radius:3px; display:inline-block; }
+.vd-seg-legend b{ font-family:"Inter",var(--vd-font); font-weight:800; color:var(--vd-ink); }
+
+/* ---- topbar cleanup: give title room, hide legacy sub, show crumb+section ---- */
+.new-topbar .nb-title{ flex-shrink:0!important; min-width:190px!important; }
+.new-topbar .nb-title .sub{ display:none!important; }
+.new-topbar .nb-title h1{ font-size:18px!important; line-height:1.15!important; }
+.global-search-wrap{ max-width:320px!important; }
+.new-topbar .actions .btn{ height:34px!important; padding:0 10px!important; font-size:12px!important; }
+
 /* ===== VD REDESIGN LAYER END ===== */
 </style>
 </head>
@@ -5268,6 +5324,18 @@ function renderOverviewCore(d){
   const conversionCard = (_closed+_canceled+_new)>0 ? `
     <div class="card" style="margin-bottom:16px;">
       <div class="card-head"><div class="card-title"><span class="dot"></span> حالة الوصفات ومعدل الصرف</div></div>
+      <div class="vd-segwrap">
+        <div class="vd-seg">
+          ${_closed>0?`<span style="flex:${_closed};background:#0f9d58"></span>`:''}
+          ${_new>0?`<span style="flex:${_new};background:#0284c7"></span>`:''}
+          ${_canceled>0?`<span style="flex:${_canceled};background:#e11d48"></span>`:''}
+        </div>
+        <div class="vd-seg-legend">
+          <span><i style="background:#0f9d58"></i> صُرفت <b>${fmt(_closed)}</b></span>
+          <span><i style="background:#0284c7"></i> جديدة <b>${fmt(_new)}</b></span>
+          <span><i style="background:#e11d48"></i> ملغاة <b>${fmt(_canceled)}</b></span>
+        </div>
+      </div>
       <div style="display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;">
         ${_conv!==null?gaugeSVG(parseFloat(_conv)):''}
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;">
@@ -5376,7 +5444,7 @@ function renderOverviewCore(d){
 
 
 
-  document.getElementById('overview-content').innerHTML = statusStrip + focusPanel + kpis + conversionCard + ch + branchSummary + exportBar;
+  document.getElementById('overview-content').innerHTML = exportBar + statusStrip + kpis + conversionCard + ch + branchSummary;
 
   /* Animate counters */
   document.querySelectorAll('.kpi-value[data-raw]').forEach(el=>{
@@ -11539,6 +11607,30 @@ function renderPureHerb(){
 
 <script>
 /* VD DRAWER COMPONENT */
+/* ══════════════ TOPBAR BREADCRUMB (video-style: title = current view) ══════════════ */
+(function(){
+  function updateCrumb(){
+    var active=document.querySelector('.sb-nav-item.active span:not(.sb-ico)');
+    var name=active?active.textContent.trim():'نظرة عامة';
+    var h1=document.querySelector('.new-topbar .nb-title h1');
+    if(h1) h1.textContent=name;
+    var crumb=document.getElementById('vdCrumb');
+    if(!crumb){
+      var t=document.querySelector('.new-topbar .nb-title');
+      if(t){ crumb=document.createElement('div'); crumb.id='vdCrumb'; crumb.className='vd-crumb';
+        crumb.innerHTML='قطاع الصيدليات <span class="sep">›</span> الإدارة التجارية';
+        t.insertBefore(crumb, t.firstChild); }
+    }
+  }
+  document.addEventListener('click',function(e){ if(e.target.closest && e.target.closest('.sb-nav-item[data-tab]')) setTimeout(updateCrumb,40); }, false);
+  // wrap sidebarNav so the crumb updates for any navigation path
+  if(typeof window.sidebarNav==='function'){
+    var _orig=window.sidebarNav;
+    window.sidebarNav=function(){ var r=_orig.apply(this,arguments); setTimeout(updateCrumb,20); return r; };
+  }
+  if(document.readyState!=='loading') setTimeout(updateCrumb,300);
+  else document.addEventListener('DOMContentLoaded',function(){ setTimeout(updateCrumb,300); });
+})();
 /* ══════════════ SLIDE-OVER DETAIL DRAWER (video-style presentation) ══════════════ */
 (function(){
   function esc(s){ return (typeof escapeHtml==='function')? escapeHtml(String(s==null?'':s)) : String(s==null?'':s); }
