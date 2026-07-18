@@ -1401,6 +1401,7 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
     else if(k==='nostri'){ renderTargeted('pl'); stub.classList.add('active'); }
     else if(k==='pureherb'){ renderTargeted('ph'); stub.classList.add('active'); }
     else if(k==='expiry'){ renderNearExpiry(); stub.classList.add('active'); }
+    else if(k==='search'){ renderDrugSearch(); stub.classList.add('active'); }
     else { stub.innerHTML = stubHtml(TITLES[k]||''); stub.classList.add('active'); }
     document.getElementById('side').classList.remove('open');
   });
@@ -1826,6 +1827,40 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
       + '<td><span class="tag '+r.u.cls+'">'+r.u.label+'</span></td>'
       + '</tr>'
     ).join('') || '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--ink-3)">لا توجد أصناف مطابقة</td></tr>';
+  }
+
+  /* ── drug search ── */
+  let DS = null;
+  function renderDrugSearch(){
+    const d = activeData();
+    if(!d){
+      stub.innerHTML = '<div class="tbl-card"><div class="tbl-empty"><div class="stub-ico" style="margin:0 auto 14px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg></div><h3 style="color:var(--ink-2);font-size:17px;font-weight:600;margin:0 0 4px">لا توجد بيانات بعد</h3><p>افتح «نظرة عامة» وارفع ملف مجمّع للبحث في الأدوية.</p></div></div>';
+      return;
+    }
+    DS = { d, term:'' };
+    stub.innerHTML =
+      '<div class="tbl-card"><div class="tbl-head">'
+      + '<div class="tbl-title"><span class="dot"></span> بحث الأدوية — '+esc(curBranch().label)+'</div>'
+      + '<div class="search-in"><input id="dsInput" placeholder="🔎 اكتب اسم الدواء…" autocomplete="off"><span class="si-ico"></span></div></div>'
+      + '<div class="tbl-scroll"><table class="data"><thead><tr><th style="width:56px">#</th><th>الدواء</th><th>الكتابات</th><th>الأطباء</th><th>المرضى</th><th style="width:170px">النسبة</th></tr></thead><tbody id="dsBody"></tbody></table></div>'
+      + '<div class="note" style="margin:12px 14px 14px">اكتب جزء من اسم الدواء لتصفية القائمة، واضغط على أي صف لفتح ملف الدواء (أعلى الأطباء + التوزيع على الأقسام).</div></div>';
+    const inp = stub.querySelector('#dsInput');
+    inp.addEventListener('input', ()=>{ DS.term = inp.value.trim().toLowerCase(); paintDS(); });
+    paintDS();
+    setTimeout(()=>inp.focus(), 30);
+  }
+  function paintDS(){
+    const d = DS.d;
+    let list = d.drugs;
+    if(DS.term) list = list.filter(x=>String(x.name||'').toLowerCase().includes(DS.term));
+    list = list.slice(0, DS.term ? 500 : 60);
+    const max = d.drugs.length ? d.drugs[0].total : 1;
+    const body = stub.querySelector('#dsBody');
+    body.innerHTML = list.map((r,i)=>
+      '<tr data-name="'+escAttr(r.name)+'"><td>'+rankHtml(i)+'</td><td><strong>'+esc(r.name)+'</strong></td>'
+      + '<td class="num">'+fmt(r.total)+'</td><td class="num">'+fmt(r.doctorCount)+'</td><td class="num">'+fmt(r.patients)+'</td><td>'+barHtml(r.total,max)+'</td></tr>'
+    ).join('') || '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-3)">لا يوجد دواء مطابق</td></tr>';
+    body.querySelectorAll('tr[data-name]').forEach(tr=>tr.onclick=()=>{ const r=d.drugs.find(x=>x.name===tr.dataset.name); if(r) drawDrug(r,d); });
   }
 
   function drawProduct(s, kind){
