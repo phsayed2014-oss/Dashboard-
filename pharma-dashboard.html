@@ -259,12 +259,57 @@ button{ font-family:inherit; cursor:pointer; }
 .kpi{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow-card); padding:16px; }
 .kpi-label{ font-size:12px; font-weight:600; color:var(--ink-3); margin-bottom:6px; }
 .kpi-num{ font-family:var(--num); font-size:28px; font-weight:800; letter-spacing:-1px; color:var(--ink); }
-.kpi-k1 .kpi-num{ color:var(--accent); }
-.kpi-k6 .kpi-num{ color:var(--violet-fg); }
 .note{ font-size:12.5px; color:var(--ink-3); background:var(--slate-bg); border-radius:var(--r); padding:12px 14px; }
 
 .empty-badge.spin svg{ animation:spin 1s linear infinite; }
 @keyframes spin{ to{ transform:rotate(360deg); } }
+
+/* ---------- Part 3: overview analytics ---------- */
+.kpi{ position:relative; }
+.kpi-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+.kpi-ico{ width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center; background:var(--accent-soft); color:var(--accent); }
+.kpi-ico svg{ width:17px; height:17px; }
+.kpi-k1 .kpi-ico{ background:var(--accent-soft); color:var(--accent); }
+.kpi-k2 .kpi-ico{ background:var(--green-bg); color:var(--green-fg); }
+.kpi-k3 .kpi-ico{ background:var(--amber-bg); color:var(--amber-fg); }
+.kpi-k4 .kpi-ico{ background:#eaf6ff; color:#0284c7; }
+.kpi-k5 .kpi-ico{ background:var(--violet-bg); color:var(--violet-fg); }
+.kpi-k6 .kpi-ico{ background:var(--rose-bg); color:var(--rose-fg); }
+.kpi-foot{ font-size:11.5px; color:var(--ink-3); margin-top:3px; }
+
+.card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow-card); padding:18px; margin-bottom:16px; }
+.card-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+.card-title{ font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px; }
+.card-title .dot{ width:8px; height:8px; border-radius:50%; background:var(--accent); }
+
+/* segmented status bar */
+.seg{ display:flex; height:14px; border-radius:99px; overflow:hidden; gap:2px; background:var(--line-soft); }
+.seg > span{ display:block; height:100%; }
+.seg-legend{ display:flex; gap:18px; flex-wrap:wrap; margin-top:12px; }
+.seg-legend > span{ display:inline-flex; align-items:center; gap:7px; font-size:12.5px; color:var(--ink-2); font-weight:600; }
+.seg-legend i{ width:9px; height:9px; border-radius:3px; }
+.seg-legend b{ font-family:var(--num); font-weight:800; color:var(--ink); }
+
+/* status layout: tiles + gauge */
+.status-grid{ display:grid; grid-template-columns:1fr auto; gap:22px; align-items:center; margin-top:16px; }
+.status-tiles{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.tile{ border-radius:var(--r); padding:14px; text-align:center; border:1px solid transparent; }
+.tile .t-label{ font-size:11.5px; font-weight:700; margin-bottom:4px; }
+.tile .t-num{ font-family:var(--num); font-size:22px; font-weight:800; }
+.tile.green{ background:var(--green-bg); border-color:#cdeee0; } .tile.green .t-label,.tile.green .t-num{ color:var(--green-fg); }
+.tile.blue{ background:var(--blue-bg); border-color:#d8e6ff; } .tile.blue .t-label,.tile.blue .t-num{ color:var(--blue-fg); }
+.tile.rose{ background:var(--rose-bg); border-color:#fcd9de; } .tile.rose .t-label,.tile.rose .t-num{ color:var(--rose-fg); }
+
+.gauge{ width:130px; height:130px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; flex-shrink:0; }
+.gauge::after{ content:""; position:absolute; inset:14px; background:var(--surface); border-radius:50%; }
+.gauge-in{ position:relative; z-index:1; text-align:center; }
+.gauge-pct{ font-family:var(--num); font-size:26px; font-weight:800; color:var(--ink); line-height:1; }
+.gauge-lbl{ font-size:10.5px; color:var(--ink-3); margin-top:3px; }
+
+/* charts */
+.grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.chart-box{ position:relative; height:280px; }
+@media(max-width:820px){ .grid-2{ grid-template-columns:1fr; } .status-grid{ grid-template-columns:1fr; } .gauge{ margin:0 auto; } }
 
 /* generic placeholder for parts not built yet */
 .stub{
@@ -1255,31 +1300,111 @@ function findPureHerbProduct(service){
         + '</div>';
       wireDropzone();
     } else {
-      // real engine output — a live summary (full analytics come in Part 3)
-      const d = STATE[cur.key].data;
-      const pl = (d.rows||[]).filter(r=>findPrivateLabelProduct(r.service)).length;
-      const ph = (d.rows||[]).filter(r=>findPureHerbProduct(r.service)).length;
-      const kpis = [
-        ['إجمالي الكتابات', d.totalRows, 'k1'],
-        ['الأطباء', d.doctors.length, 'k2'],
-        ['الأدوية', d.drugs.length, 'k3'],
-        ['الأقسام', d.sections.length, 'k4'],
-        ['المرضى', d.totalPatients, 'k5'],
-        ['Private Label', pl, 'k6'],
-      ];
-      branchBody.innerHTML =
-        '<div class="loaded-head">'
-        + '<div class="loaded-title"><span class="ok-dot"></span> بيانات '+esc(cur.label)+' جاهزة</div>'
-        + '<div class="periods">'+periods.map((p,i)=>periodChip(p,i)).join('')+'</div>'
-        + '</div>'
-        + '<div class="kpi-grid">'+kpis.map(k=>
-            '<div class="kpi kpi-'+k[2]+'"><div class="kpi-label">'+k[0]+'</div><div class="kpi-num">'+fmt(k[1])+'</div></div>'
-          ).join('')+'</div>'
-        + '<div class="note">✓ الملف اتقري وتحلّل. التحليل الكامل (شارتات + جداول الأطباء/الأدوية + اللوحة الجانبية) في الأجزاء الجاية.'
-        + (ph? ' · منتجات PureHerb: '+fmt(ph)+' كتابة':'') + '</div>';
+      renderOverview(cur, periods);
       wirePeriodRemoval();
     }
   }
+
+  /* ── Part 3: full overview analytics ── */
+  const KICON = {
+    k1:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6" rx=".8"/><rect x="12" y="8" width="3" height="10" rx=".8"/><rect x="17" y="5" width="3" height="13" rx=".8"/></svg>',
+    k2:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><rect x="6" y="14" width="12" height="9" rx="6"/></svg>',
+    k3:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="8" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/></svg>',
+    k4:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 8 12 14 2 8"/><polyline points="2 14 12 20 22 14"/></svg>',
+    k5:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-3.3 3.6-6 8-6s8 2.7 8 6"/></svg>',
+    k6:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9.5 17 14 18.5 21 12 17 5.5 21 7 14 2 9.5 9 9"/></svg>'
+  };
+  function statusCounts(d){
+    const sc = d.statusCounts || {};
+    const g = re => Object.keys(sc).filter(k=>re.test(k)).reduce((s,k)=>s+sc[k],0);
+    return { closed:g(/clos|disp|صرف/i), canceled:g(/canc|ملغ/i), open:g(/new|open|pend|جديد|معلّق/i) };
+  }
+  function renderOverview(cur, periods){
+    const d = STATE[cur.key].data;
+    const pl = (d.rows||[]).filter(r=>findPrivateLabelProduct(r.service)).length;
+    const st = statusCounts(d);
+    const decided = st.closed + st.canceled;
+    const rate = decided>0 ? Math.round(st.closed/decided*100) : 0;
+    const gColor = rate>=80 ? 'var(--green-fg)' : rate>=60 ? 'var(--amber-fg)' : 'var(--rose-fg)';
+    const kpis = [
+      ['إجمالي الكتابات', d.totalRows, 'k1', cur.label],
+      ['الأطباء', d.doctors.length, 'k2', 'كتبوا وصفات'],
+      ['الأدوية', d.drugs.length, 'k3', 'صنف مختلف'],
+      ['الأقسام', d.sections.length, 'k4', 'قسم / تخصص'],
+      ['المرضى', d.totalPatients, 'k5', 'مريض فريد'],
+      ['Private Label', pl, 'k6', 'كتابة PL'],
+    ];
+    branchBody.innerHTML =
+      '<div class="loaded-head">'
+      + '<div class="loaded-title"><span class="ok-dot"></span> نظرة عامة — '+esc(cur.label)+'</div>'
+      + '<div class="periods">'+periods.map((p,i)=>periodChip(p,i)).join('')+'</div></div>'
+      + '<div class="kpi-grid">'+kpis.map(k=>
+          '<div class="kpi kpi-'+k[2]+'"><div class="kpi-head"><div class="kpi-label">'+k[0]+'</div>'
+          + '<div class="kpi-ico">'+KICON[k[2]]+'</div></div>'
+          + '<div class="kpi-num">'+fmt(k[1])+'</div><div class="kpi-foot">'+esc(k[3])+'</div></div>'
+        ).join('')+'</div>'
+      // status card
+      + '<div class="card"><div class="card-head"><div class="card-title"><span class="dot"></span> حالة الوصفات ومعدل الصرف</div></div>'
+      + '<div class="seg">'
+        + (st.closed? '<span style="flex:'+st.closed+';background:#0f9d58"></span>':'')
+        + (st.open? '<span style="flex:'+st.open+';background:#0284c7"></span>':'')
+        + (st.canceled? '<span style="flex:'+st.canceled+';background:#e11d48"></span>':'')
+      + '</div>'
+      + '<div class="seg-legend"><span><i style="background:#0f9d58"></i> صُرفت <b>'+fmt(st.closed)+'</b></span>'
+        + '<span><i style="background:#0284c7"></i> جديدة/معلّقة <b>'+fmt(st.open)+'</b></span>'
+        + '<span><i style="background:#e11d48"></i> ملغاة <b>'+fmt(st.canceled)+'</b></span></div>'
+      + '<div class="status-grid"><div class="status-tiles">'
+        + '<div class="tile green"><div class="t-label">✓ صُرفت</div><div class="t-num">'+fmt(st.closed)+'</div></div>'
+        + '<div class="tile blue"><div class="t-label">جديدة/معلّقة</div><div class="t-num">'+fmt(st.open)+'</div></div>'
+        + '<div class="tile rose"><div class="t-label">✕ ملغاة</div><div class="t-num">'+fmt(st.canceled)+'</div></div>'
+      + '</div>'
+      + '<div class="gauge" style="background:conic-gradient('+gColor+' '+rate+'%, var(--line-soft) 0)"><div class="gauge-in"><div class="gauge-pct">'+rate+'%</div><div class="gauge-lbl">معدل الصرف</div></div></div>'
+      + '</div></div>'
+      // charts
+      + '<div class="grid-2">'
+      + '<div class="card"><div class="card-head"><div class="card-title"><span class="dot"></span> أعلى 10 أطباء</div></div><div class="chart-box"><canvas id="chDocs"></canvas></div></div>'
+      + '<div class="card"><div class="card-head"><div class="card-title"><span class="dot"></span> أعلى 10 أدوية</div></div><div class="chart-box"><canvas id="chDrugs"></canvas></div></div>'
+      + '</div><div class="grid-2">'
+      + '<div class="card"><div class="card-head"><div class="card-title"><span class="dot"></span> توزيع الأقسام</div></div><div class="chart-box"><canvas id="chSecs"></canvas></div></div>'
+      + '<div class="card"><div class="card-head"><div class="card-title"><span class="dot"></span> توزيع الحالات</div></div><div class="chart-box"><canvas id="chStatus"></canvas></div></div>'
+      + '</div>';
+    drawCharts(d, st);
+  }
+
+  /* ── chart helpers (Chart.js) ── */
+  const CH = {};
+  if(window.Chart){ Chart.defaults.font.family='IBM Plex Sans Arabic'; Chart.defaults.color='#5b6472'; }
+  function destroy(id){ if(CH[id]){ CH[id].destroy(); delete CH[id]; } }
+  function hBar(id, items, color){
+    const el=document.getElementById(id); if(!el||!window.Chart) return; destroy(id);
+    CH[id]=new Chart(el,{ type:'bar',
+      data:{ labels:items.map(x=>x.label), datasets:[{ data:items.map(x=>x.v), backgroundColor:color, borderRadius:6, barThickness:'flex', maxBarThickness:22 }] },
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1b1e23', padding:10, cornerRadius:8, displayColors:false } },
+        scales:{ x:{ grid:{ color:'#f0f2f5' }, border:{display:false}, ticks:{ font:{size:11} } },
+                 y:{ grid:{ display:false }, border:{display:false}, ticks:{ font:{size:12}, autoSkip:false } } } }
+    });
+  }
+  function doughnut(id, labels, data, colors){
+    const el=document.getElementById(id); if(!el||!window.Chart) return; destroy(id);
+    CH[id]=new Chart(el,{ type:'doughnut',
+      data:{ labels, datasets:[{ data, backgroundColor:colors, borderWidth:2, borderColor:'#fff', hoverOffset:6 }] },
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'62%',
+        plugins:{ legend:{ position:'right', labels:{ boxWidth:10, boxHeight:10, usePointStyle:true, font:{size:11.5}, padding:12 } },
+                  tooltip:{ backgroundColor:'#1b1e23', padding:10, cornerRadius:8 } } }
+    });
+  }
+  const PALETTE=['#0d9488','#14b8a6','#0284c7','#38bdf8','#c2790b','#f59e0b','#e11d48','#f87171','#7c3aed','#a78bfa','#0f9d58','#4ade80','#334155','#94a3b8','#65a30d'];
+  function drawCharts(d, st){
+    const topDocs=d.doctors.slice(0,10).map(x=>({label:trunc(x.name,20), v:x.total}));
+    const topDrugs=d.drugs.slice(0,10).map(x=>({label:trunc(x.name,22), v:x.total}));
+    hBar('chDocs', topDocs, '#0d9488');
+    hBar('chDrugs', topDrugs, '#14b8a6');
+    const secs=d.sections.slice(0,8);
+    doughnut('chSecs', secs.map(s=>trunc(s.name,16)), secs.map(s=>s.total), PALETTE);
+    doughnut('chStatus', ['صُرفت','جديدة/معلّقة','ملغاة'], [st.closed, st.open, st.canceled], ['#0f9d58','#0284c7','#e11d48']);
+  }
+  function trunc(s,n){ s=String(s||''); return s.length>n ? s.slice(0,n)+'…' : s; }
 
   function periodChip(p,i){
     return '<span class="period-chip"><span class="pc-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg></span>'
