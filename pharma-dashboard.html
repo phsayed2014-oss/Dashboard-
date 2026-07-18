@@ -26,10 +26,10 @@
   --line:#eceef1;
   --line-soft:#f3f4f6;
 
-  /* ink */
-  --ink:#1b1e23;
-  --ink-2:#5b6472;
-  --ink-3:#98a1b0;
+  /* ink — slightly darker for clearer text */
+  --ink:#14171c;
+  --ink-2:#48515e;
+  --ink-3:#828d9d;
 
   /* brand accent — teal */
   --accent:#0d9488;
@@ -63,8 +63,8 @@
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
 body{
-  margin:0; background:var(--bg); color:var(--ink);
-  font-family:var(--font); font-size:14px; line-height:1.6;
+  margin:0; background:transparent; color:var(--ink);       /* شفافة خالص */
+  font-family:var(--font); font-size:14.5px; font-weight:450; line-height:1.6;
   -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
 }
 button{ font-family:inherit; cursor:pointer; }
@@ -172,7 +172,7 @@ button{ font-family:inherit; cursor:pointer; }
 .btn-primary:hover{ background:var(--accent-600); }
 
 /* content scroll region */
-.content{ flex:1; overflow-y:auto; background:var(--bg); }
+.content{ flex:1; overflow-y:auto; background:transparent; }
 .content-in{ max-width:1180px; margin:0 auto; padding:24px; }
 
 /* panels */
