@@ -1402,6 +1402,8 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
     else if(k==='pureherb'){ renderTargeted('ph'); stub.classList.add('active'); }
     else if(k==='expiry'){ renderNearExpiry(); stub.classList.add('active'); }
     else if(k==='search'){ renderDrugSearch(); stub.classList.add('active'); }
+    else if(k==='pareto'){ renderPareto(); stub.classList.add('active'); }
+    else if(k==='loyalty'){ renderLoyalty(); stub.classList.add('active'); }
     else { stub.innerHTML = stubHtml(TITLES[k]||''); stub.classList.add('active'); }
     document.getElementById('side').classList.remove('open');
   });
@@ -1827,6 +1829,96 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
       + '<td><span class="tag '+r.u.cls+'">'+r.u.label+'</span></td>'
       + '</tr>'
     ).join('') || '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--ink-3)">لا توجد أصناف مطابقة</td></tr>';
+  }
+
+  /* ── shared: empty prompt + kpi card ── */
+  function analysisEmpty(title){
+    stub.innerHTML = '<div class="tbl-card"><div class="tbl-empty"><div class="stub-ico" style="margin:0 auto 14px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="m7 8 5-5 5 5"/><path d="M4 21h16"/></svg></div><h3 style="color:var(--ink-2);font-size:17px;font-weight:600;margin:0 0 4px">لا توجد بيانات بعد</h3><p>افتح «نظرة عامة» وارفع ملف مجمّع لعرض '+esc(title)+'.</p></div></div>';
+  }
+  function kpiCard(label, val, cls, foot){
+    return '<div class="kpi kpi-'+cls+'"><div class="kpi-head"><div class="kpi-label">'+label+'</div><div class="kpi-ico">'+(KICON[cls]||'')+'</div></div>'
+      + '<div class="kpi-num">'+(typeof val==='number'?fmt(val):val)+'</div>'+(foot?'<div class="kpi-foot">'+esc(foot)+'</div>':'')+'</div>';
+  }
+
+  /* ── Pareto 80/20 ── */
+  function renderPareto(){
+    const d = activeData(); if(!d){ analysisEmpty('باريتو 80/20'); return; }
+    const total = d.totalRows;
+    const docs = d.doctors.slice().sort((a,b)=>b.total-a.total);
+    let cum=0; const rows = docs.map(x=>{ cum+=x.total; return {name:x.name, total:x.total, cumPct: total?cum/total*100:0}; });
+    const idx80 = rows.findIndex(r=>r.cumPct>=80);
+    const n80 = idx80<0 ? rows.length : idx80+1;
+    const pctDocs = rows.length ? (n80/rows.length*100) : 0;
+    stub.innerHTML =
+      '<div class="kpi-grid">'
+      + kpiCard('قاعدة 80/20', pctDocs.toFixed(0)+'%', 'k2', 'من الأطباء يكتبون 80% من الوصفات')
+      + kpiCard('أطباء الـ 80%', n80, 'k1', 'طبيب يمثّلون 80% من الكتابات')
+      + kpiCard('إجمالي الأطباء', rows.length, 'k4', '')
+      + kpiCard('إجمالي الوصفات', total, 'k3', esc(curBranch().label))
+      + '</div>'
+      + '<div class="card"><div class="card-head"><div class="card-title"><span class="dot"></span> منحنى باريتو — أعلى 30 طبيب (كتابات + تراكمي %)</div></div><div class="chart-box" style="height:340px"><canvas id="chPareto"></canvas></div></div>';
+    drawPareto(rows.slice(0,30), n80);
+  }
+  function drawPareto(rows, n80){
+    const el=document.getElementById('chPareto'); if(!el||!window.Chart) return; destroy('chPareto');
+    CH['chPareto']=new Chart(el,{ data:{ labels:rows.map(r=>trunc(r.name,14)),
+      datasets:[
+        { type:'bar', label:'كتابات', data:rows.map(r=>r.total), backgroundColor:rows.map((r,i)=>i<n80?'#0d9488':'#cbd5d8'), borderRadius:5, yAxisID:'y', order:2 },
+        { type:'line', label:'تراكمي %', data:rows.map(r=>r.cumPct), borderColor:'#c2790b', backgroundColor:'rgba(194,121,11,.08)', borderWidth:2, pointRadius:0, tension:.35, yAxisID:'y2', order:1 }
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ labels:{ usePointStyle:true, boxWidth:9, font:{size:11.5} } }, tooltip:{ backgroundColor:'#1b1e23', padding:10, cornerRadius:8 } },
+        scales:{ x:{ grid:{display:false}, border:{display:false}, ticks:{ font:{size:10}, maxRotation:60, minRotation:45 } },
+          y:{ grid:{color:'#f0f2f5'}, border:{display:false}, ticks:{font:{size:10}} },
+          y2:{ position:'left', min:0, max:100, grid:{display:false}, border:{display:false}, ticks:{ callback:v=>v+'%', font:{size:10} } } } }
+    });
+  }
+
+  /* ── doctor loyalty (Private Label tiers) ── */
+  const LOY = { loyal:{l:'🏆 مخلص',c:'green'}, regular:{l:'✅ منتظم',c:'teal'}, developing:{l:'🔄 يحتاج تطوير',c:'amber'}, none:{l:'⚠ لم يكتب PL',c:'rose'} };
+  function renderLoyalty(){
+    const d = activeData(); if(!d){ analysisEmpty('ولاء الأطباء'); return; }
+    const docs = d.doctors.map(doc=>{
+      let pl=0, plItems=0;
+      (doc.drugs||[]).forEach(dr=>{ if(findPrivateLabelProduct(dr.name)){ pl+=dr.count; plItems++; } });
+      const rate = doc.total ? pl/doc.total*100 : 0;
+      let tier;
+      if(pl>=5 && rate>=20) tier='loyal';
+      else if(pl>0 && (rate>=8 || plItems>=3)) tier='regular';
+      else if(pl>0) tier='developing';
+      else tier='none';
+      return { name:doc.name, section:doc.section, total:doc.total, pl, rate, tier };
+    });
+    const buckets = { loyal:0, regular:0, developing:0, none:0 };
+    docs.forEach(x=>buckets[x.tier]++);
+    const ranked = docs.slice().sort((a,b)=> b.pl-a.pl || b.rate-a.rate);
+    LY = { ranked, filter:'all' };
+    stub.innerHTML =
+      '<div class="ne-stats">'
+      + '<div class="ne-stat green-s"><div class="l">🏆 مخلص</div><div class="n">'+fmt(buckets.loyal)+'</div></div>'
+      + '<div class="ne-stat watch"><div class="l">✅ منتظم</div><div class="n">'+fmt(buckets.regular)+'</div></div>'
+      + '<div class="ne-stat warn"><div class="l">🔄 يحتاج تطوير</div><div class="n">'+fmt(buckets.developing)+'</div></div>'
+      + '<div class="ne-stat crit"><div class="l">⚠ لم يكتب PL</div><div class="n">'+fmt(buckets.none)+'</div></div>'
+      + '</div>'
+      + '<div class="tbl-card"><div class="tbl-head">'
+      + '<div class="chips" id="lyChips"><button class="chip active" data-f="all">الكل</button><button class="chip" data-f="loyal">مخلص</button><button class="chip" data-f="regular">منتظم</button><button class="chip" data-f="developing">يحتاج تطوير</button><button class="chip" data-f="none">لم يكتب</button></div>'
+      + '<div class="tbl-title" style="font-size:13px;color:var(--ink-3)">'+esc(curBranch().label)+'</div></div>'
+      + '<div class="tbl-scroll"><table class="data"><thead><tr><th style="width:56px">#</th><th>الطبيب</th><th>القسم</th><th>الكتابات</th><th>كتابات PL</th><th>نسبة PL</th><th>التصنيف</th></tr></thead><tbody id="lyBody"></tbody></table></div></div>';
+    stub.querySelectorAll('#lyChips .chip').forEach(c=>c.onclick=()=>{ stub.querySelectorAll('#lyChips .chip').forEach(x=>x.classList.remove('active')); c.classList.add('active'); LY.filter=c.dataset.f; paintLY(); });
+    paintLY();
+  }
+  let LY = null;
+  function paintLY(){
+    let list = LY.ranked;
+    if(LY.filter!=='all') list = list.filter(x=>x.tier===LY.filter);
+    const body = stub.querySelector('#lyBody');
+    body.innerHTML = list.map((r,i)=>{ const t=LOY[r.tier];
+      return '<tr data-name="'+escAttr(r.name)+'"><td>'+rankHtml(i)+'</td><td><strong>'+esc(r.name)+'</strong></td>'
+        + '<td><span class="tag teal">'+esc(r.section||'—')+'</span></td>'
+        + '<td class="num">'+fmt(r.total)+'</td><td class="num">'+fmt(r.pl)+'</td>'
+        + '<td class="num">'+r.rate.toFixed(1)+'%</td><td><span class="tag '+t.c+'">'+t.l+'</span></td></tr>';
+    }).join('') || '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--ink-3)">لا يوجد</td></tr>';
+    body.querySelectorAll('tr[data-name]').forEach(tr=>tr.onclick=()=>openRecord('doctors', tr.dataset.name));
   }
 
   /* ── drug search ── */
