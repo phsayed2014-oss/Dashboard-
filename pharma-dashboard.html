@@ -418,6 +418,7 @@ table.data tbody tr:hover{ background:var(--accent-soft); }
 .ne-stat.crit{ background:var(--rose-bg); border-color:#fcd9de; } .ne-stat.crit .l,.ne-stat.crit .n{ color:var(--rose-fg); }
 .ne-stat.warn{ background:var(--amber-bg); border-color:#fbe7c8; } .ne-stat.warn .l,.ne-stat.warn .n{ color:var(--amber-fg); }
 .ne-stat.watch{ background:var(--blue-bg); border-color:#d8e6ff; } .ne-stat.watch .l,.ne-stat.watch .n{ color:var(--blue-fg); }
+.ne-stat.green-s{ background:var(--green-bg); border-color:#cdeee0; } .ne-stat.green-s .l,.ne-stat.green-s .n{ color:var(--green-fg); }
 .ne-stat .l{ color:var(--ink-3); } .ne-stat .n{ color:var(--ink); }
 .chips{ display:flex; gap:8px; flex-wrap:wrap; }
 .chip{ height:32px; padding:0 13px; border-radius:99px; border:1px solid var(--line); background:#fff; color:var(--ink-2); font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px; }
@@ -1768,36 +1769,38 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
     if(typeof NEAR_EXPIRY_DATA==='undefined'){ stub.innerHTML='<div class="tbl-card"><div class="tbl-empty">لا توجد بيانات مخزون.</div></div>'; return; }
     const today = new Date(); today.setHours(0,0,0,0);
     // enrich + EXCLUDE already-expired items (per request)
+    const cutoff = new Date(today.getFullYear(), today.getMonth()+1, today.getDate()); // today + شهر
+    const cutoffStr = cutoff.toLocaleDateString('ar-EG-u-nu-latn',{day:'numeric',month:'long',year:'numeric'});
     const items = NEAR_EXPIRY_DATA.map(r=>{
       const d = dtParseLocal(r.expiry);
       const days = Math.ceil((d - today)/(1000*60*60*24));
       return {...r, days, u:neUrgency(days)};
-    }).filter(r=>r.days >= 0)                    // ← الأصناف المنتهية فعلاً مستبعدة
+    }).filter(r=> dtParseLocal(r.expiry) >= cutoff)   // ← استبعاد كل ما يتبقّى له أقل من شهر
       .sort((a,b)=>a.days-b.days);
-    const crit = items.filter(i=>i.u.lvl==='crit');
     const warn = items.filter(i=>i.u.lvl==='warn');
     const watch= items.filter(i=>i.u.lvl==='watch');
+    const safe = items.filter(i=>i.u.lvl==='ok');
     const totalValue = items.reduce((s,i)=>s+(i.total||0),0);
     NE = { items, filter:'all', term:'' };
     stub.innerHTML =
       '<div class="ne-stats">'
-      + '<div class="ne-stat crit"><div class="l">حرج (≤ شهر)</div><div class="n">'+fmt(crit.length)+'</div></div>'
       + '<div class="ne-stat warn"><div class="l">تحذير (1-3 شهور)</div><div class="n">'+fmt(warn.length)+'</div></div>'
       + '<div class="ne-stat watch"><div class="l">مراقبة (3-6 شهور)</div><div class="n">'+fmt(watch.length)+'</div></div>'
+      + '<div class="ne-stat green-s"><div class="l">آمن (> 6 شهور)</div><div class="n">'+fmt(safe.length)+'</div></div>'
       + '<div class="ne-stat"><div class="l">إجمالي الأصناف</div><div class="n">'+fmt(items.length)+'</div></div>'
       + '<div class="ne-stat"><div class="l">القيمة المعرّضة</div><div class="n">'+fmt(Math.round(totalValue))+'</div></div>'
       + '</div>'
       + '<div class="tbl-card"><div class="tbl-head">'
       + '<div class="chips" id="neChips">'
       + '<button class="chip active" data-f="all">الكل</button>'
-      + '<button class="chip" data-f="crit">حرج</button>'
       + '<button class="chip" data-f="warn">تحذير</button>'
-      + '<button class="chip" data-f="watch">مراقبة</button></div>'
+      + '<button class="chip" data-f="watch">مراقبة</button>'
+      + '<button class="chip" data-f="ok">آمن</button></div>'
       + '<div class="search-in"><input placeholder="🔎 ابحث بالصنف…"><span class="si-ico"></span></div></div>'
       + '<div class="tbl-scroll"><table class="data"><thead><tr>'
       + '<th style="width:56px">#</th><th>الصنف</th><th>المجمّع</th><th>تاريخ الانتهاء</th><th>المتبقّي</th><th>الكمية</th><th>القيمة</th><th>الحالة</th>'
       + '</tr></thead><tbody id="neBody"></tbody></table></div>'
-      + '<div class="note" style="margin:12px 14px 14px">✓ تم استبعاد الأصناف المنتهية فعلاً — يُعرض فقط ما لم ينتهِ بعد.</div></div>';
+      + '<div class="note" style="margin:12px 14px 14px">✓ تم استبعاد كل صنف يتبقّى له أقل من شهر (تاريخه قبل '+esc(cutoffStr)+') — يُعرض فقط ما يتبقّى له شهر أو أكثر.</div></div>';
     const inp = stub.querySelector('.search-in input');
     inp.addEventListener('input', ()=>{ NE.term = inp.value.trim().toLowerCase(); paintNE(); });
     stub.querySelectorAll('#neChips .chip').forEach(c=>c.onclick=()=>{
