@@ -177,17 +177,65 @@ button{ font-family:inherit; cursor:pointer; }
 .panel.active{ display:block; }
 @keyframes rise{ from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:none;} }
 
-/* ---------- empty state ---------- */
-.empty{
-  max-width:560px; margin:6vh auto; text-align:center;
+.formats{ display:flex; gap:8px; justify-content:center; margin-top:18px; }
+.fmt{ font-size:11.5px; font-weight:600; color:var(--ink-2); background:var(--slate-bg); border-radius:99px; padding:4px 12px; }
+
+/* ---------- collaboration selector bar ---------- */
+.collab-bar{
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  box-shadow:var(--shadow-card); padding:12px 14px; margin-bottom:18px;
 }
-.empty-badge{
-  width:64px; height:64px; border-radius:18px; margin:0 auto 18px;
-  background:var(--accent-soft); color:var(--accent);
-  display:flex; align-items:center; justify-content:center;
+.collab-label{ font-size:12.5px; font-weight:600; color:var(--ink-3); }
+.collab-select{ position:relative; }
+.collab-trigger{
+  display:inline-flex; align-items:center; gap:9px; height:40px; padding:0 12px;
+  border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink);
+  font-size:14px; font-weight:700; min-width:190px;
 }
-.empty h2{ font-size:22px; font-weight:700; margin:0 0 6px; }
-.empty p{ color:var(--ink-2); margin:0 0 22px; }
+.collab-trigger:hover{ background:var(--slate-bg); }
+.collab-trigger[aria-expanded="true"]{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-ring); }
+.collab-dot{ width:9px; height:9px; border-radius:50%; background:var(--ink-3); flex-shrink:0; }
+.collab-dot.on{ background:var(--green-fg); box-shadow:0 0 0 3px rgba(15,157,88,.15); }
+.collab-chev{ margin-inline-start:auto; opacity:.6; }
+.collab-menu{
+  position:absolute; inset-block-start:calc(100% + 6px); inset-inline-start:0; z-index:30;
+  min-width:240px; background:#fff; border:1px solid var(--line); border-radius:12px;
+  box-shadow:var(--shadow-pop); padding:6px; display:none;
+}
+.collab-menu.open{ display:block; }
+.collab-opt{
+  display:flex; align-items:center; gap:10px; width:100%; padding:10px 10px;
+  border:0; background:transparent; border-radius:9px; font-size:13.5px; font-weight:600; color:var(--ink-2); text-align:start;
+}
+.collab-opt:hover{ background:var(--slate-bg); color:var(--ink); }
+.collab-opt.active{ background:var(--accent-soft); color:var(--accent); }
+.collab-opt .co-dot{ width:8px; height:8px; border-radius:50%; background:var(--ink-3); flex-shrink:0; }
+.collab-opt .co-dot.on{ background:var(--green-fg); }
+.collab-opt .co-meta{ margin-inline-start:auto; font-size:11px; font-weight:600; color:var(--ink-3); }
+.collab-opt .co-meta.on{ color:var(--green-fg); }
+.collab-actions{ display:flex; gap:8px; margin-inline-start:auto; }
+
+/* selected-branch empty prompt */
+.branch-empty{ max-width:560px; margin:5vh auto; text-align:center; }
+.branch-empty .empty-badge{
+  width:60px; height:60px; border-radius:16px; margin:0 auto 16px;
+  background:var(--accent-soft); color:var(--accent); display:flex; align-items:center; justify-content:center;
+}
+.branch-empty h3{ font-size:19px; font-weight:700; margin:0 0 6px; }
+.branch-empty p{ color:var(--ink-2); margin:0 0 20px; font-size:13.5px; }
+
+/* period chips (comparison) */
+.periods{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:16px; }
+.period-chip{
+  display:inline-flex; align-items:center; gap:8px; padding:7px 12px;
+  border:1px solid var(--line); border-radius:99px; background:#fff; font-size:12px;
+}
+.period-chip .pc-ico{ color:var(--accent); flex-shrink:0; display:inline-flex; }
+.period-chip .pc-name{ font-weight:600; color:var(--ink); }
+.period-chip .pc-x{ width:20px; height:20px; border-radius:6px; border:0; background:var(--slate-bg); color:var(--ink-3); display:flex; align-items:center; justify-content:center; }
+.period-chip .pc-x:hover{ background:var(--rose-bg); color:var(--rose-fg); }
+
 .dropzone{
   border:1.5px dashed #cfd6dd; border-radius:var(--r-lg); background:#fbfcfd;
   padding:34px 24px; transition:border-color .2s, background .2s;
@@ -195,8 +243,8 @@ button{ font-family:inherit; cursor:pointer; }
 .dropzone.drag{ border-color:var(--accent); background:var(--accent-soft); }
 .dropzone .dz-title{ font-weight:600; color:var(--ink); margin-bottom:4px; }
 .dropzone .dz-sub{ font-size:12.5px; color:var(--ink-3); margin-bottom:16px; }
-.formats{ display:flex; gap:8px; justify-content:center; margin-top:18px; }
-.fmt{ font-size:11.5px; font-weight:600; color:var(--ink-2); background:var(--slate-bg); border-radius:99px; padding:4px 12px; }
+
+@media(max-width:820px){ .collab-actions{ margin-inline-start:0; width:100%; } }
 
 /* generic placeholder for parts not built yet */
 .stub{
@@ -342,23 +390,32 @@ button{ font-family:inherit; cursor:pointer; }
     <div class="content">
       <div class="content-in">
 
-        <!-- OVERVIEW (empty state for now) -->
+        <!-- OVERVIEW -->
         <section class="panel active" data-panel="overview">
-          <div class="empty">
-            <div class="empty-badge">
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6" rx=".8"/><rect x="12" y="8" width="3" height="10" rx=".8"/><rect x="17" y="5" width="3" height="13" rx=".8"/></svg>
+
+          <!-- collaboration selector bar -->
+          <div class="collab-bar">
+            <span class="collab-label">المجمّع:</span>
+            <div class="collab-select" id="collabSelect">
+              <button class="collab-trigger" id="collabTrigger" aria-haspopup="listbox" aria-expanded="false">
+                <span class="collab-dot" id="collabDot"></span>
+                <span id="collabCurrent">التعاون الأول</span>
+                <svg class="collab-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="collab-menu" id="collabMenu" role="listbox"></div>
             </div>
-            <h2>ابدأ بتحليل وصفاتك</h2>
-            <p>ارفع ملف الوصفات (تقرير النظام) وسنبني لك التحليل كاملاً — الأطباء، الأدوية، الأقسام، ومنتجات Private Label و PureHerb.</p>
-            <div class="dropzone" id="dropzone">
-              <div class="dz-title">اسحب الملف هنا أو اضغط للاختيار</div>
-              <div class="dz-sub">يدعم تقارير PDF و ملفات Excel / CSV</div>
-              <button class="btn btn-primary" id="dzBtn">اختيار ملف</button>
-              <div class="formats">
-                <span class="fmt">PDF</span><span class="fmt">XLSX</span><span class="fmt">CSV</span>
-              </div>
+
+            <div class="collab-actions">
+              <button class="btn btn-primary" id="branchUpload">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="m7 8 5-5 5 5"/><path d="M4 21h16"/></svg>
+                <span id="branchUploadLabel">رفع ملف التعاون الأول</span>
+              </button>
+              <button class="btn" id="branchAddPeriod" title="أضف فترة ثانية لهذا المجمّع للمقارنة">+ فترة</button>
             </div>
           </div>
+
+          <!-- selected branch body: empty prompt OR analytics -->
+          <div id="branchBody"></div>
         </section>
 
         <!-- placeholder panels (built in later parts) -->
@@ -402,24 +459,119 @@ button{ font-family:inherit; cursor:pointer; }
     document.getElementById('side').classList.remove('open');
   });
 
-  // upload wiring (engine comes in Part 2) — for now just acknowledges the file
+  /* ── collaborations (branches) state ── */
+  const BRANCHES = [
+    { key:'T1', label:'التعاون الأول' },
+    { key:'T2', label:'التعاون الثاني' },
+    { key:'T3', label:'التعاون الثالث' }
+  ];
+  // per-branch: { periods: [{ name }] }  — data payload lands in Part 2 (engine)
+  const STATE = { T1:{periods:[]}, T2:{periods:[]}, T3:{periods:[]}, active:'T1' };
+
   const fileInput = document.getElementById('fileInput');
-  const dz = document.getElementById('dropzone');
-  function pickFile(){ fileInput.click(); }
-  document.getElementById('uploadBtn').onclick = pickFile;
-  document.getElementById('dzBtn').onclick = pickFile;
-  dz.addEventListener('click', e=>{ if(e.target.id!=='dzBtn') pickFile(); });
-  ['dragover','dragenter'].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.add('drag'); }));
-  ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.remove('drag'); }));
-  dz.addEventListener('drop', e=>{ const f=e.dataTransfer.files[0]; if(f) onFile(f); });
-  fileInput.addEventListener('change', e=>{ const f=e.target.files[0]; if(f) onFile(f); });
-  function onFile(f){
-    // Part 2 will parse & aggregate. For now, confirm the shell received it.
-    alert('تم استلام الملف: ' + f.name + '\n(محرّك التحليل سنركّبه في الجزء القادم)');
+  const trigger = document.getElementById('collabTrigger');
+  const menu = document.getElementById('collabMenu');
+  const branchBody = document.getElementById('branchBody');
+
+  function curBranch(){ return BRANCHES.find(b=>b.key===STATE.active); }
+  function isLoaded(k){ return STATE[k].periods.length>0; }
+
+  function renderSelector(){
+    const cur = curBranch();
+    document.getElementById('collabCurrent').textContent = cur.label;
+    document.getElementById('collabDot').className = 'collab-dot' + (isLoaded(cur.key)?' on':'');
+    document.getElementById('branchUploadLabel').textContent = 'رفع ملف ' + cur.label;
+    menu.innerHTML = BRANCHES.map(b=>{
+      const on = isLoaded(b.key);
+      return '<button class="collab-opt'+(b.key===STATE.active?' active':'')+'" data-b="'+b.key+'">'
+        + '<span class="co-dot'+(on?' on':'')+'"></span>'+b.label
+        + '<span class="co-meta'+(on?' on':'')+'">'+(on?('✓ '+STATE[b.key].periods.length+' ملف'):'لا يوجد')+'</span>'
+        + '</button>';
+    }).join('');
   }
+
+  function renderBranchBody(){
+    const cur = curBranch();
+    const periods = STATE[cur.key].periods;
+    if(!periods.length){
+      branchBody.innerHTML =
+        '<div class="branch-empty">'
+        + '<div class="empty-badge"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="m7 8 5-5 5 5"/><path d="M4 21h16"/></svg></div>'
+        + '<h3>ارفع ملف '+cur.label+'</h3>'
+        + '<p>اختر تقرير الوصفات لهذا المجمّع (PDF أو Excel) وسنعرض بياناته هنا. تقدر تضيف فترة ثانية للمقارنة.</p>'
+        + '<div class="dropzone" id="dz"><div class="dz-title">اسحب الملف هنا أو اضغط للاختيار</div>'
+        + '<div class="dz-sub">يدعم تقارير PDF و ملفات Excel / CSV</div>'
+        + '<button class="btn btn-primary" id="dzBtn">اختيار ملف</button>'
+        + '<div class="formats"><span class="fmt">PDF</span><span class="fmt">XLSX</span><span class="fmt">CSV</span></div></div>'
+        + '</div>';
+      wireDropzone();
+    } else {
+      // Part 3 renders analytics here. For now: confirm loaded + list periods.
+      branchBody.innerHTML =
+        '<div class="stub"><div class="stub-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>'
+        + '<h3>تم تحميل بيانات '+cur.label+'</h3>'
+        + '<p>التحليل الكامل (KPIs، الأطباء، الأدوية…) سنبنيه في الجزء القادم.</p>'
+        + '<div class="periods">'+periods.map((p,i)=>periodChip(p,i)).join('')+'</div></div>';
+      wirePeriodRemoval();
+    }
+  }
+
+  function periodChip(p,i){
+    return '<span class="period-chip"><span class="pc-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg></span>'
+      + '<span class="pc-name">'+esc(p.name)+'</span>'
+      + '<button class="pc-x" data-i="'+i+'" title="حذف">✕</button></span>';
+  }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  function wirePeriodRemoval(){
+    branchBody.querySelectorAll('.pc-x').forEach(x=>x.onclick=()=>{
+      STATE[STATE.active].periods.splice(+x.dataset.i,1);
+      renderSelector(); renderBranchBody(); updateCounts();
+    });
+  }
+
+  function wireDropzone(){
+    const dz = document.getElementById('dz');
+    document.getElementById('dzBtn').onclick = ()=>pickFile();
+    dz.addEventListener('click', e=>{ if(e.target.id!=='dzBtn') pickFile(); });
+    ['dragover','dragenter'].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.add('drag'); }));
+    ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.remove('drag'); }));
+    dz.addEventListener('drop', e=>{ const f=e.dataTransfer.files[0]; if(f) onFile(f); });
+  }
+
+  function pickFile(){ fileInput.value=''; fileInput.click(); }
+  fileInput.addEventListener('change', e=>{ const f=e.target.files[0]; if(f) onFile(f); });
+
+  function onFile(f){
+    // Part 2 (engine) will parse & aggregate here. For now register the file as a period.
+    STATE[STATE.active].periods.push({ name:f.name });
+    renderSelector(); renderBranchBody(); updateCounts();
+  }
+
+  function updateCounts(){
+    // placeholder until the engine computes real totals
+    const anyLoaded = BRANCHES.some(b=>isLoaded(b.key));
+    ['doctors','drugs','sections'].forEach(k=>{
+      const el = document.querySelector('.nav-item[data-k="'+k+'"] .count');
+      if(el) el.textContent = anyLoaded ? '—' : '0';
+    });
+  }
+
+  // selector open/close
+  trigger.onclick = (e)=>{ e.stopPropagation(); const open=menu.classList.toggle('open'); trigger.setAttribute('aria-expanded', open); };
+  menu.addEventListener('click', e=>{ const opt=e.target.closest('.collab-opt'); if(!opt) return; STATE.active=opt.dataset.b; menu.classList.remove('open'); trigger.setAttribute('aria-expanded','false'); renderSelector(); renderBranchBody(); });
+  document.addEventListener('click', ()=>{ menu.classList.remove('open'); trigger.setAttribute('aria-expanded','false'); });
+
+  // topbar buttons + add-period both target the active branch
+  document.getElementById('uploadBtn').onclick = ()=>pickFile();
+  document.getElementById('branchUpload').onclick = ()=>pickFile();
+  document.getElementById('branchAddPeriod').onclick = ()=>pickFile();
 
   // mobile menu
   document.getElementById('menuBtn').onclick = ()=> document.getElementById('side').classList.toggle('open');
+
+  // init
+  renderSelector(); renderBranchBody();
 })();
 </script>
 </body>
