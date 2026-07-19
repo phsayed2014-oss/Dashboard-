@@ -459,6 +459,13 @@ table.data tbody tr:hover{ background:var(--accent-soft); }
 .mc-f input:focus{ outline:none; border-color:var(--accent); }
 .mc-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
 @media(max-width:480px){ .mc-grid2{ grid-template-columns:1fr; } }
+/* period-comparison ordering banner */
+.cmp-order{ font-size:12.5px; font-weight:600; padding:10px 14px; border-radius:11px; margin-bottom:14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; line-height:1.7; }
+.cmp-order.ok{ background:#eaf7ef; color:#1e874b; border:1px solid #c9ecd6; }
+.cmp-order.warn{ background:#fff6e6; color:#a15c00; border:1px solid #f6e2b8; }
+.cmp-order b{ font-weight:800; }
+.cmp-swap{ margin-inline-start:auto; border:1px solid currentColor; background:transparent; color:inherit; font-family:inherit; font-weight:700; font-size:11.5px; padding:5px 11px; border-radius:8px; cursor:pointer; white-space:nowrap; }
+.cmp-swap:hover{ background:rgba(0,0,0,.06); }
 
 /* ---------- near-expiry ---------- */
 .ne-stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:16px; }
@@ -2302,20 +2309,46 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
       + '<div class="tbl-card"><div class="tbl-head"><div class="tbl-title"><span class="dot"></span> مقارنة المقاييس</div></div>'+tbl+'</div></div>';
     vBar('chCmpBr', rows.map(r=>r.label), rows.map(r=>r.m.writings));
   }
+  // detect a sortable date + human label from a period's file name
+  const MONTH_AR=['','يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  function periodInfo(name){
+    const s = (PharmaCore.periodDateScore ? PharmaCore.periodDateScore(name) : 0);   // year*100+month (labeled months, YYYY-MM, MM-YYYY…)
+    if(s){ const y=Math.floor(s/100), m=s%100; return { score:y*10000+m*100, sure:true, label:MONTH_AR[m]+' '+y }; }
+    const ymd = String(name).match(/(20\d{2})[.\-_/]?(0[1-9]|1[0-2])[.\-_/]?(0[1-9]|[12]\d|3[01])/); // YYYYMMDD (unambiguous)
+    if(ymd){ return { score:+ymd[1]*10000 + +ymd[2]*100 + +ymd[3], sure:true, label:ymd[1]+'-'+ymd[2]+'-'+ymd[3] }; }
+    return { score:0, sure:false, label:String(name).replace(/\.[^.]+$/,'').slice(0,24) };
+  }
+  let _cmpReverse = false;
   function renderComparePeriods(){
     const cur = curBranch(); const periods = (STATE[cur.key].periods||[]);
     if(periods.length<2){ stub.innerHTML = comparePrompt('مقارنة زمنية','أضف فترة ثانية لـ«'+cur.label+'» (زر «+ فترة» في النظرة العامة) لمقارنة التغيّر عبر الزمن.'); return; }
-    const list = periods.map((p,i)=>({ label:p.name.replace(/\.[^.]+$/,'').slice(0,22)||('فترة '+(i+1)), m:branchMetrics(p.data) }));
-    const first=list[0].m, last=list[list.length-1].m;
+    // order periods chronologically from the file name; fall back to upload order when undetectable
+    const scored = periods.map((p,i)=>{ const info=periodInfo(p.name); return { p, i, info }; });
+    const detected = scored.every(s=>s.info.sure) && (new Set(scored.map(s=>s.info.score)).size===scored.length);
+    let ordered = detected
+      ? scored.slice().sort((a,b)=>a.info.score-b.info.score)
+      : scored.slice().sort((a,b)=>a.i-b.i);
+    if(_cmpReverse) ordered = ordered.slice().reverse();
+    const list = ordered.map((s,idx)=>({ label:(s.info.label||('فترة '+(idx+1))), file:s.p.name, m:branchMetrics(s.p.data) }));
+    const first=list[0].m, last=list[list.length-1].m;   // first = الأقدم (الأساس) · last = الأحدث
     function chg(key){ const a=first[key],b=last[key]; if(!a) return {t:'—',c:'var(--ink-3)'}; const g=((b-a)/a*100); return {t:(g>=0?'▲ +':'▼ ')+g.toFixed(1)+'%', c:g>0?'var(--green-fg)':g<0?'var(--rose-fg)':'var(--ink-3)'}; }
     const cards = CMP_METRICS.slice(0,4).map((m,i)=>{ const c=chg(m[1]);
       return '<div class="kpi kpi-'+['k1','k2','k3','k6'][i]+'"><div class="kpi-head"><div class="kpi-label">'+m[0]+'</div><div class="kpi-ico">'+(KICON[['k1','k2','k3','k6'][i]]||'')+'</div></div>'
         + '<div class="kpi-num">'+fmt(last[m[1]])+'</div><div class="kpi-foot" style="color:'+c.c+';font-weight:700">'+c.t+' مقابل '+fmt(first[m[1]])+'</div></div>'; }).join('');
     const tbl = cmpTable(list.map(p=>p.label), CMP_METRICS.map(m=>({label:m[0], vals:list.map(p=>fmt(p.m[m[1]]))})));
-    stub.innerHTML = '<div class="tg-summary"><span class="tg-badge">مقارنة زمنية</span><span class="tg-stat">'+esc(cur.label)+' · '+list.length+' فترات</span></div>'
+    const oldest=list[0], newest=list[list.length-1];
+    const banner = detected
+      ? '<div class="cmp-order ok">🕓 رُتّبت حسب التاريخ في أسماء الملفات: <b>'+esc(oldest.label)+'</b> (الأقدم · الأساس) ← <b>'+esc(newest.label)+'</b> (الأحدث)'
+        + '<button class="cmp-swap" id="cmpSwap">⇄ عكس الترتيب</button></div>'
+      : '<div class="cmp-order warn">⚠️ تعذّر تحديد الأقدم/الأحدث من أسماء الملفات — الترتيب الحالي حسب الرفع: <b>'+esc(oldest.label)+'</b> (الأساس) ← <b>'+esc(newest.label)+'</b>. لو غير صحيح اضغط:'
+        + '<button class="cmp-swap" id="cmpSwap">⇄ عكس الترتيب</button></div>';
+    stub.innerHTML = '<div class="tg-summary"><span class="tg-badge">مقارنة زمنية</span><span class="tg-stat">'+esc(cur.label)+' · '+list.length+' فترات</span>'
+      + '<span class="tg-stat" style="margin-inline-start:auto;color:var(--ink-3)">الأساس: '+esc(oldest.label)+'</span></div>'
+      + banner
       + '<div class="kpi-grid">'+cards+'</div>'
-      + '<div class="grid-2"><div class="card"><div class="card-head"><div class="card-title"><span class="dot"></span> الكتابات عبر الفترات</div></div><div class="chart-box" style="height:300px"><canvas id="chCmpPr"></canvas></div></div>'
+      + '<div class="grid-2"><div class="card"><div class="card-head"><div class="card-title"><span class="dot"></span> الكتابات عبر الفترات (الأقدم ← الأحدث)</div></div><div class="chart-box" style="height:300px"><canvas id="chCmpPr"></canvas></div></div>'
       + '<div class="tbl-card"><div class="tbl-head"><div class="tbl-title"><span class="dot"></span> مقارنة المقاييس</div></div>'+tbl+'</div></div>';
+    const sw=document.getElementById('cmpSwap'); if(sw) sw.onclick=()=>{ _cmpReverse=!_cmpReverse; renderComparePeriods(); };
     vBar('chCmpPr', list.map(p=>p.label), list.map(p=>p.m.writings));
   }
 
