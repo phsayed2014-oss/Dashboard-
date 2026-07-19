@@ -224,6 +224,10 @@ button{ font-family:inherit; cursor:pointer; }
 .collab-opt .co-dot.on{ background:var(--green-fg); }
 .collab-opt .co-meta{ margin-inline-start:auto; font-size:11px; font-weight:600; color:var(--ink-3); }
 .collab-opt .co-meta.on{ color:var(--green-fg); }
+.collab-sep{ height:1px; background:var(--line); margin:6px 8px; }
+.collab-opt.collab-all{ font-weight:800; color:var(--accent); }
+.collab-opt.collab-all .co-dot{ background:var(--accent); }
+.collab-opt.disabled{ opacity:.45; pointer-events:none; }
 .collab-actions{ display:flex; gap:8px; margin-inline-start:auto; }
 
 /* selected-branch empty prompt */
@@ -1454,28 +1458,48 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
     { key:'T3', label:'التعاون الثالث' }
   ];
   // per-branch: { periods: [{ name }] }  — data payload lands in Part 2 (engine)
-  const STATE = { T1:{periods:[]}, T2:{periods:[]}, T3:{periods:[]}, active:'T1' };
+  // ALL = virtual combined view (الثلاث مجمعات مجمّعة) — read-only, rebuilt from loaded branches
+  const STATE = { T1:{periods:[]}, T2:{periods:[]}, T3:{periods:[]}, ALL:{periods:[]}, active:'T1' };
+  const ALL_BRANCH = { key:'ALL', label:'كل المجمعات (مجمّعة)' };
 
   const fileInput = document.getElementById('fileInput');
   const trigger = document.getElementById('collabTrigger');
   const menu = document.getElementById('collabMenu');
   const branchBody = document.getElementById('branchBody');
 
-  function curBranch(){ return BRANCHES.find(b=>b.key===STATE.active); }
+  function curBranch(){ return STATE.active==='ALL' ? ALL_BRANCH : BRANCHES.find(b=>b.key===STATE.active); }
   function isLoaded(k){ return STATE[k].periods.length>0; }
 
+  // rebuild the combined (ALL) dataset by merging every loaded branch's latest rows
+  function rebuildCombined(){
+    const loaded = BRANCHES.filter(b=> STATE[b.key] && STATE[b.key].data);
+    if(!loaded.length){ STATE.ALL.data=null; STATE.ALL.periods=[]; return; }
+    let rows=[];
+    loaded.forEach(b=>{ rows = rows.concat(STATE[b.key].data.rows||[]); });
+    const d = aggregate(rows); d.rows = rows; d.reportName = 'كل المجمعات';
+    STATE.ALL.data = d;
+    STATE.ALL.periods = loaded.map(b=>({ name:b.label, data:STATE[b.key].data }));
+  }
+
   function renderSelector(){
+    rebuildCombined();
     const cur = curBranch();
+    const loadedN = BRANCHES.filter(b=>isLoaded(b.key)).length;
     document.getElementById('collabCurrent').textContent = cur.label;
     document.getElementById('collabDot').className = 'collab-dot' + (isLoaded(cur.key)?' on':'');
-    document.getElementById('branchUploadLabel').textContent = 'رفع ملف ' + cur.label;
+    document.getElementById('branchUploadLabel').textContent = (STATE.active==='ALL') ? 'عرض مجمّع للثلاث مجمعات' : ('رفع ملف ' + cur.label);
     menu.innerHTML = BRANCHES.map(b=>{
       const on = isLoaded(b.key);
       return '<button class="collab-opt'+(b.key===STATE.active?' active':'')+'" data-b="'+b.key+'">'
         + '<span class="co-dot'+(on?' on':'')+'"></span>'+b.label
         + '<span class="co-meta'+(on?' on':'')+'">'+(on?('✓ '+STATE[b.key].periods.length+' ملف'):'لا يوجد')+'</span>'
         + '</button>';
-    }).join('');
+    }).join('')
+    + '<div class="collab-sep"></div>'
+    + '<button class="collab-opt collab-all'+(STATE.active==='ALL'?' active':'')+(loadedN<1?' disabled':'')+'" data-b="ALL"'+(loadedN<1?' disabled':'')+'>'
+      + '<span class="co-dot'+(loadedN>=1?' on':'')+'"></span>كل المجمعات — مجمّعة'
+      + '<span class="co-meta'+(loadedN>=1?' on':'')+'">'+(loadedN>=1?('Σ '+loadedN+' مجمّع'):'ارفع مجمّعًا أولاً')+'</span>'
+      + '</button>';
   }
 
   function renderBranchBody(){
@@ -1769,57 +1793,61 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
     const { pl, ph } = doctorTargeted(name, d);
     const plSum = pl.reduce((s,x)=>s+x[1],0), phSum = ph.reduce((s,x)=>s+x[1],0);
     const F='"IBM Plex Sans Arabic", sans-serif';
-    const W=560, PAD=28, RH=32;
-    let H = 104 + 30 + 26 + 20 + 84;                 // header + name + sub + gap + kpi
-    H += 34 + Math.max(1,pl.length)*RH + 14;         // PL block
-    H += 34 + Math.max(1,ph.length)*RH + 14;         // PH block
-    H += 44;                                          // footer
+    const W=680, PAD=36, RH=44;
+    const HEAD=140;
+    let H = HEAD + 50 + 32 + 30 + 100 + 30;           // header + name + sub + gap + kpi + gap
+    H += 46 + Math.max(1,pl.length)*RH + 18;          // PL block
+    H += 46 + Math.max(1,ph.length)*RH + 18;          // PH block
+    H += 100;                                         // footer (rule + two lines)
     const sc=2, cv=document.createElement('canvas'); cv.width=W*sc; cv.height=H*sc;
     const ctx=cv.getContext('2d'); ctx.scale(sc,sc); ctx.textBaseline='alphabetic';
     // background
     ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H);
     // header band
     const g=ctx.createLinearGradient(0,0,W,0); g.addColorStop(0,'#3498db'); g.addColorStop(1,'#5dade2');
-    ctx.fillStyle=g; ctx.fillRect(0,0,W,104);
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,HEAD);
     ctx.textAlign='right'; ctx.fillStyle='#ffffff';
-    ctx.font='800 22px '+F; ctx.fillText('PharmaDash', W-PAD, 44);
-    ctx.font='600 13px '+F; ctx.fillStyle='rgba(255,255,255,.9)'; ctx.fillText('بطاقة الطبيب · الكتابات المستهدفة', W-PAD, 68);
-    ctx.font='600 12px '+F; ctx.fillStyle='rgba(255,255,255,.8)'; ctx.fillText(curBranch().label, W-PAD, 88);
-    let y=104+38;
+    ctx.font='800 28px '+F; ctx.fillText('PharmaDash', W-PAD, 56);
+    ctx.font='600 16px '+F; ctx.fillStyle='rgba(255,255,255,.92)'; ctx.fillText('بطاقة الطبيب · الكتابات المستهدفة', W-PAD, 88);
+    ctx.font='600 14px '+F; ctx.fillStyle='rgba(255,255,255,.82)'; ctx.fillText(curBranch().label, W-PAD, 114);
+    let y=HEAD+50;
     // doctor name + section
-    ctx.textAlign='right'; ctx.fillStyle='#14171c'; ctx.font='800 24px '+F; ctx.fillText(name, W-PAD, y); y+=24;
-    ctx.fillStyle='#828d9d'; ctx.font='600 13px '+F; ctx.fillText((rec.section||'—')+'  ·  إجمالي الكتابات '+fmt(rec.total), W-PAD, y); y+=22;
+    ctx.textAlign='right'; ctx.fillStyle='#14171c'; ctx.font='800 30px '+F; ctx.fillText(name, W-PAD, y); y+=32;
+    ctx.fillStyle='#828d9d'; ctx.font='600 15px '+F; ctx.fillText((rec.section||'—')+'  ·  إجمالي الكتابات '+fmt(rec.total), W-PAD, y); y+=30;
     // KPI boxes
     const boxes=[['كتابات PL',plSum,'#c0392b'],['كتابات PureHerb',phSum,'#7c3aed'],['إجمالي',rec.total,'#3498db']];
-    const bw=(W-PAD*2-16)/3;
-    boxes.forEach((b,i)=>{ const bx=PAD+i*(bw+8), by=y;
-      ctx.fillStyle='#f4f5f7'; roundRectPath(ctx,bx,by,bw,64,12); ctx.fill();
-      ctx.textAlign='center'; ctx.fillStyle='#828d9d'; ctx.font='600 11px '+F; ctx.fillText(b[0], bx+bw/2, by+24);
-      ctx.fillStyle=b[2]; ctx.font='800 24px '+F; ctx.fillText(fmt(b[1]), bx+bw/2, by+52);
+    const bw=(W-PAD*2-20)/3;
+    boxes.forEach((b,i)=>{ const bx=PAD+i*(bw+10), by=y;
+      ctx.fillStyle='#f4f5f7'; roundRectPath(ctx,bx,by,bw,80,14); ctx.fill();
+      ctx.textAlign='center'; ctx.fillStyle='#828d9d'; ctx.font='600 13px '+F; ctx.fillText(b[0], bx+bw/2, by+30);
+      ctx.fillStyle=b[2]; ctx.font='800 30px '+F; ctx.fillText(fmt(b[1]), bx+bw/2, by+64);
     });
-    y+=64+24;
+    y+=80+30;
     // block renderer
     function block(title, rows, dot){
-      ctx.textAlign='right'; ctx.fillStyle='#14171c'; ctx.font='800 15px '+F; ctx.fillText(title, W-PAD, y);
-      ctx.beginPath(); ctx.fillStyle=dot; ctx.arc(W-PAD-ctx.measureText(title).width-12, y-5, 4, 0, 7); ctx.fill();
-      y+=RH;
-      if(!rows.length){ ctx.textAlign='right'; ctx.fillStyle='#98a1b0'; ctx.font='500 13px '+F; ctx.fillText('لم يكتب أي صنف', W-PAD, y-8); y+=6; return; }
+      ctx.textAlign='right'; ctx.fillStyle='#14171c'; ctx.font='800 18px '+F; ctx.fillText(title, W-PAD, y);
+      ctx.beginPath(); ctx.fillStyle=dot; ctx.arc(W-PAD-ctx.measureText(title).width-14, y-6, 5, 0, 7); ctx.fill();
+      y+=46;
+      if(!rows.length){ ctx.textAlign='right'; ctx.fillStyle='#98a1b0'; ctx.font='500 15px '+F; ctx.fillText('لم يكتب أي صنف', W-PAD, y-14); y+=8; return; }
       rows.forEach(r=>{
-        ctx.fillStyle='#fafbfc'; roundRectPath(ctx,PAD,y-22,W-PAD*2,28,8); ctx.fill();
-        ctx.textAlign='left'; ctx.fillStyle='#14171c'; ctx.font='600 13px '+F;
-        let nm=r[0]; if(nm.length>44) nm=nm.slice(0,44)+'…'; ctx.fillText(nm, PAD+12, y-3);
-        ctx.textAlign='right'; ctx.fillStyle=dot; ctx.font='800 14px '+F; ctx.fillText(fmt(r[1]), W-PAD-12, y-3);
+        ctx.fillStyle='#fafbfc'; roundRectPath(ctx,PAD,y-30,W-PAD*2,38,10); ctx.fill();
+        ctx.textAlign='right'; ctx.fillStyle='#14171c'; ctx.font='600 15px '+F;
+        let nm=r[0]; if(nm.length>46) nm=nm.slice(0,46)+'…'; ctx.fillText(nm, W-PAD-16, y-6);
+        ctx.textAlign='left'; ctx.fillStyle=dot; ctx.font='800 17px '+F; ctx.fillText(fmt(r[1]), PAD+16, y-6);
         y+=RH;
       });
-      y+=14;
+      y+=18;
     }
     block('⭐ منتجات Private Label', pl, '#c0392b');
     block('🌿 منتجات PureHerb', ph, '#7c3aed');
-    // footer
-    ctx.fillStyle='#eef0f2'; ctx.fillRect(PAD,y-14,W-PAD*2,1);
-    ctx.textAlign='right'; ctx.fillStyle='#98a1b0'; ctx.font='500 11px '+F;
-    ctx.fillText('PharmaDash · '+new Date().toLocaleDateString('ar-EG-u-nu-latn',{day:'numeric',month:'long',year:'numeric'}), W-PAD, y+8);
-    ctx.textAlign='left'; ctx.fillText('سرّي — للاستخدام الداخلي', PAD, y+8);
+    // footer — report attribution
+    ctx.fillStyle='#eef0f2'; ctx.fillRect(PAD,y-6,W-PAD*2,1);
+    y+=30;
+    ctx.textAlign='center'; ctx.fillStyle='#2980b9'; ctx.font='800 18px '+F;
+    ctx.fillText('التقرير الدوري لرئيس مجلس الإدارة', W/2, y);
+    y+=28;
+    ctx.fillStyle='#828d9d'; ctx.font='600 14px '+F;
+    ctx.fillText(new Date().toLocaleDateString('ar-EG-u-nu-latn',{weekday:'long',day:'numeric',month:'long',year:'numeric'}), W/2, y);
     return cv;
   }
   const shareModal = document.getElementById('shareModal');
@@ -2229,9 +2257,9 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
   }
 
   function periodChip(p,i){
+    const x = (STATE.active==='ALL') ? '' : '<button class="pc-x" data-i="'+i+'" title="حذف">✕</button>';
     return '<span class="period-chip"><span class="pc-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg></span>'
-      + '<span class="pc-name">'+esc(p.name)+'</span>'
-      + '<button class="pc-x" data-i="'+i+'" title="حذف">✕</button></span>';
+      + '<span class="pc-name">'+esc(p.name)+'</span>'+x+'</span>';
   }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
@@ -2261,6 +2289,7 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
   }
 
   async function onFile(f){
+    if(STATE.active==='ALL'){ alert('العرض المجمّع للقراءة فقط — اختر «التعاون الأول/الثاني/الثالث» لرفع ملف.'); return; }
     const branch = STATE.active;
     try{
       const ext = validateUploadFile(f);            // throws on bad file/size/type
