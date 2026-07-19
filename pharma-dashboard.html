@@ -358,7 +358,7 @@ table.data tbody tr:hover{ background:var(--accent-soft); }
 #shareModal{ position:fixed; inset:0; z-index:1100; display:none; align-items:center; justify-content:center; padding:24px; }
 #shareModal.open{ display:flex; }
 #shareModal .sm-scrim{ position:absolute; inset:0; background:rgba(16,24,40,.42); backdrop-filter:blur(2px); }
-#shareModal .sm-box{ position:relative; z-index:1; background:#fff; border-radius:18px; box-shadow:var(--shadow-pop); padding:16px; max-width:340px; width:100%; animation:rise .3s cubic-bezier(.16,1,.3,1); }
+#shareModal .sm-box{ position:relative; z-index:1; background:#fff; border-radius:18px; box-shadow:var(--shadow-pop); padding:16px; max-width:412px; width:100%; animation:rise .3s cubic-bezier(.16,1,.3,1); }
 #shareModal .sm-box img, #shareModal .sm-box canvas{ width:100%; height:auto; border-radius:12px; display:block; border:1px solid var(--line); }
 #shareModal .sm-actions{ display:flex; gap:8px; margin-top:12px; }
 #shareModal .sm-actions .btn{ flex:1; justify-content:center; }
@@ -1792,62 +1792,88 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
     const rec = d.doctors.find(x=>sameEntity(x.name,name)) || { total:0, section:'' };
     const { pl, ph } = doctorTargeted(name, d);
     const plSum = pl.reduce((s,x)=>s+x[1],0), phSum = ph.reduce((s,x)=>s+x[1],0);
+    const grand = plSum + phSum;
     const F='"IBM Plex Sans Arabic", sans-serif';
-    const W=680, PAD=36, RH=44;
-    const HEAD=140;
-    let H = HEAD + 50 + 32 + 30 + 100 + 30;           // header + name + sub + gap + kpi + gap
-    H += 46 + Math.max(1,pl.length)*RH + 18;          // PL block
-    H += 46 + Math.max(1,ph.length)*RH + 18;          // PH block
-    H += 100;                                         // footer (rule + two lines)
+    const PL_COLORS=['#2563eb','#3498db','#0ea5e9','#0284c7','#1d4ed8','#0369a1'];
+    const PH_COLORS=['#7c3aed','#a855f7','#c084fc','#8b5cf6','#9333ea','#6d28d9','#a78bfa'];
+    const W=460, PAD=26, CW=W-PAD*2, chipH=54, chipGap=10;
+    // measure doctor-name wrap (max 2 lines)
+    const meas=document.createElement('canvas').getContext('2d'); meas.font='900 20px '+F;
+    const nameLines=(function(){ const words=String(name).split(/\s+/); const lines=[]; let cur='';
+      words.forEach(w=>{ const t=cur?cur+' '+w:w; if(meas.measureText(t).width>CW && cur){ lines.push(cur); cur=w; } else cur=t; });
+      if(cur) lines.push(cur); return lines.slice(0,2); })();
+    const emptyTargeted = (pl.length+ph.length)===0;
+    // height
+    let H = 24 + 30 + 20;                              // pad + NOSTRI + gap
+    H += nameLines.length*27 + 20 + 14;                // name lines + section + gap
+    if(emptyTargeted){ H += 46; }
+    else { H += pl.length*(chipH+chipGap); if(ph.length) H += 30 + ph.length*(chipH+chipGap); }
+    H += 18 + 42;                                      // total row
+    H += 30;                                           // thanks
+    H += 42;                                           // footer (report + date)
+    H += 20;                                           // bottom pad
     const sc=2, cv=document.createElement('canvas'); cv.width=W*sc; cv.height=H*sc;
     const ctx=cv.getContext('2d'); ctx.scale(sc,sc); ctx.textBaseline='alphabetic';
-    // background
-    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H);
-    // header band
-    const g=ctx.createLinearGradient(0,0,W,0); g.addColorStop(0,'#3498db'); g.addColorStop(1,'#5dade2');
-    ctx.fillStyle=g; ctx.fillRect(0,0,W,HEAD);
-    ctx.textAlign='right'; ctx.fillStyle='#ffffff';
-    ctx.font='800 28px '+F; ctx.fillText('PharmaDash', W-PAD, 56);
-    ctx.font='600 16px '+F; ctx.fillStyle='rgba(255,255,255,.92)'; ctx.fillText('بطاقة الطبيب · الكتابات المستهدفة', W-PAD, 88);
-    ctx.font='600 14px '+F; ctx.fillStyle='rgba(255,255,255,.82)'; ctx.fillText(curBranch().label, W-PAD, 114);
-    let y=HEAD+50;
-    // doctor name + section
-    ctx.textAlign='right'; ctx.fillStyle='#14171c'; ctx.font='800 30px '+F; ctx.fillText(name, W-PAD, y); y+=32;
-    ctx.fillStyle='#828d9d'; ctx.font='600 15px '+F; ctx.fillText((rec.section||'—')+'  ·  إجمالي الكتابات '+fmt(rec.total), W-PAD, y); y+=30;
-    // KPI boxes
-    const boxes=[['كتابات PL',plSum,'#c0392b'],['كتابات PureHerb',phSum,'#7c3aed'],['إجمالي',rec.total,'#3498db']];
-    const bw=(W-PAD*2-20)/3;
-    boxes.forEach((b,i)=>{ const bx=PAD+i*(bw+10), by=y;
-      ctx.fillStyle='#f4f5f7'; roundRectPath(ctx,bx,by,bw,80,14); ctx.fill();
-      ctx.textAlign='center'; ctx.fillStyle='#828d9d'; ctx.font='600 13px '+F; ctx.fillText(b[0], bx+bw/2, by+30);
-      ctx.fillStyle=b[2]; ctx.font='800 30px '+F; ctx.fillText(fmt(b[1]), bx+bw/2, by+64);
-    });
-    y+=80+30;
-    // block renderer
-    function block(title, rows, dot){
-      ctx.textAlign='right'; ctx.fillStyle='#14171c'; ctx.font='800 18px '+F; ctx.fillText(title, W-PAD, y);
-      ctx.beginPath(); ctx.fillStyle=dot; ctx.arc(W-PAD-ctx.measureText(title).width-14, y-6, 5, 0, 7); ctx.fill();
-      y+=46;
-      if(!rows.length){ ctx.textAlign='right'; ctx.fillStyle='#98a1b0'; ctx.font='500 15px '+F; ctx.fillText('لم يكتب أي صنف', W-PAD, y-14); y+=8; return; }
-      rows.forEach(r=>{
-        ctx.fillStyle='#fafbfc'; roundRectPath(ctx,PAD,y-30,W-PAD*2,38,10); ctx.fill();
-        ctx.textAlign='right'; ctx.fillStyle='#14171c'; ctx.font='600 15px '+F;
-        let nm=r[0]; if(nm.length>46) nm=nm.slice(0,46)+'…'; ctx.fillText(nm, W-PAD-16, y-6);
-        ctx.textAlign='left'; ctx.fillStyle=dot; ctx.font='800 17px '+F; ctx.fillText(fmt(r[1]), PAD+16, y-6);
-        y+=RH;
-      });
-      y+=18;
-    }
-    block('⭐ منتجات Private Label', pl, '#c0392b');
-    block('🌿 منتجات PureHerb', ph, '#7c3aed');
-    // footer — report attribution
-    ctx.fillStyle='#eef0f2'; ctx.fillRect(PAD,y-6,W-PAD*2,1);
+    // card background (light gradient, edge-to-edge — modal frame rounds it)
+    const bg=ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#f8f9fc'); bg.addColorStop(.6,'#ffffff'); bg.addColorStop(1,'#eef1fb');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+    let y=48;
+    // NOSTRI gradient wordmark
+    ctx.textAlign='center';
+    const ng=ctx.createLinearGradient(W/2-72,0,W/2+72,0); ng.addColorStop(0,'#3b82f6'); ng.addColorStop(1,'#14b8a6');
+    ctx.fillStyle=ng; ctx.font='900 26px '+F; if('letterSpacing' in ctx) ctx.letterSpacing='5px';
+    ctx.fillText('NOSTRI', W/2, y); if('letterSpacing' in ctx) ctx.letterSpacing='0px';
     y+=30;
-    ctx.textAlign='center'; ctx.fillStyle='#2980b9'; ctx.font='800 18px '+F;
-    ctx.fillText('التقرير الدوري لرئيس مجلس الإدارة', W/2, y);
-    y+=28;
-    ctx.fillStyle='#828d9d'; ctx.font='600 14px '+F;
-    ctx.fillText(new Date().toLocaleDateString('ar-EG-u-nu-latn',{weekday:'long',day:'numeric',month:'long',year:'numeric'}), W/2, y);
+    // doctor name (1–2 lines) + specialty
+    ctx.fillStyle='#0f172a'; ctx.font='900 20px '+F;
+    nameLines.forEach(ln=>{ ctx.fillText(ln, W/2, y); y+=27; });
+    ctx.fillStyle='#64748b'; ctx.font='600 13px '+F; ctx.fillText((rec.section||'—'), W/2, y); y+=14+16;
+    // product chip: dot (right-most in RTL sense) · name (center) · big count
+    function chip(nm, count, color){
+      ctx.fillStyle='#f3f4f8'; roundRectPath(ctx,PAD,y,CW,chipH,14); ctx.fill();
+      ctx.strokeStyle='#e7e9f1'; ctx.lineWidth=1; roundRectPath(ctx,PAD,y,CW,chipH,14); ctx.stroke();
+      const cy=y+chipH/2;
+      ctx.beginPath(); ctx.fillStyle=color; ctx.arc(PAD+22,cy,6,0,7); ctx.fill();
+      ctx.textBaseline='middle';
+      ctx.textAlign='right'; ctx.fillStyle=color; ctx.font='800 24px '+F; ctx.fillText(fmt(count), W-PAD-18, cy);
+      ctx.textAlign='center'; ctx.fillStyle='#0f172a'; ctx.font='900 16px '+F;
+      let s=String(nm); const maxW=CW-104; while(ctx.measureText(s).width>maxW && s.length>4){ s=s.slice(0,-2); } if(s!==String(nm)) s+='…';
+      ctx.fillText(s, W/2, cy);
+      ctx.textBaseline='alphabetic';
+      y+=chipH+chipGap;
+    }
+    if(emptyTargeted){
+      ctx.textAlign='center'; ctx.fillStyle='#98a1b0'; ctx.font='600 14px '+F;
+      ctx.fillText('لا توجد كتابات مستهدفة لهذا الطبيب', W/2, y+20); y+=46;
+    } else {
+      pl.forEach((r,i)=> chip(r[0], r[1], PL_COLORS[i%PL_COLORS.length]));
+      if(ph.length){
+        const dy=y+15;
+        ctx.strokeStyle='rgba(15,23,42,.12)'; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.moveTo(PAD,dy); ctx.lineTo(W/2-52,dy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(W/2+52,dy); ctx.lineTo(W-PAD,dy); ctx.stroke();
+        ctx.textAlign='center'; ctx.fillStyle='#a855f7'; ctx.font='800 12px '+F; if('letterSpacing' in ctx) ctx.letterSpacing='2px';
+        ctx.fillText('PUREHERB', W/2, dy+4); if('letterSpacing' in ctx) ctx.letterSpacing='0px';
+        y+=30;
+        ph.forEach((r,i)=> chip(r[0], r[1], PH_COLORS[i%PH_COLORS.length]));
+      }
+    }
+    // grand total (dashed separator)
+    y+=6;
+    ctx.strokeStyle='rgba(15,23,42,.16)'; ctx.lineWidth=1; if(ctx.setLineDash) ctx.setLineDash([5,4]);
+    ctx.beginPath(); ctx.moveTo(PAD,y); ctx.lineTo(W-PAD,y); ctx.stroke(); if(ctx.setLineDash) ctx.setLineDash([]);
+    y+=30;
+    ctx.textAlign='right'; ctx.fillStyle='#334155'; ctx.font='800 14px '+F; ctx.fillText('إجمالي الكتابات المستهدفة', W-PAD, y);
+    ctx.textAlign='left'; ctx.fillStyle='#14b8a6'; ctx.font='800 28px '+F; ctx.fillText(fmt(grand), PAD, y+4);
+    y+=18+18;
+    // thank-you + board-report footer
+    ctx.textAlign='center'; ctx.fillStyle='#475569'; ctx.font='600 13px '+F;
+    ctx.fillText('شكراً لعملكم وحرصكم لتحقيقنا معنا 🌟', W/2, y); y+=26;
+    ctx.fillStyle='#64748b'; ctx.font='700 12px '+F;
+    ctx.fillText('التقرير الدوري لرئيس مجلس الإدارة', W/2, y); y+=18;
+    const now=new Date();
+    ctx.fillStyle='#94a3b8'; ctx.font='600 11px '+F;
+    ctx.fillText(now.toISOString().slice(0,10)+' — '+now.toLocaleDateString('ar-EG',{weekday:'long'}), W/2, y);
     return cv;
   }
   const shareModal = document.getElementById('shareModal');
