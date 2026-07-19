@@ -1676,7 +1676,10 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
 
   /* ── shared period-comparison layer (used across every section) ── */
   let CMP_ON = true;   // when a branch has 2+ periods, sections show comparison by default
-  function cmpAvailable(){ return STATE.active!=='ALL' && ((STATE[STATE.active]||{}).periods||[]).length>=2; }
+  function cmpAvailable(){
+    if(STATE.active==='ALL') return BRANCHES.some(b=>((STATE[b.key]||{}).periods||[]).length>=2);
+    return ((STATE[STATE.active]||{}).periods||[]).length>=2;
+  }
   function orderedPeriods(bk){
     const periods = (STATE[bk].periods||[]);
     const scored = periods.map((p,i)=>({ p, i, info:periodInfo(p.name) }));
@@ -1684,6 +1687,21 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
     let ordered = detected ? scored.slice().sort((a,b)=>a.info.score-b.info.score) : scored.slice().sort((a,b)=>a.i-b.i);
     if(_cmpReverse) ordered = ordered.slice().reverse();
     return { list: ordered.map(s=>({ label:s.info.label, data:s.p.data, file:s.p.name })), detected };
+  }
+  // unified comparison source — a single branch's periods, OR (in ALL view) each branch's oldest vs newest merged
+  function activeComparison(){
+    if(STATE.active!=='ALL') return orderedPeriods(STATE.active);
+    const loaded = BRANCHES.filter(b=>((STATE[b.key]||{}).periods||[]).length>0);
+    let detected=true; const oldRows=[], newRows=[];
+    loaded.forEach(b=>{
+      const ord=orderedPeriods(b.key); if(!ord.detected) detected=false;
+      const o=ord.list[0], n=ord.list[ord.list.length-1];
+      if(o&&o.data.rows) oldRows.push(...o.data.rows);
+      if(n&&n.data.rows) newRows.push(...n.data.rows);
+    });
+    const oldD=aggregate(oldRows); oldD.rows=oldRows;
+    const newD=aggregate(newRows); newD.rows=newRows;
+    return { list:[{label:'الفترة السابقة', data:oldD, file:'الفترة السابقة'},{label:'الفترة الحالية', data:newD, file:'الفترة الحالية'}], detected, combined:true };
   }
   function mergeCompare(oldArr, newArr, key){
     key = key||'total'; const map=new Map();
@@ -1703,9 +1721,10 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
   function cmpToggleBtn(cmpOn){ return '<button class="cmp-toggle'+(cmpOn?' on':'')+'" id="cmpToggle">'+(cmpOn?'⇆ مقارنة الفترتين':'📄 فترة واحدة')+'</button>'; }
   function cmpBannerHTML(ord){
     const o=ord.list[0], n=ord.list[ord.list.length-1];
+    const scope = ord.combined ? ' <span style="opacity:.75">· مجمّع عبر كل المجمعات</span>' : '';
     return (ord.detected
-      ? '<div class="cmp-order ok">🕓 مقارنة حسب التاريخ: <b>'+esc(o.label)+'</b> (الأقدم) ← <b>'+esc(n.label)+'</b> (الأحدث)'
-      : '<div class="cmp-order warn">⚠️ الترتيب حسب الرفع: <b>'+esc(o.label)+'</b> ← <b>'+esc(n.label)+'</b> — لو غير صحيح:')
+      ? '<div class="cmp-order ok">🕓 مقارنة حسب التاريخ: <b>'+esc(o.label)+'</b> (الأقدم) ← <b>'+esc(n.label)+'</b> (الأحدث)'+scope
+      : '<div class="cmp-order warn">⚠️ الترتيب حسب الرفع: <b>'+esc(o.label)+'</b> ← <b>'+esc(n.label)+'</b>'+scope+' — لو غير صحيح:')
       + '<button class="cmp-swap" id="cmpSwap">⇄ عكس</button></div>';
   }
   function wireCmpControls(){
@@ -1744,7 +1763,7 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
     const canCmp = cmpAvailable();
     // ── comparison mode: oldest vs newest, per-item, with %change ──
     if(canCmp && CMP_ON){
-      const ord = orderedPeriods(STATE.active);
+      const ord = activeComparison();
       const oldest=ord.list[0], newest=ord.list[ord.list.length-1];
       const arrOf = data => conf.kind==='doc'?data.doctors:conf.kind==='drug'?data.drugs:data.sections;
       const cmp = mergeCompare(arrOf(oldest.data), arrOf(newest.data));
@@ -2129,7 +2148,7 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
     const canCmp = cmpAvailable();
     // ── comparison mode: each product's writings, oldest vs newest ──
     if(canCmp && CMP_ON){
-      const ord = orderedPeriods(STATE.active);
+      const ord = activeComparison();
       const oldest=ord.list[0], newest=ord.list[ord.list.length-1];
       const so = targetedStats(oldest.data, products, matcher);
       const sn = targetedStats(newest.data, products, matcher);
@@ -2203,19 +2222,49 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
     return null;
   }
   let OS = null;
-  function renderOverstock(){
-    const d = activeData(); if(!d){ analysisEmpty('أصناف أوفرستوك'); return; }
+  function overstockStatsFor(pd){
     const map = new Map();
     TARGET_BY_SHORT.forEach(p=>map.set(p.key,{name:p.key, full:p.full, total:0, docs:new Map(), pts:new Set()}));
-    (d.rows||[]).forEach(r=>{
+    (pd.rows||[]).forEach(r=>{
       const s = findTargetShort(r.service); if(!s || !map.has(s)) return;
       const e = map.get(s); e.total++;
       const dn=r.doctor; if(dn){ const k=entityKey(dn); const de=e.docs.get(k)||{name:dn,count:0}; de.count++; e.docs.set(k,de); }
       if(r.patient) e.pts.add(entityKey(r.patient));
     });
-    const stats = [...map.values()].map(e=>({ name:e.name, full:e.full, total:e.total,
+    return [...map.values()].map(e=>({ name:e.name, full:e.full, total:e.total,
       doctorCount:e.docs.size, patients:e.pts.size, docs:[...e.docs.values()].sort((a,b)=>b.count-a.count) }))
       .sort((a,b)=>b.total-a.total);
+  }
+  function renderOverstock(){
+    const d = activeData(); if(!d){ analysisEmpty('أصناف أوفرستوك'); return; }
+    const canCmp = cmpAvailable();
+    // ── comparison: writings of overstock items, oldest vs newest ──
+    if(canCmp && CMP_ON){
+      const ord = activeComparison();
+      const oldest=ord.list[0], newest=ord.list[ord.list.length-1];
+      const so = overstockStatsFor(oldest.data), sn = overstockStatsFor(newest.data);
+      const bBy={}; so.forEach(s=>bBy[s.name]=s.total);
+      const merged = sn.map(s=>({ name:s.name, full:s.full, before:bBy[s.name]||0, after:s.total, docs:s.docs })).sort((a,b)=>b.after-a.after);
+      OS = { merged, oldest, newest, term:'', writtenOnly:true, cmp:true };
+      stub.innerHTML =
+        '<div class="tg-summary"><span class="tg-badge">أصناف أوفرستوك — مقارنة</span>'
+        + '<span class="tg-stat">'+esc(oldest.label)+': <b>'+fmt(so.reduce((t,x)=>t+x.total,0))+'</b></span>'
+        + '<span class="tg-stat">'+esc(newest.label)+': <b>'+fmt(sn.reduce((t,x)=>t+x.total,0))+'</b></span>'
+        + '<span class="tg-stat">مكتوبة: <b>'+fmt(merged.filter(s=>s.before||s.after).length)+'</b></span>'
+        + '<span class="tg-stat" style="margin-inline-start:auto">'+cmpToggleBtn(true)+'</span></div>'
+        + cmpBannerHTML(ord)
+        + '<div class="tbl-card"><div class="tbl-head">'
+        + '<div class="chips" id="osChips"><button class="chip active" data-w="1">المكتوبة فقط</button><button class="chip" data-w="0">عرض الكل</button></div>'
+        + '<div class="search-in"><input placeholder="🔎 ابحث بالصنف…"><span class="si-ico"></span></div></div>'
+        + '<div class="tbl-scroll"><table class="data"><thead><tr><th style="width:56px">#</th><th>الصنف المستهدف</th><th>'+esc(oldest.label)+'</th><th>'+esc(newest.label)+'</th><th>التغيّر</th><th style="width:150px">النسبة</th></tr></thead><tbody id="osBody"></tbody></table></div>'
+        + '<div class="note" style="margin:12px 14px 14px">مقارنة كتابات أصناف الأوفرستوك بين الفترتين — هل زادت الكتابة عليها؟ اضغط الصف لعرض الأطباء.</div></div>';
+      wireCmpControls();
+      const inp = stub.querySelector('.search-in input'); inp.addEventListener('input', ()=>{ OS.term=inp.value.trim().toLowerCase(); paintOSCmp(); });
+      stub.querySelectorAll('#osChips .chip').forEach(c=>c.onclick=()=>{ stub.querySelectorAll('#osChips .chip').forEach(x=>x.classList.remove('active')); c.classList.add('active'); OS.writtenOnly=c.dataset.w==='1'; paintOSCmp(); });
+      paintOSCmp();
+      return;
+    }
+    const stats = overstockStatsFor(d);
     const written = stats.filter(s=>s.total>0);
     const totalWr = stats.reduce((s,x)=>s+x.total,0);
     OS = { stats, term:'', writtenOnly:true };
@@ -2224,16 +2273,43 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
       + '<span class="tg-stat">أصناف مستهدفة: <b>'+fmt(stats.length)+'</b></span>'
       + '<span class="tg-stat">مكتوبة فعلاً: <b>'+fmt(written.length)+'</b></span>'
       + '<span class="tg-stat">إجمالي كتاباتها: <b>'+fmt(totalWr)+'</b></span>'
-      + '<span class="tg-stat" style="margin-inline-start:auto;color:var(--ink-3)">'+esc(curBranch().label)+'</span></div>'
+      + '<span class="tg-stat" style="margin-inline-start:auto;display:flex;gap:8px;align-items:center;color:var(--ink-3)">'+(canCmp?cmpToggleBtn(false):'')+esc(curBranch().label)+'</span></div>'
       + '<div class="tbl-card"><div class="tbl-head">'
       + '<div class="chips" id="osChips"><button class="chip active" data-w="1">المكتوبة فقط</button><button class="chip" data-w="0">عرض الكل</button></div>'
       + '<div class="search-in"><input placeholder="🔎 ابحث بالصنف…"><span class="si-ico"></span></div></div>'
       + '<div class="tbl-scroll"><table class="data"><thead><tr><th style="width:56px">#</th><th>الصنف المستهدف</th><th>الكتابات</th><th>الأطباء</th><th>المرضى</th><th style="width:170px">النسبة</th></tr></thead><tbody id="osBody"></tbody></table></div>'
       + '<div class="note" style="margin:12px 14px 14px">قائمة أصناف الأوفرستوك مضمّنة داخل الداشبورد — نعرض كم مرة كُتب كل صنف. اضغط على الصف لعرض الأطباء الأكثر كتابةً.</div></div>';
+    if(canCmp) wireCmpControls();
     const inp = stub.querySelector('.search-in input');
     inp.addEventListener('input', ()=>{ OS.term=inp.value.trim().toLowerCase(); paintOS(); });
     stub.querySelectorAll('#osChips .chip').forEach(c=>c.onclick=()=>{ stub.querySelectorAll('#osChips .chip').forEach(x=>x.classList.remove('active')); c.classList.add('active'); OS.writtenOnly=c.dataset.w==='1'; paintOS(); });
     paintOS();
+  }
+  function paintOSCmp(){
+    let list = OS.merged;
+    if(OS.writtenOnly) list = list.filter(s=>s.before||s.after);
+    if(OS.term) list = list.filter(s=>String(s.name+' '+s.full).toLowerCase().includes(OS.term));
+    const max = OS.merged.reduce((m,s)=>Math.max(m, s.after||0), 0) || 1;
+    const body = stub.querySelector('#osBody');
+    body.innerHTML = list.map((r,i)=>
+      '<tr data-name="'+escAttr(r.name)+'"><td>'+rankHtml(i)+'</td>'
+      + '<td><strong>'+esc(r.name)+'</strong><div style="font-size:11px;color:var(--ink-3)">'+esc(trunc(r.full,42))+'</div></td>'
+      + '<td class="num" style="color:var(--ink-3)">'+fmt(r.before)+'</td>'
+      + '<td class="num"><b>'+fmt(r.after)+'</b></td>'
+      + '<td>'+chgChip(r.before, r.after, true)+'</td>'
+      + '<td>'+barHtml(r.after, max)+'</td></tr>'
+    ).join('') || '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-3)">لا يوجد صنف مطابق</td></tr>';
+    body.querySelectorAll('tr[data-name]').forEach(tr=>tr.onclick=()=>{
+      const s = OS.merged.find(x=>x.name===tr.dataset.name); if(!s) return;
+      const pctTxt = s.before? (((s.after-s.before)/s.before*100>=0?'▲ +':'▼ ')+Math.abs((s.after-s.before)/s.before*100).toFixed(0)+'%') : (s.after?'جديد':'—');
+      openDrawer('📦 صنف أوفرستوك — مقارنة',
+        '<h2 class="dr-title">'+esc(s.name)+'</h2>'
+        + '<div class="dr-sub"><span class="tag amber">'+esc(trunc(s.full,40))+'</span><span>'+esc(curBranch().label)+'</span></div>'
+        + drKpis([[esc(OS.oldest.label),s.before],[esc(OS.newest.label),s.after]])
+        + drProp('📈 التغيّر', pctTxt)
+        + '<div class="dr-sec">👨‍⚕️ الأطباء الأكثر كتابةً ('+esc(OS.newest.label)+')</div>'
+        + (s.docs.length?listRows(s.docs,'count'):'<div class="dr-row"><span class="nm" style="color:var(--ink-3)">لم يكتبه أي طبيب في '+esc(OS.newest.label)+'</span></div>'));
+    });
   }
   function paintOS(){
     let list = OS.stats;
@@ -2266,6 +2342,41 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
     if(days<=180) return {lvl:'watch', label:'مراقبة', cls:'blue'};
     return {lvl:'ok', label:'آمن', cls:'green'};
   }
+  // writings of near-expiry items per period (matched against that period's drugs)
+  let _neMatch = null;
+  function neMatchItems(){
+    if(_neMatch) return _neMatch;
+    const seen=new Set(), out=[];
+    (typeof NEAR_EXPIRY_DATA!=='undefined'?NEAR_EXPIRY_DATA:[]).forEach(it=>{
+      const k=PharmaCore.normalizeProductText(it.name); if(!k||seen.has(k)) return; seen.add(k); out.push({ key:k, name:it.name, code:it.code });
+    });
+    return _neMatch=out;
+  }
+  function neKey(name){ return PharmaCore.normalizeProductText(name); }
+  function neWritingsFor(pd){
+    // match by product name only — the near-expiry "code" is an inventory SKU, not a brand token
+    const items=neMatchItems(), res=new Map();
+    (pd.drugs||[]).forEach(dr=>{
+      for(const it of items){ if(PharmaCore.matchesCatalogProduct(dr.name,{name:it.name})){ res.set(it.key,(res.get(it.key)||0)+(dr.total||0)); break; } }
+    });
+    return res;
+  }
+  function paintNECmp(){
+    let list = NE.rows;
+    if(NE.filter==='written') list = list.filter(r=>r.before||r.after);
+    if(NE.term) list = list.filter(r=>String(r.name||'').toLowerCase().includes(NE.term));
+    list = list.slice().sort((a,b)=> (b.after-a.after) || (a.days-b.days));
+    const body = stub.querySelector('#neBody');
+    body.innerHTML = list.map((r,i)=>
+      '<tr><td>'+rankHtml(i)+'</td>'
+      + '<td><strong>'+esc(r.name)+'</strong><div style="font-size:11px;color:var(--ink-3)">'+esc(r.code||'')+'</div></td>'
+      + '<td class="num">'+esc(r.expiry)+' <span class="tag '+r.u.cls+'" style="margin-inline-start:4px"><span class="days-pill">'+fmt(r.days)+'</span> يوم</span></td>'
+      + '<td><span class="tag '+r.u.cls+'">'+r.u.label+'</span></td>'
+      + '<td class="num" style="color:var(--ink-3)">'+fmt(r.before)+'</td>'
+      + '<td class="num"><b>'+fmt(r.after)+'</b></td>'
+      + '<td>'+chgChip(r.before, r.after, true)+'</td></tr>'
+    ).join('') || '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--ink-3)">لا توجد أصناف قريبة الانتهاء مكتوبة في الفترتين</td></tr>';
+  }
   function renderNearExpiry(){
     if(typeof NEAR_EXPIRY_DATA==='undefined'){ stub.innerHTML='<div class="tbl-card"><div class="tbl-empty">لا توجد بيانات مخزون.</div></div>'; return; }
     const today = new Date(); today.setHours(0,0,0,0);
@@ -2278,6 +2389,33 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
       return {...r, days, u:neUrgency(days)};
     }).filter(r=> dtParseLocal(r.expiry) >= cutoff)   // ← استبعاد كل ما يتبقّى له أقل من شهر
       .sort((a,b)=>a.days-b.days);
+    const canCmp = cmpAvailable();
+    // ── comparison: how much of each near-expiry item was prescribed, oldest vs newest ──
+    if(canCmp && CMP_ON){
+      const ord = activeComparison();
+      const oldest=ord.list[0], newest=ord.list[ord.list.length-1];
+      const wB = neWritingsFor(oldest.data), wN = neWritingsFor(newest.data);
+      const rows = items.map(it=>{ const k=neKey(it.name); return { ...it, before:wB.get(k)||0, after:wN.get(k)||0 }; });
+      const movB=[...wB.values()].reduce((a,b)=>a+b,0), movN=[...wN.values()].reduce((a,b)=>a+b,0);
+      NE = { rows, oldest, newest, filter:'written', term:'' };
+      stub.innerHTML =
+        '<div class="tg-summary"><span class="tg-badge">قريب الانتهاء — مقارنة الحركة</span>'
+        + '<span class="tg-stat">'+esc(oldest.label)+': <b>'+fmt(movB)+'</b> كتابة</span>'
+        + '<span class="tg-stat">'+esc(newest.label)+': <b>'+fmt(movN)+'</b> كتابة</span>'
+        + '<span class="tg-stat">التغيّر: '+chgChip(movB,movN,true)+'</span>'
+        + '<span class="tg-stat" style="margin-inline-start:auto">'+cmpToggleBtn(true)+'</span></div>'
+        + cmpBannerHTML(ord)
+        + '<div class="tbl-card"><div class="tbl-head">'
+        + '<div class="chips" id="neChips"><button class="chip active" data-f="written">المكتوبة فقط</button><button class="chip" data-f="all">كل الأصناف</button></div>'
+        + '<div class="search-in"><input placeholder="🔎 ابحث بالصنف…"><span class="si-ico"></span></div></div>'
+        + '<div class="tbl-scroll"><table class="data"><thead><tr><th style="width:52px">#</th><th>الصنف</th><th>تاريخ الانتهاء</th><th>الحالة</th><th>'+esc(oldest.label)+'</th><th>'+esc(newest.label)+'</th><th>التغيّر</th></tr></thead><tbody id="neBody"></tbody></table></div>'
+        + '<div class="note" style="margin:12px 14px 14px">مقارنة كتابات/صرف الأصناف قريبة الانتهاء بين الفترتين — تكشف هل بدأ المخزون المعرّض للانتهاء يتحرّك. «المكتوبة فقط» تعرض ما كُتب في أي من الفترتين.</div></div>';
+      wireCmpControls();
+      const inp = stub.querySelector('.search-in input'); inp.addEventListener('input', ()=>{ NE.term=inp.value.trim().toLowerCase(); paintNECmp(); });
+      stub.querySelectorAll('#neChips .chip').forEach(c=>c.onclick=()=>{ stub.querySelectorAll('#neChips .chip').forEach(x=>x.classList.remove('active')); c.classList.add('active'); NE.filter=c.dataset.f; paintNECmp(); });
+      paintNECmp();
+      return;
+    }
     const warn = items.filter(i=>i.u.lvl==='warn');
     const watch= items.filter(i=>i.u.lvl==='watch');
     const safe = items.filter(i=>i.u.lvl==='ok');
@@ -2297,11 +2435,12 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
       + '<button class="chip" data-f="warn">تحذير</button>'
       + '<button class="chip" data-f="watch">مراقبة</button>'
       + '<button class="chip" data-f="ok">آمن</button></div>'
-      + '<div class="search-in"><input placeholder="🔎 ابحث بالصنف…"><span class="si-ico"></span></div></div>'
+      + '<div style="display:flex;gap:8px;align-items:center;">'+(canCmp?cmpToggleBtn(false):'')+'<div class="search-in"><input placeholder="🔎 ابحث بالصنف…"><span class="si-ico"></span></div></div></div>'
       + '<div class="tbl-scroll"><table class="data"><thead><tr>'
       + '<th style="width:56px">#</th><th>الصنف</th><th>المجمّع</th><th>تاريخ الانتهاء</th><th>المتبقّي</th><th>الكمية</th><th>القيمة</th><th>الحالة</th>'
       + '</tr></thead><tbody id="neBody"></tbody></table></div>'
       + '<div class="note" style="margin:12px 14px 14px">✓ تم استبعاد كل صنف يتبقّى له أقل من شهر (تاريخه قبل '+esc(cutoffStr)+') — يُعرض فقط ما يتبقّى له شهر أو أكثر.</div></div>';
+    if(canCmp) wireCmpControls();
     const inp = stub.querySelector('.search-in input');
     inp.addEventListener('input', ()=>{ NE.term = inp.value.trim().toLowerCase(); paintNE(); });
     stub.querySelectorAll('#neChips .chip').forEach(c=>c.onclick=()=>{
@@ -2464,16 +2603,16 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
   }
   let _cmpReverse = false;
   function renderComparePeriods(){
-    const cur = curBranch(); const periods = (STATE[cur.key].periods||[]);
-    if(periods.length<2){ stub.innerHTML = comparePrompt('مقارنة زمنية','أضف فترة ثانية لـ«'+cur.label+'» (زر «+ فترة» في النظرة العامة) لمقارنة التغيّر عبر الزمن.'); return; }
-    // order periods chronologically from the file name; fall back to upload order when undetectable
-    const scored = periods.map((p,i)=>{ const info=periodInfo(p.name); return { p, i, info }; });
-    const detected = scored.every(s=>s.info.sure) && (new Set(scored.map(s=>s.info.score)).size===scored.length);
-    let ordered = detected
-      ? scored.slice().sort((a,b)=>a.info.score-b.info.score)
-      : scored.slice().sort((a,b)=>a.i-b.i);
-    if(_cmpReverse) ordered = ordered.slice().reverse();
-    const list = ordered.map((s,idx)=>({ label:(s.info.label||('فترة '+(idx+1))), file:s.p.name, m:branchMetrics(s.p.data) }));
+    const cur = curBranch();
+    if(!cmpAvailable()){
+      stub.innerHTML = comparePrompt('مقارنة زمنية', STATE.active==='ALL'
+        ? 'ارفع فترتين (شهرين) لمجمّع واحد على الأقل، ثم اختر «كل المجمعات» لعرض المقارنة الزمنية المجمّعة.'
+        : 'أضف فترة ثانية لـ«'+cur.label+'» (زر «+ فترة» في النظرة العامة) لمقارنة التغيّر عبر الزمن.');
+      return;
+    }
+    const ord = activeComparison();
+    const detected = ord.detected;
+    const list = ord.list.map((s,idx)=>({ label:(s.label||('فترة '+(idx+1))), file:s.file, m:branchMetrics(s.data) }));
     const first=list[0].m, last=list[list.length-1].m;   // first = الأقدم (الأساس) · last = الأحدث
     function chg(key){ const a=first[key],b=last[key]; if(!a) return {t:'—',c:'var(--ink-3)'}; const g=((b-a)/a*100); return {t:(g>=0?'▲ +':'▼ ')+g.toFixed(1)+'%', c:g>0?'var(--green-fg)':g<0?'var(--rose-fg)':'var(--ink-3)'}; }
     const cards = CMP_METRICS.slice(0,4).map((m,i)=>{ const c=chg(m[1]);
