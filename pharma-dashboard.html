@@ -466,6 +466,14 @@ table.data tbody tr:hover{ background:var(--accent-soft); }
 .cmp-order b{ font-weight:800; }
 .cmp-swap{ margin-inline-start:auto; border:1px solid currentColor; background:transparent; color:inherit; font-family:inherit; font-weight:700; font-size:11.5px; padding:5px 11px; border-radius:8px; cursor:pointer; white-space:nowrap; }
 .cmp-swap:hover{ background:rgba(0,0,0,.06); }
+.chg{ font-weight:800; font-size:12px; font-family:var(--num); white-space:nowrap; }
+.chg.up{ color:var(--green-fg); } .chg.down{ color:var(--rose-fg); } .chg.flat{ color:var(--ink-3); }
+.chg.badge{ padding:2px 8px; border-radius:999px; font-size:11px; }
+.chg.up.badge{ background:#eaf7ef; } .chg.down.badge{ background:#fdecec; } .chg.flat.badge{ background:var(--slate-bg); }
+.cmp-toggle{ border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-family:inherit; font-weight:700; font-size:12px; padding:6px 12px; border-radius:9px; cursor:pointer; white-space:nowrap; }
+.cmp-toggle.on{ background:var(--accent-soft); color:var(--accent); border-color:#cfe4f5; }
+.prod-card.cmp .prod-cmp{ display:flex; align-items:baseline; gap:6px; }
+.prod-card.cmp .prod-cmp .pc-from{ font-size:12px; color:var(--ink-3); font-family:var(--num); }
 
 /* ---------- near-expiry ---------- */
 .ne-stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:16px; }
@@ -1463,11 +1471,9 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
       + '<h3>'+name+'</h3><p>هذا القسم سنبنيه سوياً في جزء قادم 🚧</p></div>';
   }
 
-  nav.addEventListener('click', e=>{
-    const item = e.target.closest('.nav-item'); if(!item) return;
-    nav.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
-    item.classList.add('active');
-    const k = item.dataset.k;
+  let ACTIVE_NAV = 'overview';
+  function showSection(k){
+    ACTIVE_NAV = k;
     pageTitle.textContent = TITLES[k] || '';
     document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
     if(k==='overview'){ overview.classList.add('active'); }
@@ -1482,6 +1488,13 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
     else if(k==='branches'){ renderCompareBranches(); stub.classList.add('active'); }
     else if(k==='periods'){ renderComparePeriods(); stub.classList.add('active'); }
     else { stub.innerHTML = stubHtml(TITLES[k]||''); stub.classList.add('active'); }
+  }
+  function rerenderCurrent(){ showSection(ACTIVE_NAV); }
+  nav.addEventListener('click', e=>{
+    const item = e.target.closest('.nav-item'); if(!item) return;
+    nav.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+    item.classList.add('active');
+    showSection(item.dataset.k);
     document.getElementById('side').classList.remove('open');
   });
 
@@ -1660,6 +1673,45 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
 
   /* ── Part 4: analysis tables (doctors / drugs / sections) ── */
   function activeData(){ return STATE[STATE.active] && STATE[STATE.active].data; }
+
+  /* ── shared period-comparison layer (used across every section) ── */
+  let CMP_ON = true;   // when a branch has 2+ periods, sections show comparison by default
+  function cmpAvailable(){ return STATE.active!=='ALL' && ((STATE[STATE.active]||{}).periods||[]).length>=2; }
+  function orderedPeriods(bk){
+    const periods = (STATE[bk].periods||[]);
+    const scored = periods.map((p,i)=>({ p, i, info:periodInfo(p.name) }));
+    const detected = scored.every(s=>s.info.sure) && (new Set(scored.map(s=>s.info.score)).size===scored.length);
+    let ordered = detected ? scored.slice().sort((a,b)=>a.info.score-b.info.score) : scored.slice().sort((a,b)=>a.i-b.i);
+    if(_cmpReverse) ordered = ordered.slice().reverse();
+    return { list: ordered.map(s=>({ label:s.info.label, data:s.p.data, file:s.p.name })), detected };
+  }
+  function mergeCompare(oldArr, newArr, key){
+    key = key||'total'; const map=new Map();
+    (oldArr||[]).forEach(x=>{ const k=entityKey(x.name); if(!map.has(k)) map.set(k,{name:x.name, section:x.section, before:0, after:0}); map.get(k).before += (x[key]||0); });
+    (newArr||[]).forEach(x=>{ const k=entityKey(x.name); if(!map.has(k)) map.set(k,{name:x.name, section:x.section, before:0, after:0}); const e=map.get(k); e.after += (x[key]||0); if(x.section&&!e.section)e.section=x.section; });
+    return [...map.values()].map(e=>({ name:e.name, section:e.section, before:e.before, after:e.after,
+      delta:e.after-e.before, pct: e.before>0? ((e.after-e.before)/e.before*100):(e.after>0?100:0) }));
+  }
+  function chgChip(before, after, badge){
+    const b=badge?' badge':'';
+    if(!before && !after) return '<span class="chg flat'+b+'">—</span>';
+    if(!before) return '<span class="chg up'+b+'">جديد</span>';
+    if(!after) return '<span class="chg down'+b+'">↓ 100%</span>';
+    const g=((after-before)/before*100), up=g>=0;
+    return '<span class="chg '+(g===0?'flat':up?'up':'down')+b+'">'+(g===0?'—':(up?'▲ +':'▼ ')+Math.abs(g).toFixed(0)+'%')+'</span>';
+  }
+  function cmpToggleBtn(cmpOn){ return '<button class="cmp-toggle'+(cmpOn?' on':'')+'" id="cmpToggle">'+(cmpOn?'⇆ مقارنة الفترتين':'📄 فترة واحدة')+'</button>'; }
+  function cmpBannerHTML(ord){
+    const o=ord.list[0], n=ord.list[ord.list.length-1];
+    return (ord.detected
+      ? '<div class="cmp-order ok">🕓 مقارنة حسب التاريخ: <b>'+esc(o.label)+'</b> (الأقدم) ← <b>'+esc(n.label)+'</b> (الأحدث)'
+      : '<div class="cmp-order warn">⚠️ الترتيب حسب الرفع: <b>'+esc(o.label)+'</b> ← <b>'+esc(n.label)+'</b> — لو غير صحيح:')
+      + '<button class="cmp-swap" id="cmpSwap">⇄ عكس</button></div>';
+  }
+  function wireCmpControls(){
+    const sw=document.getElementById('cmpSwap'); if(sw) sw.onclick=()=>{ _cmpReverse=!_cmpReverse; rerenderCurrent(); };
+    const tg=document.getElementById('cmpToggle'); if(tg) tg.onclick=()=>{ CMP_ON=!CMP_ON; rerenderCurrent(); };
+  }
   function rankHtml(i){ const c=i===0?'g1':i===1?'g2':i===2?'g3':''; return '<span class="rank '+c+'">'+(i+1)+'</span>'; }
   function barHtml(v,max){ const p=max>0?(v*100/max):0; return '<div class="bar-cell"><div class="bar" style="width:'+Math.max(2,p)+'%"></div><div class="bv">'+p.toFixed(1)+'%</div></div>'; }
 
@@ -1689,6 +1741,35 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
       return;
     }
     const conf = TABLES[k];
+    const canCmp = cmpAvailable();
+    // ── comparison mode: oldest vs newest, per-item, with %change ──
+    if(canCmp && CMP_ON){
+      const ord = orderedPeriods(STATE.active);
+      const oldest=ord.list[0], newest=ord.list[ord.list.length-1];
+      const arrOf = data => conf.kind==='doc'?data.doctors:conf.kind==='drug'?data.drugs:data.sections;
+      const cmp = mergeCompare(arrOf(oldest.data), arrOf(newest.data));
+      TB = { k, conf, d, cmpOn:true, cmp, oldest, newest, sort:{key:'after', dir:-1}, term:'' };
+      const nameL = conf.kind==='doc'?'الطبيب':conf.kind==='drug'?'الدواء':'القسم';
+      const secCol = conf.kind==='doc' ? '<th>القسم</th>' : '';
+      const thead = '<th style="width:52px">#</th><th data-sk="name">'+nameL+' <span class="arr"></span></th>'+secCol
+        + '<th data-sk="before">'+esc(oldest.label)+' <span class="arr"></span></th>'
+        + '<th data-sk="after">'+esc(newest.label)+' <span class="arr"></span></th>'
+        + '<th data-sk="pct">التغيّر <span class="arr"></span></th><th style="width:150px">النسبة</th>';
+      stub.innerHTML =
+        '<div class="tbl-card"><div class="tbl-head">'
+        + '<div class="tbl-title"><span class="dot"></span> '+esc(conf.title)+' — مقارنة · '+esc(curBranch().label)+'</div>'
+        + '<div style="display:flex;gap:8px;align-items:center;">'+cmpToggleBtn(true)+'<div class="search-in"><input placeholder="🔎 ابحث بالاسم…"><span class="si-ico"></span></div></div></div>'
+        + cmpBannerHTML(ord)
+        + '<div class="tbl-scroll"><table class="data"><thead><tr>'+thead+'</tr></thead><tbody id="tbody"></tbody></table></div></div>';
+      wireCmpControls();
+      const inp = stub.querySelector('.search-in input');
+      inp.addEventListener('input', ()=>{ TB.term = inp.value.trim().toLowerCase(); paintCompareRows(); });
+      stub.querySelectorAll('th[data-sk]').forEach(th=>th.addEventListener('click', ()=>{
+        const key=th.dataset.sk; if(TB.sort.key===key) TB.sort.dir*=-1; else { TB.sort.key=key; TB.sort.dir=-1; } paintCompareRows();
+      }));
+      paintCompareRows();
+      return;
+    }
     const rows = (conf.kind==='doc'?d.doctors:conf.kind==='drug'?d.drugs:d.sections).slice();
     TB = { k, conf, d, rows, sort:{key:conf.sort, dir:-1}, term:'' };
     const thead = conf.cols.map(c=>{
@@ -1698,8 +1779,9 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
     stub.innerHTML =
       '<div class="tbl-card"><div class="tbl-head">'
       + '<div class="tbl-title"><span class="dot"></span> '+esc(conf.title)+' — '+esc(curBranch().label)+'</div>'
-      + '<div class="search-in"><input placeholder="🔎 ابحث بالاسم…"><span class="si-ico"></span></div></div>'
+      + '<div style="display:flex;gap:8px;align-items:center;">'+(canCmp?cmpToggleBtn(false):'')+'<div class="search-in"><input placeholder="🔎 ابحث بالاسم…"><span class="si-ico"></span></div></div></div>'
       + '<div class="tbl-scroll"><table class="data"><thead><tr>'+thead+'</tr></thead><tbody id="tbody"></tbody></table></div></div>';
+    if(canCmp) wireCmpControls();
     const inp = stub.querySelector('.search-in input');
     inp.addEventListener('input', ()=>{ TB.term = inp.value.trim().toLowerCase(); paintRows(); });
     stub.querySelectorAll('th[data-sk]').forEach(th=>th.addEventListener('click', ()=>{
@@ -1708,6 +1790,30 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
       paintRows();
     }));
     paintRows();
+  }
+
+  function paintCompareRows(){
+    const { conf, cmp, sort, term } = TB;
+    let list = cmp;
+    if(term) list = list.filter(r=>String(r.name||'').toLowerCase().includes(term));
+    list = list.slice().sort((a,b)=>{ const av=a[sort.key], bv=b[sort.key];
+      if(typeof av==='string') return sort.dir*String(av).localeCompare(String(bv),'ar');
+      return sort.dir*((av||0)-(bv||0)); });
+    const max = list.reduce((m,r)=>Math.max(m, r.after||0), 0);
+    const secCell = conf.kind==='doc';
+    const tbody = stub.querySelector('#tbody');
+    tbody.innerHTML = list.map((r,i)=>
+      '<tr data-name="'+escAttr(r.name)+'"><td>'+rankHtml(i)+'</td>'
+      + '<td><strong>'+esc(r.name)+'</strong></td>'
+      + (secCell?'<td><span class="tag teal">'+esc(r.section||'—')+'</span></td>':'')
+      + '<td class="num" style="color:var(--ink-3)">'+fmt(r.before)+'</td>'
+      + '<td class="num"><b>'+fmt(r.after)+'</b></td>'
+      + '<td>'+chgChip(r.before, r.after, true)+'</td>'
+      + '<td>'+barHtml(r.after, max)+'</td></tr>'
+    ).join('') || '<tr><td colspan="'+(secCell?7:6)+'" style="text-align:center;padding:30px;color:var(--ink-3)">لا توجد نتائج</td></tr>';
+    stub.querySelectorAll('th[data-sk]').forEach(th=>{ const on=th.dataset.sk===sort.key; th.classList.toggle('sorted',on);
+      const arr=th.querySelector('.arr'); if(arr) arr.textContent = on ? (sort.dir<0?'▼':'▲') : ''; });
+    tbody.querySelectorAll('tr[data-name]').forEach(tr=>tr.onclick=()=>openRecord(TB.k, tr.dataset.name));
   }
 
   function paintRows(){
@@ -2020,6 +2126,43 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
     }
     const products = kind==='pl' ? PRIVATE_LABEL : PUREHERB_PRODUCTS;
     const matcher  = kind==='pl' ? findPrivateLabelProduct : findPureHerbProduct;
+    const canCmp = cmpAvailable();
+    // ── comparison mode: each product's writings, oldest vs newest ──
+    if(canCmp && CMP_ON){
+      const ord = orderedPeriods(STATE.active);
+      const oldest=ord.list[0], newest=ord.list[ord.list.length-1];
+      const so = targetedStats(oldest.data, products, matcher);
+      const sn = targetedStats(newest.data, products, matcher);
+      const beforeByKey={}; so.forEach(s=>beforeByKey[s.key]=s.count);
+      const merged = sn.map(s=>({ ...s, before:beforeByKey[s.key]||0, after:s.count })).sort((a,b)=>b.after-a.after);
+      const totB=so.reduce((t,x)=>t+x.count,0), totA=sn.reduce((t,x)=>t+x.count,0);
+      TG = { kind, stats:sn, d:newest.data };
+      stub.innerHTML =
+        '<div class="tg-summary"><span class="tg-badge">'+esc(title)+' — مقارنة</span>'
+        + '<span class="tg-stat">'+esc(oldest.label)+': <b>'+fmt(totB)+'</b></span>'
+        + '<span class="tg-stat">'+esc(newest.label)+': <b>'+fmt(totA)+'</b></span>'
+        + '<span class="tg-stat">التغيّر: '+chgChip(totB,totA,true)+'</span>'
+        + '<span class="tg-stat" style="margin-inline-start:auto">'+cmpToggleBtn(true)+'</span></div>'
+        + cmpBannerHTML(ord)
+        + '<div class="prod-grid">'
+        + merged.map((s,i)=>{
+            const rc = i===0?'g1':i===1?'g2':i===2?'g3':'';
+            return '<div class="prod-card cmp'+((s.before||s.after)?'':' zero')+'" data-pk="'+escAttr(s.key)+'">'
+              + '<div class="prod-top"><span class="prod-rank '+rc+'">'+(i+1)+'</span>'
+              +   '<span class="prod-cmp"><span class="prod-count">'+fmt(s.after)+'</span><span class="pc-from">من '+fmt(s.before)+'</span></span></div>'
+              + '<div class="prod-name">'+esc(s.name)+'</div><div class="prod-form">'+esc(s.form)+'</div>'
+              + '<div class="prod-stats"><span>'+esc(oldest.label)+' <b>'+fmt(s.before)+'</b></span><span>'+esc(newest.label)+' <b>'+fmt(s.after)+'</b></span>'
+              +   '<span style="margin-inline-start:auto">'+chgChip(s.before,s.after,true)+'</span></div>'
+              + '</div>';
+          }).join('')
+        + '</div>';
+      wireCmpControls();
+      if(kind==='pl'){ stub.insertAdjacentHTML('beforeend', mcCardHTML()); mcWire(); }
+      stub.querySelectorAll('.prod-card[data-pk]').forEach(el=>el.onclick=()=>{
+        const s = TG.stats.find(x=>x.key===el.dataset.pk); if(s) drawProduct(s, kind);
+      });
+      return;
+    }
     const stats = targetedStats(d, products, matcher);
     const total = stats.reduce((s,x)=>s+x.count,0);
     const active = stats.filter(x=>x.count>0).length;
@@ -2029,7 +2172,7 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
       + '<span class="tg-stat">المنتجات المكتوبة: <b>'+active+'</b> / '+products.length+'</span>'
       + '<span class="tg-stat">إجمالي الكتابات: <b>'+fmt(total)+'</b></span>'
       + '<span class="tg-stat">من إجمالي الوصفات: <b>'+pctOf(total,d.totalRows).toFixed(1)+'%</b></span>'
-      + '<span class="tg-stat" style="margin-inline-start:auto;color:var(--ink-3)">'+esc(curBranch().label)+'</span></div>'
+      + '<span class="tg-stat" style="margin-inline-start:auto;display:flex;gap:8px;align-items:center;color:var(--ink-3)">'+(canCmp?cmpToggleBtn(false):'')+esc(curBranch().label)+'</span></div>'
       + '<div class="prod-grid">'
       + stats.map((s,i)=>{
           const rc = i===0?'g1':i===1?'g2':i===2?'g3':'';
@@ -2040,6 +2183,7 @@ function dtParseLocal(ds){var p=String(ds||"").split("-").map(Number);return new
             + '</div>';
         }).join('')
       + '</div>';
+    if(canCmp) wireCmpControls();
     if(kind==='pl'){ stub.insertAdjacentHTML('beforeend', mcCardHTML()); mcWire(); }
     stub.querySelectorAll('.prod-card[data-pk]').forEach(el=>el.onclick=()=>{
       const s = TG.stats.find(x=>x.key===el.dataset.pk); if(s) drawProduct(s, kind);
