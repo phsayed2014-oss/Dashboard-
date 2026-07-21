@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10182b">
+  <title>مبيعات Private Label و PureHerb | متابعة يومية وتوقع</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>if(window.pdfjsLib&&pdfjsLib.GlobalWorkerOptions){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}</script>
+  <style>
+    :root{
+      --void:#080d19;
+      --base:#0d1424;
+      --card:#121d31;
+      --raised:#192640;
+      --line:rgba(216,226,255,.11);
+      --line-strong:rgba(216,226,255,.2);
+      --text:#f2f6ff;
+      --dim:#9aa9c5;
+      --muted:#6b7894;
+      --blue:#6395ff;
+      --teal:#1bd1ae;
+      --amber:#f7bd57;
+      --rose:#fc7185;
+      --violet:#9d7aff;
+      --shadow:0 18px 48px rgba(0,0,0,.28);
+    }
+    *{box-sizing:border-box}
+    html{background:var(--void)}
+    body{margin:0;min-height:100vh;background:
+      radial-gradient(circle at 12% 0%,rgba(99,149,255,.16),transparent 31rem),
+      radial-gradient(circle at 94% 93%,rgba(27,209,174,.12),transparent 28rem),
+      var(--void);color:var(--text);font-family:"IBM Plex Sans Arabic",Arial,sans-serif}
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .app{max-width:1320px;margin:auto;padding:28px 24px 42px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:20px 24px;background:rgba(18,29,49,.8);border:1px solid var(--line);border-radius:22px;backdrop-filter:blur(18px);box-shadow:var(--shadow);margin-bottom:20px}
+    .brand{display:flex;align-items:center;gap:14px}
+    .brand-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:15px;background:linear-gradient(135deg,var(--blue),var(--teal));box-shadow:0 10px 24px rgba(80,129,255,.32);font-size:23px}
+    .brand h1{font-family:Alexandria,sans-serif;font-size:20px;line-height:1.35;margin:0;font-weight:800}
+    .brand p{margin:3px 0 0;color:var(--dim);font-size:12px;font-weight:600}
+    .status{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:8px 12px;background:rgba(27,209,174,.1);border:1px solid rgba(27,209,174,.23);font-size:11px;color:#74edd4;font-weight:800;white-space:nowrap}
+    .status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 12px var(--teal)}
+    .hero{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;padding:22px 24px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(135deg,rgba(99,149,255,.1),rgba(27,209,174,.05));margin-bottom:20px}
+    .eyebrow{color:#86aaff;font-size:11px;font-weight:800;letter-spacing:.04em;margin-bottom:7px}
+    .hero h2{font-family:Alexandria,sans-serif;font-size:19px;line-height:1.5;margin:0}
+    .hero p{color:var(--dim);font-size:12.5px;margin:7px 0 0;line-height:1.7}
+    .hero-note{font-size:11px;font-weight:700;color:var(--dim);padding:9px 12px;background:rgba(8,13,25,.35);border:1px solid var(--line);border-radius:10px}
+    .card{background:rgba(18,29,49,.88);border:1px solid var(--line);border-radius:19px;box-shadow:var(--shadow)}
+    .entry-card{padding:20px;margin-bottom:18px}
+    .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+    .card-title{font-family:Alexandria,sans-serif;font-weight:800;font-size:14px}
+    .card-help{color:var(--muted);font-size:11px;margin-top:5px;line-height:1.6}
+    .entry-grid{display:grid;grid-template-columns:repeat(7,minmax(112px,1fr)) auto;gap:11px;align-items:end}
+    .field{display:grid;gap:6px}
+    .field label{font-size:11px;color:var(--dim);font-weight:700}
+    .field input,.field select{width:100%;height:42px;border:1px solid var(--line);border-radius:9px;background:var(--base);color:var(--text);padding:0 11px;outline:none;font-size:12.5px;font-weight:600}
+    .field input:focus,.field select:focus{border-color:rgba(99,149,255,.8);box-shadow:0 0 0 3px rgba(99,149,255,.12)}
+    input[type="date"]{color-scheme:dark}
+    .btn{height:42px;border:0;border-radius:9px;padding:0 16px;font-size:12.5px;font-weight:800;transition:transform .15s,filter .15s}
+    .btn:hover{transform:translateY(-1px);filter:brightness(1.1)}
+    .btn-primary{color:#06130f;background:linear-gradient(135deg,#74edd4,var(--teal));box-shadow:0 8px 18px rgba(27,209,174,.17)}
+    .btn-secondary{height:34px;padding:0 12px;background:var(--raised);border:1px solid var(--line);color:var(--dim)}
+    .btn-danger{height:34px;padding:0 12px;background:rgba(252,113,133,.1);border:1px solid rgba(252,113,133,.25);color:#ff9bab}
+    .edit-banner{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;background:rgba(157,122,255,.1);border:1px solid rgba(157,122,255,.26);color:#cabaff;font-size:11.5px;font-weight:700}
+    .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin-bottom:18px}
+    .kpi.rose::before{background:var(--rose)}
+    .kpi-value.rose{color:#ff9bab}
+    .kpi{padding:17px;border-radius:16px;border:1px solid var(--line);background:rgba(18,29,49,.88);min-height:118px;position:relative;overflow:hidden}
+    .kpi::before{content:"";height:3px;position:absolute;right:0;left:0;top:0;background:var(--blue)}
+    .kpi.teal::before{background:var(--teal)}
+    .kpi.violet::before{background:var(--violet)}
+    .kpi.amber::before{background:var(--amber)}
+    .kpi-label{color:var(--dim);font-size:11px;font-weight:700}
+    .kpi-value{font:800 28px/1.25 Alexandria,sans-serif;margin-top:10px;letter-spacing:-.04em}
+    .kpi-value.teal{color:#71ecd3}.kpi-value.violet{color:#c4b4ff}.kpi-value.amber{color:#ffd382}
+    .kpi-unit{font-size:14px;color:var(--muted);font-weight:600}
+    .kpi-foot{font-size:10.5px;color:var(--muted);margin-top:7px;font-weight:600}
+    .chart-card{padding:20px;margin-bottom:18px}
+    .chart-top{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+    .chart-title{font-family:Alexandria,sans-serif;font-size:14px;font-weight:800}
+    .range-copy{font-size:11px;color:var(--muted);margin-top:4px}
+    .filters{display:flex;gap:9px;flex-wrap:wrap;align-items:end}
+    .filter{display:grid;gap:5px}
+    .filter label{font-size:10px;font-weight:700;color:var(--muted)}
+    .filter input,.filter select{height:35px;border-radius:8px;border:1px solid var(--line);background:var(--base);color:var(--text);padding:0 9px;font-size:11.5px;font-weight:600;outline:none}
+    .filter input:focus,.filter select:focus{border-color:var(--blue)}
+    .filter-summary{padding:8px 11px;background:rgba(99,149,255,.08);border:1px solid rgba(99,149,255,.16);border-radius:8px;font-size:11px;color:var(--dim);margin-bottom:13px}
+    .filter-summary b{color:var(--text)}
+    .chart-wrap{height:330px;position:relative}
+    .table-card{padding:20px}
+    .table-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:13px}
+    .table-title{font-family:Alexandria,sans-serif;font-size:14px;font-weight:800}
+    .table-sub{font-size:11px;color:var(--muted);margin-top:4px}
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:11px}
+    .records-wrap{max-height:430px;overflow-y:auto}
+    .records-wrap thead th{position:sticky;top:0;z-index:1;background:#141f33}
+    table{width:100%;min-width:780px;border-collapse:collapse;font-size:12px}
+    th{padding:11px 12px;text-align:right;background:rgba(25,38,64,.58);color:var(--dim);font-size:10.5px;font-weight:800;white-space:nowrap}
+    td{padding:11px 12px;border-top:1px solid var(--line);color:#dce5f5;font-weight:600}
+    tr:hover td{background:rgba(255,255,255,.017)}
+    .num{text-align:center;font-family:Alexandria,sans-serif;font-weight:800}.num.units{color:#71ecd3}.num.rx{color:#c4b4ff}.num.money{color:#ffd382}
+    .product{display:flex;align-items:center;gap:8px}.product-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}.product small{display:block;font-size:10px;color:var(--muted);margin-top:2px;font-weight:500}
+    .row-actions{white-space:nowrap;text-align:left}.row-actions button{height:28px;padding:0 8px;border-radius:6px;font-size:10.5px;font-weight:800;margin-right:4px}
+    .empty{padding:42px 15px;text-align:center;color:var(--muted);font-size:12px;line-height:1.8}
+    .empty .empty-icon{font-size:31px;margin-bottom:7px}
+    .footer{text-align:center;color:var(--muted);font-size:10.5px;font-weight:600;margin-top:19px}
+    .toast{position:fixed;left:24px;bottom:24px;z-index:10;max-width:340px;padding:12px 15px;border-radius:11px;background:#1b2c46;border:1px solid rgba(99,149,255,.32);box-shadow:var(--shadow);color:var(--text);font-size:12px;font-weight:700;transform:translateY(90px);opacity:0;transition:.25s}
+    .toast.show{transform:translateY(0);opacity:1}
+    .btn-import{height:34px;padding:0 13px;background:rgba(99,149,255,.12);border:1px solid rgba(99,149,255,.3);color:#a9c1ff;border-radius:9px;font-size:12px;font-weight:800}
+    .topbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .btn-tool{height:32px;padding:0 11px;background:var(--raised);border:1px solid var(--line);color:var(--dim);border-radius:8px;font-size:11.5px;font-weight:800}
+    .btn-tool:hover{color:var(--text);border-color:var(--line-strong)}
+    .btn-tool.danger{background:rgba(252,113,133,.1);border-color:rgba(252,113,133,.28);color:#ff9bab}
+    .btn-tool.danger:hover{background:rgba(252,113,133,.18);color:#ffb3bf}
+    @media(max-width:680px){.topbar-actions .status{display:none}.btn-tool{font-size:11px;padding:0 9px}}
+    .analysis-card{padding:20px;margin-bottom:18px}
+    .analysis-head{margin-bottom:14px}
+    .forecast-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+    .fc{padding:15px;border-radius:14px;border:1px solid var(--line);background:rgba(8,13,25,.4);position:relative;overflow:hidden}
+    .fc::before{content:"";height:3px;position:absolute;right:0;left:0;top:0;background:var(--amber)}
+    .fc.teal::before{background:var(--teal)}.fc.blue::before{background:var(--blue)}.fc.violet::before{background:var(--violet)}
+    .fc .fc-label{font-size:11px;color:var(--dim);font-weight:700}
+    .fc .fc-value{font:800 23px/1.2 Alexandria,sans-serif;margin-top:9px;letter-spacing:-.03em}
+    .fc .fc-value .u{font-size:13px;color:var(--muted);font-weight:600}
+    .fc .fc-value.up{color:#71ecd3}.fc .fc-value.down{color:#ff9bab}
+    .fc .fc-foot{font-size:10px;color:var(--muted);margin-top:7px;font-weight:600}
+    .insight{padding:13px 15px;border-radius:11px;background:rgba(99,149,255,.07);border:1px solid rgba(99,149,255,.16);font-size:12.5px;line-height:1.9;color:#dce5f5;margin-bottom:14px}
+    .insight b{color:#fff}.insight .good{color:#71ecd3;font-weight:800}.insight .bad{color:#ff9bab;font-weight:800}
+    .analysis-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .an{padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(18,29,49,.6)}
+    .an .an-label{font-size:10.5px;color:var(--muted);font-weight:700}
+    .an .an-value{font-size:14px;font-weight:800;margin-top:6px}
+    .an .an-sub{font-size:10px;color:var(--muted);margin-top:4px}
+    @media(max-width:900px){.forecast-grid,.analysis-grid{grid-template-columns:1fr 1fr}}
+    .target-box{padding:14px 15px;border:1px solid var(--line);border-radius:13px;background:rgba(27,209,174,.05);margin-bottom:14px}
+    .target-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+    .target-label{font-size:12.5px;font-weight:800}
+    .target-top input{height:36px;width:150px;border:1px solid var(--line);border-radius:8px;background:var(--base);color:var(--text);padding:0 11px;font-size:13px;font-weight:700;outline:none}
+    .target-top input:focus{border-color:var(--teal)}
+    .target-pct{margin-inline-start:auto;font:800 20px/1 Alexandria,sans-serif;color:#71ecd3}
+    .target-bar{position:relative;height:12px;background:var(--base);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+    .target-fill{position:absolute;inset:0 0 0 auto;height:100%;background:linear-gradient(90deg,#1bd1ae,#74edd4);border-radius:99px;transition:width .5s}
+    .target-proj{position:absolute;top:-3px;width:2px;height:18px;background:#ffd382;box-shadow:0 0 6px #ffd382}
+    .target-meta{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);font-weight:700;margin-top:8px}
+    .target-status{font-size:11.5px;font-weight:700;color:var(--dim);margin-top:8px;line-height:1.7}
+    .ptarget-input{width:92px;height:32px;border:1px solid var(--line);border-radius:7px;background:var(--base);color:var(--text);padding:0 8px;font-size:12px;font-weight:700;text-align:center;outline:none}
+    .ptarget-input:focus{border-color:var(--teal)}
+    .mini-bar{position:relative;height:9px;background:var(--base);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+    .mini-fill{position:absolute;inset:0 0 0 auto;height:100%;background:linear-gradient(90deg,#1bd1ae,#74edd4);border-radius:99px}
+    .mini-proj{position:absolute;top:-3px;width:2px;height:15px;background:#ffd382}
+    .mini-pct{font-size:9.5px;color:var(--muted);font-weight:700;margin-top:4px}
+    .leak-list{display:grid;gap:10px}
+    .leak-item{padding:12px 14px;border-radius:11px;border:1px solid var(--line);background:rgba(18,29,49,.6)}
+    .leak-item.high{border-color:rgba(252,113,133,.4);background:rgba(252,113,133,.07)}
+    .leak-item.mid{border-color:rgba(247,189,87,.35);background:rgba(247,189,87,.06)}
+    .leak-main{font-size:13px;font-weight:800}
+    .leak-nums{font-size:11.5px;color:var(--dim);font-weight:700;margin-top:5px}
+    .leak-nums b{color:var(--text)}
+    .leak-msg{font-size:11px;color:var(--muted);font-weight:600;margin-top:5px;line-height:1.6}
+    .leak-ok{padding:14px;border-radius:11px;border:1px solid rgba(27,209,174,.25);background:rgba(27,209,174,.06);color:#8fecdb;font-size:12.5px;font-weight:700;line-height:1.7}
+    .brand-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+    .brand-card{padding:16px;border-radius:14px;border:1px solid var(--line);border-top:3px solid var(--blue);background:rgba(8,13,25,.4)}
+    .brand-name{font-size:13px;font-weight:800;display:flex;align-items:center;gap:8px}
+    .brand-dot{width:10px;height:10px;border-radius:3px}
+    .brand-amount{font:800 24px/1.2 Alexandria,sans-serif;margin-top:10px;letter-spacing:-.03em}
+    .brand-amount .u{font-size:13px;color:var(--muted);font-weight:600}
+    .brand-sub{font-size:11px;color:var(--dim);font-weight:700;margin-top:7px}
+    .brand-sub b{color:var(--text)}
+    .brand-bar{height:7px;background:var(--base);border:1px solid var(--line);border-radius:99px;overflow:hidden;margin-top:10px}
+    .brand-fill{height:100%;border-radius:99px}
+    .brand-target{font-size:10px;color:var(--muted);font-weight:700;margin-top:5px}
+    @media(max-width:900px){.brand-grid{grid-template-columns:1fr}}
+    .product small{white-space:nowrap}
+    .brand-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+    .brand-tab{height:40px;padding:0 20px;border-radius:11px;background:rgba(18,29,49,.7);border:1px solid var(--line);color:var(--dim);font-size:13px;font-weight:800;transition:all .15s}
+    .brand-tab:hover{color:var(--text);border-color:var(--line-strong)}
+    .brand-tab.active{color:#06121f;background:linear-gradient(135deg,var(--bt,#6395ff),var(--bt,#6395ff));border-color:transparent;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+    .brand-tab[data-brand="all"].active{--bt:#f7bd57;color:#1c1403}
+    @media(max-width:680px){.brand-tab{flex:1;padding:0 10px;font-size:12px}}
+    .import-overlay{position:fixed;inset:0;z-index:40;background:rgba(4,8,16,.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px}
+    .import-modal{background:var(--card);border:1px solid var(--line-strong);border-radius:18px;box-shadow:var(--shadow);width:min(760px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+    .import-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
+    .import-title{font-family:Alexandria,sans-serif;font-weight:800;font-size:15px}
+    .import-sub{color:var(--muted);font-size:11px;margin-top:5px;line-height:1.6;max-width:520px}
+    .import-body{padding:16px 20px;overflow:auto}
+    .import-report{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;background:rgba(8,13,25,.35)}
+    .import-report.err{border-color:rgba(252,113,133,.4);color:#ff9bab;font-size:12px;font-weight:700}
+    .import-report-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:11px}
+    .ir-file{font-size:12.5px;font-weight:800}
+    .ir-ok{font-size:10.5px;font-weight:800;color:#74edd4;background:rgba(27,209,174,.12);border:1px solid rgba(27,209,174,.28);padding:4px 9px;border-radius:999px}
+    .ir-warn{font-size:10.5px;font-weight:800;color:#ffd382;background:rgba(247,189,87,.12);border:1px solid rgba(247,189,87,.3);padding:4px 9px;border-radius:999px}
+    .import-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+    .import-fields label{font-size:11px;color:var(--dim);font-weight:700;display:block;margin-bottom:5px}
+    .import-fields select,.import-fields input{width:100%;height:38px;border:1px solid var(--line);border-radius:8px;background:var(--base);color:var(--text);padding:0 10px;font-size:12.5px;font-weight:600;outline:none}
+    .import-fields select:focus,.import-fields input:focus{border-color:var(--blue)}
+    .import-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 20px;border-top:1px solid var(--line)}
+    .import-count{font-size:12px;font-weight:800;color:var(--dim)}
+    .import-foot>div{display:flex;gap:9px}
+    .import-modal table{min-width:0}
+    .import-modal .empty{padding:20px;font-size:11.5px}
+    .ir-type{font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;margin-right:6px;vertical-align:middle}
+    .ir-type.rx{color:#c4b4ff;background:rgba(157,122,255,.14);border:1px solid rgba(157,122,255,.3)}
+    .ir-type.sales{color:#74edd4;background:rgba(27,209,174,.12);border:1px solid rgba(27,209,174,.28)}
+    @media(max-width:1080px){.entry-grid{grid-template-columns:repeat(3,1fr)}.kpis{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:680px){.app{padding:16px 13px 30px}.topbar{padding:16px;align-items:flex-start}.status{display:none}.brand h1{font-size:16px}.hero{padding:17px;align-items:flex-start;flex-direction:column}.hero h2{font-size:16px}.entry-card,.chart-card,.table-card{padding:15px}.entry-grid{grid-template-columns:1fr 1fr}.entry-grid .field:nth-child(3){grid-column:span 2}.entry-grid .btn{grid-column:span 2}.kpis{grid-template-columns:1fr 1fr;gap:9px}.kpi{padding:13px;min-height:104px}.kpi-value{font-size:22px}.chart-wrap{height:270px}.filters{width:100%}.filter{flex:1;min-width:132px}.filter select,.filter input{width:100%}.toast{left:14px;right:14px;bottom:14px;max-width:none}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">📈</div>
+        <div>
+          <h1>Private Label &amp; PureHerb</h1>
+          <p>لوحة مستقلة لمتابعة المبيعات والمبلغ والكتابات اليومية</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button type="button" class="btn-tool" id="backupBtn" title="حفظ نسخة احتياطية (JSON) على جهازك">💾 نسخة احتياطية</button>
+        <button type="button" class="btn-tool" id="restoreBtn" title="استعادة نسخة احتياطية سابقة">📥 استعادة</button>
+        <button type="button" class="btn-tool" id="csvBtn" title="تصدير السجلات كملف Excel/CSV">📊 CSV</button>
+        <button type="button" class="btn-tool danger" id="clearBtn" title="مسح كل السجلات للبدء من جديد">🗑️ مسح الكل</button>
+        <input type="file" id="restoreInput" accept="application/json,.json" hidden>
+        <span class="status">حفظ تلقائي على هذا الجهاز</span>
+      </div>
+    </header>
+    <section class="hero">
+      <div>
+        <div class="eyebrow">DAILY SALES TRACKING</div>
+        <h2 id="heroTitle">متابعة 13 منتج عبر الصيدليات 1 و7 و18</h2>
+        <p>سجّل الحبات المباعة والمبلغ (ريال) وكتابات الأطباء لكل منتج وصيدلية، ثم راقب المسار المتغير لآخر ثلاثة أشهر.</p>
+      </div>
+      <div class="hero-note">السجل الواحد = تاريخ × صيدلية × منتج</div>
+    </section>
+    <div id="dashboard"></div>
+    <div class="footer">Private Label Sales Dashboard · البيانات محفوظة محلياً في المتصفح</div>
+  </main>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const PRODUCTS = [
+      // Private Label
+      { key:'reflex', name:'Reflex', form:'Massage Emulgel · 100ML', color:'#6395ff', brand:'Private Label' },
+      { key:'rizer', name:'Rizer', form:'Apply Cream · 75ML', color:'#1bd1ae', brand:'Private Label' },
+      { key:'oracure', name:'Oracure', form:'Mouth Wash · 300ML', color:'#f7bd57', brand:'Private Label' },
+      { key:'intimo', name:'Intimo', form:'Vaginal Wash · 250ML', color:'#fc7185', brand:'Private Label' },
+      { key:'nostriderm', name:'Nostriderm', form:'Ointment · 50ML', color:'#9d7aff', brand:'Private Label' },
+      { key:'nostricure', name:'Nostricure', form:'Oral Gel · 30ML', color:'#47c9f3', brand:'Private Label' },
+      // PureHerb
+      { key:'pure_omega', name:'Pure Omega-3', form:'Syrup · 240ML', color:'#22c55e', brand:'PureHerb' },
+      { key:'purefeel', name:'PureFeel', form:'Tablet · 30Tab', color:'#f472b6', brand:'PureHerb' },
+      { key:'centrozon_w', name:'Centrozon Women', form:'Tablet · 30Tab', color:'#e879f9', brand:'PureHerb' },
+      { key:'centrozon', name:'Centrozon', form:'Tablet · 30Tab', color:'#a855f7', brand:'PureHerb' },
+      { key:'zincolive', name:'Zincolive', form:'Syrup · 150ML', color:'#14b8a6', brand:'PureHerb' },
+      { key:'bonefriend', name:'BoneFriend', form:'Tablet · 30Tab', color:'#eab308', brand:'PureHerb' },
+      { key:'argigrow', name:'ArgiGrow', form:'Syrup · 150ML', color:'#f97316', brand:'PureHerb' }
+    ];
+    const BRANDS = ['Private Label', 'PureHerb'];
+    const PHARMACIES = ['صيدلية 1','صيدلية 7','صيدلية 18'];
+    const STORAGE_KEY = 'private_label_sales_dashboard_v1';
+    const TARGET_KEY = 'private_label_monthly_target';
+    const UI = { startDate:null, endDate:null, days:30, brand:'all', pharmacy:'all', product:'all', editingId:null };
+    const PERIODS = [{days:7,label:'أسبوع'},{days:14,label:'أسبوعين'},{days:30,label:'شهر'},{days:90,label:'٣ شهور'}];
+    const IMPORT = { reports:[] };
+    let trendChart = null;
+
+    function localDateString(date){
+      return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0');
+    }
+    function today(){ return localDateString(new Date()); }
+    function dateFromString(value){
+      const bits = String(value || '').split('-').map(Number);
+      return bits.length === 3 ? new Date(bits[0], bits[1] - 1, bits[2]) : null;
+    }
+    function dateLabel(value, short){
+      const date = dateFromString(value);
+      if(!date) return '—';
+      const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+      return short ? date.getDate() + ' ' + months[date.getMonth()].slice(0,3) : date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
+    }
+    function number(value){
+      const parsed = Number(value);
+      return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : 0;
+    }
+    function format(value){ return Number(value || 0).toLocaleString('en-US', {maximumFractionDigits:0}); }
+    function product(key){ return PRODUCTS.find(item => item.key === key) || null; }
+    function escapeHtml(value){
+      return String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+    }
+    function notify(message){
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(notify.timer);
+      notify.timer = setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+    function loadEntries(){
+      try{
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        if(!Array.isArray(saved)) return [];
+        return saved.map((entry,index) => {
+          if(!entry || !/^\d{4}-\d{2}-\d{2}$/.test(String(entry.date || ''))) return null;
+          const safeId = String(entry.id || ('legacy-' + index)).replace(/[^a-zA-Z0-9_-]/g,'') || ('legacy-' + index);
+          if(!product(entry.product) || !PHARMACIES.includes(entry.pharmacy)) return null;
+          return {
+            id:safeId,
+            date:entry.date,
+            pharmacy:entry.pharmacy,
+            product:entry.product,
+            units:number(entry.units),
+            amount:number(entry.amount),
+            cost:number(entry.cost),
+            prescriptions:number(entry.prescriptions),
+            updatedAt:String(entry.updatedAt || '')
+          };
+        }).filter(Boolean);
+      }catch(error){
+        console.warn('Unable to load sales records', error);
+        return [];
+      }
+    }
+    function saveEntries(entries){
+      try{
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+        return true;
+      }catch(error){
+        notify('تعذر حفظ البيانات على هذا الجهاز');
+        return false;
+      }
+    }
+    // أهداف: إجمالي + لكل منتج + لكل صيدلية (مع توافق مع النسخة القديمة كرقم واحد)
+    function getTargets(){
+      const raw = localStorage.getItem(TARGET_KEY);
+      if(!raw) return {total:0, products:{}, pharmacies:{}};
+      try{
+        const v = JSON.parse(raw);
+        if(typeof v === 'number') return {total:v, products:{}, pharmacies:{}};
+        return {total:number(v.total), products:v.products||{}, pharmacies:v.pharmacies||{}};
+      }catch(e){ return {total:number(raw), products:{}, pharmacies:{}}; }
+    }
+    function saveTargets(t){ try{ localStorage.setItem(TARGET_KEY, JSON.stringify(t)); }catch(e){} }
+    function setProductTarget(key, val){ const t=getTargets(); const n=number(val); if(n) t.products[key]=n; else delete t.products[key]; saveTargets(t); }
+    function setPharmacyTarget(key, val){ const t=getTargets(); const n=number(val); if(n) t.pharmacies[key]=n; else delete t.pharmacies[key]; saveTargets(t); }
+    function setTotalTarget(val){ const t=getTargets(); t.total=number(val); saveTargets(t); }
+    function effectiveTotalTarget(){
+      const t=getTargets();
+      if(t.total>0) return t.total;
+      return Object.values(t.products).reduce((s,v)=>s+number(v),0);
+    }
+    // الهدف حسب سياق الفلاتر الحالية
+    function contextTarget(){
+      const t=getTargets();
+      if(UI.product !== 'all') return number(t.products[UI.product]);
+      if(UI.pharmacy !== 'all') return number(t.pharmacies[UI.pharmacy]);
+      return effectiveTotalTarget();
+    }
+    function setContextTarget(val){
+      if(UI.product !== 'all') setProductTarget(UI.product, val);
+      else if(UI.pharmacy !== 'all') setPharmacyTarget(UI.pharmacy, val);
+      else setTotalTarget(val);
+    }
+
+    // ===== BACKUP / RESTORE / CSV =====
+    function backupData(){
+      const data = localStorage.getItem(STORAGE_KEY) || '[]';
+      const blob = new Blob([data], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'private-label-backup-' + today() + '.json'; a.click();
+      URL.revokeObjectURL(a.href);
+      notify('تم تنزيل نسخة احتياطية ✓');
+    }
+    function exportCSV(){
+      const rows = [['التاريخ','الصيدلية','المنتج','العلامة','الحبات','المبلغ','التكلفة','الربح','الكتابات']];
+      loadEntries().sort((a,b) => a.date.localeCompare(b.date)).forEach(e => {
+        const it = product(e.product);
+        rows.push([e.date, e.pharmacy, it ? it.name : e.product, it ? it.brand : '', e.units, e.amount, e.cost, e.amount - e.cost, e.prescriptions]);
+      });
+      const csv = '﻿' + rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\r\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = 'private-label-' + today() + '.csv'; a.click();
+      URL.revokeObjectURL(a.href);
+      notify('تم تصدير CSV ✓');
+    }
+    function clearAllData(){
+      const count = loadEntries().length;
+      if(count === 0){ notify('لا توجد سجلات لمسحها'); return; }
+      if(!confirm('سيتم حذف كل سجلات المبيعات (' + count + ' سجل) نهائياً من هذا الجهاز.\nيُفضّل أخذ «نسخة احتياطية» أولاً.\n\nهل تريد المتابعة؟')) return;
+      try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+      UI.editingId = null;
+      notify('تم مسح كل السجلات ✓ — ابدأ من جديد');
+      render();
+    }
+    function restoreData(event){
+      const file = event.target.files[0];
+      event.target.value = '';
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        let imported;
+        try{ imported = JSON.parse(e.target.result); }catch(err){ notify('ملف غير صالح'); return; }
+        if(!Array.isArray(imported)){ notify('ملف النسخة غير صالح'); return; }
+        const valid = imported.filter(x => x && /^\d{4}-\d{2}-\d{2}$/.test(String(x.date || '')) && product(x.product) && PHARMACIES.includes(x.pharmacy));
+        if(!valid.length){ notify('لا توجد سجلات صالحة في الملف'); return; }
+        if(!confirm('دمج ' + valid.length + ' سجل من النسخة مع بياناتك الحالية؟')) return;
+        const current = loadEntries();
+        const keyOf = r => r.date + '|' + r.pharmacy + '|' + r.product;
+        const map = {}; current.forEach(r => map[keyOf(r)] = r);
+        let added = 0, updated = 0;
+        valid.forEach(x => {
+          const rec = {
+            id:(String(x.id || '').replace(/[^a-zA-Z0-9_-]/g,'')) || ('sale-' + Date.now() + '-' + Math.random().toString(36).slice(2,8)),
+            date:x.date, pharmacy:x.pharmacy, product:x.product,
+            units:number(x.units), amount:number(x.amount), cost:number(x.cost), prescriptions:number(x.prescriptions), updatedAt:String(x.updatedAt || '')
+          };
+          const k = keyOf(rec), ex = map[k];
+          if(ex){ if((rec.updatedAt || '') >= (ex.updatedAt || '')){ Object.assign(ex, {units:rec.units, amount:rec.amount, cost:rec.cost, prescriptions:rec.prescriptions, updatedAt:rec.updatedAt}); updated++; } }
+          else { current.push(rec); map[k] = rec; added++; }
+        });
+        if(!saveEntries(current)) return;
+        notify('تم الاستعادة: ' + added + ' جديد و' + updated + ' محدّث ✓');
+        render();
+      };
+      reader.readAsText(file);
+    }
+
+    function range(){
+      const end = dateFromString(UI.endDate || today()) || new Date();
+      let start = dateFromString(UI.startDate);
+      if(!start || start > end){   // لا تاريخ بداية مخصص أو غير صالح → استخدم المدة السريعة
+        const span = (PERIODS.find(p => p.days === UI.days) || {days:30}).days;
+        start = new Date(end);
+        start.setDate(start.getDate() - (span - 1));
+      }
+      const spanDays = Math.round((end - start) / 86400000) + 1;
+      return { start, end, startDate:localDateString(start), endDate:localDateString(end), spanDays };
+    }
+    function setPeriodPreset(days){
+      UI.days = days || 30;
+      const end = dateFromString(UI.endDate || today()) || new Date();
+      const start = new Date(end);
+      start.setDate(start.getDate() - (UI.days - 1));
+      UI.startDate = localDateString(start);
+      render();
+    }
+    function matches(entry){
+      return (UI.pharmacy === 'all' || entry.pharmacy === UI.pharmacy)
+        && (UI.product === 'all' || entry.product === UI.product)
+        && (UI.brand === 'all' || (product(entry.product) || {}).brand === UI.brand);
+    }
+    function setBrand(brand){
+      UI.brand = brand;
+      if(brand !== 'all' && UI.product !== 'all' && (product(UI.product) || {}).brand !== brand) UI.product = 'all';
+      render();
+    }
+    function visibleEntries(){
+      const period = range();
+      return loadEntries().filter(entry => entry.date >= period.startDate && entry.date <= period.endDate && matches(entry));
+    }
+    function productOptions(selected, withAll, respectBrand){
+      const first = withAll ? '<option value="all">كل المنتجات</option>' : '';
+      const brandsToShow = (respectBrand && UI.brand !== 'all') ? [UI.brand] : BRANDS;
+      const groups = brandsToShow.map(brand => {
+        const opts = PRODUCTS.filter(item => item.brand === brand)
+          .map(item => '<option value="' + item.key + '" ' + (item.key === selected ? 'selected' : '') + '>' + item.name + ' — ' + item.form + '</option>').join('');
+        return '<optgroup label="' + brand + '">' + opts + '</optgroup>';
+      }).join('');
+      return first + groups;
+    }
+    function brandTabs(){
+      return '<div class="brand-tabs">'
+        + '<button type="button" class="brand-tab ' + (UI.brand === 'all' ? 'active' : '') + '" data-brand="all">كل العلامات</button>'
+        + BRANDS.map(bn => '<button type="button" class="brand-tab ' + (UI.brand === bn ? 'active' : '') + '" data-brand="' + bn + '" style="--bt:' + (BRAND_COLOR[bn] || '#8b97b8') + '">' + bn + '</button>').join('')
+        + '</div>';
+    }
+    function pharmacyOptions(selected, withAll){
+      const first = withAll ? '<option value="all">كل الصيدليات</option>' : '';
+      return first + PHARMACIES.map(item => '<option value="' + item + '" ' + (item === selected ? 'selected' : '') + '>' + item + '</option>').join('');
+    }
+    function setFilter(field, value){
+      UI[field] = value;
+      render();
+    }
+    function setRangeEnd(value){
+      if(/^\d{4}-\d{2}-\d{2}$/.test(value)) UI.endDate = value;
+      render();
+    }
+    function beginEdit(id){
+      if(loadEntries().some(entry => entry.id === id)){
+        UI.editingId = id;
+        render();
+        document.getElementById('units').focus();
+      }
+    }
+    function cancelEdit(){
+      UI.editingId = null;
+      render();
+    }
+    function removeEntry(id){
+      if(!confirm('هل تريد حذف هذا السجل؟')) return;
+      saveEntries(loadEntries().filter(entry => entry.id !== id));
+      if(UI.editingId === id) UI.editingId = null;
+      notify('تم حذف السجل');
+      render();
+    }
+    function submitEntry(event){
+      event.preventDefault();
+      const date = document.getElementById('date').value;
+      const pharmacy = document.getElementById('pharmacy').value;
+      const productKey = document.getElementById('product').value;
+      const units = number(document.getElementById('units').value);
+      const amount = number(document.getElementById('amount').value);
+      const cost = number(document.getElementById('cost').value);
+      const prescriptions = number(document.getElementById('prescriptions').value);
+      if(!date || !product(productKey) || !PHARMACIES.includes(pharmacy)){
+        notify('أكمل التاريخ والصيدلية والمنتج أولاً');
+        return;
+      }
+      if(units === 0 && amount === 0 && prescriptions === 0){
+        notify('أدخل الحبات أو المبلغ أو كتابات الأطباء');
+        return;
+      }
+
+      let entries = loadEntries();
+      const current = UI.editingId ? entries.find(entry => entry.id === UI.editingId) : null;
+      const duplicate = entries.find(entry => entry.id !== UI.editingId && entry.date === date && entry.pharmacy === pharmacy && entry.product === productKey);
+      const timestamp = new Date().toISOString();
+      let message = 'تمت إضافة السجل ✓';
+
+      if(current && duplicate){
+        Object.assign(duplicate, {date,pharmacy,product:productKey,units,amount,cost,prescriptions,updatedAt:timestamp});
+        entries = entries.filter(entry => entry.id !== current.id);
+        message = 'تم دمج وتحديث السجل ✓';
+      }else if(current || duplicate){
+        Object.assign(current || duplicate, {date,pharmacy,product:productKey,units,amount,cost,prescriptions,updatedAt:timestamp});
+        message = 'تم تحديث السجل ✓';
+      }else{
+        entries.push({
+          id:'sale-' + Date.now() + '-' + Math.random().toString(36).slice(2,8),
+          date, pharmacy, product:productKey, units, amount, cost, prescriptions, updatedAt:timestamp
+        });
+      }
+      if(!saveEntries(entries)) return;
+      UI.editingId = null;
+      if(date > UI.endDate) UI.endDate = date;
+      notify(message);
+      render();
+    }
+    function chart(period, entries, analysis){
+      const canvas = document.getElementById('trendChart');
+      if(!canvas || typeof Chart === 'undefined') return;
+      if(trendChart) trendChart.destroy();
+      const aggregate = {};
+      entries.forEach(entry => {
+        if(!aggregate[entry.date]) aggregate[entry.date] = {units:0,amount:0,prescriptions:0};
+        aggregate[entry.date].units += entry.units;
+        aggregate[entry.date].amount += entry.amount;
+        aggregate[entry.date].prescriptions += entry.prescriptions;
+      });
+      // امتداد التوقع حتى نهاية الشهر (في عرض الشهر/٣ شهور فقط حتى لا يُزحم العرض القصير)
+      const forecastOn = analysis && analysis.hasData && analysis.runRateAmount > 0
+        && period.spanDays >= 28 && period.endDate >= analysis.todayStr && analysis.monthEndStr > period.endDate;
+      const chartEnd = forecastOn ? analysis.monthEndDate : period.end;
+      const labels = [], units = [], amount = [], prescriptions = [], forecast = [];
+      const cursor = new Date(period.start);
+      while(cursor <= chartEnd){
+        const key = localDateString(cursor);
+        const totals = aggregate[key];   // الأيام بلا تسجيل = فجوة (null) بدل صفر
+        labels.push(dateLabel(key, true));
+        units.push(totals ? totals.units : null);
+        amount.push(totals ? totals.amount : null);
+        prescriptions.push(totals ? totals.prescriptions : null);
+        forecast.push(forecastOn && key >= analysis.todayStr && key <= analysis.monthEndStr ? Math.round(analysis.runRateAmount) : null);
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      const datasets = [
+        {label:'المبلغ (ريال)',data:amount,yAxisID:'yMoney',borderColor:'#f7bd57',backgroundColor:'rgba(247,189,87,.10)',borderWidth:3,tension:0,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#ffd382',fill:true,spanGaps:true},
+        {label:'الحبات المباعة',data:units,yAxisID:'yCount',borderColor:'#1bd1ae',backgroundColor:'transparent',borderWidth:3,tension:0,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#77eed6',fill:false,spanGaps:true},
+        {label:'كتابات الأطباء',data:prescriptions,yAxisID:'yCount',borderColor:'#6395ff',backgroundColor:'transparent',borderWidth:3,tension:0,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#a9c1ff',borderDash:[7,4],fill:false,spanGaps:true}
+      ];
+      if(forecastOn){
+        datasets.push({label:'توقع المبلغ (معدل يومي)',data:forecast,yAxisID:'yMoney',borderColor:'#74edd4',backgroundColor:'transparent',borderWidth:2,borderDash:[3,4],tension:0,pointRadius:0,fill:false,spanGaps:true});
+      }
+      trendChart = new Chart(canvas, {
+        type:'line',
+        data:{ labels, datasets },
+        options:{
+          responsive:true,maintainAspectRatio:false,animation:{duration:250},interaction:{intersect:false,mode:'index'},
+          plugins:{
+            legend:{labels:{color:'#c9d4e8',font:{family:'IBM Plex Sans Arabic',size:12,weight:'700'},usePointStyle:true,padding:16}},
+            tooltip:{
+              backgroundColor:'rgba(8,13,25,.96)',titleColor:'#fff',bodyColor:'#dce5f5',borderColor:'rgba(255,255,255,.14)',borderWidth:1,padding:12,
+              callbacks:{
+                title(items){ const date = new Date(period.start); date.setDate(date.getDate() + items[0].dataIndex); return dateLabel(localDateString(date)); },
+                label(item){ return item.dataset.label + ': ' + format(item.raw) + (item.dataset.yAxisID === 'yMoney' ? ' ريال' : ''); }
+              }
+            }
+          },
+          scales:{
+            x:{ticks:{color:'#9aa9c5',font:{family:'IBM Plex Sans Arabic',size:10},maxTicksLimit:12},grid:{display:false}},
+            yCount:{position:'right',beginAtZero:true,ticks:{color:'#9aa9c5',font:{family:'Alexandria',size:10},callback:value => format(value)},grid:{color:'rgba(216,226,255,.09)'},title:{display:true,text:'حبات / كتابات',color:'#9aa9c5',font:{family:'IBM Plex Sans Arabic',size:10,weight:'700'}}},
+            yMoney:{position:'left',beginAtZero:true,ticks:{color:'#ffd382',font:{family:'Alexandria',size:10},callback:value => format(value)},grid:{display:false},title:{display:true,text:'ريال',color:'#ffd382',font:{family:'IBM Plex Sans Arabic',size:10,weight:'700'}}}
+          }
+        }
+      });
+    }
+    function bindEvents(){
+      document.getElementById('entryForm').addEventListener('submit', submitEntry);
+      document.getElementById('rangePreset').addEventListener('change', event => { if(event.target.value !== 'custom') setPeriodPreset(Number(event.target.value)); });
+      document.getElementById('rangeStart').addEventListener('change', event => { if(/^\d{4}-\d{2}-\d{2}$/.test(event.target.value)) UI.startDate = event.target.value; render(); });
+      document.getElementById('rangeEnd').addEventListener('change', event => setRangeEnd(event.target.value));
+      document.getElementById('filterPharmacy').addEventListener('change', event => setFilter('pharmacy', event.target.value));
+      document.getElementById('filterProduct').addEventListener('change', event => setFilter('product', event.target.value));
+      document.querySelectorAll('[data-edit]').forEach(button => button.addEventListener('click', () => beginEdit(button.dataset.edit)));
+      document.querySelectorAll('[data-delete]').forEach(button => button.addEventListener('click', () => removeEntry(button.dataset.delete)));
+      const cancel = document.getElementById('cancelEdit');
+      if(cancel) cancel.addEventListener('click', cancelEdit);
+      const mt = document.getElementById('monthTarget');
+      if(mt) mt.addEventListener('change', event => { setContextTarget(event.target.value); render(); });
+      document.querySelectorAll('[data-ptarget]').forEach(input => {
+        input.addEventListener('change', event => { setProductTarget(event.target.dataset.ptarget, event.target.value); render(); });
+      });
+      const impBtn = document.getElementById('importPdfBtn');
+      const impInput = document.getElementById('importPdfInput');
+      if(impBtn && impInput){
+        impBtn.addEventListener('click', () => impInput.click());
+        impInput.addEventListener('change', handleImportFiles);
+      }
+      document.querySelectorAll('.brand-tab').forEach(btn => btn.addEventListener('click', () => setBrand(btn.dataset.brand)));
+    }
+    const AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    // ===== FORECAST & ANALYSIS (current calendar month, respects filters) =====
+    function computeAnalysis(){
+      const all = loadEntries().filter(matches);
+      const now = dateFromString(today());
+      const y = now.getFullYear(), m = now.getMonth();
+      const monthStartStr = localDateString(new Date(y, m, 1));
+      const monthEndDate = new Date(y, m + 1, 0);
+      const monthEndStr = localDateString(monthEndDate);
+      const daysInMonth = monthEndDate.getDate();
+      const todayStr = today();
+      const todayDay = now.getDate();
+      const monthEntries = all.filter(e => e.date >= monthStartStr && e.date <= monthEndStr);
+      const byDate = {};
+      monthEntries.forEach(e => {
+        (byDate[e.date] = byDate[e.date] || {a:0,u:0,p:0});
+        byDate[e.date].a += e.amount; byDate[e.date].u += e.units; byDate[e.date].p += e.prescriptions;
+      });
+      const recordedDays = Object.keys(byDate).length;
+      const achievedAmount = monthEntries.reduce((s,e) => s + e.amount, 0);
+      const achievedUnits = monthEntries.reduce((s,e) => s + e.units, 0);
+      const achievedRx = monthEntries.reduce((s,e) => s + e.prescriptions, 0);
+      // المعدل اليومي محسوب على المدة المختارة (تؤثر مباشرة على التوقع)
+      const period = range();
+      const rangeEntries = all.filter(e => e.date >= period.startDate && e.date <= period.endDate);
+      const rangeByDate = {};
+      rangeEntries.forEach(e => { (rangeByDate[e.date] = rangeByDate[e.date] || {a:0,u:0}); rangeByDate[e.date].a += e.amount; rangeByDate[e.date].u += e.units; });
+      const rangeRecordedDays = Object.keys(rangeByDate).length;
+      const rangeAmount = rangeEntries.reduce((s,e) => s + e.amount, 0);
+      const rangeUnits = rangeEntries.reduce((s,e) => s + e.units, 0);
+      const rateBasisDays = rangeRecordedDays || recordedDays;
+      const runRateAmount = rangeRecordedDays ? rangeAmount / rangeRecordedDays : (recordedDays ? achievedAmount / recordedDays : 0);
+      const runRateUnits = rangeRecordedDays ? rangeUnits / rangeRecordedDays : (recordedDays ? achievedUnits / recordedDays : 0);
+      const remainingDays = Math.max(0, daysInMonth - todayDay);
+      const projectedAmount = Math.round(achievedAmount + runRateAmount * remainingDays);
+      const projectedUnits = Math.round(achievedUnits + runRateUnits * remainingDays);
+      // trend: last 7 days vs previous 7 days (amount)
+      const shift = n => localDateString(new Date(now.getFullYear(), now.getMonth(), now.getDate() - n));
+      const sumBetween = (from,to) => all.filter(e => e.date >= from && e.date <= to).reduce((s,e) => s + e.amount, 0);
+      const last7 = sumBetween(shift(6), todayStr);
+      const prev7 = sumBetween(shift(13), shift(7));
+      const trendPct = prev7 > 0 ? ((last7 - prev7) / prev7 * 100) : (last7 > 0 ? 100 : 0);
+      // top product / pharmacy / best day (this month)
+      const byProduct = {}, byPharmacy = {};
+      monthEntries.forEach(e => { byProduct[e.product] = (byProduct[e.product]||0) + e.amount; byPharmacy[e.pharmacy] = (byPharmacy[e.pharmacy]||0) + e.amount; });
+      const topProduct = Object.entries(byProduct).sort((a,b) => b[1]-a[1])[0] || null;
+      const topPharmacy = Object.entries(byPharmacy).sort((a,b) => b[1]-a[1])[0] || null;
+      const bestDay = Object.entries(byDate).sort((a,b) => b[1].a-a[1].a)[0] || null;
+      const conversion = achievedRx > 0 ? (achievedUnits / achievedRx) : 0;
+      return {
+        monthName:AR_MONTHS[m], hasData:recordedDays>0,
+        achievedAmount, achievedUnits, achievedRx, runRateAmount, runRateUnits,
+        recordedDays, rateBasisDays, rangeSpanDays:period.spanDays, remainingDays, daysInMonth, projectedAmount, projectedUnits,
+        trendPct, last7, prev7, topProduct, topPharmacy, bestDay, conversion,
+        monthEndStr, todayStr, monthEndDate
+      };
+    }
+    function analysisSection(a){
+      if(!a.hasData){
+        return `<section class="card analysis-card"><div class="analysis-head"><div class="chart-title">🔮 التوقع والتحليل</div></div>
+          <div class="insight">أضِف سجلات هذا الشهر (يدوياً أو باستيراد PDF) ليظهر التوقع والتحليل تلقائياً.</div></section>`;
+      }
+      const trendUp = a.trendPct >= 0;
+      const convFlag = a.achievedRx > 0
+        ? (a.conversion >= 1
+            ? `<span class="good">جيد</span> — لكل كتابة تبيع ${a.conversion.toFixed(2)} حبة`
+            : `<span class="bad">تسرّب محتمل</span> — الكتابات أعلى من المبيعات (${a.conversion.toFixed(2)} حبة/كتابة)`)
+        : 'لا توجد كتابات مسجلة هذا الشهر';
+      const productName = key => { const it = product(key); return it ? it.name : key; };
+      // هدف الشهر (حسب سياق الفلاتر: إجمالي / منتج / صيدلية)
+      const target = contextTarget();
+      const targetScope = UI.product !== 'all' ? ('منتج ' + productName(UI.product))
+                        : UI.pharmacy !== 'all' ? UI.pharmacy
+                        : 'الشهر (إجمالي)';
+      const achievedPct = target > 0 ? Math.min(100, a.achievedAmount / target * 100) : 0;
+      const projPct = target > 0 ? Math.min(100, a.projectedAmount / target * 100) : 0;
+      const onTrack = target > 0 && a.projectedAmount >= target;
+      const targetStatus = target > 0
+        ? (onTrack
+            ? `<span class="good">على المسار ✅</span> — المتوقع ${format(a.projectedAmount)} ريال يبلغ الهدف`
+            : `<span class="bad">أقل من الهدف</span> — المتوقع ${format(a.projectedAmount)} ريال · فجوة ${format(target - a.projectedAmount)} ريال (يلزم ${format(Math.ceil((target - a.achievedAmount) / Math.max(1, a.remainingDays)))} ريال/يوم للوصول)`)
+        : 'حدّد هدف الشهر لعرض نسبة الإنجاز والتوقع مقابل الهدف.';
+      const targetBox = `<div class="target-box">
+        <div class="target-top">
+          <div class="target-label">🎯 هدف ${escapeHtml(targetScope)} (ريال)</div>
+          <input id="monthTarget" type="number" min="0" inputmode="numeric" placeholder="مثال: 50000" value="${target || ''}">
+          <div class="target-pct">${target > 0 ? (a.achievedAmount / target * 100).toFixed(0) + '%' : '—'}</div>
+        </div>
+        <div class="target-bar"><div class="target-fill" style="width:${achievedPct}%"></div>${target > 0 ? `<div class="target-proj" style="right:${projPct}%" title="المتوقع"></div>` : ''}</div>
+        <div class="target-meta"><span>المحقق ${format(a.achievedAmount)}</span><span>المتوقع ${format(a.projectedAmount)}</span><span>الهدف ${format(target) || '—'}</span></div>
+        <div class="target-status">${targetStatus}</div>
+      </div>`;
+      const insight = [
+        `على معدل المدة المختارة <b>${format(a.runRateAmount)} ريال/يوم</b> (${format(a.rateBasisDays)} يوم مسجل)، المتوقع بنهاية ${a.monthName} حوالي <b>${format(a.projectedAmount)} ريال</b> و<b>${format(a.projectedUnits)} حبة</b>.`,
+        `أداء آخر ٧ أيام ${trendUp ? '<span class="good">⬆ أعلى</span>' : '<span class="bad">⬇ أقل</span>'} بنسبة <b>${Math.abs(a.trendPct).toFixed(0)}%</b> عن الأسبوع السابق.`,
+        a.topProduct ? `أعلى منتج: <b>${escapeHtml(productName(a.topProduct[0]))}</b> (${format(a.topProduct[1])} ريال)${a.topPharmacy ? ` · أعلى صيدلية: <b>${escapeHtml(a.topPharmacy[0])}</b>` : ''}.` : '',
+        `التحويل (حبات ÷ كتابات): ${convFlag}.`
+      ].filter(Boolean).join('<br>');
+      return `<section class="card analysis-card">
+        <div class="analysis-head">
+          <div class="chart-title">🔮 التوقع والتحليل — شهر ${a.monthName}</div>
+          <div class="range-copy">المعدل والتوقع محسوبان على المدة المختارة (${format(a.rangeSpanDays)} يوم) · يتأثر بالفلاتر بالأعلى</div>
+        </div>
+        ${targetBox}
+        <div class="forecast-grid">
+          <div class="fc teal"><div class="fc-label">المتوقع بنهاية الشهر</div><div class="fc-value teal">${format(a.projectedAmount)} <span class="u">ريال</span></div><div class="fc-foot">محقق ${format(a.achievedAmount)} + متوقع ${format(a.projectedAmount - a.achievedAmount)}</div></div>
+          <div class="fc blue"><div class="fc-label">المعدل اليومي</div><div class="fc-value">${format(a.runRateAmount)} <span class="u">ريال</span></div><div class="fc-foot">${a.runRateUnits.toFixed(1)} حبة/يوم · على ${format(a.rateBasisDays)} يوم مسجل بالمدة</div></div>
+          <div class="fc"><div class="fc-label">أيام متبقية بالشهر</div><div class="fc-value">${format(a.remainingDays)}</div><div class="fc-foot">من ${format(a.daysInMonth)} يوم</div></div>
+          <div class="fc violet"><div class="fc-label">اتجاه آخر ٧ أيام</div><div class="fc-value ${trendUp ? 'up' : 'down'}">${trendUp ? '+' : ''}${a.trendPct.toFixed(0)}%</div><div class="fc-foot">${format(a.last7)} مقابل ${format(a.prev7)} ريال</div></div>
+        </div>
+        <div class="insight">💡 ${insight}</div>
+        <div class="analysis-grid">
+          <div class="an"><div class="an-label">أعلى منتج (الشهر)</div><div class="an-value">${a.topProduct ? escapeHtml(productName(a.topProduct[0])) : '—'}</div><div class="an-sub">${a.topProduct ? format(a.topProduct[1]) + ' ريال' : ''}</div></div>
+          <div class="an"><div class="an-label">أعلى صيدلية (الشهر)</div><div class="an-value">${a.topPharmacy ? escapeHtml(a.topPharmacy[0]) : '—'}</div><div class="an-sub">${a.topPharmacy ? format(a.topPharmacy[1]) + ' ريال' : ''}</div></div>
+          <div class="an"><div class="an-label">معدل التحويل</div><div class="an-value">${a.achievedRx > 0 ? a.conversion.toFixed(2) + ' حبة/كتابة' : '—'}</div><div class="an-sub">${format(a.achievedUnits)} حبة · ${format(a.achievedRx)} كتابة</div></div>
+          <div class="an"><div class="an-label">أفضل يوم (الشهر)</div><div class="an-value">${a.bestDay ? dateLabel(a.bestDay[0], true) : '—'}</div><div class="an-sub">${a.bestDay ? format(a.bestDay[1].a) + ' ريال' : ''}</div></div>
+        </div>
+      </section>`;
+    }
+
+    // ===== PRODUCTS COMPARISON (this month, respects pharmacy filter) =====
+    function computeProductBreakdown(){
+      const now = dateFromString(today());
+      const monthStartStr = localDateString(new Date(now.getFullYear(), now.getMonth(), 1));
+      const monthEndStr = localDateString(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const remainingDays = Math.max(0, daysInMonth - now.getDate());
+      const targets = getTargets();
+      const all = loadEntries().filter(e => e.date >= monthStartStr && e.date <= monthEndStr && (UI.pharmacy === 'all' || e.pharmacy === UI.pharmacy));
+      const shift = n => localDateString(new Date(now.getFullYear(), now.getMonth(), now.getDate() - n));
+      const list = UI.brand === 'all' ? PRODUCTS : PRODUCTS.filter(p => p.brand === UI.brand);
+      return list.map(pr => {
+        const es = all.filter(e => e.product === pr.key);
+        const amount = es.reduce((s,e) => s + e.amount, 0);
+        const cost = es.reduce((s,e) => s + e.cost, 0);
+        const profit = amount - cost;
+        const margin = cost > 0 && amount > 0 ? (profit / amount * 100) : null;
+        const units = es.reduce((s,e) => s + e.units, 0);
+        const prescriptions = es.reduce((s,e) => s + e.prescriptions, 0);
+        const days = new Set(es.map(e => e.date)).size;
+        const runRate = days ? amount / days : 0;
+        const projected = Math.round(amount + runRate * remainingDays);
+        const target = number(targets.products[pr.key]);
+        const pct = target > 0 ? amount / target * 100 : null;
+        const projPct = target > 0 ? projected / target * 100 : null;
+        const between = (f,t) => es.filter(e => e.date >= f && e.date <= t).reduce((s,e) => s + e.amount, 0);
+        const l7 = between(shift(6), today()), p7 = between(shift(13), shift(7));
+        const trendPct = p7 > 0 ? (l7 - p7) / p7 * 100 : (l7 > 0 ? 100 : 0);
+        return { key:pr.key, name:pr.name, color:pr.color, brand:pr.brand, amount, cost, profit, margin, units, prescriptions, projected, target, pct, projPct, trendPct, hasData:es.length > 0 };
+      }).sort((a,b) => (BRANDS.indexOf(a.brand) - BRANDS.indexOf(b.brand)) || (b.amount - a.amount));
+    }
+    function productComparisonSection(){
+      const rows = computeProductBreakdown();
+      const scope = UI.pharmacy === 'all' ? 'كل الصيدليات' : UI.pharmacy;
+      const body = rows.map(r => {
+        const pct = r.pct;
+        const barPct = pct == null ? 0 : Math.min(100, pct);
+        const projMark = (r.projPct != null) ? Math.min(100, r.projPct) : null;
+        const trendCls = r.trendPct >= 0 ? 'up' : 'down';
+        return `<tr>
+          <td><div class="product"><i class="product-dot" style="background:${r.color}"></i><span>${escapeHtml(r.name)}<small>${escapeHtml(r.brand)}</small></span></div></td>
+          <td class="num money">${format(r.amount)}</td>
+          <td class="num" style="color:#ff9bab">${r.cost > 0 ? format(r.profit) + (r.margin != null ? ' (' + r.margin.toFixed(0) + '%)' : '') : '—'}</td>
+          <td class="num">${format(r.projected)}</td>
+          <td><input class="ptarget-input" type="number" min="0" inputmode="numeric" placeholder="—" value="${r.target || ''}" data-ptarget="${r.key}"></td>
+          <td style="min-width:150px">
+            <div class="mini-bar"><div class="mini-fill" style="width:${barPct}%"></div>${projMark != null ? `<div class="mini-proj" style="right:${projMark}%"></div>` : ''}</div>
+            <div class="mini-pct">${pct == null ? 'بدون هدف' : pct.toFixed(0) + '%' + (r.projPct != null ? ' · متوقع ' + r.projPct.toFixed(0) + '%' : '')}</div>
+          </td>
+          <td class="num ${trendCls}" style="color:${r.trendPct >= 0 ? '#71ecd3' : '#ff9bab'}">${r.trendPct >= 0 ? '+' : ''}${r.trendPct.toFixed(0)}%</td>
+        </tr>`;
+      }).join('');
+      return `<section class="card table-card">
+        <div class="table-head"><div><div class="table-title">📦 مقارنة المنتجات — الشهر الحالي</div><div class="table-sub">${escapeHtml(scope)} · حدّد هدفاً لكل منتج لعرض نسبة الإنجاز والمتوقع مقابله</div></div></div>
+        <div class="table-wrap records-wrap"><table>
+          <thead><tr><th>المنتج</th><th style="text-align:center;color:#ffd382">المحقق (ريال)</th><th style="text-align:center;color:#ff9bab">الربح (هامش)</th><th style="text-align:center">المتوقع</th><th style="text-align:center">الهدف</th><th>نسبة الإنجاز</th><th style="text-align:center">اتجاه ٧ أيام</th></tr></thead>
+          <tbody>${body}</tbody>
+        </table></div>
+      </section>`;
+    }
+
+    // ===== BRANDS SUMMARY (all products you work on, by brand) =====
+    const BRAND_COLOR = { 'Private Label':'#6395ff', 'PureHerb':'#22c55e' };
+    function computeBrandSummary(){
+      const now = dateFromString(today());
+      const monthStartStr = localDateString(new Date(now.getFullYear(), now.getMonth(), 1));
+      const monthEndStr = localDateString(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+      const all = loadEntries().filter(e => e.date >= monthStartStr && e.date <= monthEndStr && (UI.pharmacy === 'all' || e.pharmacy === UI.pharmacy));
+      const targets = getTargets();
+      const res = {};
+      BRANDS.forEach(bn => res[bn] = { brand:bn, amount:0, cost:0, units:0, rx:0, active:new Set(), target:0, total:PRODUCTS.filter(p => p.brand === bn).length });
+      all.forEach(e => {
+        const pr = product(e.product); if(!pr || !res[pr.brand]) return;
+        res[pr.brand].amount += e.amount; res[pr.brand].cost += e.cost; res[pr.brand].units += e.units; res[pr.brand].rx += e.prescriptions;
+        if(e.amount > 0 || e.units > 0) res[pr.brand].active.add(e.product);
+      });
+      PRODUCTS.forEach(p => { if(res[p.brand]) res[p.brand].target += number(targets.products[p.key]); });
+      return BRANDS.map(bn => ({ ...res[bn], activeCount:res[bn].active.size }));
+    }
+    function brandSummarySection(){
+      const brands = computeBrandSummary();
+      const scope = UI.pharmacy === 'all' ? 'كل الصيدليات' : UI.pharmacy;
+      const grand = brands.reduce((s,b) => ({ amount:s.amount+b.amount, cost:s.cost+b.cost, units:s.units+b.units, rx:s.rx+b.rx, active:s.active+b.activeCount, total:s.total+b.total }), {amount:0,cost:0,units:0,rx:0,active:0,total:0});
+      const card = (name, color, amount, cost, units, rx, active, total, target) => {
+        const pct = target > 0 ? Math.min(100, amount / target * 100) : null;
+        const profit = amount - cost;
+        const margin = cost > 0 && amount > 0 ? (profit / amount * 100) : null;
+        return `<div class="brand-card" style="border-top-color:${color}">
+          <div class="brand-name"><span class="brand-dot" style="background:${color}"></span>${escapeHtml(name)}</div>
+          <div class="brand-amount">${format(amount)} <span class="u">ريال</span></div>
+          <div class="brand-sub">${format(units)} حبة · ${format(rx)} كتابة · <b>${format(active)}/${format(total)}</b> منتج شغّال</div>
+          <div class="brand-sub" style="color:#ff9bab">${cost > 0 ? 'ربح ' + format(profit) + ' ريال · هامش ' + margin.toFixed(0) + '%' : 'الربح: أضِف التكلفة'}</div>
+          ${pct != null ? `<div class="brand-bar"><div class="brand-fill" style="width:${pct}%;background:${color}"></div></div><div class="brand-target">${pct.toFixed(0)}% من هدف ${format(target)} ريال</div>` : ''}
+        </div>`;
+      };
+      const brandCards = brands.map(b => card(b.brand, BRAND_COLOR[b.brand] || '#8b97b8', b.amount, b.cost, b.units, b.rx, b.activeCount, b.total, b.target)).join('');
+      const totalCard = card('الإجمالي (كل العلامات)', '#f7bd57', grand.amount, grand.cost, grand.units, grand.rx, grand.active, grand.total, 0);
+      return `<section class="card analysis-card">
+        <div class="analysis-head"><div class="chart-title">📊 ملخص العلامات — الشهر الحالي</div><div class="range-copy">${escapeHtml(scope)} · إجمالي المبالغ لكل علامة والمنتجات الشغّالة</div></div>
+        <div class="brand-grid">${brandCards}${totalCard}</div>
+      </section>`;
+    }
+
+    // ===== LEAKAGE ALERTS (high prescriptions, low sales) =====
+    function computeLeakage(){
+      const now = dateFromString(today());
+      const monthStartStr = localDateString(new Date(now.getFullYear(), now.getMonth(), 1));
+      const monthEndStr = localDateString(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+      const all = loadEntries().filter(e => e.date >= monthStartStr && e.date <= monthEndStr && matches(e));
+      const map = {};
+      all.forEach(e => {
+        const k = e.pharmacy + '|' + e.product;
+        (map[k] = map[k] || {pharmacy:e.pharmacy, product:e.product, units:0, rx:0});
+        map[k].units += e.units; map[k].rx += e.prescriptions;
+      });
+      const alerts = [];
+      Object.values(map).forEach(v => {
+        if(v.rx >= 2){
+          const conv = v.rx > 0 ? v.units / v.rx : 0;
+          if(conv < 0.8) alerts.push({...v, conv, gap:v.rx - v.units});
+        }
+      });
+      return alerts.sort((a,b) => b.gap - a.gap);
+    }
+    function leakageSection(){
+      const alerts = computeLeakage();
+      const scope = (UI.pharmacy === 'all' ? 'كل الصيدليات' : UI.pharmacy) + ' · ' + (UI.product === 'all' ? 'كل المنتجات' : product(UI.product).name);
+      const productName = key => { const it = product(key); return it ? it.name : key; };
+      const body = alerts.length
+        ? alerts.map(a => {
+            const sev = a.conv < 0.4 ? 'high' : 'mid';
+            return `<div class="leak-item ${sev}">
+              <div class="leak-main"><b>${escapeHtml(a.pharmacy)}</b> · ${escapeHtml(productName(a.product))}</div>
+              <div class="leak-nums">كتابات <b>${format(a.rx)}</b> · مبيعات <b>${format(a.units)}</b> · تحويل <b>${a.conv.toFixed(2)}</b></div>
+              <div class="leak-msg">${format(a.gap)} وصفة لم تتحول إلى بيع — راجع توفّر المنتج أو الشراء من خارج الفرع.</div>
+            </div>`;
+          }).join('')
+        : '<div class="leak-ok">✅ لا توجد مؤشرات تسرّب واضحة هذا الشهر ضمن هذا النطاق — الكتابات تتحول إلى مبيعات بشكل جيد.</div>';
+      return `<section class="card analysis-card">
+        <div class="analysis-head"><div class="chart-title">⚠️ تنبيهات التسرّب — الشهر الحالي</div><div class="range-copy">${escapeHtml(scope)} · فروع كتاباتها أعلى من مبيعاتها (تحويل أقل من 0.8)</div></div>
+        <div class="leak-list">${body}</div>
+      </section>`;
+    }
+
+    function render(){
+      if(!UI.endDate) UI.endDate = today();
+      // عنوان الهيدر حسب العلامة المختارة (ديناميكي)
+      const heroEl = document.getElementById('heroTitle');
+      if(heroEl){
+        const plCount = PRODUCTS.filter(p => p.brand === 'Private Label').length;
+        const phCount = PRODUCTS.filter(p => p.brand === 'PureHerb').length;
+        const word = n => (n >= 3 && n <= 10) ? 'منتجات' : 'منتج';
+        heroEl.textContent = UI.brand === 'all'
+          ? `متابعة ${PRODUCTS.length} ${word(PRODUCTS.length)} (${plCount} Private Label + ${phCount} PureHerb) عبر الصيدليات 1 و7 و18`
+          : `متابعة ${PRODUCTS.filter(p => p.brand === UI.brand).length} ${word(PRODUCTS.filter(p => p.brand === UI.brand).length)} ${UI.brand} عبر الصيدليات 1 و7 و18`;
+      }
+      const root = document.getElementById('dashboard');
+      const all = loadEntries();
+      const editing = UI.editingId ? all.find(entry => entry.id === UI.editingId) : null;
+      if(UI.editingId && !editing) UI.editingId = null;
+      const period = range();
+      const entries = visibleEntries();
+      const totals = entries.reduce((result, entry) => {
+        result.units += entry.units;
+        result.amount += entry.amount;
+        result.cost += entry.cost;
+        result.prescriptions += entry.prescriptions;
+        result.days.add(entry.date);
+        result.pharmacies.add(entry.pharmacy);
+        result.products.add(entry.product);
+        return result;
+      }, {units:0,amount:0,cost:0,prescriptions:0,days:new Set(),pharmacies:new Set(),products:new Set()});
+      const profit = totals.amount - totals.cost;
+      const margin = totals.cost > 0 && totals.amount > 0 ? (profit / totals.amount * 100) : null;
+      const records = [...entries].sort((a,b) => b.date.localeCompare(a.date) || b.updatedAt.localeCompare(a.updatedAt));
+      const brandDefaultProduct = UI.brand !== 'all' ? (PRODUCTS.find(p => p.brand === UI.brand) || PRODUCTS[0]).key : PRODUCTS[0].key;
+      const selectedProduct = editing ? editing.product : brandDefaultProduct;
+      const selectedPharmacy = editing ? editing.pharmacy : PHARMACIES[0];
+      const selectedDate = editing ? editing.date : UI.endDate;
+      const activePharmacy = UI.pharmacy === 'all' ? 'كل الصيدليات' : UI.pharmacy;
+      const activeProduct = UI.product === 'all' ? 'كل المنتجات' : product(UI.product).name;
+      const avgPerDay = totals.days.size ? totals.amount / totals.days.size : 0;
+      const analysis = computeAnalysis();
+
+      root.innerHTML = `
+        ${brandTabs()}
+        <section class="card entry-card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">${editing ? '✏️ تعديل سجل يومي' : '➕ إضافة سجل يومي'}</div>
+              <div class="card-help">أدخل يدوياً، أو استورد PDF: تقرير «مبيعات اصناف مورد» (حبات + مبلغ) أو تقرير «Doctor's Medication Orders» (عدد مرات الكتابة) — وتُسحب الأرقام تلقائياً.</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <button type="button" class="btn-import" id="importPdfBtn">📎 استيراد تقرير PDF</button>
+              <input type="file" id="importPdfInput" accept="application/pdf,.pdf" multiple hidden>
+              ${editing ? '<button type="button" class="btn btn-secondary" id="cancelEdit">إلغاء التعديل</button>' : ''}
+            </div>
+          </div>
+          ${editing ? '<div class="edit-banner">أنت تعدّل سجلاً قائماً. احفظ التعديل لتحديث الرسم والمؤشرات فوراً.</div>' : ''}
+          <form id="entryForm" class="entry-grid" style="${editing ? 'margin-top:12px' : ''}">
+            <div class="field"><label for="date">التاريخ</label><input id="date" type="date" required value="${selectedDate}"></div>
+            <div class="field"><label for="pharmacy">الصيدلية</label><select id="pharmacy">${pharmacyOptions(selectedPharmacy,false)}</select></div>
+            <div class="field"><label for="product">المنتج</label><select id="product">${productOptions(selectedProduct,false)}</select></div>
+            <div class="field"><label for="units">الحبات المباعة</label><input id="units" type="number" min="0" step="1" inputmode="numeric" placeholder="مثال: 25" value="${editing ? (editing.units || '') : ''}"></div>
+            <div class="field"><label for="amount">المبلغ (ريال)</label><input id="amount" type="number" min="0" step="1" inputmode="numeric" placeholder="مثال: 1450" value="${editing ? (editing.amount || '') : ''}"></div>
+            <div class="field"><label for="cost">التكلفة (ريال)</label><input id="cost" type="number" min="0" step="1" inputmode="numeric" placeholder="اختياري" value="${editing ? (editing.cost || '') : ''}"></div>
+            <div class="field"><label for="prescriptions">كتابات الأطباء</label><input id="prescriptions" type="number" min="0" step="1" inputmode="numeric" placeholder="مثال: 12" value="${editing ? (editing.prescriptions || '') : ''}"></div>
+            <button class="btn btn-primary" type="submit">${editing ? '💾 حفظ التعديل' : '💾 حفظ السجل'}</button>
+          </form>
+        </section>
+        <section class="kpis">
+          <article class="kpi teal"><div class="kpi-label">إجمالي المبلغ</div><div class="kpi-value teal">${format(totals.amount)} <span class="kpi-unit">ريال</span></div><div class="kpi-foot">قيمة المبيعات ضمن الفترة والفلاتر</div></article>
+          <article class="kpi rose"><div class="kpi-label">صافي الربح</div><div class="kpi-value rose">${totals.cost > 0 ? format(profit) : '—'} <span class="kpi-unit">${totals.cost > 0 ? 'ريال' : ''}</span></div><div class="kpi-foot">${margin != null ? 'هامش ' + margin.toFixed(0) + '% · تكلفة ' + format(totals.cost) : 'أضِف التكلفة (يدوياً أو من PDF) لحساب الربح'}</div></article>
+          <article class="kpi"><div class="kpi-label">إجمالي الحبات</div><div class="kpi-value">${format(totals.units)}</div><div class="kpi-foot">متوسط ${format(totals.days.size ? totals.units / totals.days.size : 0)} حبة / يوم مسجل</div></article>
+          <article class="kpi violet"><div class="kpi-label">إجمالي الكتابات</div><div class="kpi-value violet">${format(totals.prescriptions)}</div><div class="kpi-foot">كتابات الأطباء المسجلة</div></article>
+          <article class="kpi amber"><div class="kpi-label">أيام مسجلة</div><div class="kpi-value amber">${format(totals.days.size)}</div><div class="kpi-foot">متوسط ${format(avgPerDay)} ريال / يوم مسجل</div></article>
+        </section>
+        <section class="card chart-card">
+          <div class="chart-top">
+            <div><div class="chart-title">مسار المبلغ والحبات والكتابات</div><div class="range-copy">من ${dateLabel(period.startDate)} إلى ${dateLabel(period.endDate)} · ${format(period.spanDays)} يوم</div></div>
+            <div class="filters">
+              <div class="filter"><label for="rangePreset">مدة سريعة</label><select id="rangePreset">${PERIODS.map(p => `<option value="${p.days}" ${p.days === period.spanDays ? 'selected' : ''}>${p.label}</option>`).join('')}${PERIODS.some(p => p.days === period.spanDays) ? '' : '<option value="custom" selected>مخصص</option>'}</select></div>
+              <div class="filter"><label for="rangeStart">من تاريخ</label><input id="rangeStart" type="date" value="${period.startDate}" max="${period.endDate}"></div>
+              <div class="filter"><label for="rangeEnd">إلى تاريخ</label><input id="rangeEnd" type="date" value="${period.endDate}"></div>
+              <div class="filter"><label for="filterPharmacy">الصيدلية</label><select id="filterPharmacy">${pharmacyOptions(UI.pharmacy,true)}</select></div>
+              <div class="filter"><label for="filterProduct">المنتج</label><select id="filterProduct">${productOptions(UI.product,true,true)}</select></div>
+            </div>
+          </div>
+          <div class="filter-summary">الفلاتر الحالية: <b>${escapeHtml(activePharmacy)}</b> · <b>${escapeHtml(activeProduct)}</b></div>
+          <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+        </section>
+        ${analysisSection(analysis)}
+        ${UI.brand === 'all' ? brandSummarySection() : ''}
+        ${productComparisonSection()}
+        ${leakageSection()}
+        <section class="card table-card">
+          <div class="table-head">
+            <div><div class="table-title">السجلات ضمن فترة العرض</div><div class="table-sub">${format(records.length)} سجل · يمكنك تعديل أو حذف أي سجل.</div></div>
+          </div>
+          ${records.length ? `
+            <div class="table-wrap records-wrap"><table>
+              <thead><tr><th>التاريخ</th><th>الصيدلية</th><th>المنتج</th><th style="text-align:center;color:#71ecd3">الحبات</th><th style="text-align:center;color:#ffd382">المبلغ</th><th style="text-align:center;color:#c4b4ff">الكتابات</th><th></th></tr></thead>
+              <tbody>${records.map(entry => {
+                const item = product(entry.product);
+                return `<tr>
+                  <td>${dateLabel(entry.date)}</td><td>${entry.pharmacy}</td>
+                  <td><div class="product"><i class="product-dot" style="background:${item.color}"></i><span>${item.name}<small>${item.form}</small></span></div></td>
+                  <td class="num units">${format(entry.units)}</td><td class="num money">${format(entry.amount)}</td><td class="num rx">${format(entry.prescriptions)}</td>
+                  <td class="row-actions"><button class="btn-secondary" type="button" data-edit="${entry.id}">تعديل</button><button class="btn-danger" type="button" data-delete="${entry.id}">حذف</button></td>
+                </tr>`;
+              }).join('')}</tbody>
+            </table></div>` :
+            '<div class="empty"><div class="empty-icon">📝</div>لا توجد سجلات ضمن هذه الفترة أو الفلاتر.<br>أضف أول سجل من النموذج أعلاه ليظهر في الرسم مباشرة.</div>'}
+        </section>`;
+      bindEvents();
+      chart(period, entries, analysis);
+    }
+    // ===== PDF IMPORT (تقرير مبيعات اصناف مورد) =====
+    const PRODUCT_KEYWORDS = [
+      {key:'reflex', kw:'REFLEX'},{key:'rizer', kw:'RIZER'},{key:'oracure', kw:'ORACURE'},
+      {key:'intimo', kw:'INTIMO'},{key:'nostriderm', kw:'NOSTRIDERM'},{key:'nostricure', kw:'NOSTRICURE'},
+      // PureHerb — «CENTROZON WOMEN» قبل «CENTROZON» ليُطابق الأخصّ أولاً
+      {key:'pure_omega', kw:'PURE OMEGA'},{key:'purefeel', kw:'PUREFEEL'},
+      {key:'centrozon_w', kw:'CENTROZON WOMEN'},{key:'centrozon', kw:'CENTROZON'},
+      {key:'zincolive', kw:'ZINCOLIVE'},{key:'bonefriend', kw:'BONEFRIEND'},{key:'argigrow', kw:'ARGIGROW'}
+    ];
+    async function readPdfLines(file){
+      const buffer = await file.arrayBuffer();
+      const doc = await pdfjsLib.getDocument({data:buffer}).promise;
+      const lines = [];
+      for(let i=1;i<=doc.numPages;i++){
+        const page = await doc.getPage(i);
+        const content = await page.getTextContent();
+        const byY = {};
+        content.items.forEach(item => {
+          if(!item.str) return;
+          const y = Math.round(item.transform[5]);
+          (byY[y] = byY[y] || []).push({s:item.str, x:item.transform[4]});
+        });
+        Object.keys(byY).map(Number).sort((a,b) => b-a).forEach(y => {
+          const line = byY[y].sort((a,b) => a.x-b.x).map(t => t.s).join(' ').replace(/\s+/g,' ').trim();
+          if(line) lines.push(line);
+        });
+      }
+      return lines;
+    }
+    function parseReport(lines){
+      const norm = lines.map(line => line.normalize('NFKC'));
+      const joined = norm.join('\n');
+      // نوع التقرير: كتابات الأطباء أم مبيعات الأصناف
+      const isRx = /Service Name|Medication Orders/i.test(joined);
+      let pharmacy = null;
+      const pm = joined.match(/صيدلي[ةه]\s*رقم\s*(\d+)/) || joined.match(/صيدلي[ةه]\s*(\d+)/);
+      if(pm){ const guess = 'صيدلية ' + pm[1]; if(PHARMACIES.includes(guess)) pharmacy = guess; }
+      let date = '';
+      const dm = joined.match(/(\d{2})-(\d{2})-(\d{4})/);
+      if(dm) date = dm[3] + '-' + dm[2] + '-' + dm[1];
+
+      if(isRx){
+        // عدّ مرات كتابة كل صنف (بالاسم التجاري داخل Service Name)
+        // استبعاد الملغى (Canceled)، وإزالة الأسطر المتطابقة تماماً حتى لا يتكرر العدّ
+        const seen = new Set();
+        const counts = {};
+        norm.forEach(line => {
+          const up = line.toUpperCase();
+          const prod = PRODUCT_KEYWORDS.find(p => up.includes(p.kw));
+          if(!prod) return;
+          if(/\bCANCEL/i.test(up)) return;
+          const key = prod.key + '::' + line.replace(/\s+/g,' ').trim();
+          if(seen.has(key)) return;
+          seen.add(key);
+          counts[prod.key] = (counts[prod.key] || 0) + 1;
+        });
+        const rows = PRODUCT_KEYWORDS
+          .filter(p => counts[p.key])
+          .map(p => ({ product:p.key, prescriptions:counts[p.key], include:true }));
+        return { type:'rx', pharmacy, date, rows };
+      }
+
+      // تقرير مبيعات الأصناف: الكمية المباعة + المبلغ
+      const rows = [];
+      norm.forEach(line => {
+        const up = line.toUpperCase();
+        const prod = PRODUCT_KEYWORDS.find(p => up.includes(p.kw));
+        if(!prod) return;
+        const before = line.slice(0, up.indexOf(prod.kw));
+        const nums = (before.match(/\d+(?:\.\d+)?/g) || []).map(Number);
+        if(nums.length < 2) return;
+        // الأعمدة قبل اسم الصنف: [القيمة بسعر البيع, القيمة بالتكلفة, الكمية الحالية, الكمية المباعة]
+        rows.push({
+          product:prod.key,
+          amount:Math.round(nums[0]),
+          cost:nums.length >= 3 ? Math.round(nums[1]) : 0,
+          units:Math.round(nums[nums.length-1]),
+          include:true
+        });
+      });
+      return { type:'sales', pharmacy, date, rows };
+    }
+    async function handleImportFiles(event){
+      const files = [...event.target.files];
+      event.target.value = '';
+      if(!files.length) return;
+      if(typeof pdfjsLib === 'undefined'){ notify('تعذّر تحميل مكتبة قراءة PDF — تأكد من الاتصال بالإنترنت'); return; }
+      notify('جارٍ قراءة ' + files.length + ' ملف PDF...');
+      const reports = [];
+      for(const file of files){
+        try{
+          const report = parseReport(await readPdfLines(file));
+          report.fileName = file.name;
+          reports.push(report);
+        }catch(error){
+          reports.push({ fileName:file.name, error:String((error && error.message) || error), rows:[] });
+        }
+      }
+      IMPORT.reports = reports;
+      renderImportModal();
+    }
+    function reportValid(report){
+      return report.pharmacy && PHARMACIES.includes(report.pharmacy) && /^\d{4}-\d{2}-\d{2}$/.test(report.date || '');
+    }
+    function totalImportRows(){
+      return IMPORT.reports.reduce((sum,report) => sum + (reportValid(report) ? report.rows.filter(row => row.include).length : 0), 0);
+    }
+    function updateReportField(index, field, value){
+      if(IMPORT.reports[index]){ IMPORT.reports[index][field] = value; renderImportModal(); }
+    }
+    function toggleRow(reportIndex, rowIndex, checked){
+      const report = IMPORT.reports[reportIndex];
+      if(report && report.rows[rowIndex]){ report.rows[rowIndex].include = checked; renderImportModal(); }
+    }
+    function closeImport(){
+      IMPORT.reports = [];
+      const host = document.getElementById('importHost');
+      if(host) host.remove();
+    }
+    function applyImport(){
+      let entries = loadEntries();
+      let added = 0, updated = 0;
+      IMPORT.reports.forEach(report => {
+        if(!reportValid(report)) return;
+        report.rows.forEach(row => {
+          if(!row.include || !product(row.product)) return;
+          const existing = entries.find(entry => entry.date === report.date && entry.pharmacy === report.pharmacy && entry.product === row.product);
+          const timestamp = new Date().toISOString();
+          if(existing){
+            // ضبط (استبدال) القيمة القادمة من التقرير مع الحفاظ على باقي الحقول — يمنع التكرار عند إعادة الاستيراد
+            if(report.type === 'rx') existing.prescriptions = row.prescriptions;
+            else { existing.units = row.units; existing.amount = row.amount; existing.cost = row.cost || 0; }
+            existing.updatedAt = timestamp;
+            updated++;
+          }else{
+            entries.push({
+              id:'sale-' + Date.now() + '-' + Math.random().toString(36).slice(2,8),
+              date:report.date, pharmacy:report.pharmacy, product:row.product,
+              units: report.type === 'rx' ? 0 : row.units,
+              amount: report.type === 'rx' ? 0 : row.amount,
+              cost: report.type === 'rx' ? 0 : (row.cost || 0),
+              prescriptions: report.type === 'rx' ? row.prescriptions : 0,
+              updatedAt:timestamp
+            });
+            added++;
+          }
+        });
+      });
+      if(added === 0 && updated === 0){ notify('لا توجد سجلات صالحة للاستيراد — راجع الصيدلية والتاريخ'); return; }
+      if(!saveEntries(entries)) return;
+      const latest = IMPORT.reports.map(report => report.date).filter(Boolean).sort().pop();
+      if(latest && latest > UI.endDate) UI.endDate = latest;
+      closeImport();
+      notify('تم الاستيراد: ' + added + ' جديد و' + updated + ' محدّث ✓');
+      render();
+    }
+    function renderImportModal(){
+      let host = document.getElementById('importHost');
+      if(!host){ host = document.createElement('div'); host.id = 'importHost'; document.body.appendChild(host); }
+      const productName = key => { const item = product(key); return item ? item.name : key; };
+      host.innerHTML = `
+        <div class="import-overlay" onclick="if(event.target===this)closeImport()">
+          <div class="import-modal">
+            <div class="import-head">
+              <div>
+                <div class="import-title">📎 مراجعة التقارير قبل الاستيراد</div>
+                <div class="import-sub">يتعرّف تلقائياً على نوع التقرير (مبيعات الأصناف = حبات ومبلغ · كتابات الأطباء = عدد مرات الكتابة) ويسحب الأرقام. راجع الصيدلية والتاريخ ثم استورد.</div>
+              </div>
+              <button class="btn btn-secondary" type="button" onclick="closeImport()">إغلاق</button>
+            </div>
+            <div class="import-body">
+              ${IMPORT.reports.map((report,index) => {
+                if(report.error) return `<div class="import-report err">⚠️ تعذّر قراءة «${escapeHtml(report.fileName)}»: ${escapeHtml(report.error)}</div>`;
+                const valid = reportValid(report);
+                const isRx = report.type === 'rx';
+                const typeBadge = isRx
+                  ? '<span class="ir-type rx">كتابات الأطباء</span>'
+                  : '<span class="ir-type sales">مبيعات الأصناف</span>';
+                const head = isRx
+                  ? '<th style="text-align:center">استيراد</th><th>المنتج</th><th style="text-align:center;color:#c4b4ff">عدد مرات الكتابة</th>'
+                  : '<th style="text-align:center">استيراد</th><th>المنتج</th><th style="text-align:center;color:#71ecd3">الحبات المباعة</th><th style="text-align:center;color:#ffd382">المبلغ (ريال)</th><th style="text-align:center;color:#ff9bab">التكلفة</th>';
+                const emptyCols = isRx ? 3 : 5;
+                return `<div class="import-report">
+                  <div class="import-report-head">
+                    <span class="ir-file">📄 ${escapeHtml(report.fileName)} ${typeBadge}</span>
+                    ${valid ? '<span class="ir-ok">جاهز</span>' : '<span class="ir-warn">راجع الصيدلية / التاريخ</span>'}
+                  </div>
+                  <div class="import-fields">
+                    <div><label>الصيدلية</label><select onchange="updateReportField(${index},'pharmacy',this.value)">
+                      <option value="">— اختر الصيدلية —</option>
+                      ${PHARMACIES.map(ph => `<option value="${ph}" ${ph === report.pharmacy ? 'selected' : ''}>${ph}</option>`).join('')}
+                    </select></div>
+                    <div><label>التاريخ</label><input type="date" value="${report.date || ''}" onchange="updateReportField(${index},'date',this.value)"></div>
+                  </div>
+                  <div class="table-wrap"><table>
+                    <thead><tr>${head}</tr></thead>
+                    <tbody>${report.rows.length ? report.rows.map((row,rowIndex) => `<tr>
+                      <td style="text-align:center"><input type="checkbox" ${row.include ? 'checked' : ''} onchange="toggleRow(${index},${rowIndex},this.checked)"></td>
+                      <td>${escapeHtml(productName(row.product))}</td>
+                      ${isRx
+                        ? `<td class="num rx">${format(row.prescriptions)}</td>`
+                        : `<td class="num units">${format(row.units)}</td><td class="num money">${format(row.amount)}</td><td class="num" style="color:#ff9bab">${format(row.cost)}</td>`}
+                    </tr>`).join('') : `<tr><td colspan="${emptyCols}" class="empty">لم يتم التعرف على أي منتج من منتجاتك في هذا الملف.</td></tr>`}</tbody>
+                  </table></div>
+                </div>`;
+              }).join('')}
+            </div>
+            <div class="import-foot">
+              <span class="import-count">${format(totalImportRows())} سجل جاهز للاستيراد</span>
+              <div>
+                <button class="btn btn-secondary" type="button" onclick="closeImport()">إلغاء</button>
+                <button class="btn btn-primary" type="button" onclick="applyImport()">✅ استيراد الكل</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const bind = (id, fn, ev) => { const el = document.getElementById(id); if(el) el.addEventListener(ev || 'click', fn); };
+      bind('backupBtn', backupData);
+      bind('csvBtn', exportCSV);
+      bind('clearBtn', clearAllData);
+      bind('restoreBtn', () => document.getElementById('restoreInput').click());
+      bind('restoreInput', restoreData, 'change');
+      render();
+    });
+  </script>
+</body>
+</html>
