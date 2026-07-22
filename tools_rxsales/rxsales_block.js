@@ -14,6 +14,18 @@
   /* PureHerb matcher keys (from const PUREHERB_PRODUCTS) → unified sales keys */
   const PUREHERB_KEYMAP = { 'PURE OMEGA':'pure_omega','PUREFEEL':'purefeel','CENTROZON W':'centrozon_w','CENTROZON':'centrozon','ZINCOLIVE':'zincolive','BONEFRIEND':'bonefriend','ARGIGROW':'argigrow' };
   const RX_BRANCH_LABEL = { T1:'التعاون الأول', T2:'التعاون الثاني', T3:'التعاون الثالث' };
+  /* active branch → its pharmacy (reverse of SALES_BRANCH_MAP) — used to pre-fill PDF report pharmacy */
+  const RX_BRANCH_PHARMACY = { T1:'صيدلية 1', T2:'صيدلية 18', T3:'صيدلية 7' };
+  /* PDF supplier-report keyword matcher (CENTROZON WOMEN before CENTROZON — most-specific first) */
+  const RX_PRODUCT_KEYWORDS = [
+    {key:'reflex', kw:'REFLEX'}, {key:'rizer', kw:'RIZER'}, {key:'oracure', kw:'ORACURE'},
+    {key:'intimo', kw:'INTIMO'}, {key:'nostriderm', kw:'NOSTRIDERM'}, {key:'nostricure', kw:'NOSTRICURE'},
+    {key:'pure_omega', kw:'PURE OMEGA'}, {key:'purefeel', kw:'PUREFEEL'},
+    {key:'centrozon_w', kw:'CENTROZON WOMEN'}, {key:'centrozon', kw:'CENTROZON'},
+    {key:'zincolive', kw:'ZINCOLIVE'}, {key:'bonefriend', kw:'BONEFRIEND'}, {key:'argigrow', kw:'ARGIGROW'}
+  ];
+  const RX_IMPORT = { reports: [] };
+  let rxSalesInput = null;
 
   /* map an Oracle service string → unified product key (reuses existing matchers, no new rules) */
   function productKeyOf(service){
@@ -235,7 +247,8 @@
   function rxEmptyCard(title, body){
     return '<div class="rx-empty"><div class="rx-empty-ico">'+ICO.swap+'</div>'
       + '<h3>'+esc(title)+'</h3><p>'+esc(body)+'</p>'
-      + '<button class="btn btn-primary" id="rxPick">'+ICO.image+' رفع ملف مبيعات (JSON)</button></div>';
+      + '<button class="btn btn-primary" id="rxPick">'+ICO.image+' رفع ملفات المبيعات (PDF أو JSON)</button>'
+      + '<div class="rx-empty-hint">PDF: تقرير مبيعات الأصناف من المورّد (نفس فكرة داشبورد المبيعات) — يقرأ الحبات والمبلغ تلقائيًا · JSON: نسخة احتياطية من داشبورد المبيعات. تقدر ترفع أكثر من ملف مرة واحدة.</div></div>';
   }
   function rxNote(title, body){
     return '<div class="rx-note"><div class="rx-note-h">'+ICO.warn+' '+esc(title)+'</div><p>'+esc(body)+'</p></div>';
@@ -244,7 +257,8 @@
     return '<div class="rx-filebar"><div class="rx-file-info">'+ICO.money
       + '<div><div class="rx-file-name">'+esc(s.fileName)+'</div>'
       + '<div class="rx-file-sub">'+fmt(s.entries.length)+' إدخال مبيعات'+(s.invalid?(' · '+fmt(s.invalid)+' غير صالح'):'')+'</div></div></div>'
-      + '<button class="btn rx-remove">✕ إزالة ملف المبيعات</button></div>';
+      + '<div class="rx-file-actions"><button class="btn rx-add-pdf">'+ICO.image+' إضافة تقارير PDF</button>'
+      + '<button class="btn rx-remove">✕ إزالة ملف المبيعات</button></div></div>';
   }
   function rxWindowBanner(win){
     const range = (win.dayStart && win.dayEnd)
@@ -334,8 +348,8 @@
     const S=STATE.sales;
     if(!S){
       stub.innerHTML = rxEmptyCard('لا يوجد ملف مبيعات',
-        'صدّر «نسخة احتياطية» من داشبورد المبيعات (ملف JSON) ثم ارفعه من زر «رفع ملف» أعلى الصفحة لمقارنة كتابات الأطباء بالصرف الفعلي.');
-      const pk=document.getElementById('rxPick'); if(pk) pk.onclick=function(){ pickFile(); };
+        'ارفع تقرير مبيعات الأصناف (PDF) من المورّد، أو نسخة احتياطية (JSON) من داشبورد المبيعات، لمقارنة كتابات الأطباء بالصرف الفعلي.');
+      const pk=document.getElementById('rxPick'); if(pk) pk.onclick=function(){ rxPickSalesFiles(); };
       return;
     }
     const bar=rxFileBar(S);
@@ -385,4 +399,187 @@
   }
   function wireRxCommon(){
     stub.querySelectorAll('.rx-remove').forEach(function(b){ b.onclick=removeSales; });
+    stub.querySelectorAll('.rx-add-pdf').forEach(function(b){ b.onclick=function(){ rxPickSalesFiles(); }; });
+  }
+
+  /* ── PDF/JSON sales upload (same idea as the sales dashboard's report import) ── */
+  function rxEnsureSalesInput(){
+    if(rxSalesInput) return rxSalesInput;
+    rxSalesInput = document.createElement('input');
+    rxSalesInput.type = 'file';
+    rxSalesInput.accept = '.pdf,.json,application/pdf,application/json';
+    rxSalesInput.multiple = true;
+    rxSalesInput.style.display = 'none';
+    rxSalesInput.addEventListener('change', function(e){ const fs=[].slice.call(e.target.files); e.target.value=''; rxHandleSalesFiles(fs); });
+    document.body.appendChild(rxSalesInput);
+    return rxSalesInput;
+  }
+  function rxPickSalesFiles(){ const inp=rxEnsureSalesInput(); inp.value=''; inp.click(); }
+  async function rxHandleSalesFiles(files){
+    if(!files || !files.length) return;
+    const jsons = files.filter(function(f){ return /\.json$/i.test(f.name||''); });
+    const pdfs  = files.filter(function(f){ return /\.pdf$/i.test(f.name||''); });
+    if(!jsons.length && !pdfs.length){ alert('اختر ملف PDF (تقرير مبيعات) أو JSON (نسخة احتياطية).'); return; }
+    if(jsons.length){ onSalesFile(jsons[jsons.length-1]); }   // JSON backup fully replaces
+    if(pdfs.length){ await rxImportPdfs(pdfs); }               // PDF reports merge (incremental)
+  }
+  async function rxReadPdfLines(file){
+    const buffer = await file.arrayBuffer();
+    if(!window.pdfjsLib && window['pdfjs-dist/build/pdf']) window.pdfjsLib = window['pdfjs-dist/build/pdf'];
+    const doc = await window.pdfjsLib.getDocument({ data:buffer }).promise;
+    const lines = [];
+    for(let i=1;i<=doc.numPages;i++){
+      const page = await doc.getPage(i);
+      const content = await page.getTextContent();
+      const byY = {};
+      content.items.forEach(function(item){
+        if(!item.str) return;
+        const y = Math.round(item.transform[5]);
+        (byY[y] = byY[y] || []).push({ s:item.str, x:item.transform[4] });
+      });
+      Object.keys(byY).map(Number).sort(function(a,b){ return b-a; }).forEach(function(y){
+        const line = byY[y].sort(function(a,b){ return a.x-b.x; }).map(function(t){ return t.s; }).join(' ').replace(/\s+/g,' ').trim();
+        if(line) lines.push(line);
+      });
+    }
+    return lines;
+  }
+  /* mirrors the sales dashboard's parseReport: auto-detects rx (كتابات) vs sales (أصناف) */
+  function rxParsePdfReport(lines){
+    const norm = lines.map(function(line){ return line.normalize('NFKC'); });
+    const joined = norm.join('\n');
+    const isRx = /Service Name|Medication Orders/i.test(joined);
+    let pharmacy = null;
+    const pm = joined.match(/صيدلي[ةه]\s*رقم\s*(\d+)/) || joined.match(/صيدلي[ةه]\s*(\d+)/);
+    if(pm){ const guess='صيدلية '+pm[1]; if(Object.prototype.hasOwnProperty.call(SALES_BRANCH_MAP, guess)) pharmacy=guess; }
+    if(!pharmacy && STATE.active!=='ALL') pharmacy = RX_BRANCH_PHARMACY[STATE.active] || null;   // default to active branch
+    let date = '';
+    const dm = joined.match(/(\d{2})-(\d{2})-(\d{4})/);
+    if(dm) date = dm[3]+'-'+dm[2]+'-'+dm[1];
+    if(isRx){
+      const seen = {}; const counts = {};
+      norm.forEach(function(line){
+        const up = line.toUpperCase();
+        const prod = RX_PRODUCT_KEYWORDS.find(function(p){ return up.indexOf(p.kw)!==-1; });
+        if(!prod) return;
+        if(/\bCANCEL/i.test(up)) return;
+        const key = prod.key+'::'+line.replace(/\s+/g,' ').trim();
+        if(seen[key]) return; seen[key]=1;
+        counts[prod.key] = (counts[prod.key]||0)+1;
+      });
+      const rows = RX_PRODUCT_KEYWORDS.filter(function(p){ return counts[p.key]; })
+        .map(function(p){ return { product:p.key, prescriptions:counts[p.key], include:true }; });
+      return { type:'rx', pharmacy:pharmacy, date:date, rows:rows };
+    }
+    const rows = [];
+    norm.forEach(function(line){
+      const up = line.toUpperCase();
+      const prod = RX_PRODUCT_KEYWORDS.find(function(p){ return up.indexOf(p.kw)!==-1; });
+      if(!prod) return;
+      const before = line.slice(0, up.indexOf(prod.kw));
+      const nums = (before.match(/\d+(?:\.\d+)?/g) || []).map(Number);
+      if(nums.length < 2) return;
+      rows.push({ product:prod.key, amount:Math.round(nums[0]), cost: nums.length>=3?Math.round(nums[1]):0, units:Math.round(nums[nums.length-1]), include:true });
+    });
+    return { type:'sales', pharmacy:pharmacy, date:date, rows:rows };
+  }
+  async function rxImportPdfs(files){
+    if(!window.pdfjsLib && window['pdfjs-dist/build/pdf']) window.pdfjsLib = window['pdfjs-dist/build/pdf'];
+    if(!window.pdfjsLib){ alert('تعذّر تحميل قارئ PDF داخل الملف.'); return; }
+    rxToast('جارٍ قراءة '+files.length+' ملف PDF…');
+    const reports = [];
+    for(let i=0;i<files.length;i++){
+      const f = files[i];
+      try{ const r = rxParsePdfReport(await rxReadPdfLines(f)); r.fileName = String(f.name||('report-'+(i+1)+'.pdf')); reports.push(r); }
+      catch(err){ reports.push({ fileName:String(f.name||''), error:String(err&&err.message||err), rows:[] }); }
+    }
+    RX_IMPORT.reports = reports;
+    rxRenderImportModal();
+  }
+  function rxReportValid(r){ return !!(r && r.pharmacy && Object.prototype.hasOwnProperty.call(SALES_BRANCH_MAP, r.pharmacy) && /^\d{4}-\d{2}-\d{2}$/.test(r.date||'')); }
+  function rxTotalImportRows(){ return RX_IMPORT.reports.reduce(function(s,r){ return s + (rxReportValid(r) ? r.rows.filter(function(x){ return x.include; }).length : 0); }, 0); }
+  function rxCloseImport(){ RX_IMPORT.reports=[]; const h=document.getElementById('rxImportHost'); if(h) h.remove(); }
+  function rxApplyImport(){
+    const entries = (STATE.sales && Array.isArray(STATE.sales.entries)) ? STATE.sales.entries.slice() : [];
+    const keyOf = function(e){ return e.date+'|'+e.pharmacy+'|'+e.product; };
+    const map = {}; entries.forEach(function(e){ map[keyOf(e)]=e; });
+    let added=0, updated=0;
+    RX_IMPORT.reports.forEach(function(rep){
+      if(!rxReportValid(rep)) return;
+      rep.rows.forEach(function(row){
+        if(!row.include || RX_KEYSET.indexOf(row.product)===-1) return;
+        const k = rep.date+'|'+rep.pharmacy+'|'+row.product;
+        const ex = map[k];
+        if(ex){
+          if(rep.type==='rx'){ ex.prescriptions = rxNum(row.prescriptions); }
+          else { const u=rxNum(row.units); ex.units=u; ex.unitPrice = u>0?rxNum(row.amount)/u:0; ex.unitCost = u>0?rxNum(row.cost)/u:0; }
+          updated++;
+        } else {
+          const u = rep.type==='rx'?0:rxNum(row.units);
+          const ent = { date:rep.date, pharmacy:rep.pharmacy, branch:SALES_BRANCH_MAP[rep.pharmacy], product:row.product,
+            units:u, unitPrice:(rep.type==='rx'||u<=0)?0:rxNum(row.amount)/u, unitCost:(rep.type==='rx'||u<=0)?0:rxNum(row.cost)/u,
+            prescriptions: rep.type==='rx'?rxNum(row.prescriptions):0 };
+          entries.push(ent); map[k]=ent; added++;
+        }
+      });
+    });
+    if(!added && !updated){ alert('لا توجد سجلات صالحة للاستيراد — راجع الصيدلية والتاريخ في كل تقرير.'); return; }
+    const names = RX_IMPORT.reports.map(function(r){ return r.fileName; }).filter(Boolean);
+    const label = names.length===1 ? names[0] : (names.length+' تقارير PDF');
+    STATE.sales = { entries:entries, loadedAt:Date.now(), fileName:label, invalid:0 };
+    saveSales();
+    rxCloseImport();
+    rxToast('تم الاستيراد: '+fmt(added)+' جديد و'+fmt(updated)+' محدّث ✓');
+    nav.querySelectorAll('.nav-item').forEach(function(x){ x.classList.remove('active'); });
+    const it = nav.querySelector('.nav-item[data-k="rxsales"]'); if(it) it.classList.add('active');
+    viewNav(function(){ showSection('rxsales'); });
+  }
+  function rxRenderImportModal(){
+    let host = document.getElementById('rxImportHost');
+    if(!host){ host = document.createElement('div'); host.id='rxImportHost'; document.body.appendChild(host); }
+    const body = RX_IMPORT.reports.map(function(rep, index){
+      if(rep.error) return '<div class="rx-imp-report err">⚠️ تعذّر قراءة «'+esc(rep.fileName)+'»: '+esc(rep.error)+'</div>';
+      const valid = rxReportValid(rep);
+      const isRx = rep.type==='rx';
+      const typeBadge = isRx ? '<span class="rx-imp-type rx">كتابات الأطباء</span>' : '<span class="rx-imp-type sales">مبيعات الأصناف</span>';
+      const head = isRx
+        ? '<th style="text-align:center">استيراد</th><th>الصنف</th><th style="text-align:center">عدد الكتابة</th>'
+        : '<th style="text-align:center">استيراد</th><th>الصنف</th><th style="text-align:center">الحبات</th><th style="text-align:center">المبلغ</th><th style="text-align:center">التكلفة</th>';
+      const emptyCols = isRx ? 3 : 5;
+      const phOpts = ['<option value="">— اختر الصيدلية —</option>'].concat(Object.keys(SALES_BRANCH_MAP).map(function(ph){
+        return '<option value="'+escAttr(ph)+'"'+(ph===rep.pharmacy?' selected':'')+'>'+esc(ph)+' ('+esc(RX_BRANCH_LABEL[SALES_BRANCH_MAP[ph]])+')</option>';
+      })).join('');
+      const rowsHtml = rep.rows.length ? rep.rows.map(function(row, rowIndex){
+        const cells = isRx
+          ? '<td class="num">'+fmt(row.prescriptions)+'</td>'
+          : '<td class="num">'+fmt(row.units)+'</td><td class="num">'+fmt(row.amount)+'</td><td class="num">'+fmt(row.cost)+'</td>';
+        return '<tr><td style="text-align:center"><input type="checkbox" class="rx-imp-row" data-r="'+index+'" data-row="'+rowIndex+'"'+(row.include?' checked':'')+'></td>'
+          + '<td><strong>'+esc(RX_NAME[row.product]||row.product)+'</strong></td>'+cells+'</tr>';
+      }).join('') : '<tr><td colspan="'+emptyCols+'" style="text-align:center;padding:20px;color:var(--ink-3)">لم يتم التعرّف على أي صنف من أصنافك في هذا الملف.</td></tr>';
+      return '<div class="rx-imp-report">'
+        + '<div class="rx-imp-rhead"><span class="rx-imp-file">📄 '+esc(rep.fileName)+' '+typeBadge+'</span>'
+        + (valid ? '<span class="rx-imp-ok">جاهز</span>' : '<span class="rx-imp-warn">راجع الصيدلية / التاريخ</span>')+'</div>'
+        + '<div class="rx-imp-fields">'
+        + '<div><label>الصيدلية</label><select class="rx-imp-ph" data-r="'+index+'">'+phOpts+'</select></div>'
+        + '<div><label>التاريخ</label><input type="date" class="rx-imp-date" data-r="'+index+'" value="'+escAttr(rep.date||'')+'"></div>'
+        + '</div>'
+        + '<div class="rx-imp-tablewrap"><table class="data"><thead><tr>'+head+'</tr></thead><tbody>'+rowsHtml+'</tbody></table></div>'
+        + '</div>';
+    }).join('');
+    host.innerHTML = '<div class="rx-imp-overlay" data-close="1">'
+      + '<div class="rx-imp-modal">'
+      + '<div class="rx-imp-head"><div><div class="rx-imp-title">'+ICO.swap+' مراجعة التقارير قبل الاستيراد</div>'
+      + '<div class="rx-imp-sub">يتعرّف تلقائيًا على نوع التقرير (مبيعات الأصناف = حبات ومبلغ · كتابات الأطباء = عدد الكتابة) ويسحب الأرقام. راجع الصيدلية والتاريخ ثم استورد.</div></div>'
+      + '<button class="btn rx-imp-close">إغلاق</button></div>'
+      + '<div class="rx-imp-body">'+(body||'<div class="rx-imp-report err">لا توجد تقارير.</div>')+'</div>'
+      + '<div class="rx-imp-foot"><span class="rx-imp-count">'+fmt(rxTotalImportRows())+' سجل جاهز للاستيراد</span>'
+      + '<div><button class="btn rx-imp-close">إلغاء</button><button class="btn btn-primary rx-imp-apply">✅ استيراد الكل</button></div></div>'
+      + '</div></div>';
+    // event delegation
+    host.querySelectorAll('.rx-imp-close').forEach(function(b){ b.onclick=rxCloseImport; });
+    const ov = host.querySelector('.rx-imp-overlay'); if(ov) ov.onclick=function(e){ if(e.target===ov) rxCloseImport(); };
+    const ap = host.querySelector('.rx-imp-apply'); if(ap) ap.onclick=rxApplyImport;
+    host.querySelectorAll('.rx-imp-ph').forEach(function(sel){ sel.onchange=function(){ const r=RX_IMPORT.reports[+sel.dataset.r]; if(r){ r.pharmacy=sel.value; rxRenderImportModal(); } }; });
+    host.querySelectorAll('.rx-imp-date').forEach(function(inp){ inp.onchange=function(){ const r=RX_IMPORT.reports[+inp.dataset.r]; if(r){ r.date=inp.value; rxRenderImportModal(); } }; });
+    host.querySelectorAll('.rx-imp-row').forEach(function(cb){ cb.onchange=function(){ const r=RX_IMPORT.reports[+cb.dataset.r]; if(r && r.rows[+cb.dataset.row]){ r.rows[+cb.dataset.row].include=cb.checked; const c=host.querySelector('.rx-imp-count'); if(c) c.textContent=fmt(rxTotalImportRows())+' سجل جاهز للاستيراد'; } }; });
   }
