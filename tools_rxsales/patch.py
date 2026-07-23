@@ -13,6 +13,16 @@ def rep(old, new, label):
     app = app.replace(old, new)
     edits.append(label)
 
+def repN(old, new, label, expect=None):
+    """Replace all occurrences; assert at least one (or an exact count)."""
+    global app
+    n = app.count(old)
+    assert n >= 1, 'ANCHOR FAIL [%s]: found 0' % label
+    if expect is not None:
+        assert n == expect, 'COUNT [%s]: found %d expected %d' % (label, n, expect)
+    app = app.replace(old, new)
+    edits.append('%s(x%d)' % (label, n))
+
 JS = open(os.path.join(os.path.dirname(__file__), 'rxsales_block.js'), encoding='utf-8').read()
 CSS = open(os.path.join(os.path.dirname(__file__), 'rxsales_css.txt'), encoding='utf-8').read()
 
@@ -93,6 +103,32 @@ rep(
     "      items.forEach(it=>{ const k=neKey(it.name); const ex=_neUniq.get(k); if(!ex || it.days<ex.days) _neUniq.set(k, it); });\n"
     "      const rows = [..._neUniq.values()].map(it=>{ const k=neKey(it.name); return { ...it, before:wB.get(k)||0, after:wN.get(k)||0 }; });",
     'ne-dedup')
+
+# 10) THEME — Ocean Depths (teal accent · navy dark bg · seafoam/cream tints).
+#     Recolours the design-system tokens + the accent hexes used in charts so the
+#     whole UI (incl. rxsales) takes on the maritime palette. Semantic status
+#     colours (blue/amber/rose/green/violet) are intentionally left intact.
+# accent family (CSS token + charts + rxsales line/bar)
+repN('#1d4ed8', '#2d8b8b', 'theme-accent')          # Deep teal
+repN('#1741ab', '#236e6e', 'theme-accent-600')      # darker teal (hover)
+repN('#3b6ef0', '#4ba3a3', 'theme-accent-2')        # secondary teal (charts)
+repN('29,78,216', '45,139,139', 'theme-accent-rgb')  # every blue-accent tint → teal
+repN('91,140,255', '84,184,184', 'theme-dark-accent-rgb')  # dark accent ring
+# light palette tints
+rep('--accent-soft:#eaf0ff;', '--accent-soft:#e6f4f3;', 'theme-accent-soft')
+rep('--bg:#eef1f5;', '--bg:#eef5f4;', 'theme-bg')
+rep('--surface-2:#f7f9fb;', '--surface-2:#f4faf8;', 'theme-surface2')
+rep('linear-gradient(135deg,#eff7fd,#dcecf8 45%,#cfe4f4)',
+    'linear-gradient(135deg,#eefaf9,#d6eeed 45%,#c3e6e5)', 'theme-canvas')
+# dark palette → deep navy (#1a2332) surfaces + bright teal accent
+rep('--bg:#0b1120;', '--bg:#0f1a24;', 'theme-dark-bg')
+rep('--surface:rgba(17,24,39,.62);', '--surface:rgba(26,35,50,.62);', 'theme-dark-surface')
+rep('--surface-2:#0f1626;', '--surface-2:#1a2332;', 'theme-dark-surface2')
+rep('--line:#242c3d;', '--line:#2c3a48;', 'theme-dark-line')
+rep('--line-soft:#1b2230;', '--line-soft:#212e3b;', 'theme-dark-line-soft')
+rep('--accent:#5b8cff;', '--accent:#54b8b8;', 'theme-dark-accent')
+rep('--accent-600:#4a76e6;', '--accent-600:#3f9c9c;', 'theme-dark-accent-600')
+rep('--accent-soft:#182642;', '--accent-soft:#16302f;', 'theme-dark-accent-soft')
 
 write_app(app, bundle, m)
 print('Applied edits:', edits)
