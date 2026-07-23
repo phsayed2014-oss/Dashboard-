@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Nostri Orbit | كيف نحصل على مليون ريال شهرياً؟</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Alexandria:wght@600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg0:#041512;--bg1:#06332e;--bg2:#0a4a52;
+  --teal:#14b8a6;--teal-d:#0f766e;--blue:#3b82f6;--gold:#f59e0b;
+  --text:#f0fdfa;--muted:#94b8b0;--card:#fff;--ink:#0c1929;--dim:#4a5d73;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'IBM Plex Sans Arabic','Alexandria',sans-serif;
+  background:radial-gradient(ellipse at 30% 20%,#0a4a52 0%,#06332e 40%,#041512 100%);
+  color:var(--text);line-height:1.65;
+}
+
+/* ── Splash ── */
+.splash{
+  position:fixed;inset:0;z-index:1000;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 40%,#0f766e,#041512);
+  transition:opacity .8s var(--ease),visibility .8s;
+}
+.splash.hide{opacity:0;visibility:hidden;pointer-events:none}
+.splash-inner{text-align:center;animation:rise 1s var(--ease) both}
+.splash-logo{
+  font-family:'Alexandria',sans-serif;font-size:clamp(3rem,10vw,5.5rem);font-weight:900;
+  letter-spacing:6px;background:linear-gradient(135deg,#fff,#5eead4);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.splash-sub{margin-top:12px;color:#99f6e4;font-size:1.1rem;opacity:.85}
+.splash-cta{
+  margin-top:36px;border:none;padding:14px 36px;border-radius:999px;cursor:pointer;
+  font-family:inherit;font-weight:800;font-size:15px;color:#041512;
+  background:linear-gradient(135deg,#5eead4,#14b8a6);
+  box-shadow:0 8px 32px rgba(20,184,166,.4);transition:transform .25s var(--ease);
+}
+.splash-cta:hover{transform:scale(1.05)}
+@keyframes rise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+
+/* ── Stage ── */
+.stage{position:relative;width:100%;height:100%;overflow:hidden}
+.stage-bg{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(circle at 70% 80%,rgba(59,130,246,.12),transparent 40%),
+    radial-gradient(circle at 20% 30%,rgba(20,184,166,.15),transparent 35%);
+}
+.orbit-ring{
+  position:absolute;left:50%;top:50%;border-radius:50%;
+  border:1px solid rgba(94,234,212,.12);transform:translate(-50%,-50%);
+  pointer-events:none;animation:spin 60s linear infinite;
+}
+.orbit-ring.r1{width:min(78vw,620px);height:min(78vw,620px)}
+.orbit-ring.r2{width:min(92vw,760px);height:min(92vw,760px);animation-direction:reverse;animation-duration:90s;opacity:.5}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+
+.topbar{
+  position:absolute;top:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 24px;background:linear-gradient(180deg,rgba(4,21,18,.7),transparent);
+}
+.topbar .brand{font-family:'Alexandria',sans-serif;font-weight:900;letter-spacing:2px;font-size:1.1rem}
+.topbar .hint{font-size:12px;color:var(--muted)}
+.topbar button{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  color:#fff;padding:8px 14px;border-radius:10px;font-family:inherit;font-size:12px;
+  font-weight:700;cursor:pointer;margin-right:8px;transition:.2s;
+}
+.topbar button:hover{background:rgba(20,184,166,.25)}
+
+/* ── Hub center ── */
+.hub{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:min(280px,42vw);height:min(280px,42vw);border-radius:50%;
+  background:linear-gradient(145deg,#0f766e,#115e59 50%,#0e4d8a);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:24px;z-index:10;
+  box-shadow:0 0 0 12px rgba(20,184,166,.12),0 0 60px rgba(20,184,166,.35),0 20px 60px rgba(0,0,0,.4);
+  animation:hubIn 1s var(--ease) .3s both;
+  cursor:default;
+}
+.hub::before{
+  content:'';position:absolute;inset:-18px;border-radius:50%;
+  border:1px dashed rgba(94,234,212,.25);animation:spin 40s linear infinite;
+}
+.hub-logo{font-family:'Alexandria',sans-serif;font-size:1.8rem;font-weight:900;letter-spacing:3px}
+.hub-q{font-size:clamp(.85rem,2vw,1.05rem);font-weight:700;margin-top:8px;line-height:1.35;max-width:90%}
+.hub-meta{font-size:11px;color:#99f6e4;margin-top:10px;opacity:.85}
+@keyframes hubIn{from{opacity:0;transform:translate(-50%,-50%) scale(.6)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+
+/* ── Orbit nodes ── */
+.nodes{position:absolute;inset:0;z-index:20}
+.node{
+  position:absolute;width:88px;height:88px;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(8,40,38,.85);border:2px solid rgba(94,234,212,.35);
+  backdrop-filter:blur(10px);cursor:pointer;text-align:center;padding:8px;
+  transition:transform .35s var(--ease),box-shadow .35s,border-color .35s,background .35s;
+  animation:nodeIn .7s var(--ease) both;
+  box-shadow:0 8px 24px rgba(0,0,0,.3);
+}
+.node:hover,.node:focus-visible{
+  transform:scale(1.12);border-color:#5eead4;
+  background:linear-gradient(145deg,#0f766e,#0e4d8a);
+  box-shadow:0 0 0 6px rgba(20,184,166,.2),0 12px 32px rgba(20,184,166,.35);
+  outline:none;z-index:30;
+}
+.node .n-num{
+  font-family:'Alexandria',sans-serif;font-size:1.15rem;font-weight:900;color:#5eead4;line-height:1;
+}
+.node .n-label{font-size:10px;font-weight:700;margin-top:4px;line-height:1.2;color:#e0f2f1}
+.node.active{
+  background:linear-gradient(145deg,#14b8a6,#0f766e);border-color:#fff;
+  transform:scale(1.15);box-shadow:0 0 0 8px rgba(20,184,166,.25);
+}
+@keyframes nodeIn{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
+
+/* KPI strip under hub area on desktop */
+.kpi-strip{
+  position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
+  display:flex;gap:10px;z-index:15;flex-wrap:wrap;justify-content:center;
+  max-width:95vw;animation:rise .8s var(--ease) .8s both;
+}
+.kpi-chip{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  backdrop-filter:blur(12px);border-radius:14px;padding:10px 16px;text-align:center;min-width:100px;
+}
+.kpi-chip .v{font-family:'Alexandria',sans-serif;font-size:1.2rem;font-weight:800;color:#5eead4}
+.kpi-chip .l{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* ── Panel overlay ── */
+.overlay{
+  position:fixed;inset:0;z-index:200;background:rgba(2,12,10,.55);
+  backdrop-filter:blur(6px);opacity:0;visibility:hidden;
+  transition:opacity .4s var(--ease),visibility .4s;
+}
+.overlay.open{opacity:1;visibility:visible}
+.panel{
+  position:fixed;z-index:210;inset:auto;top:50%;left:50%;
+  width:min(920px,94vw);max-height:88vh;
+  transform:translate(-50%,-46%) scale(.88);opacity:0;
+  background:var(--card);color:var(--ink);border-radius:24px;
+  box-shadow:0 32px 80px rgba(0,0,0,.45);
+  display:flex;flex-direction:column;overflow:hidden;
+  transition:transform .5s var(--ease),opacity .45s var(--ease);
+  pointer-events:none;
+}
+.panel.open{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:20px 24px;background:linear-gradient(135deg,#0f766e,#0e4d8a);color:#fff;flex-shrink:0;
+}
+.panel-head h2{font-family:'Alexandria',sans-serif;font-size:1.25rem;font-weight:800}
+.panel-head .sub{font-size:12px;opacity:.85;margin-top:2px}
+.panel-close{
+  width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;
+  background:rgba(255,255,255,.15);color:#fff;font-size:20px;font-weight:700;
+  transition:.2s;flex-shrink:0;
+}
+.panel-close:hover{background:rgba(255,255,255,.3);transform:rotate(90deg)}
+.panel-body{padding:24px;overflow-y:auto;flex:1}
+.panel-nav{
+  display:flex;justify-content:space-between;padding:12px 20px;
+  border-top:1px solid #e2e8f0;background:#f8fafc;flex-shrink:0;
+}
+.panel-nav button{
+  border:none;background:#0f766e;color:#fff;padding:10px 18px;border-radius:10px;
+  font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;transition:.2s;
+}
+.panel-nav button:hover{filter:brightness(1.1)}
+.panel-nav button.ghost{background:#e2e8f0;color:#334155}
+
+/* Panel content helpers */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px}
+.box h3{font-size:14px;font-weight:800;margin-bottom:10px;color:#0f766e}
+.box p,.box li{font-size:13px;color:var(--dim)}
+.box ul{padding-right:18px}
+.stat{text-align:center;padding:14px;border-radius:14px;background:#f0fdfa;border:1px solid #99f6e4}
+.stat .v{font-family:'Alexandria',sans-serif;font-size:1.4rem;font-weight:800;color:#0f766e}
+.stat .l{font-size:11px;color:var(--dim);margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f0fdfa;padding:10px 12px;text-align:right;color:#0f766e;font-weight:700;border-bottom:2px solid #ccfbf1}
+td{padding:10px 12px;border-bottom:1px solid #e2e8f0;vertical-align:middle}
+.num{direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
+.row-t{background:#ecfdf5!important;font-weight:700}
+.brand-ar{font-weight:700;color:#0f766e}
+.brand-en{display:block;font-size:11px;color:#94a3b8;direction:ltr;text-align:right}
+.tag{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
+.tag-g{background:#d1fae5;color:#065f46}.tag-b{background:#dbeafe;color:#1e40af}
+.tag-a{background:#ffedd5;color:#9a3412}.tag-p{background:#e0e7ff;color:#3730a3}
+.ch{border-radius:14px;padding:16px;border:1px solid #e2e8f0;border-top:4px solid #0f766e;margin-bottom:10px}
+.ch.c2{border-top-color:#1d4ed8}.ch.c3{border-top-color:#b45309}.ch.c4{border-top-color:#4338ca}
+.ch .amt{font-family:'Alexandria',sans-serif;font-size:1.4rem;font-weight:800;color:#0f766e}
+.ch.c2 .amt{color:#1d4ed8}.ch.c3 .amt{color:#b45309}.ch.c4 .amt{color:#4338ca}
+.ch .nm{font-weight:700;font-size:13px;margin:4px 0}
+.ch .ds{font-size:12px;color:var(--dim)}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
+.flow-n{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;text-align:center;flex:1;min-width:110px}
+.flow-n strong{display:block;font-size:12px;color:#0f766e}
+.flow-n span{font-size:10px;color:var(--dim)}
+.tl{border-right:3px solid #0f766e;padding-right:16px;margin:8px 0 8px 0}
+.tl-i{margin-bottom:16px;position:relative}
+.tl-i::before{content:'';position:absolute;right:-22px;top:4px;width:12px;height:12px;border-radius:50%;background:#0f766e;border:2px solid #fff;box-shadow:0 0 0 2px #0f766e}
+.tl-p{font-size:11px;font-weight:700;color:#0f766e}
+.tl-t{font-weight:700;font-size:13px}
+.tl-d{font-size:12px;color:var(--dim)}
+.chart-box{position:relative;height:220px;margin-top:8px}
+.note{background:#fff7ed;border:1px solid #fdba74;border-radius:12px;padding:12px 14px;font-size:12px;color:#9a3412;margin:10px 0}
+.info{background:#eff6ff;border:1px solid #93c5fd;border-radius:12px;padding:12px 14px;font-size:12px;color:#1e40af;margin:10px 0}
+.risk{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #e2e8f0}
+.risk:last-child{border-bottom:none}
+.risk .ico{font-size:18px}
+.risk .tt{font-weight:700;font-size:13px}
+.risk .dd{font-size:12px;color:var(--dim)}
+.scroll-hint{text-align:center;font-size:11px;color:#94a3b8;padding:4px 0 8px}
+
+@media(max-width:900px){
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .hub{width:160px;height:160px}
+  .hub-logo{font-size:1.2rem}.hub-q{font-size:.75rem}
+  .node{width:72px;height:72px}
+  .node .n-label{font-size:9px}
+  .orbit-ring{display:none}
+}
+@media(max-width:640px){
+  .kpi-strip{bottom:12px;gap:6px}
+  .kpi-chip{min-width:70px;padding:8px 10px}
+  .kpi-chip .v{font-size:1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div class="splash" id="splash">
+  <div class="splash-inner">
+    <div class="splash-logo">NOSTRI</div>
+    <div class="splash-sub">مجموعة التعاون للاستثمار · تصنيع Astrix</div>
+    <div style="margin-top:20px;font-family:'Alexandria',sans-serif;font-size:clamp(1.2rem,4vw,1.8rem);font-weight:800">كيف نحصل على مليون ريال شهرياً؟</div>
+    <button class="splash-cta" id="enterBtn">ابدأ العرض التفاعلي ←</button>
+  </div>
+</div>
+
+<!-- STAGE -->
+<div class="stage" id="stage">
+  <div class="stage-bg"></div>
+  <div class="orbit-ring r1"></div>
+  <div class="orbit-ring r2"></div>
+
+  <div class="topbar">
+    <div class="brand">NOSTRI</div>
+    <div class="hint">اضغط على أي دائرة لفتح البند · ← → للتنقل · Esc للإغلاق</div>
+    <div>
+      <button onclick="openPanel(0)">▶ ابدأ من الأول</button>
+      <button onclick="document.documentElement.requestFullscreen?.()">⛶</button>
+    </div>
+  </div>
+
+  <div class="hub">
+    <div class="hub-logo">NOSTRI</div>
+    <div class="hub-q">كيف نحصل على مليون ريال شهرياً؟</div>
+    <div class="hub-meta">7 + 14 = 21 منتج · ربحية 80%</div>
+  </div>
+
+  <div class="nodes" id="nodes"></div>
+
+  <div class="kpi-strip">
+    <div class="kpi-chip"><div class="v">1M</div><div class="l">ريال/شهر</div></div>
+    <div class="kpi-chip"><div class="v">12M</div><div class="l">ريال/سنة</div></div>
+    <div class="kpi-chip"><div class="v">80%</div><div class="l">هامش ربح</div></div>
+    <div class="kpi-chip"><div class="v">21</div><div class="l">منتج إجمالي</div></div>
+    <div class="kpi-chip"><div class="v">4</div><div class="l">قنوات بيع</div></div>
+  </div>
+</div>
+
+<!-- OVERLAY + PANEL -->
+<div class="overlay" id="overlay"></div>
+<div class="panel" id="panel" role="dialog" aria-modal="true">
+  <div class="panel-head">
+    <div>
+      <div class="sub" id="panelSub"></div>
+      <h2 id="panelTitle"></h2>
+    </div>
+    <button class="panel-close" id="closeBtn" aria-label="إغلاق">×</button>
+  </div>
+  <div class="scroll-hint">مرّر للأسفل للمزيد</div>
+  <div class="panel-body" id="panelBody"></div>
+  <div class="panel-nav">
+    <button class="ghost" id="prevBtn">→ السابق</button>
+    <button id="nextBtn">التالي ←</button>
+  </div>
+</div>
+
+<script>
+const SECTIONS = [
+  { num:1, label:'الملخص', title:'الملخص التنفيذي', sub:'نظرة شاملة على المشروع', color:'#0f766e' },
+  { num:2, label:'الشراكة', title:'العلامة ونموذج الشراكة', sub:'من المجموعة إلى السوق', color:'#0e7490' },
+  { num:3, label:'الأهداف', title:'الأهداف الاستراتيجية', sub:'أهداف SMART للمشروع', color:'#1d4ed8' },
+  { num:4, label:'القنوات', title:'قنوات التوزيع', sub:'400 · 200 · 200 · 200', color:'#b45309' },
+  { num:5, label:'المنتجات', title:'محفظة المنتجات — 14 SKU', sub:'7 قائمة + 14 جديد = 21', color:'#047857' },
+  { num:6, label:'المالي', title:'الإطار المالي', sub:'إيرادات وربحية 80%', color:'#7c3aed' },
+  { num:7, label:'الزمني', title:'الجدول الزمني', sub:'12 شهراً للوصول للمستهدف', color:'#0369a1' },
+  { num:8, label:'الأداء', title:'مؤشرات الأداء (KPIs)', sub:'مقاييس النجاح', color:'#be123c' },
+  { num:9, label:'المخاطر', title:'المخاطر وخطط التخفيف', sub:'تحليل المخاطر', color:'#c2410c' },
+  { num:10, label:'القرارات', title:'التوصيات وقرارات المجلس', sub:'ما نحتاجه من المجلس', color:'#0f766e' }
+];
+
+const products = [
+  { name:'Baby Shampoo', brandAr:'نوستري بيبي جينتل', brandEn:'Nostri Baby Gentle', cat:'عناية أطفال', monthly:65000, channel:'صيدليات + أونلاين' },
+  { name:'Gel for Edema', brandAr:'نوستري ديفلا جل', brandEn:'Nostri Defla Gel', cat:'جلدية / وذمة', monthly:70000, channel:'مجمعات طبية' },
+  { name:'Multivitamin', brandAr:'نوستري فايتال ماكس', brandEn:'Nostri Vital Max', cat:'فيتامينات', monthly:85000, channel:'مجمعات + صيدليات' },
+  { name:'Natal — Prenatal', brandAr:'نوستري ناتال', brandEn:'Nostri Natal', cat:'فيتامينات الحمل', monthly:90000, channel:'مجمعات طبية' },
+  { name:'Mouth Wash HA', brandAr:'نوستري أورو HA', brandEn:'Nostri Oro HA', cat:'صحة الفم', monthly:70000, channel:'صيدليات + أونلاين' },
+  { name:'Mouth Wash H₂O₂', brandAr:'نوستري أورو بيور', brandEn:'Nostri Oro Pure', cat:'صحة الفم', monthly:65000, channel:'صيدليات + أونلاين' },
+  { name:'Whitening Cream', brandAr:'نوستري لومينا', brandEn:'Nostri Lumina Cream', cat:'تجميل علاجي', monthly:80000, channel:'صيدليات + أونلاين' },
+  { name:'Vitamin C', brandAr:'نوستري سي أكتيف', brandEn:'Nostri C-Active', cat:'فيتامينات', monthly:60000, channel:'مجمعات + صيدليات' },
+  { name:'Vitamin C + Zn', brandAr:'نوستري سي زدن شيلد', brandEn:'Nostri C-Zn Shield', cat:'مناعة', monthly:70000, channel:'مجمعات طبية' },
+  { name:'Strepsils Menthol', brandAr:'نوستري ثروت كول', brandEn:'Nostri Throat Cool', cat:'الحلق', monthly:75000, channel:'صيدليات + صب إيجنت' },
+  { name:'Strepsils Honey & Lemon', brandAr:'نوستري ثروت سوث', brandEn:'Nostri Throat Soothe', cat:'الحلق', monthly:70000, channel:'صيدليات + صب إيجنت' },
+  { name:'Zn Syrup', brandAr:'نوستري زنك بلس', brandEn:'Nostri Zinc Plus Syrup', cat:'مكملات أطفال', monthly:65000, channel:'مجمعات + صيدليات' },
+  { name:'Vit D Drops', brandAr:'نوستري دي دروبس', brandEn:'Nostri D-Drops', cat:'فيتامينات أطفال', monthly:60000, channel:'مجمعات طبية' },
+  { name:'Vision Tablet', brandAr:'نوستري فيجن جارد', brandEn:'Nostri Vision Guard', cat:'صحة العين', monthly:75000, channel:'مجمعات + صيدليات' }
+];
+
+const fmt = n => n.toLocaleString('ar-SA');
+let current = -1;
+const charts = {};
+
+function placeNodes() {
+  const el = document.getElementById('nodes');
+  el.innerHTML = '';
+  const n = SECTIONS.length;
+  const isMobile = window.innerWidth < 700;
+  const rx = isMobile ? Math.min(window.innerWidth, window.innerHeight) * 0.36 : Math.min(340, window.innerWidth * 0.38);
+  const ry = isMobile ? Math.min(window.innerWidth, window.innerHeight) * 0.32 : Math.min(280, window.innerHeight * 0.36);
+  SECTIONS.forEach((s, i) => {
+    const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+    const x = 50 + (rx / window.innerWidth * 100) * Math.cos(angle);
+    const y = 48 + (ry / window.innerHeight * 100) * Math.sin(angle);
+    const btn = document.createElement('button');
+    btn.className = 'node';
+    btn.style.left = `calc(${x}% - 44px)`;
+    btn.style.top = `calc(${y}% - 44px)`;
+    btn.style.animationDelay = `${0.4 + i * 0.06}s`;
+    btn.style.borderColor = s.color + '99';
+    btn.innerHTML = `<span class="n-num">${s.num}</span><span class="n-label">${s.label}</span>`;
+    btn.onclick = () => openPanel(i);
+    btn.setAttribute('aria-label', s.title);
+    el.appendChild(btn);
+  });
+}
+
+function content(i) {
+  switch(i) {
+    case 0: return `
+      <p style="margin-bottom:16px;font-size:14px;color:var(--dim)">تهدف <strong>مجموعة التعاون للاستثمار</strong> إلى <strong>توسيع محفظة Nostri</strong> من <strong>7 منتجات</strong> بإضافة <strong>14 منتجاً جديداً</strong> ليصبح الإجمالي <strong>21 منتجاً</strong>، عبر شراكة تصنيع مع <strong>Astrix</strong>. المستهدف: <strong>مليون ريال/شهر</strong> من المنتجات الجديدة بهامش ربح <strong>80%</strong>.</p>
+      <div class="grid-2">
+        <div class="box"><h3>لماذا الآن؟</h3><ul>
+          <li>علامة قائمة بـ 7 منتجات — نضيف 14 (إجمالي 21)</li>
+          <li>قنوات جاهزة: مجمعات، صيدليات، صب إيجنت، أونلاين</li>
+          <li>شراكة تصنيع مع Astrix</li>
+          <li>محفظة متكاملة: أطفال، حوامل، كبار، تجميل</li>
+        </ul></div>
+        <div class="box"><h3>قرارات المجلس</h3><ul>
+          <li>اعتماد إضافة 14 منتج (7+14=21)</li>
+          <li>اعتماد 1M ر.س/شهر — 400-200-200-200</li>
+          <li>الموافقة على عقد Astrix</li>
+          <li>اعتماد ميزانية التسجيل والتسويق</li>
+          <li>دعم الإدارة التجارية للتواصل مع الأطباء</li>
+        </ul></div>
+      </div>`;
+    case 1: return `
+      <div class="box" style="margin-bottom:14px"><div class="flow">
+        <div class="flow-n"><strong>مجموعة التعاون</strong><span>المستثمرة</span></div>
+        <span style="color:#0f766e">←</span>
+        <div class="flow-n"><strong>Nostri</strong><span>العلامة التجارية</span></div>
+        <span style="color:#0f766e">←</span>
+        <div class="flow-n"><strong>Astrix</strong><span>مصنع التعاقد</span></div>
+        <span style="color:#0f766e">←</span>
+        <div class="flow-n"><strong>4 قنوات</strong><span>مجمعات · صيدليات · صب · أونلاين</span></div>
+      </div></div>
+      <div class="grid-3">
+        <div class="box"><h3>🏢 مجموعة التعاون</h3><p>الجهة المالكة والمستثمرة. تدير الاستراتيجية، التسجيل، التوزيع والتسويق.</p></div>
+        <div class="box"><h3>💊 Nostri</h3><p>علامة موحدة — «صحتك، أولويتنا». تجمع كل المنتجات تحت هوية واحدة.</p></div>
+        <div class="box"><h3>🏭 Astrix</h3><p>شريك التصنيع (CMO). الإنتاج والجودة والتعبئة وفق SFDA. التكلفة تُحدَّد لاحقاً.</p></div>
+      </div>
+      <div class="info">وثيقة استراتيجية — التفاصيل التشغيلية تُعدّ لاحقاً.</div>`;
+    case 2: return `
+      <div class="grid-3">
+        <div class="stat"><div class="v">1M</div><div class="l">ريال/شهر من الـ 14 منتج الجديد</div></div>
+        <div class="stat"><div class="v">400K</div><div class="l">مجمعات طبية (40%)</div></div>
+        <div class="stat"><div class="v">80%</div><div class="l">هامش ربح = 800K ربح شهري</div></div>
+        <div class="stat"><div class="v">14/14</div><div class="l">تسجيل SFDA للمنتجات الجديدة</div></div>
+        <div class="stat"><div class="v">60%</div><div class="l">مبيعات خارج المجمعات</div></div>
+        <div class="stat"><div class="v">2M</div><div class="l">مستهدف السنة الثانية / شهر</div></div>
+      </div>`;
+    case 3: return `
+      <div class="grid-2">
+        <div class="ch"><div class="amt">400,000 ر.س</div><div class="nm">🏥 صيدليات المجمعات الطبية (40%)</div><div class="ds">دعم الإدارة التجارية للتواصل المباشر مع الأطباء، عقود توريد، زيارات طبية، عينات مجانية.</div><div style="margin-top:8px"><span class="tag tag-g">أولوية قصوى</span></div></div>
+        <div class="ch c2"><div class="amt">200,000 ر.س</div><div class="nm">💊 شبكة الصيدليات الخارجية (20%)</div><div class="ds">تغطية جغرافية، عروض ترويجية، نسب تحفيزية للصيادلة.</div><div style="margin-top:8px"><span class="tag tag-b">قناة أساسية</span></div></div>
+        <div class="ch c3"><div class="amt">200,000 ر.س</div><div class="nm">🤝 الصب إيجنت (20%)</div><div class="ds">وكلاء فرعيون، عمولات تنافسية، تدريب مندوبين.</div><div style="margin-top:8px"><span class="tag tag-a">توسع إقليمي</span></div></div>
+        <div class="ch c4"><div class="amt">200,000 ر.س</div><div class="nm">🛒 الأونلاين — نون مينتس + تراينديول (20%)</div><div class="ds">إدراج منتجات، SEO، عروض flash، توصيل سريع.</div><div style="margin-top:8px"><span class="tag tag-p">قناة نمو</span></div></div>
+      </div>
+      <div class="grid-2" style="margin-top:14px">
+        <div class="box"><h3>توزيع المستهدف</h3><div class="chart-box"><canvas id="cChannels"></canvas></div></div>
+        <div class="box"><h3>جدول التسجيل</h3>
+          <table><thead><tr><th>القناة</th><th>شهري</th><th>سنوي</th><th>تسجيل</th></tr></thead>
+          <tbody>
+            <tr><td>مجمعات</td><td class="num">400,000</td><td class="num">4,800,000</td><td class="num">400</td></tr>
+            <tr><td>صيدليات</td><td class="num">200,000</td><td class="num">2,400,000</td><td class="num">200</td></tr>
+            <tr><td>صب إيجنت</td><td class="num">200,000</td><td class="num">2,400,000</td><td class="num">200</td></tr>
+            <tr><td>أونلاين</td><td class="num">200,000</td><td class="num">2,400,000</td><td class="num">200</td></tr>
+            <tr class="row-t"><td>الإجمالي</td><td class="num">1,000,000</td><td class="num">12,000,000</td><td class="num">14,000</td></tr>
+          </tbody></table>
+          <div class="info">1,000 ر.س/منتج × 14 = 14,000 ر.س رسوم تسجيل</div>
+        </div>
+      </div>`;
+    case 4: return `
+      <div class="note">أسماء مقترحة تحت هوية Nostri. متوسط شهري ~71,429 ر.س/منتج. المحفظة الكاملة: 21 منتجاً.</div>
+      <div style="overflow-x:auto;max-height:280px">
+        <table><thead><tr><th>#</th><th>التركيبة</th><th>الاسم التجاري</th><th>الفئة</th><th>شهري</th><th>القناة</th></tr></thead>
+        <tbody>${products.map((p,i)=>`<tr>
+          <td>${i+1}</td><td>${p.name}</td>
+          <td><span class="brand-ar">${p.brandAr}</span><span class="brand-en">${p.brandEn}</span></td>
+          <td>${p.cat}</td><td class="num">${fmt(p.monthly)}</td><td>${p.channel}</td>
+        </tr>`).join('')}
+        <tr class="row-t"><td colspan="4">إجمالي 14 منتج جديد</td><td class="num">1,000,000</td><td></td></tr>
+        </tbody></table>
+      </div>
+      <div class="grid-2" style="margin-top:14px">
+        <div class="box"><h3>حسب الفئة</h3><div class="chart-box"><canvas id="cCats"></canvas></div></div>
+        <div class="box"><h3>هيكل التسمية</h3>
+          <table><tbody>
+            <tr><td>أطفال</td><td class="brand-ar">Nostri Baby</td></tr>
+            <tr><td>الفم</td><td class="brand-ar">Nostri Oro</td></tr>
+            <tr><td>فيتامينات</td><td class="brand-ar">Vital / C / D / Natal</td></tr>
+            <tr><td>الجلد</td><td class="brand-ar">Derma / Lumina</td></tr>
+            <tr><td>الحلق</td><td class="brand-ar">Nostri Throat</td></tr>
+            <tr><td>البصر</td><td class="brand-ar">Nostri Vision</td></tr>
+          </tbody></table>
+        </div>
+      </div>`;
+    case 5: return `
+      <div class="grid-2">
+        <div class="box"><h3>ملخص الإيرادات والربحية</h3>
+          <table><thead><tr><th>البند</th><th>شهري</th><th>سنوي</th></tr></thead>
+          <tbody>
+            <tr class="row-t"><td>المبيعات</td><td class="num">1,000,000</td><td class="num">12,000,000</td></tr>
+            <tr><td>تصنيع ~20%</td><td class="num">200,000</td><td class="num">2,400,000</td></tr>
+            <tr class="row-t"><td>الربح 80%</td><td class="num">800,000</td><td class="num">9,600,000</td></tr>
+            <tr><td>تسجيل (مرة)</td><td class="num">—</td><td class="num">14,000</td></tr>
+            <tr><td>تسويق تقديري</td><td class="num">~50,000</td><td class="num">600,000</td></tr>
+          </tbody></table>
+          <div class="info">عند تكلفة تصنيع 20%: الربح = 800,000 ر.س/شهر. التكلفة الفعلية من Astrix تُحدَّد في العقد.</div>
+        </div>
+        <div class="box"><h3>هيكل الربحية</h3><div class="chart-box" style="height:260px"><canvas id="cProfit"></canvas></div></div>
+      </div>
+      <div class="box" style="margin-top:14px"><h3>إيرادات وأرباح حسب القناة</h3><div class="chart-box"><canvas id="cChProfit"></canvas></div></div>`;
+    case 6: return `
+      <div class="grid-2">
+        <div class="box"><div class="tl">
+          <div class="tl-i"><div class="tl-p">الشهر 1–2</div><div class="tl-t">المرحلة التحضيرية</div><div class="tl-d">عقد Astrix، SFDA، تسجيل القنوات، هوية Nostri، التفاوض مع المجمعات.</div></div>
+          <div class="tl-i"><div class="tl-p">الشهر 3–4</div><div class="tl-t">الدفعة الأولى — 5 منتجات</div><div class="tl-d">Baby Shampoo، Mouth Wash HA، Vit C، Strepsils Menthol، Vit D. مستهدف: 350K.</div></div>
+          <div class="tl-i"><div class="tl-p">الشهر 5–7</div><div class="tl-t">الدفعة الثانية — 5 منتجات</div><div class="tl-d">Multivitamin، Natal، Mouth Wash H₂O₂، Vit C+Zn، Zn Syrup. مستهدف: 650K.</div></div>
+          <div class="tl-i"><div class="tl-p">الشهر 8–10</div><div class="tl-t">الدفعة الثالثة — 4 منتجات</div><div class="tl-d">Gel Edema، Whitening، Strepsils Honey، Vision. مستهدف: 850K.</div></div>
+          <div class="tl-i"><div class="tl-p">الشهر 11–12</div><div class="tl-t">التسريع والاستقرار</div><div class="tl-d">حملات ترويجية → الوصول لـ 1,000,000 ر.س/شهر.</div></div>
+        </div></div>
+        <div class="box"><h3>منحنى الوصول الشهري</h3><div class="chart-box" style="height:300px"><canvas id="cTimeline"></canvas></div></div>
+      </div>`;
+    case 7: return `
+      <table><thead><tr><th>المؤشر</th><th>المستهدف</th><th>التكرار</th><th>المسؤول</th></tr></thead>
+      <tbody>
+        <tr><td>إجمالي المبيعات الشهرية</td><td class="num">1,000,000 ر.س</td><td>شهري</td><td>المدير التجاري</td></tr>
+        <tr><td>مبيعات المجمعات</td><td class="num">400,000</td><td>شهري</td><td>مدير المبيعات الطبية</td></tr>
+        <tr><td>صيدليات خارجية</td><td class="num">200,000</td><td>شهري</td><td>مشرف التوزيع</td></tr>
+        <tr><td>صب إيجنت</td><td class="num">200,000</td><td>شهري</td><td>مدير الوكلاء</td></tr>
+        <tr><td>أونلاين</td><td class="num">200,000</td><td>شهري</td><td>مدير التجارة الإلكترونية</td></tr>
+        <tr><td>هامش الربح</td><td class="num">≥ 80%</td><td>شهري</td><td>المدير المالي</td></tr>
+        <tr><td>تسجيل SFDA</td><td class="num">14/14</td><td>عند الإنجاز</td><td>الشؤون التنظيمية</td></tr>
+        <tr><td>أطباء مُفعَّلون</td><td class="num">≥ 200</td><td>ربع سنوي</td><td>الإدارة التجارية</td></tr>
+      </tbody></table>`;
+    case 8: return `
+      <div class="box">
+        <div class="risk"><div class="ico">⚠️</div><div><div class="tt">تأخر تسجيل SFDA</div><div class="dd">متوسطة | عالٍ — بدء مبكر، تسجيل متوازي، مستشار تنظيمي.</div></div></div>
+        <div class="risk"><div class="ico">📉</div><div><div class="tt">عدم تحقيق 400K من المجمعات</div><div class="dd">متوسطة | عالٍ — عينات، عقود حصرية، زيارات طبية، حوافز أطباء.</div></div></div>
+        <div class="risk"><div class="ico">🏭</div><div><div class="tt">تأخر التوريد من Astrix</div><div class="dd">منخفضة | متوسط — عقد ملزم، مخزون أمان 60 يوم.</div></div></div>
+        <div class="risk"><div class="ico">💰</div><div><div class="tt">ارتفاع تكلفة التصنيع</div><div class="dd">متوسطة | عالٍ — أسعار ثابتة، دفعات أكبر، مراجعة تسعير.</div></div></div>
+        <div class="risk"><div class="ico">🏪</div><div><div class="tt">منافسة أونلاين</div><div class="dd">عالية | منخفض — باقات حصرية، محتوى تعليمي، تقييمات.</div></div></div>
+      </div>`;
+    case 9: return `
+      <div class="grid-2">
+        <div class="box" style="background:#f0fdfa;border-color:#99f6e4"><h3>توصيات فورية</h3><ul>
+          <li>اعتماد 14 منتج جديد (إجمالي 21)</li>
+          <li>توقيع عقد Astrix</li>
+          <li>اعتماد 1M ر.س/شهر — 400-200-200-200</li>
+          <li>اعتماد هامش ربح 80%</li>
+          <li>دعم الإدارة التجارية للتواصل مع الأطباء</li>
+        </ul></div>
+        <div class="box" style="background:#eff6ff;border-color:#93c5fd"><h3>قرارات مطلوبة</h3><ul>
+          <li>✅ اعتماد الخطة الاستراتيجية</li>
+          <li>✅ تفويض التفاوض مع Astrix</li>
+          <li>✅ ميزانية التسجيل: 14,000 ر.س</li>
+          <li>⏳ تكلفة التصنيع (عند العقد)</li>
+          <li>⏳ الوثيقة التشغيلية</li>
+        </ul></div>
+      </div>`;
+  }
+}
+
+function destroyCharts() {
+  Object.values(charts).forEach(c => { try { c.destroy(); } catch(e){} });
+  for (const k in charts) delete charts[k];
+}
+
+function initChartsFor(i) {
+  Chart.defaults.font.family = "'IBM Plex Sans Arabic'";
+  const colors = ['#0f766e','#1d4ed8','#b45309','#7c3aed'];
+  setTimeout(() => {
+    destroyCharts();
+    if (i === 3) {
+      const el = document.getElementById('cChannels');
+      if (el) charts.c1 = new Chart(el, { type:'doughnut', data:{ labels:['مجمعات 400K','صيدليات 200K','صب 200K','أونلاين 200K'], datasets:[{data:[400000,200000,200000,200000],backgroundColor:colors,borderWidth:2,borderColor:'#fff'}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}}} });
+    }
+    if (i === 4) {
+      const catMap = {}; products.forEach(p => catMap[p.cat]=(catMap[p.cat]||0)+p.monthly);
+      const el = document.getElementById('cCats');
+      if (el) charts.c2 = new Chart(el, { type:'bar', data:{ labels:Object.keys(catMap), datasets:[{data:Object.values(catMap),backgroundColor:colors,borderRadius:6}]}, options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>(v/1000)+'K'}}}} });
+    }
+    if (i === 5) {
+      const el1 = document.getElementById('cProfit');
+      const el2 = document.getElementById('cChProfit');
+      if (el1) charts.c3 = new Chart(el1, { type:'doughnut', data:{ labels:['ربح 80%','تكلفة 20%'], datasets:[{data:[800000,200000],backgroundColor:['#0f766e','#e2e8f0'],borderWidth:2,borderColor:'#fff'}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}} });
+      if (el2) charts.c4 = new Chart(el2, { type:'bar', data:{ labels:['مجمعات','صيدليات','صب إيجنت','أونلاين'], datasets:[{label:'إيرادات',data:[400000,200000,200000,200000],backgroundColor:'#1d4ed8',borderRadius:5},{label:'ربح 80%',data:[320000,160000,160000,160000],backgroundColor:'#0f766e',borderRadius:5}]}, options:{responsive:true,maintainAspectRatio:false,scales:{y:{ticks:{callback:v=>(v/1000)+'K'}}}} });
+    }
+    if (i === 6) {
+      const el = document.getElementById('cTimeline');
+      if (el) charts.c5 = new Chart(el, { type:'line', data:{ labels:['ش1','ش2','ش3','ش4','ش5','ش6','ش7','ش8','ش9','ش10','ش11','ش12'], datasets:[{data:[0,0,350000,450000,550000,650000,750000,850000,900000,950000,980000,1000000],borderColor:'#0f766e',backgroundColor:'rgba(15,118,110,.12)',fill:true,tension:.4,pointRadius:3}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>(v/1000)+'K'},max:1200000}}} });
+    }
+  }, 320);
+}
+
+function openPanel(i) {
+  current = i;
+  const s = SECTIONS[i];
+  document.getElementById('panelSub').textContent = `البند ${s.num} من ${SECTIONS.length} · ${s.sub}`;
+  document.getElementById('panelTitle').textContent = s.title;
+  document.getElementById('panelBody').innerHTML = content(i);
+  document.getElementById('panelBody').scrollTop = 0;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('panel').classList.add('open');
+  document.querySelectorAll('.node').forEach((n, idx) => n.classList.toggle('active', idx === i));
+  initChartsFor(i);
+}
+
+function closePanel() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('panel').classList.remove('open');
+  document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+  current = -1;
+  destroyCharts();
+}
+
+document.getElementById('enterBtn').onclick = () => {
+  document.getElementById('splash').classList.add('hide');
+};
+document.getElementById('closeBtn').onclick = closePanel;
+document.getElementById('overlay').onclick = closePanel;
+document.getElementById('prevBtn').onclick = () => openPanel((current - 1 + SECTIONS.length) % SECTIONS.length);
+document.getElementById('nextBtn').onclick = () => openPanel((current + 1) % SECTIONS.length);
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closePanel();
+  if (current < 0) return;
+  if (e.key === 'ArrowLeft') openPanel((current + 1) % SECTIONS.length);
+  if (e.key === 'ArrowRight') openPanel((current - 1 + SECTIONS.length) % SECTIONS.length);
+});
+
+placeNodes();
+window.addEventListener('resize', placeNodes);
+</script>
+</body>
+</html>
