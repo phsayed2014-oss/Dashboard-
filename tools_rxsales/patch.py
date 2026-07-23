@@ -84,6 +84,16 @@ rep(
     CSS + "\n.alert-card{ background:var(--rose-bg); border:1px solid var(--rose-fg);",
     'css')
 
+# 9) near-expiry comparison: collapse duplicate inventory batches to one row per
+#    product (writings are per-product, so per-batch rows were identical duplicates).
+#    Keep the most-urgent (fewest days remaining) batch as the representative.
+rep(
+    "      const rows = items.map(it=>{ const k=neKey(it.name); return { ...it, before:wB.get(k)||0, after:wN.get(k)||0 }; });",
+    "      const _neUniq = new Map();\n"
+    "      items.forEach(it=>{ const k=neKey(it.name); const ex=_neUniq.get(k); if(!ex || it.days<ex.days) _neUniq.set(k, it); });\n"
+    "      const rows = [..._neUniq.values()].map(it=>{ const k=neKey(it.name); return { ...it, before:wB.get(k)||0, after:wN.get(k)||0 }; });",
+    'ne-dedup')
+
 write_app(app, bundle, m)
 print('Applied edits:', edits)
 print('new app len', len(app))
