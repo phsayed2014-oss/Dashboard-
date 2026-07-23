@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الخطة الاستراتيجية | 14 منتجاً جديداً — مستهدف مليون ريال</title>
+<title>Nostri | الخطة الاستراتيجية — مستهدف مليون ريال شهرياً</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Alexandria:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -18,9 +18,9 @@
   --primary: #0d9488;
   --primary-dark: #0f766e;
   --accent: #1d4ed8;
-  --accent-light: #3b82f6;
   --gold: #b45309;
   --gold-bg: #fffbeb;
+  --nostri: #0f766e;
   --border: rgba(15,23,42,.08);
   --shadow: 0 4px 24px rgba(15,23,42,.06);
   --shadow-lg: 0 12px 40px rgba(15,23,42,.1);
@@ -38,9 +38,8 @@ body {
 }
 .container { max-width: 1180px; margin: 0 auto; padding: 0 24px 80px; }
 
-/* ── Header ── */
 .hero {
-  background: linear-gradient(135deg, #0f766e 0%, #1d4ed8 55%, #1e3a8a 100%);
+  background: linear-gradient(135deg, #0f766e 0%, #115e59 40%, #1d4ed8 100%);
   color: #fff;
   padding: 56px 24px 72px;
   position: relative;
@@ -54,6 +53,14 @@ body {
               radial-gradient(circle at 80% 20%, rgba(255,255,255,.08) 0%, transparent 40%);
 }
 .hero-inner { max-width: 1180px; margin: 0 auto; position: relative; z-index: 1; }
+.brand-logo {
+  font-family: 'Alexandria', sans-serif;
+  font-size: 2.4rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.brand-logo span { opacity: .75; font-weight: 600; font-size: 1rem; letter-spacing: 0; display: block; margin-top: 4px; }
 .hero-badge {
   display: inline-block;
   background: rgba(255,255,255,.15);
@@ -63,23 +70,20 @@ body {
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 20px;
-  backdrop-filter: blur(8px);
 }
 .hero h1 {
   font-family: 'Alexandria', sans-serif;
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-size: clamp(1.6rem, 3.5vw, 2.3rem);
   font-weight: 800;
-  line-height: 1.3;
+  line-height: 1.35;
   margin-bottom: 16px;
 }
-.hero-sub { font-size: 1.05rem; opacity: .92; max-width: 720px; margin-bottom: 32px; }
-.hero-meta { display: flex; flex-wrap: wrap; gap: 24px; font-size: 14px; opacity: .88; }
-.hero-meta span { display: flex; align-items: center; gap: 8px; }
+.hero-sub { font-size: 1.05rem; opacity: .92; max-width: 760px; margin-bottom: 28px; }
+.hero-meta { display: flex; flex-wrap: wrap; gap: 20px; font-size: 14px; opacity: .9; }
 
-/* ── KPI Row ── */
 .kpi-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
   margin-top: -40px;
   position: relative;
@@ -89,223 +93,159 @@ body {
 .kpi {
   background: var(--card);
   border-radius: var(--radius);
-  padding: 24px;
+  padding: 22px 18px;
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
   text-align: center;
 }
 .kpi-value {
   font-family: 'Alexandria', sans-serif;
-  font-size: 1.75rem;
+  font-size: 1.65rem;
   font-weight: 800;
   color: var(--primary);
   line-height: 1.2;
 }
 .kpi-value.accent { color: var(--accent); }
 .kpi-value.gold { color: var(--gold); }
-.kpi-label { font-size: 13px; color: var(--text-dim); margin-top: 6px; font-weight: 500; }
+.kpi-label { font-size: 12px; color: var(--text-dim); margin-top: 6px; font-weight: 500; }
 
-/* ── Nav ── */
 .nav-sticky {
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  position: sticky; top: 0; z-index: 100;
   background: rgba(255,255,255,.92);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   margin-bottom: 40px;
 }
 .nav-inner {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 12px 24px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
+  max-width: 1180px; margin: 0 auto; padding: 12px 24px;
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
 }
 .nav-inner a {
-  color: var(--text-dim);
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 999px;
-  transition: all .2s;
+  color: var(--text-dim); text-decoration: none; font-size: 13px; font-weight: 600;
+  padding: 8px 14px; border-radius: 999px; transition: all .2s;
 }
 .nav-inner a:hover { background: rgba(13,148,136,.1); color: var(--primary); }
 
-/* ── Sections ── */
 section { margin-bottom: 48px; scroll-margin-top: 80px; }
 .section-header { margin-bottom: 24px; }
 .section-num {
   display: inline-block;
   background: linear-gradient(135deg, var(--primary), var(--accent));
-  color: #fff;
-  width: 32px; height: 32px;
-  border-radius: 8px;
-  text-align: center;
-  line-height: 32px;
-  font-size: 14px;
-  font-weight: 700;
-  margin-left: 12px;
-  vertical-align: middle;
+  color: #fff; width: 32px; height: 32px; border-radius: 8px;
+  text-align: center; line-height: 32px; font-size: 14px; font-weight: 700;
+  margin-left: 12px; vertical-align: middle;
 }
 .section-header h2 {
   font-family: 'Alexandria', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 700;
-  display: inline;
-  vertical-align: middle;
+  font-size: 1.5rem; font-weight: 700;
+  display: inline; vertical-align: middle;
 }
 .section-header p { color: var(--text-dim); margin-top: 8px; font-size: 14px; }
 
 .card {
-  background: var(--card);
-  border-radius: var(--radius);
-  padding: 28px;
-  box-shadow: var(--shadow);
-  border: 1px solid var(--border);
-  margin-bottom: 20px;
+  background: var(--card); border-radius: var(--radius); padding: 28px;
+  box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 20px;
 }
 .card h3 {
   font-family: 'Alexandria', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: var(--text);
+  font-size: 1.1rem; font-weight: 700; margin-bottom: 16px;
 }
 .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
 .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
 
-/* ── Tables ── */
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 thead th {
-  background: #f1f5f9;
-  padding: 12px 14px;
-  text-align: right;
-  font-weight: 700;
-  color: var(--text-dim);
-  border-bottom: 2px solid var(--border);
-  white-space: nowrap;
+  background: #f1f5f9; padding: 12px 14px; text-align: right;
+  font-weight: 700; color: var(--text-dim);
+  border-bottom: 2px solid var(--border); white-space: nowrap;
 }
-tbody td {
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-}
+tbody td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 tbody tr:hover { background: #f8fafc; }
 tbody tr:last-child td { border-bottom: none; }
 .num { font-variant-numeric: tabular-nums; direction: ltr; text-align: left; display: inline-block; }
 .highlight-row { background: #f0fdfa !important; font-weight: 600; }
-.tag {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-}
+.brand-name { font-weight: 700; color: var(--nostri); }
+.brand-name-en { font-size: 12px; color: var(--text-muted); direction: ltr; text-align: right; display: block; }
+
+.tag { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
 .tag-green { background: #d1fae5; color: #065f46; }
 .tag-blue { background: #dbeafe; color: #1e40af; }
 .tag-amber { background: #fef3c7; color: #92400e; }
 .tag-purple { background: #ede9fe; color: #5b21b6; }
 
-/* ── Channel Cards ── */
 .channel-card {
-  border-radius: var(--radius-sm);
-  padding: 20px;
-  border: 1px solid var(--border);
-  position: relative;
-  overflow: hidden;
+  border-radius: var(--radius-sm); padding: 20px;
+  border: 1px solid var(--border); position: relative; overflow: hidden;
 }
-.channel-card::before {
-  content: '';
-  position: absolute;
-  top: 0; right: 0;
-  width: 4px; height: 100%;
-}
+.channel-card::before { content: ''; position: absolute; top: 0; right: 0; width: 4px; height: 100%; }
 .channel-card.ch1::before { background: var(--primary); }
 .channel-card.ch2::before { background: var(--accent); }
 .channel-card.ch3::before { background: var(--gold); }
 .channel-card.ch4::before { background: #7c3aed; }
-.channel-pct {
+.channel-amt {
   font-family: 'Alexandria', sans-serif;
-  font-size: 2rem;
-  font-weight: 800;
-  line-height: 1;
-  margin-bottom: 4px;
+  font-size: 1.8rem; font-weight: 800; line-height: 1; margin-bottom: 4px;
 }
-.channel-card.ch1 .channel-pct { color: var(--primary); }
-.channel-card.ch2 .channel-pct { color: var(--accent); }
-.channel-card.ch3 .channel-pct { color: var(--gold); }
-.channel-card.ch4 .channel-pct { color: #7c3aed; }
+.channel-card.ch1 .channel-amt { color: var(--primary); }
+.channel-card.ch2 .channel-amt { color: var(--accent); }
+.channel-card.ch3 .channel-amt { color: var(--gold); }
+.channel-card.ch4 .channel-amt { color: #7c3aed; }
 .channel-title { font-weight: 700; font-size: 15px; margin-bottom: 8px; }
 .channel-desc { font-size: 13px; color: var(--text-dim); }
 
-/* ── Timeline ── */
+.ecosystem-box {
+  display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: center;
+  padding: 24px; background: linear-gradient(135deg, #f0fdfa, #eff6ff);
+  border-radius: var(--radius); border: 1px solid var(--border);
+}
+.eco-item {
+  text-align: center; padding: 16px 24px; background: #fff;
+  border-radius: var(--radius-sm); border: 1px solid var(--border);
+  min-width: 140px; flex: 1;
+}
+.eco-item strong { display: block; font-size: 15px; color: var(--nostri); margin-bottom: 4px; }
+.eco-item span { font-size: 12px; color: var(--text-dim); }
+.eco-arrow { font-size: 24px; color: var(--text-muted); }
+
 .timeline { position: relative; padding-right: 28px; }
 .timeline::before {
-  content: '';
-  position: absolute;
-  right: 8px; top: 0; bottom: 0;
-  width: 2px;
+  content: ''; position: absolute; right: 8px; top: 0; bottom: 0; width: 2px;
   background: linear-gradient(to bottom, var(--primary), var(--accent));
 }
 .tl-item { position: relative; margin-bottom: 28px; padding-right: 24px; }
 .tl-item::before {
-  content: '';
-  position: absolute;
-  right: -24px; top: 6px;
-  width: 14px; height: 14px;
-  border-radius: 50%;
-  background: var(--primary);
-  border: 3px solid #fff;
-  box-shadow: 0 0 0 2px var(--primary);
+  content: ''; position: absolute; right: -24px; top: 6px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--primary); border: 3px solid #fff; box-shadow: 0 0 0 2px var(--primary);
 }
-.tl-phase { font-size: 12px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: .5px; }
+.tl-phase { font-size: 12px; font-weight: 700; color: var(--primary); }
 .tl-title { font-weight: 700; font-size: 15px; margin: 4px 0; }
 .tl-desc { font-size: 13px; color: var(--text-dim); }
 
-/* ── Chart ── */
 .chart-wrap { position: relative; height: 280px; margin: 16px 0; }
 .chart-wrap.tall { height: 320px; }
 
-/* ── Alert / Note ── */
 .note {
-  background: var(--gold-bg);
-  border: 1px solid #fde68a;
-  border-radius: var(--radius-sm);
-  padding: 16px 20px;
-  font-size: 14px;
-  color: #78350f;
-  margin: 16px 0;
+  background: var(--gold-bg); border: 1px solid #fde68a;
+  border-radius: var(--radius-sm); padding: 16px 20px;
+  font-size: 14px; color: #78350f; margin: 16px 0;
 }
-.note strong { color: #92400e; }
 .info {
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: var(--radius-sm);
-  padding: 16px 20px;
-  font-size: 14px;
-  color: #1e3a8a;
-  margin: 16px 0;
+  background: #eff6ff; border: 1px solid #bfdbfe;
+  border-radius: var(--radius-sm); padding: 16px 20px;
+  font-size: 14px; color: #1e3a8a; margin: 16px 0;
 }
 
-/* ── Risk matrix ── */
 .risk-item {
-  display: flex;
-  gap: 12px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--border);
-  align-items: flex-start;
+  display: flex; gap: 12px; padding: 14px 0;
+  border-bottom: 1px solid var(--border); align-items: flex-start;
 }
 .risk-item:last-child { border-bottom: none; }
 .risk-icon {
-  width: 36px; height: 36px;
-  border-radius: 8px;
+  width: 36px; height: 36px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-  flex-shrink: 0;
+  font-size: 18px; flex-shrink: 0;
 }
 .risk-high .risk-icon { background: #fee2e2; }
 .risk-med .risk-icon { background: #fef3c7; }
@@ -313,82 +253,79 @@ tbody tr:last-child td { border-bottom: none; }
 .risk-title { font-weight: 700; font-size: 14px; }
 .risk-desc { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
 
-/* ── Footer ── */
 .footer {
-  text-align: center;
-  padding: 40px 24px;
-  color: var(--text-muted);
-  font-size: 13px;
-  border-top: 1px solid var(--border);
-  margin-top: 60px;
+  text-align: center; padding: 40px 24px;
+  color: var(--text-muted); font-size: 13px;
+  border-top: 1px solid var(--border); margin-top: 60px;
 }
 
-/* ── Print ── */
 @media print {
   .nav-sticky { display: none; }
   .hero { padding: 32px 24px; }
   .kpi-row { margin-top: 0; }
   .card { break-inside: avoid; }
-  body { font-size: 12px; }
 }
-
 @media (max-width: 640px) {
   .hero { padding: 40px 16px 56px; }
   .container { padding: 0 16px 60px; }
-  .card { padding: 20px; }
+  .eco-arrow { display: none; }
 }
 </style>
 </head>
 <body>
 
-<!-- ═══════════════ HERO ═══════════════ -->
 <header class="hero">
   <div class="hero-inner">
+    <div class="brand-logo">NOSTRI<span>العلامة التجارية — مجموعة التعاون للاستثمار</span></div>
     <div class="hero-badge">عرض مجلس الإدارة — يوليو 2026</div>
-    <h1>الخطة الاستراتيجية لتوسيع محفظة المنتجات الخاصة<br>14 منتجاً جديداً | مستهدف 1,000,000 ريال</h1>
+    <h1>الخطة الاستراتيجية لمحفظة Nostri<br>13 منتجاً | مستهدف 1,000,000 ريال شهرياً</h1>
     <p class="hero-sub">
-      خطة متكاملة لإطلاق 14 منتجاً دوائياً جديداً ضمن محفظة المنتجات الخاصة،
-      باستهداف مبيعات إجمالية قدرها مليون ريال سعودي، موزعة عبر قنوات البيع المعتمدة
-      مع التركيز على المجمعات الطبية المعتمدة بوصفات الأطباء.
+      خطة استراتيجية لإطلاق محفظة منتجات تحمل العلامة التجارية <strong>Nostri</strong>،
+      بتصنيع عقد من مصنع <strong>Astrix</strong>، باستهداف مبيعات شهرية إجمالية قدرها
+      <strong>مليون ريال سعودي</strong> موزعة على أربع قنوات توزيع،
+      مع هامش ربح لا يقل عن <strong>80%</strong>.
     </p>
     <div class="hero-meta">
-      <span>🏭 شركة مصنع العناية الوحيدة للصناعات الدوائية</span>
-      <span>📍 الخرج — المملكة العربية السعودية</span>
-      <span>📅 الفترة المرجعية: يناير – يونيو 2026</span>
+      <span>🏢 مجموعة التعاون للاستثمار</span>
+      <span>💊 العلامة التجارية: Nostri</span>
+      <span>🏭 المصنع: Astrix</span>
+      <span>📍 المملكة العربية السعودية</span>
     </div>
   </div>
 </header>
 
 <div class="container">
 
-  <!-- KPIs -->
   <div class="kpi-row">
     <div class="kpi">
       <div class="kpi-value">1M</div>
-      <div class="kpi-label">ريال — مستهدف المبيعات (14 منتج)</div>
+      <div class="kpi-label">ريال شهرياً — مستهدف المبيعات</div>
     </div>
     <div class="kpi">
-      <div class="kpi-value accent">14</div>
-      <div class="kpi-label">منتجاً جديداً للإطلاق</div>
+      <div class="kpi-value accent">12M</div>
+      <div class="kpi-label">ريال سنوياً — الإيرادات المستهدفة</div>
     </div>
     <div class="kpi">
-      <div class="kpi-value">278K</div>
-      <div class="kpi-label">ريال — مبيعات المحفظة الحالية (6 أشهر)</div>
+      <div class="kpi-value gold">80%</div>
+      <div class="kpi-label">هامش الربح الأدنى المستهدف</div>
     </div>
     <div class="kpi">
-      <div class="kpi-value gold">4</div>
+      <div class="kpi-value">13</div>
+      <div class="kpi-label">منتجاً محدداً في المحفظة</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value accent">4</div>
       <div class="kpi-label">قنوات توزيع رئيسية</div>
     </div>
   </div>
 
-  <!-- Nav -->
   <nav class="nav-sticky">
     <div class="nav-inner">
       <a href="#summary">الملخص التنفيذي</a>
-      <a href="#current">الوضع الحالي</a>
+      <a href="#brand">العلامة والشراكة</a>
       <a href="#objectives">الأهداف</a>
       <a href="#channels">قنوات التوزيع</a>
-      <a href="#products">خطة المنتجات</a>
+      <a href="#products">محفظة المنتجات</a>
       <a href="#financial">الإطار المالي</a>
       <a href="#timeline">الجدول الزمني</a>
       <a href="#kpis">مؤشرات الأداء</a>
@@ -396,7 +333,7 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
   </nav>
 
-  <!-- 1. Executive Summary -->
+  <!-- 1. Summary -->
   <section id="summary">
     <div class="section-header">
       <span class="section-num">1</span>
@@ -404,107 +341,99 @@ tbody tr:last-child td { border-bottom: none; }
       <p>نظرة شاملة على المشروع الاستراتيجي ومبرراته</p>
     </div>
     <div class="card">
-      <p style="margin-bottom:16px">
-        تملك <strong>شركة مصنع العناية الوحيدة</strong> محفظة منتجات خاصة مثبتة في السوق،
-        حققت مبيعات بقيمة <strong>278,140 ريال</strong> خلال النصف الأول من 2026 عبر 6 أصناف رئيسية.
-        يهدف هذا المشروع إلى مضاعفة القدرة التنافسية عبر إطلاق <strong>14 منتجاً جديداً</strong>
-        بمستهدف مبيعات إجمالي <strong>مليون ريال سعودي</strong> — أي نمو يقارب <strong>3.6 ضعف</strong>
-        الأداء السنوي المتوقع للمحفظة الحالية.
+      <p style="margin-bottom:20px">
+        تهدف <strong>مجموعة التعاون للاستثمار</strong> إلى بناء محفظة منتجات دوائية وتجميلية علاجية
+        تحمل العلامة التجارية <strong>Nostri</strong>، عبر شراكة تصنيع مع مصنع <strong>Astrix</strong>،
+        لتغطية 13 منتجاً محدداً مسبقاً في فئات متنوعة (عناية بالأطفال، فيتامينات، صحة الفم،
+        الجلد، والحلق). المستهدف هو تحقيق <strong>مليون ريال مبيعات شهرياً</strong>
+        (12 مليون ريال سنوياً) مع <strong>هامش ربح لا يقل عن 80%</strong>.
       </p>
       <div class="grid-2">
         <div>
-          <h3>لماذا الآن؟</h3>
+          <h3>لماذا Nostri؟</h3>
           <ul style="padding-right:20px;color:var(--text-dim);font-size:14px">
-            <li>قنوات توزيع جاهزة (3 مجمعات طبية + شبكة صيدليات + أونلاين)</li>
-            <li>خبرة مثبتة في 6 فئات علاجية (جلدية، فموية، تجميلية، نسائية)</li>
-            <li>طلب متزايد على المنتجات الخاصة ذات الجودة العالية في السوق السعودي</li>
-            <li>تنويع المحفظة يقلل مخاطر الاعتماد على أصناف محددة</li>
+            <li>علامة تجارية موحدة تبني الثقة والولاء في السوق</li>
+            <li>قنوات توزيع جاهزة: مجمعات طبية، صيدليات، صب إيجنت، وأونلاين</li>
+            <li>شراكة تصنيع مع Astrix تضمن الجودة والقدرة الإنتاجية</li>
+            <li>محفظة متكاملة تغطي احتياجات الأسرة (أطفال، كبار، تجميل علاجي)</li>
           </ul>
         </div>
         <div>
           <h3>القرارات المطلوبة من المجلس</h3>
           <ul style="padding-right:20px;color:var(--text-dim);font-size:14px">
-            <li>اعتماد المستهدف البالغ مليون ريال وتوزيعه على القنوات</li>
-            <li>الموافقة على ميزانية التسجيل والتصنيع (بعد تحديد التكاليف)</li>
-            <li>تفويض فريق المبيعات للتفاوض مع المجمعات الطبية الثلاثة</li>
-            <li>اعتماد خارطة الإطلاق التدريجي للمنتجات الـ 14</li>
+            <li>اعتماد العلامة التجارية Nostri ومحفظة الـ 13 منتج</li>
+            <li>اعتماد المستهدف الشهري (1M ر.س) وتوزيعه على القنوات الأربع</li>
+            <li>الموافقة على عقد التصنيع مع Astrix</li>
+            <li>اعتماد ميزانية التسجيل والتسويق</li>
+            <li>تفويض فريق المبيعات للتفاوض مع المجمعات الطبية</li>
           </ul>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 2. Current Situation -->
-  <section id="current">
+  <!-- 2. Brand -->
+  <section id="brand">
     <div class="section-header">
       <span class="section-num">2</span>
-      <h2>تحليل الوضع الحالي</h2>
-      <p>أداء محفظة المنتجات الخاصة — يناير إلى يونيو 2026</p>
-    </div>
-
-    <div class="note">
-      <strong>ملاحظة:</strong> التقرير المرفق يتضمن 6 أصناف بمبيعات موثقة. يُفترض أن الصنف السابع ضمن المحفظة
-      إما لم يُسجّل مبيعات في الفترة أو يُدرج ضمن المنتجات الجديدة المخططة.
+      <h2>العلامة التجارية ونموذج الشراكة</h2>
+      <p>هيكل المشروع: من المجموعة إلى السوق</p>
     </div>
 
     <div class="card">
-      <h3>جدول مبيعات الأصناف الحالية (6 أشهر)</h3>
-      <div style="overflow-x:auto">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>اسم المنتج</th>
-              <th>كود المادة</th>
-              <th>الكمية المباعة</th>
-              <th>قيمة المبيعات (ر.س)</th>
-              <th>الحصة %</th>
-              <th>متوسط سعر الوحدة</th>
-            </tr>
-          </thead>
-          <tbody id="currentProductsTable"></tbody>
-        </table>
+      <div class="ecosystem-box">
+        <div class="eco-item">
+          <strong>مجموعة التعاون للاستثمار</strong>
+          <span>المالك والمستثمر</span>
+        </div>
+        <div class="eco-arrow">←</div>
+        <div class="eco-item">
+          <strong>Nostri</strong>
+          <span>العلامة التجارية</span>
+        </div>
+        <div class="eco-arrow">←</div>
+        <div class="eco-item">
+          <strong>Astrix</strong>
+          <span>مصنع التعاقد (CMO)</span>
+        </div>
+        <div class="eco-arrow">←</div>
+        <div class="eco-item">
+          <strong>4 قنوات بيع</strong>
+          <span>المجمعات · الصيدليات · الصب إيجنت · الأونلاين</span>
+        </div>
       </div>
     </div>
 
-    <div class="grid-2">
-      <div class="card">
-        <h3>توزيع المبيعات حسب المنتج</h3>
-        <div class="chart-wrap"><canvas id="chartCurrentSales"></canvas></div>
+    <div class="grid-3">
+      <div class="card" style="border-top:3px solid var(--primary)">
+        <h3>🏢 مجموعة التعاون للاستثمار</h3>
+        <p style="font-size:14px;color:var(--text-dim)">
+          الجهة المالكة والمستثرة في المشروع. تدير الاستراتيجية التجارية،
+          التسجيل التنظيمي، التوزيع، والتسويق تحت مظلة العلامة Nostri.
+        </p>
       </div>
-      <div class="card">
-        <h3>رؤى تحليلية</h3>
-        <div style="font-size:14px;color:var(--text-dim)">
-          <div class="risk-item">
-            <div class="risk-icon" style="background:#d1fae5">🏆</div>
-            <div>
-              <div class="risk-title">الأفضل أداءً: REFLEX MASSAGE Emulgel</div>
-              <div class="risk-desc">90,025 ريال (32.4%) — يُوصى بتوسيع خط المنتجات المشابهة (مسكنات موضعية)</div>
-            </div>
-          </div>
-          <div class="risk-item">
-            <div class="risk-icon" style="background:#dbeafe">📦</div>
-            <div>
-              <div class="risk-title">الأعلى حجماً: ORACURE Mouth Wash</div>
-              <div class="risk-desc">5,116 وحدة — منتج حجمي عالي الطلب، مناسب للتوسع في قنوات الأونلاين</div>
-            </div>
-          </div>
-          <div class="risk-item">
-            <div class="risk-icon" style="background:#fef3c7">📊</div>
-            <div>
-              <div class="risk-title">معدل المبيعات الشهري: ~46,357 ريال/شهر</div>
-              <div class="risk-desc">المعدل السنوي المتوقع ~556,280 ريال — المستهدف الجديد يمثل قفزة استراتيجية</div>
-            </div>
-          </div>
-          <div class="risk-item">
-            <div class="risk-icon" style="background:#ede9fe">💡</div>
-            <div>
-              <div class="risk-title">متوسط مبيعات الوحدة: ~18.66 ريال</div>
-              <div class="risk-desc">14,903 وحدة مباعة — مرجع جيد لتسعير المنتجات الجديدة</div>
-            </div>
-          </div>
-        </div>
+      <div class="card" style="border-top:3px solid var(--accent)">
+        <h3>💊 Nostri — العلامة التجارية</h3>
+        <p style="font-size:14px;color:var(--text-dim)">
+          علامة موحدة تجمع كل المنتجات تحت هوية واحدة. الاسم مستوحى من
+          <em>Nostril</em> (الأنف/التنفس) ويرمز للعناية الصحية الشاملة.
+          شعار: <strong>«صحتك، أولويتنا»</strong>
+        </p>
       </div>
+      <div class="card" style="border-top:3px solid var(--gold)">
+        <h3>🏭 Astrix — المصنع</h3>
+        <p style="font-size:14px;color:var(--text-dim)">
+          شريك التصنيع المعتمد (Contract Manufacturing). مسؤول عن
+          الإنتاج، ضبط الجودة، والتعبئة وفق مواصفات Nostri ومتطلبات SFDA.
+          تكلفة التصنيع تُحدَّد لاحقاً في العقد التشغيلي.
+        </p>
+      </div>
+    </div>
+
+    <div class="info">
+      هذه الوثيقة <strong>خطة استراتيجية</strong> للعرض على مجلس الإدارة.
+      التفاصيل التشغيلية (مبيعات الأصناف الحالية، أرقام يومية، وخطط المندوبين)
+      ستُعدّ في وثيقة تشغيلية منفصلة لاحقاً.
     </div>
   </section>
 
@@ -513,49 +442,48 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="section-header">
       <span class="section-num">3</span>
       <h2>الأهداف الاستراتيجية</h2>
-      <p>أهداف SMART للمشروع</p>
     </div>
     <div class="grid-3">
       <div class="card" style="border-top:3px solid var(--primary)">
-        <h3>🎯 هدف المبيعات</h3>
+        <h3>🎯 هدف المبيعات الشهري</h3>
         <p style="font-size:14px;color:var(--text-dim)">
-          تحقيق <strong>1,000,000 ريال</strong> مبيعات إجمالية للمنتجات الـ 14 الجديدة
-          خلال <strong>12 شهراً</strong> من الإطلاق الكامل.
+          <strong>1,000,000 ريال/شهر</strong> = 12,000,000 ريال/سنة
+          موزعة على 13 منتجاً و4 قنوات بيع.
         </p>
       </div>
       <div class="card" style="border-top:3px solid var(--accent)">
-        <h3>🏥 هيمنة المجمعات الطبية</h3>
+        <h3>🏥 قمة الهرم: المجمعات الطبية</h3>
         <p style="font-size:14px;color:var(--text-dim)">
-          تحقيق <strong>55%</strong> على الأقل من المبيعات عبر 3 مجمعات طبية معتمدة
-          بوصفات الأطباء — القناة الأهم والأعلى هامشاً.
-        </p>
-      </div>
-      <div class="card" style="border-top:3px solid var(--gold)">
-        <h3>🌐 تنويع القنوات</h3>
-        <p style="font-size:14px;color:var(--text-dim)">
-          بناء حضور متوازن عبر شبكة الصيدليات (25%)، الصب إيجنت (12%)،
-          والأونلاين (8%) لتقليل مخاطر الاعتماد على قناة واحدة.
+          <strong>400,000 ريال/شهر</strong> (40%) عبر صيدليات المجمعات الطبية
+          المعتمدة بوصفات الأطباء — أكبر قناة وأعلى قيمة.
         </p>
       </div>
       <div class="card" style="border-top:3px solid #7c3aed">
+        <h3>💰 هامش الربح 80%</h3>
+        <p style="font-size:14px;color:var(--text-dim)">
+          تحقيق هامش ربح إجمالي <strong>لا يقل عن 80%</strong>
+          = 800,000 ريال ربح شهري عند تحقيق المستهدف الكامل.
+        </p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--gold)">
         <h3>📋 التسجيل والامتثال</h3>
         <p style="font-size:14px;color:var(--text-dim)">
-          إتمام تسجيل جميع المنتجات الـ 14 في SFDA وجميع قنوات البيع
+          تسجيل جميع المنتجات في SFDA وجميع قنوات البيع
           قبل الإطلاق التجاري.
         </p>
       </div>
       <div class="card" style="border-top:3px solid #e11d48">
-        <h3>💰 الربحية</h3>
+        <h3>🌐 توازن القنوات</h3>
         <p style="font-size:14px;color:var(--text-dim)">
-          تحقيق هامش ربح إجمالي لا يقل عن <strong>35%</strong> بعد خصم تكلفة التصنيع
-          ورسوم التسجيل (يُحدَّد بدقة عند توفر تكاليف التصنيع).
+          200K صيدليات خارجية + 200K صب إيجنت + 200K أونلاين
+          = 60% من المبيعات خارج المجمعات لضمان تنويع المخاطر.
         </p>
       </div>
       <div class="card" style="border-top:3px solid #0284c7">
-        <h3>🔄 التوسع المستقبلي</h3>
+        <h3>🔄 التوسع</h3>
         <p style="font-size:14px;color:var(--text-dim)">
-          بناء قاعدة بيانات أطباء وصيادلة تُمكّن من مضاعفة المستهدف
-          إلى 2 مليون ريال في السنة الثانية.
+          بناء قاعدة أطباء وصيادلة تمكّن من مضاعفة المستهدف
+          إلى 2 مليون ريال/شهر في السنة الثانية.
         </p>
       </div>
     </div>
@@ -566,44 +494,44 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="section-header">
       <span class="section-num">4</span>
       <h2>استراتيجية قنوات التوزيع</h2>
-      <p>توزيع مستهدف المليون ريال على قنوات البيع</p>
+      <p>توزيع المليون ريال الشهري على قنوات البيع</p>
     </div>
 
     <div class="grid-2" style="margin-bottom:24px">
       <div class="channel-card ch1">
-        <div class="channel-pct">55%</div>
-        <div class="channel-title">🏥 3 مجمعات طبية معتمدة (وصفات أطباء)</div>
+        <div class="channel-amt">400,000 ر.س</div>
+        <div class="channel-title">🏥 صيدليات المجمعات الطبية (40%)</div>
         <div class="channel-desc">
-          <strong>550,000 ريال</strong> — القناة الاستراتيجية الأولى.<br>
-          علاقات مباشرة مع الأطباء، عقود توريد، زيارات طبية (Medical Detailing)،
-          عينات مجانية، وحضور في المؤتمرات الطبية.
+          3 مجمعات طبية معتمدة بوصفات الأطباء — القناة الاستراتيجية الأولى.<br>
+          عقود توريد، زيارات طبية (Medical Detailing)، عينات مجانية،
+          ومشاركة في المؤتمرات الطبية.
         </div>
         <div style="margin-top:12px"><span class="tag tag-green">أولوية قصوى</span></div>
       </div>
       <div class="channel-card ch2">
-        <div class="channel-pct">25%</div>
-        <div class="channel-title">💊 شبكة صيدليات الشركة الخارجية</div>
+        <div class="channel-amt">200,000 ر.س</div>
+        <div class="channel-title">💊 شبكة الصيدليات الخارجية (20%)</div>
         <div class="channel-desc">
-          <strong>250,000 ريال</strong> — قناة موثوقة ببنية تحتية جاهزة.<br>
-          تغطية جغرافية واسعة، عروض ترويجية مشتركة، برامج ولاء للصيادلة.
+          صيدليات الشركة التابعة خارج نطاق المجمعات.<br>
+          تغطية جغرافية واسعة، عروض ترويجية، وبرامج ولاء للصيادلة.
         </div>
         <div style="margin-top:12px"><span class="tag tag-blue">قناة أساسية</span></div>
       </div>
       <div class="channel-card ch3">
-        <div class="channel-pct">12%</div>
-        <div class="channel-title">🤝 بيع خارجي — صب إيجنت (Sub-Agent)</div>
+        <div class="channel-amt">200,000 ر.س</div>
+        <div class="channel-title">🤝 الصب إيجنت — Sub-Agent (20%)</div>
         <div class="channel-desc">
-          <strong>120,000 ريال</strong> — توسع جغرافي عبر وكلاء فرعيين.<br>
-          عمولات تنافسية، تدريب المندوبين، دعم تسويقي موجه.
+          بيع خارجي عبر وكلاء فرعيين لتوسيع النطاق الجغرافي.<br>
+          عمولات تنافسية، تدريب المندوبين، ودعم تسويقي موجه.
         </div>
         <div style="margin-top:12px"><span class="tag tag-amber">توسع إقليمي</span></div>
       </div>
       <div class="channel-card ch4">
-        <div class="channel-pct">8%</div>
-        <div class="channel-title">🛒 بيع أونلاين (نون مينتس + تراينديول)</div>
+        <div class="channel-amt">200,000 ر.س</div>
+        <div class="channel-title">🛒 الأونلاين — نون مينتس + تراينديول (20%)</div>
         <div class="channel-desc">
-          <strong>80,000 ريال</strong> — قناة نمو سريع.<br>
-          إدراج المنتجات، تحسين SEO، عروض flash، توصيل سريع.
+          قناة نمو سريع عبر منصات التجارة الإلكترونية.<br>
+          إدراج المنتجات، تحسين SEO، عروض flash، وتوصيل سريع.
         </div>
         <div style="margin-top:12px"><span class="tag tag-purple">قناة نمو</span></div>
       </div>
@@ -611,126 +539,113 @@ tbody tr:last-child td { border-bottom: none; }
 
     <div class="grid-2">
       <div class="card">
-        <h3>توزيع المستهدف حسب القناة</h3>
+        <h3>توزيع المستهدف الشهري حسب القناة</h3>
         <div class="chart-wrap"><canvas id="chartChannels"></canvas></div>
       </div>
       <div class="card">
-        <h3>خطة تنفيذية لكل قناة</h3>
+        <h3>جدول القنوات والتسجيل</h3>
         <table>
           <thead>
             <tr>
               <th>القناة</th>
-              <th>المستهدف (ر.س)</th>
+              <th>شهري (ر.س)</th>
+              <th>سنوي (ر.س)</th>
               <th>رسوم التسجيل</th>
-              <th>الإجراء الرئيسي</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>مجمعات طبية</td>
-              <td class="num">550,000</td>
+              <td>صيدليات المجمعات الطبية</td>
+              <td class="num">400,000</td>
+              <td class="num">4,800,000</td>
               <td class="num">400 ر.س/منتج</td>
-              <td>عقود + زيارات طبية</td>
             </tr>
             <tr>
-              <td>شبكة صيدليات</td>
-              <td class="num">250,000</td>
+              <td>صيدليات خارجية</td>
+              <td class="num">200,000</td>
+              <td class="num">2,400,000</td>
               <td class="num">200 ر.س/منتج</td>
-              <td>تغطية + عروض</td>
             </tr>
             <tr>
               <td>صب إيجنت</td>
-              <td class="num">120,000</td>
+              <td class="num">200,000</td>
+              <td class="num">2,400,000</td>
               <td class="num">200 ر.س/منتج</td>
-              <td>تعاقد وكلاء</td>
             </tr>
             <tr>
               <td>أونلاين</td>
-              <td class="num">80,000</td>
+              <td class="num">200,000</td>
+              <td class="num">2,400,000</td>
               <td class="num">200 ر.س/منتج</td>
-              <td>إدراج المنصات</td>
             </tr>
             <tr class="highlight-row">
               <td><strong>الإجمالي</strong></td>
               <td class="num"><strong>1,000,000</strong></td>
-              <td class="num"><strong>14,000</strong></td>
-              <td>—</td>
+              <td class="num"><strong>12,000,000</strong></td>
+              <td class="num"><strong>13,000</strong></td>
             </tr>
           </tbody>
         </table>
         <div class="info" style="margin-top:16px">
-          رسوم فتح الملف والتسجيل (لمرة واحدة لكل منتج/قناة):
-          تعاونات 400 ر.س + صيدليات 200 ر.س + أونلاين 200 ر.س + صب إيجنت 200 ر.س
-          = <strong>1,000 ر.س لكل منتج</strong> × 14 منتج = <strong>14,000 ر.س إجمالي</strong>
+          رسوم فتح الملف والتسجيل (مرة واحدة لكل منتج/قناة):
+          تعاونات 400 + صيدليات 200 + أونلاين 200 + صب إيجنت 200
+          = <strong>1,000 ر.س/منتج</strong> × 13 منتج = <strong>13,000 ر.س</strong>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 5. Products Plan -->
+  <!-- 5. Products -->
   <section id="products">
     <div class="section-header">
       <span class="section-num">5</span>
-      <h2>خطة المنتجات الـ 14</h2>
-      <p>إطار عمل لاختيار وتصنيف وإطلاق المنتجات الجديدة</p>
+      <h2>محفظة منتجات Nostri — 13 SKU</h2>
+      <p>المنتجات المحددة وأسماء العلامة التجارية المقترحة</p>
     </div>
 
     <div class="card">
-      <h3>معايير اختيار المنتجات الجديدة</h3>
-      <div class="grid-3" style="font-size:14px;color:var(--text-dim)">
-        <div>✅ استكمال الفجوات في المحفظة الحالية (جلدية، فموية، نسائية، مسكنات)</div>
-        <div>✅ منتجات قابلة للوصفة الطبية (Rx) أو OTC عالي الطلب</div>
-        <div>✅ تكلفة تصنيع تنافسية وهامش ربح ≥ 35%</div>
-        <div>✅ عدم وجود منافس قوي بنفس التركيبة في السوق السعودي</div>
-        <div>✅ ملاءمة لجميع قنوات التوزيع الأربع</div>
-        <div>✅ إمكانية التصنيع في مصنع الشركة الحالي</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>التوزيع المقترح للمستهدف على 14 منتجاً</h3>
+      <h3>جدول المنتجات — الأسماء التجارية المقترحة</h3>
       <div class="note">
-        الجدول أدناه يُقدّم إطاراً عملياً. يُستبدل بأسماء المنتجات الفعلية فور اعتماد قائمة التطوير.
-        المستهدف لكل منتج: <strong>~71,429 ريال/سنة</strong> (متوسط).
+        الأسماء المقترحة مبنية على هوية <strong>Nostri</strong>: قصيرة، سهلة النطق،
+        ومرتبطة بوظيفة المنتج. يُعرض الاسم العربي والإنجليزي لكل SKU.
+        المستهدف الشهري لكل منتج (متوسط): <strong>~76,923 ريال</strong>.
       </div>
       <div style="overflow-x:auto">
         <table>
           <thead>
             <tr>
-              <th>الدفعة</th>
-              <th>المنتج (مقترح)</th>
-              <th>الفئة العلاجية</th>
-              <th>مستهدف سنوي (ر.س)</th>
-              <th>مجمعات %</th>
-              <th>صيدليات %</th>
-              <th>صب إيجنت %</th>
-              <th>أونلاين %</th>
-              <th>موعد الإطلاق</th>
+              <th>#</th>
+              <th>المنتج (تركيبة)</th>
+              <th>الاسم التجاري المقترح</th>
+              <th>الفئة</th>
+              <th>مستهدف شهري (ر.س)</th>
+              <th>القناة الرئيسية</th>
             </tr>
           </thead>
-          <tbody id="productsPlanTable"></tbody>
+          <tbody id="productsTable"></tbody>
         </table>
       </div>
     </div>
 
     <div class="grid-2">
       <div class="card">
-        <h3>جدول الإطلاق التدريجي (3 دفعات)</h3>
-        <div class="chart-wrap"><canvas id="chartLaunch"></canvas></div>
+        <h3>توزيع المنتجات حسب الفئة</h3>
+        <div class="chart-wrap"><canvas id="chartCategories"></canvas></div>
       </div>
       <div class="card">
-        <h3>استراتيجية التسعير</h3>
+        <h3>هيكل تسمية العلامة Nostri</h3>
         <div style="font-size:14px;color:var(--text-dim)">
-          <p style="margin-bottom:12px"><strong>المبدأ:</strong> تسعير تنافسي يحقق هامشاً يغطي التصنيع + التسجيل + التوزيع.</p>
           <table>
             <thead>
-              <tr><th>المستوى</th><th>الوصف</th><th>الهامش المستهدف</th></tr>
+              <tr><th>الخط</th><th>البادئة</th><th>الاستخدام</th></tr>
             </thead>
             <tbody>
-              <tr><td>سعر المصنع (Factory)</td><td>للمجمعات والصيدليات</td><td class="num">40–45%</td></tr>
-              <tr><td>سعر الصب إيجنت</td><td>خصم 15% عن سعر المصنع</td><td class="num">25–30%</td></tr>
-              <tr><td>سعر الأونلاين</td><td>سعر تجزئة + عمولة المنصة</td><td class="num">20–25%</td></tr>
-              <tr><td>سعر الوصفة (Rx)</td><td>تغطية تأمين + خصم مجمعات</td><td class="num">35–40%</td></tr>
+              <tr><td>خط الأطفال</td><td class="brand-name">Nostri Baby</td><td>شامبو، شراب زنك</td></tr>
+              <tr><td>خط الفم</td><td class="brand-name">Nostri Oro</td><td>غسول فم HA، H₂O₂</td></tr>
+              <tr><td>خط الفيتامينات</td><td class="brand-name">Nostri Vital / C / D</td><td>مالتي، سي، سي+زنك، د</td></tr>
+              <tr><td>خط الجلد</td><td class="brand-name">Nostri Derma / Lumina</td><td>جل وذمة، كريم تفتيح</td></tr>
+              <tr><td>خط الحلق</td><td class="brand-name">Nostri Throat</td><td>أقراص منثول، عسل وليمون</td></tr>
+              <tr><td>خط البصر</td><td class="brand-name">Nostri Vision</td><td>أقراص حماية العين</td></tr>
             </tbody>
           </table>
         </div>
@@ -743,79 +658,60 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="section-header">
       <span class="section-num">6</span>
       <h2>الإطار المالي</h2>
-      <p>تقديرات مالية أولية — تُحدَّث عند توفر تكاليف التصنيع</p>
+      <p>تقديرات مالية استراتيجية — تُحدَّث في الوثيقة التشغيلية</p>
     </div>
 
     <div class="grid-2">
       <div class="card">
-        <h3>ملخص الإيرادات والتكاليف الثابتة</h3>
+        <h3>ملخص الإيرادات والربحية</h3>
         <table>
           <thead>
-            <tr><th>البند</th><th>القيمة (ر.س)</th><th>الحالة</th></tr>
+            <tr><th>البند</th><th>شهري (ر.س)</th><th>سنوي (ر.س)</th></tr>
           </thead>
           <tbody>
             <tr class="highlight-row">
               <td><strong>إجمالي المبيعات المستهدفة</strong></td>
               <td class="num"><strong>1,000,000</strong></td>
-              <td><span class="tag tag-green">مستهدف</span></td>
+              <td class="num"><strong>12,000,000</strong></td>
             </tr>
             <tr>
-              <td>تكلفة التصنيع (14 منتج)</td>
-              <td class="num">يُحدَّد لاحقاً</td>
-              <td><span class="tag tag-amber">معلق</span></td>
+              <td>تكلفة التصنيع (Astrix) — ~20%</td>
+              <td class="num">200,000</td>
+              <td class="num">2,400,000</td>
+            </tr>
+            <tr class="highlight-row" style="background:#ecfdf5!important">
+              <td><strong>إجمالي الربح (80%)</strong></td>
+              <td class="num"><strong>800,000</strong></td>
+              <td class="num"><strong>9,600,000</strong></td>
             </tr>
             <tr>
-              <td>رسوم التسجيل — تعاونات (400 × 14)</td>
-              <td class="num">5,600</td>
-              <td><span class="tag tag-blue">ثابت</span></td>
+              <td>رسوم التسجيل (مرة واحدة)</td>
+              <td class="num">—</td>
+              <td class="num">13,000</td>
             </tr>
             <tr>
-              <td>رسوم التسجيل — صيدليات (200 × 14)</td>
-              <td class="num">2,800</td>
-              <td><span class="tag tag-blue">ثابت</span></td>
-            </tr>
-            <tr>
-              <td>رسوم التسجيل — أونلاين (200 × 14)</td>
-              <td class="num">2,800</td>
-              <td><span class="tag tag-blue">ثابت</span></td>
-            </tr>
-            <tr>
-              <td>رسوم التسجيل — صب إيجنت (200 × 14)</td>
-              <td class="num">2,800</td>
-              <td><span class="tag tag-blue">ثابت</span></td>
-            </tr>
-            <tr>
-              <td><strong>إجمالي رسوم التسجيل</strong></td>
-              <td class="num"><strong>14,000</strong></td>
-              <td><span class="tag tag-blue">ثابت</span></td>
-            </tr>
-            <tr>
-              <td>تسويق وزيارات طبية (تقديري)</td>
-              <td class="num">80,000</td>
-              <td><span class="tag tag-amber">تقديري</span></td>
-            </tr>
-            <tr>
-              <td>تعبئة وتغليف أولية (تقديري)</td>
-              <td class="num">50,000</td>
-              <td><span class="tag tag-amber">تقديري</span></td>
+              <td>تسويق وزيارات طبية (تقديري سنوي)</td>
+              <td class="num">~50,000</td>
+              <td class="num">600,000</td>
             </tr>
           </tbody>
         </table>
+        <div class="info" style="margin-top:16px">
+          <strong>معادلة الربحية:</strong><br>
+          هامش الربح = (المبيعات − تكلفة التصنيع) ÷ المبيعات<br>
+          عند تكلفة تصنيع 20%: الربح = 80% = <strong>800,000 ر.س/شهر</strong><br>
+          تكلفة التصنيع الفعلية من Astrix تُحدَّد في العقد التشغيلي.
+        </div>
       </div>
       <div class="card">
-        <h3>سيناريوهات الربحية (عند تحديد تكلفة التصنيع)</h3>
+        <h3>توزيع الأرباح الشهرية المتوقعة (80%)</h3>
         <div class="chart-wrap tall"><canvas id="chartProfit"></canvas></div>
-        <div class="info">
-          <strong>معادلة الربحية:</strong><br>
-          صافي الربح = المبيعات (1,000,000) − تكلفة التصنيع − 14,000 (تسجيل) − 130,000 (تسويق وتعبئة)<br>
-          عند افتراض تكلفة تصنيع = 55% من المبيعات → صافي ربح ≈ <strong>286,000 ريال (28.6%)</strong>
-        </div>
       </div>
     </div>
 
     <div class="card">
-      <h3>مقارنة الأداء: المحفظة الحالية vs المستهدف الجديد</h3>
-      <div class="chart-wrap"><canvas id="chartComparison"></canvas></div>
+      <h3>المستهدف الشهري حسب القناة — إيرادات وأرباح</h3>
+      <div class="chart-wrap"><canvas id="chartChannelProfit"></canvas></div>
     </div>
   </section>
 
@@ -824,7 +720,7 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="section-header">
       <span class="section-num">7</span>
       <h2>الجدول الزمني للتنفيذ</h2>
-      <p>خطة تنفيذ على 12 شهراً</p>
+      <p>خطة إطلاق على 12 شهراً للوصول إلى المليون ريال شهرياً</p>
     </div>
     <div class="grid-2">
       <div class="card">
@@ -833,48 +729,46 @@ tbody tr:last-child td { border-bottom: none; }
             <div class="tl-phase">الشهر 1–2</div>
             <div class="tl-title">المرحلة التحضيرية</div>
             <div class="tl-desc">
-              اعتماد قائمة الـ 14 منتج، تحديد تكاليف التصنيع، بدء تسجيل SFDA،
-              التفاوض مع المجمعات الطبية الثلاثة، إعداد المواد التسويقية.
+              توقيع عقد التصنيع مع Astrix، تسجيل SFDA، تسجيل القنوات الأربع،
+              اعتماد هوية Nostri البصرية، التفاوض مع المجمعات الطبية.
             </div>
           </div>
           <div class="tl-item">
             <div class="tl-phase">الشهر 3–4</div>
             <div class="tl-title">الدفعة الأولى — 5 منتجات</div>
             <div class="tl-desc">
-              إطلاق 5 منتجات (الأولوية العالية)، تسجيل في جميع القنوات،
-              بدء الزيارات الطبية، إدراج في نون مينتس وتراينديول.
-              مستهدف: 200,000 ريال.
+              إطلاق: Baby Shampoo، Mouth Wash HA، Vit C، Strepsils Menthol، Vit D Drops.
+              بدء الزيارات الطبية وإدراج الأونلاين. مستهدف: 350K ر.س/شهر.
             </div>
           </div>
           <div class="tl-item">
             <div class="tl-phase">الشهر 5–7</div>
-            <div class="tl-title">الدفعة الثانية — 5 منتجات</div>
+            <div class="tl-title">الدفعة الثانية — 4 منتجات</div>
             <div class="tl-desc">
-              إطلاق 5 منتجات إضافية، توسيع شبكة الصب إيجنت،
-              حملات ترويجية في الصيدليات، مراجعة أداء الدفعة الأولى.
-              مستهدف تراكمي: 600,000 ريال.
+              إطلاق: Multivitamin، Mouth Wash H₂O₂، Vit C+Zn، Zn Syrup.
+              توسيع الصب إيجنت. مستهدف تراكمي: 650K ر.س/شهر.
             </div>
           </div>
           <div class="tl-item">
             <div class="tl-phase">الشهر 8–10</div>
             <div class="tl-title">الدفعة الثالثة — 4 منتجات</div>
             <div class="tl-desc">
-              إطلاق آخر 4 منتجات، تحسين التوزيع بناءً على بيانات المبيعات،
-              تفعيل عروض الأونلاين. مستهدف تراكمي: 850,000 ريال.
+              إطلاق: Gel Edema، Whitening Cream، Strepsils Honey Lemon، Vision Tablet.
+              تفعيل كامل لجميع القنوات. مستهدف: 850K ر.س/شهر.
             </div>
           </div>
           <div class="tl-item">
             <div class="tl-phase">الشهر 11–12</div>
-            <div class="tl-title">مرحلة التسريع والإغلاق</div>
+            <div class="tl-title">التسريع والاستقرار</div>
             <div class="tl-desc">
-              حملات نهاية العام، عروض المجمعات الطبية، مراجعة شاملة للأداء،
-              إعداد خطة السنة الثانية. مستهدف نهائي: 1,000,000 ريال.
+              حملات ترويجية، عروض المجمعات، مراجعة الأداء،
+              الوصول إلى المستهدف الكامل: <strong>1,000,000 ر.س/شهر</strong>.
             </div>
           </div>
         </div>
       </div>
       <div class="card">
-        <h3>منحنى المبيعات التراكمية المتوقع</h3>
+        <h3>منحنى الوصول للمستهدف الشهري</h3>
         <div class="chart-wrap tall"><canvas id="chartTimeline"></canvas></div>
       </div>
     </div>
@@ -885,7 +779,6 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="section-header">
       <span class="section-num">8</span>
       <h2>مؤشرات الأداء الرئيسية (KPIs)</h2>
-      <p>مقاييس النجاح وآلية المتابعة</p>
     </div>
     <div class="card">
       <table>
@@ -893,58 +786,58 @@ tbody tr:last-child td { border-bottom: none; }
           <tr>
             <th>المؤشر</th>
             <th>المستهدف</th>
-            <th>تكرار القياس</th>
+            <th>التكرار</th>
             <th>المسؤول</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>إجمالي المبيعات</td>
-            <td class="num">1,000,000 ر.س/سنة</td>
+            <td>إجمالي المبيعات الشهرية</td>
+            <td class="num">1,000,000 ر.س</td>
             <td>شهري</td>
             <td>المدير التجاري</td>
           </tr>
           <tr>
-            <td>حصة المجمعات الطبية</td>
-            <td class="num">≥ 55%</td>
+            <td>مبيعات المجمعات الطبية</td>
+            <td class="num">400,000 ر.س/شهر</td>
             <td>شهري</td>
             <td>مدير المبيعات الطبية</td>
           </tr>
           <tr>
-            <td>عدد الأطباء المُفعَّلين</td>
-            <td class="num">≥ 150 طبيب</td>
-            <td>ربع سنوي</td>
-            <td>فريق Medical Detailing</td>
-          </tr>
-          <tr>
-            <td>نسبة تغطية الصيدليات</td>
-            <td class="num">≥ 80% من الشبكة</td>
+            <td>مبيعات الصيدليات الخارجية</td>
+            <td class="num">200,000 ر.س/شهر</td>
             <td>شهري</td>
             <td>مشرف التوزيع</td>
           </tr>
           <tr>
-            <td>معدل إعادة الطلب (Reorder Rate)</td>
-            <td class="num">≥ 60%</td>
+            <td>مبيعات الصب إيجنت</td>
+            <td class="num">200,000 ر.س/شهر</td>
             <td>شهري</td>
-            <td>خدمة العملاء</td>
+            <td>مدير الوكلاء</td>
+          </tr>
+          <tr>
+            <td>مبيعات الأونلاين</td>
+            <td class="num">200,000 ر.س/شهر</td>
+            <td>شهري</td>
+            <td>مدير التجارة الإلكترونية</td>
           </tr>
           <tr>
             <td>هامش الربح الإجمالي</td>
-            <td class="num">≥ 35%</td>
-            <td>ربع سنوي</td>
+            <td class="num">≥ 80%</td>
+            <td>شهري</td>
             <td>المدير المالي</td>
           </tr>
           <tr>
             <td>منتجات مسجّلة في SFDA</td>
-            <td class="num">14/14</td>
+            <td class="num">13/13</td>
             <td>عند الإنجاز</td>
             <td>الشؤون التنظيمية</td>
           </tr>
           <tr>
-            <td>تقييم رضا العملاء (NPS)</td>
-            <td class="num">≥ 70</td>
-            <td>نصف سنوي</td>
-            <td>إدارة الجودة</td>
+            <td>عدد الأطباء المُفعَّلين</td>
+            <td class="num">≥ 200 طبيب</td>
+            <td>ربع سنوي</td>
+            <td>فريق Medical Detailing</td>
           </tr>
         </tbody>
       </table>
@@ -956,7 +849,6 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="section-header">
       <span class="section-num">9</span>
       <h2>المخاطر وخطط التخفيف</h2>
-      <p>تحليل المخاطر الاستراتيجية</p>
     </div>
     <div class="card">
       <div class="risk-item risk-high">
@@ -964,48 +856,43 @@ tbody tr:last-child td { border-bottom: none; }
         <div>
           <div class="risk-title">تأخر تسجيل المنتجات في SFDA</div>
           <div class="risk-desc">
-            <strong>الاحتمالية: متوسطة | الأثر: عالٍ</strong><br>
-            التخفيف: بدء التسجيل مبكراً، التوازي في تسجيل عدة منتجات، الاستعانة بمستشار تنظيمي متخصص.
+            <strong>متوسطة | عالٍ</strong> — بدء التسجيل مبكراً، التوازي بين المنتجات، مستشار تنظيمي.
           </div>
         </div>
       </div>
       <div class="risk-item risk-high">
         <div class="risk-icon">📉</div>
         <div>
-          <div class="risk-title">ضعف استجابة المجمعات الطبية</div>
+          <div class="risk-title">عدم تحقيق 400K من المجمعات الطبية</div>
           <div class="risk-desc">
-            <strong>الاحتمالية: متوسطة | الأثر: عالٍ</strong><br>
-            التخفيف: عينات مجانية، دراسات حالة، عقود حصرية، زيارات طبية مكثفة، حوافز للأطباء.
+            <strong>متوسطة | عالٍ</strong> — عينات مجانية، عقود حصرية، زيارات طبية مكثفة، حوافز للأطباء.
+          </div>
+        </div>
+      </div>
+      <div class="risk-item risk-med">
+        <div class="risk-icon">🏭</div>
+        <div>
+          <div class="risk-title">تأخر التوريد من مصنع Astrix</div>
+          <div class="risk-desc">
+            <strong>منخفضة | متوسط</strong> — عقد توريد بمواعيد ملزمة، مخزون أمان 60 يوماً، خط إنتاج احتياطي.
           </div>
         </div>
       </div>
       <div class="risk-item risk-med">
         <div class="risk-icon">💰</div>
         <div>
-          <div class="risk-title">ارتفاع تكلفة التصنيع عن التقدير</div>
+          <div class="risk-title">ارتفاع تكلفة التصنيع عن 20%</div>
           <div class="risk-desc">
-            <strong>الاحتمالية: متوسطة | الأثر: متوسط</strong><br>
-            التخفيف: تفاوض مع موردي المواد الخام، إنتاج دفعات أكبر لتخفيض التكلفة، مراجعة التسعير.
-          </div>
-        </div>
-      </div>
-      <div class="risk-item risk-med">
-        <div class="risk-icon">🏪</div>
-        <div>
-          <div class="risk-title">منافسة أسعارية في قنوات الأونلاين</div>
-          <div class="risk-desc">
-            <strong>الاحتمالية: عالية | الأثر: منخفض</strong><br>
-            التخفيف: التركيز على القيمة لا السعر، باقات حصرية، محتوى تعليمي، تقييمات عملاء.
+            <strong>متوسطة | عالٍ</strong> — تفاوض مع Astrix على أسعار ثابتة، دفعات إنتاج أكبر، مراجعة التسعير.
           </div>
         </div>
       </div>
       <div class="risk-item risk-low">
-        <div class="risk-icon">📦</div>
+        <div class="risk-icon">🏪</div>
         <div>
-          <div class="risk-title">نقص المخزون أو تأخر التوريد</div>
+          <div class="risk-title">منافسة أسعارية في الأونلاين</div>
           <div class="risk-desc">
-            <strong>الاحتمالية: منخفضة | الأثر: متوسط</strong><br>
-            التخفيف: مخزون أمان 60 يوماً، تخطيط إنتاج شهري، موردين بديلين.
+            <strong>عالية | منخفض</strong> — باقات حصرية، محتوى تعليمي، تقييمات عملاء، عروض Nostri.
           </div>
         </div>
       </div>
@@ -1016,28 +903,28 @@ tbody tr:last-child td { border-bottom: none; }
   <section id="recommendations">
     <div class="section-header">
       <span class="section-num">10</span>
-      <h2>التوصيات والخطوات التالية</h2>
+      <h2>التوصيات وقرارات المجلس</h2>
     </div>
     <div class="card" style="background:linear-gradient(135deg,#f0fdfa,#eff6ff);border:2px solid var(--primary)">
       <div class="grid-2">
         <div>
-          <h3 style="color:var(--primary-dark)">توصيات فورية (خلال 30 يوماً)</h3>
+          <h3 style="color:var(--primary-dark)">توصيات فورية</h3>
           <ol style="padding-right:20px;font-size:14px;color:var(--text-dim)">
-            <li>اعتماد المستهدف البالغ مليون ريال وتوزيع القنوات</li>
-            <li>تشكيل لجنة مشروع برئاسة المدير التجاري</li>
-            <li>تحديد قائمة الـ 14 منتج النهائية مع R&D</li>
-            <li>البدء فوراً في إجراءات التسجيل التنظيمي</li>
-            <li>جدولة اجتماعات مع المجمعات الطبية الثلاثة</li>
+            <li>اعتماد العلامة التجارية Nostri ومحفظة الـ 13 منتج</li>
+            <li>توقيع عقد التصنيع مع Astrix</li>
+            <li>اعتماد المستهدف: 1M ر.س/شهر بتوزيع 400-200-200-200</li>
+            <li>اعتماد هامش الربح الأدنى 80%</li>
+            <li>البدء فوراً في إجراءات SFDA والتسجيل</li>
           </ol>
         </div>
         <div>
-          <h3 style="color:var(--accent)">قرارات مطلوبة من المجلس</h3>
+          <h3 style="color:var(--accent)">قرارات مطلوبة</h3>
           <ol style="padding-right:20px;font-size:14px;color:var(--text-dim)">
             <li>✅ اعتماد الخطة الاستراتيجية</li>
-            <li>✅ تفويض الميزانية (تسجيل 14,000 ر.س + تسويق 80,000 ر.س)</li>
-            <li>✅ اعتماد هيكل التسعير المقترح</li>
-            <li>⏳ تحديد تكلفة التصنيع (عند الجاهزية)</li>
-            <li>⏳ اعتماد قائمة المنتجات النهائية</li>
+            <li>✅ تفويض التفاوض مع Astrix</li>
+            <li>✅ ميزانية التسجيل: 13,000 ر.س</li>
+            <li>⏳ اعتماد تكلفة التصنيع (عند جاهزية العقد)</li>
+            <li>⏳ إعداد الوثيقة التشغيلية بالتفاصيل اليومية</li>
           </ol>
         </div>
       </div>
@@ -1047,202 +934,114 @@ tbody tr:last-child td { border-bottom: none; }
 </div>
 
 <footer class="footer">
-  <p><strong>الخطة الاستراتيجية — محفظة المنتجات الخاصة</strong></p>
-  <p>شركة مصنع العناية الوحيدة للصناعات الدوائية | الخرج — المملكة العربية السعودية</p>
-  <p style="margin-top:8px">إعداد: الإدارة التجارية | يوليو 2026 | سري — للعرض على مجلس الإدارة فقط</p>
+  <p><strong>NOSTRI</strong> — الخطة الاستراتيجية لمحفظة المنتجات</p>
+  <p>مجموعة التعاون للاستثمار | تصنيع: Astrix | المملكة العربية السعودية</p>
+  <p style="margin-top:8px">يوليو 2026 | سري — للعرض على مجلس الإدارة فقط</p>
 </footer>
 
 <script>
-// ── Data ──
-const currentProducts = [
-  { name: 'REFLEX MASSAGE Emulgel 100ml', code: '1-02-066-034', qty: 983, revenue: 90025 },
-  { name: 'ORACURE Mouth Wash 300ml', code: '1-12-109-038', qty: 5116, revenue: 56980 },
-  { name: 'NOSTRICURE Oral Gel 30ml', code: '1-09-066-046', qty: 824, revenue: 38840 },
-  { name: 'INTIMO Vaginal Wash 250ml', code: '1-14-166-032', qty: 3587, revenue: 35250 },
-  { name: 'RIZER Apply Cream 75ml', code: '2-09-031-483', qty: 2932, revenue: 29160 },
-  { name: 'NOSTRIDERM Ointment 50ml', code: '1-09-118-050', qty: 1461, revenue: 27885 }
-];
-const totalRevenue = currentProducts.reduce((s, p) => s + p.revenue, 0);
-
-const productsPlan = [
-  { batch: 1, name: 'منتج جلدي موضعي #1', cat: 'جلدية', target: 75000, launch: 'شهر 3' },
-  { batch: 1, name: 'غسول فموي متخصص #2', cat: 'فموية', target: 72000, launch: 'شهر 3' },
-  { batch: 1, name: 'مرهم علاجي #3', cat: 'جلدية', target: 68000, launch: 'شهر 4' },
-  { batch: 1, name: 'جل فموي #4', cat: 'فموية', target: 65000, launch: 'شهر 4' },
-  { batch: 1, name: 'مستحضر نسائي #5', cat: 'نسائية', target: 70000, launch: 'شهر 4' },
-  { batch: 2, name: 'إيمولجل مساج #6', cat: 'مسكنات', target: 80000, launch: 'شهر 5' },
-  { batch: 2, name: 'كريم تجميلي علاجي #7', cat: 'جلدية', target: 70000, launch: 'شهر 5' },
-  { batch: 2, name: 'مضمضة طبية #8', cat: 'فموية', target: 68000, launch: 'شهر 6' },
-  { batch: 2, name: 'غسول جسم علاجي #9', cat: 'عناية', target: 65000, launch: 'شهر 6' },
-  { batch: 2, name: 'مرهم جلدي #10', cat: 'جلدية', target: 72000, launch: 'شهر 7' },
-  { batch: 3, name: 'منتج وصفة طبية #11', cat: 'Rx', target: 85000, launch: 'شهر 8' },
-  { batch: 3, name: 'مكمل موضعي #12', cat: 'جلدية', target: 70000, launch: 'شهر 9' },
-  { batch: 3, name: 'منتج عناية فموية #13', cat: 'فموية', target: 65000, launch: 'شهر 9' },
-  { batch: 3, name: 'منتج نسائي متخصص #14', cat: 'نسائية', target: 75000, launch: 'شهر 10' }
+const products = [
+  { name: 'Baby Shampoo', brandAr: 'نوستري بيبي جينتل', brandEn: 'Nostri Baby Gentle', cat: 'عناية أطفال', monthly: 70000, channel: 'صيدليات + أونلاين' },
+  { name: 'Gel for Edema', brandAr: 'نوستري ديفلا جل', brandEn: 'Nostri Defla Gel', cat: 'جلدية / وذمة', monthly: 80000, channel: 'مجمعات طبية' },
+  { name: 'Multivitamin', brandAr: 'نوستري فايتال ماكس', brandEn: 'Nostri Vital Max', cat: 'فيتامينات', monthly: 85000, channel: 'مجمعات + صيدليات' },
+  { name: 'Mouth Wash HA', brandAr: 'نوستري أورو HA', brandEn: 'Nostri Oro HA', cat: 'صحة الفم', monthly: 75000, channel: 'صيدليات + أونلاين' },
+  { name: 'Mouth Wash H₂O₂', brandAr: 'نوستري أورو بيور', brandEn: 'Nostri Oro Pure', cat: 'صحة الفم', monthly: 70000, channel: 'صيدليات + أونلاين' },
+  { name: 'Whitening Cream', brandAr: 'نوستري لومينا', brandEn: 'Nostri Lumina Cream', cat: 'تجميل علاجي', monthly: 90000, channel: 'صيدليات + أونلاين' },
+  { name: 'Vitamin C', brandAr: 'نوستري سي أكتيف', brandEn: 'Nostri C-Active', cat: 'فيتامينات', monthly: 65000, channel: 'مجمعات + صيدليات' },
+  { name: 'Vitamin C + Zn', brandAr: 'نوستري سي زدن شيلد', brandEn: 'Nostri C-Zn Shield', cat: 'فيتامينات / مناعة', monthly: 75000, channel: 'مجمعات طبية' },
+  { name: 'Strepsils Menthol', brandAr: 'نوستري ثروت كول', brandEn: 'Nostri Throat Cool', cat: 'الحلق والسعال', monthly: 80000, channel: 'صيدليات + صب إيجنت' },
+  { name: 'Strepsils Honey & Lemon', brandAr: 'نوستري ثروت سوث', brandEn: 'Nostri Throat Soothe', cat: 'الحلق والسعال', monthly: 75000, channel: 'صيدليات + صب إيجنت' },
+  { name: 'Zn Syrup', brandAr: 'نوستري زنك بلس', brandEn: 'Nostri Zinc Plus Syrup', cat: 'مكملات أطفال', monthly: 70000, channel: 'مجمعات + صيدليات' },
+  { name: 'Vit D Drops', brandAr: 'نوستري دي دروبس', brandEn: 'Nostri D-Drops', cat: 'فيتامينات أطفال', monthly: 65000, channel: 'مجمعات طبية' },
+  { name: 'Vision Tablet', brandAr: 'نوستري فيجن جارد', brandEn: 'Nostri Vision Guard', cat: 'صحة العين', monthly: 80000, channel: 'مجمعات + صيدليات' }
 ];
 
-// ── Populate current products table ──
-const tbody = document.getElementById('currentProductsTable');
-currentProducts.sort((a, b) => b.revenue - a.revenue).forEach((p, i) => {
-  const share = ((p.revenue / totalRevenue) * 100).toFixed(1);
-  const avgPrice = (p.revenue / p.qty).toFixed(2);
+const tbody = document.getElementById('productsTable');
+products.forEach((p, i) => {
   tbody.innerHTML += `<tr>
     <td>${i + 1}</td>
     <td>${p.name}</td>
-    <td class="num">${p.code}</td>
-    <td class="num">${p.qty.toLocaleString('ar-SA')}</td>
-    <td class="num">${p.revenue.toLocaleString('ar-SA')}</td>
-    <td class="num">${share}%</td>
-    <td class="num">${avgPrice}</td>
+    <td>
+      <span class="brand-name">${p.brandAr}</span>
+      <span class="brand-name-en">${p.brandEn}</span>
+    </td>
+    <td>${p.cat}</td>
+    <td class="num">${p.monthly.toLocaleString('ar-SA')}</td>
+    <td>${p.channel}</td>
   </tr>`;
 });
 tbody.innerHTML += `<tr class="highlight-row">
-  <td colspan="3"><strong>الإجمالي</strong></td>
-  <td class="num"><strong>${currentProducts.reduce((s,p)=>s+p.qty,0).toLocaleString('ar-SA')}</strong></td>
-  <td class="num"><strong>${totalRevenue.toLocaleString('ar-SA')}</strong></td>
-  <td class="num"><strong>100%</strong></td>
-  <td class="num"><strong>${(totalRevenue/currentProducts.reduce((s,p)=>s+p.qty,0)).toFixed(2)}</strong></td>
-</tr>`;
-
-// ── Products plan table ──
-const planBody = document.getElementById('productsPlanTable');
-productsPlan.forEach(p => {
-  planBody.innerHTML += `<tr>
-    <td><span class="tag tag-${p.batch===1?'green':p.batch===2?'blue':'purple'}">دفعة ${p.batch}</span></td>
-    <td>${p.name}</td>
-    <td>${p.cat}</td>
-    <td class="num">${p.target.toLocaleString('ar-SA')}</td>
-    <td class="num">55%</td>
-    <td class="num">25%</td>
-    <td class="num">12%</td>
-    <td class="num">8%</td>
-    <td>${p.launch}</td>
-  </tr>`;
-});
-planBody.innerHTML += `<tr class="highlight-row">
-  <td colspan="3"><strong>الإجمالي (14 منتج)</strong></td>
+  <td colspan="4"><strong>الإجمالي الشهري (13 منتج)</strong></td>
   <td class="num"><strong>1,000,000</strong></td>
-  <td class="num"><strong>550K</strong></td>
-  <td class="num"><strong>250K</strong></td>
-  <td class="num"><strong>120K</strong></td>
-  <td class="num"><strong>80K</strong></td>
   <td>—</td>
 </tr>`;
 
-// ── Charts ──
-const chartDefaults = {
-  font: { family: "'IBM Plex Sans Arabic', sans-serif" },
-  color: '#475569'
-};
-Chart.defaults.font.family = chartDefaults.font.family;
-Chart.defaults.color = chartDefaults.color;
+Chart.defaults.font.family = "'IBM Plex Sans Arabic', sans-serif";
+const colors = ['#0d9488','#1d4ed8','#b45309','#7c3aed','#e11d48','#0284c7','#059669'];
 
-const colors = ['#0d9488','#1d4ed8','#b45309','#7c3aed','#e11d48','#0284c7','#059669','#d97706'];
-
-// Current sales doughnut
-new Chart(document.getElementById('chartCurrentSales'), {
+new Chart(document.getElementById('chartChannels'), {
   type: 'doughnut',
   data: {
-    labels: currentProducts.map(p => p.name.split(' ').slice(0,2).join(' ')),
-    datasets: [{ data: currentProducts.map(p => p.revenue), backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }]
+    labels: ['مجمعات طبية 400K', 'صيدليات خارجية 200K', 'صب إيجنت 200K', 'أونلاين 200K'],
+    datasets: [{ data: [400000, 200000, 200000, 200000], backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }]
   },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 } } } }
-  }
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
 });
 
-// Channels pie
-new Chart(document.getElementById('chartChannels'), {
-  type: 'pie',
-  data: {
-    labels: ['مجمعات طبية 55%', 'صيدليات 25%', 'صب إيجنت 12%', 'أونلاين 8%'],
-    datasets: [{ data: [550000, 250000, 120000, 80000], backgroundColor: ['#0d9488','#1d4ed8','#b45309','#7c3aed'], borderWidth: 2, borderColor: '#fff' }]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom' } }
-  }
-});
-
-// Launch batches bar
-const batchTotals = [1,2,3].map(b => productsPlan.filter(p=>p.batch===b).reduce((s,p)=>s+p.target,0));
-new Chart(document.getElementById('chartLaunch'), {
+const catMap = {};
+products.forEach(p => { catMap[p.cat] = (catMap[p.cat] || 0) + p.monthly; });
+new Chart(document.getElementById('chartCategories'), {
   type: 'bar',
   data: {
-    labels: ['الدفعة 1 (5 منتجات)', 'الدفعة 2 (5 منتجات)', 'الدفعة 3 (4 منتجات)'],
-    datasets: [{ label: 'مستهدف المبيعات (ر.س)', data: batchTotals, backgroundColor: ['#0d9488','#1d4ed8','#7c3aed'], borderRadius: 8 }]
+    labels: Object.keys(catMap),
+    datasets: [{ label: 'مستهدف شهري (ر.س)', data: Object.values(catMap), backgroundColor: colors, borderRadius: 8 }]
   },
   options: {
-    responsive: true, maintainAspectRatio: false,
+    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
     plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString('ar-SA') } } }
+    scales: { x: { ticks: { callback: v => (v/1000)+'K' } } }
   }
 });
 
-// Profit scenarios
 new Chart(document.getElementById('chartProfit'), {
+  type: 'doughnut',
+  data: {
+    labels: ['الربح 80% (800K)', 'تكلفة التصنيع 20% (200K)'],
+    datasets: [{ data: [800000, 200000], backgroundColor: ['#0d9488','#e2e8f0'], borderWidth: 2, borderColor: '#fff' }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+});
+
+new Chart(document.getElementById('chartChannelProfit'), {
   type: 'bar',
   data: {
-    labels: ['تكلفة تصنيع 45%', 'تكلفة تصنيع 50%', 'تكلفة تصنيع 55%', 'تكلفة تصنيع 60%'],
-    datasets: [{
-      label: 'صافي الربح المتوقع (ر.س)',
-      data: [401000, 356000, 311000, 266000],
-      backgroundColor: ['#059669','#0d9488','#b45309','#e11d48'],
-      borderRadius: 8
-    }]
+    labels: ['مجمعات طبية', 'صيدليات خارجية', 'صب إيجنت', 'أونلاين'],
+    datasets: [
+      { label: 'إيرادات (ر.س)', data: [400000, 200000, 200000, 200000], backgroundColor: '#1d4ed8', borderRadius: 6 },
+      { label: 'ربح 80% (ر.س)', data: [320000, 160000, 160000, 160000], backgroundColor: '#0d9488', borderRadius: 6 }
+    ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: { callbacks: { label: ctx => ctx.parsed.y.toLocaleString('ar-SA') + ' ر.س' } }
-    },
-    scales: { y: { beginAtZero: true, ticks: { callback: v => (v/1000)+'K' } } }
+    scales: { y: { ticks: { callback: v => (v/1000)+'K' } } }
   }
 });
 
-// Comparison
-new Chart(document.getElementById('chartComparison'), {
-  type: 'bar',
-  data: {
-    labels: ['المحفظة الحالية (6 أشهر)', 'المحفظة الحالية (سنوي متوقع)', 'المنتجات الجديدة (مستهدف)'],
-    datasets: [{
-      label: 'المبيعات (ر.س)',
-      data: [278140, 556280, 1000000],
-      backgroundColor: ['#94a3b8','#1d4ed8','#0d9488'],
-      borderRadius: 8
-    }]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: true, ticks: { callback: v => (v/1000)+'K' } } }
-  }
-});
-
-// Timeline cumulative
 new Chart(document.getElementById('chartTimeline'), {
   type: 'line',
   data: {
     labels: ['ش1','ش2','ش3','ش4','ش5','ش6','ش7','ش8','ش9','ش10','ش11','ش12'],
     datasets: [{
-      label: 'مبيعات تراكمية (ر.س)',
-      data: [0, 0, 80000, 200000, 320000, 450000, 600000, 720000, 850000, 920000, 970000, 1000000],
-      borderColor: '#0d9488',
-      backgroundColor: 'rgba(13,148,136,.1)',
-      fill: true,
-      tension: 0.4,
-      pointRadius: 4,
-      pointBackgroundColor: '#0d9488'
+      label: 'مبيعات شهرية (ر.س)',
+      data: [0, 0, 350000, 450000, 550000, 650000, 750000, 850000, 900000, 950000, 980000, 1000000],
+      borderColor: '#0d9488', backgroundColor: 'rgba(13,148,136,.1)',
+      fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#0d9488'
     }]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
     plugins: { legend: { display: false } },
-    scales: {
-      y: { beginAtZero: true, ticks: { callback: v => (v/1000)+'K' } }
-    }
+    scales: { y: { ticks: { callback: v => (v/1000)+'K' }, max: 1200000 } }
   }
 });
 </script>
