@@ -199,7 +199,6 @@ body.layout-compass .compass-ui{display:flex}
       </div>
       <span class="brand-sub">Orbit Strategy · الهدف في المنتصف</span>
     </div>
-    <div class="hint" id="topHint">اضغط دائرة لفتح البند · Esc إغلاق</div>
     <div>
       <button type="button" id="btnOrbit" class="active-view" onclick="setLayout('orbit')">دائرة</button>
       <button type="button" id="btnCompass" onclick="setLayout('compass')">بوصلة</button>
@@ -738,9 +737,6 @@ function setLayout(mode) {
   document.body.classList.toggle('layout-compass', mode === 'compass');
   document.getElementById('btnCompass').classList.toggle('active-view', mode === 'compass');
   document.getElementById('btnOrbit').classList.toggle('active-view', mode === 'orbit');
-  document.getElementById('topHint').textContent = mode === 'compass'
-    ? 'بوصلة · اضغط اتجاهاً أو من القائمة'
-    : 'اضغط دائرة لفتح البند · Esc إغلاق';
   if (mode === 'compass') buildCompass();
   else placeNodes();
 }
