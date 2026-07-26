@@ -211,13 +211,35 @@ body.docked .panel{top:20px;bottom:20px;left:20px;right:128px;width:auto;max-hei
 @media print{
   @page{margin:14mm}
   html,body{height:auto;overflow:visible;background:#fff!important;color:#0c1929!important;line-height:1.55}
-  .stage,.cover,.overlay,.panel,.topbar,.kpi-strip,.card-nav,.connectors{display:none!important}
+  .stage,.cover,.overlay,.panel,.rail,.topbar,.kpi-strip,.card-nav,.connectors{display:none!important}
   #content-store{position:static!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;background:#fff!important}
-  #content-store section{display:block!important;background:#fff!important;padding:0!important;margin:0 0 9mm!important;break-inside:avoid;page-break-inside:avoid}
-  #content-store section h2{font-family:'Alexandria',sans-serif;font-size:17pt;color:#0f766e;border-bottom:2px solid #0f766e;padding-bottom:6px;margin-bottom:12px}
-  .sec-num{display:inline-block;width:26px;height:26px;line-height:26px;text-align:center;background:#0f766e;color:#fff;border-radius:50%;font-size:11pt;margin-left:8px;font-family:'Alexandria',sans-serif}
-  table,.box,.stat-card,.scenario-card,.channel-card,.tl-i{box-shadow:none!important;break-inside:avoid}
-  th{position:static!important}
+
+  /* each section = a fresh page → clear separation, zero overlap */
+  #content-store section{display:block!important;background:#fff!important;padding:0!important;margin:0!important;page-break-before:always;break-before:page}
+  #content-store section:first-child{page-break-before:avoid;break-before:avoid}
+  #content-store section h2{font-family:'Alexandria',sans-serif;font-size:15pt;color:#0f766e;border-bottom:2.5px solid #0f766e;padding-bottom:7px;margin:0 0 14px;break-after:avoid;page-break-after:avoid}
+  .sec-num{display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;background:#0f766e;color:#fff;border-radius:50%;font-size:10pt;margin-left:8px;font-family:'Alexandria',sans-serif}
+  .lead{font-size:11pt}
+  .panel-body .sub,.sub{font-size:9.5pt}
+
+  /* keep blocks whole, no overlaps, colours intact */
+  .box,.stat-card,.scenario-card,.channel-card,.tl-i,.note,.info,.ok{box-shadow:none!important;break-inside:avoid;page-break-inside:avoid}
+  .grid-2,.grid-3,.stat-grid,.scenario-grid,.channel-grid{break-inside:avoid;page-break-inside:avoid;margin-bottom:10px}
+  h3,h4{break-after:avoid;page-break-after:avoid}
+
+  /* tables: fit page width, never split unless genuinely taller than a page */
+  #content-store [style*="overflow-x"]{overflow:visible!important}
+  #content-store table{font-size:8.4pt;box-shadow:none!important;width:100%!important;table-layout:fixed;break-inside:avoid;page-break-inside:avoid;margin-top:8px}
+  #content-store th,#content-store td{padding:5px 6px;white-space:normal;word-break:break-word;overflow-wrap:anywhere}
+  #content-store th{position:static!important;font-size:8pt;line-height:1.25}
+  #content-store .num{white-space:nowrap;direction:ltr}
+  tr{break-inside:avoid;page-break-inside:avoid}
+  thead{display:table-header-group}
+  tfoot{display:table-footer-group}
+  /* oversized tables (flagged at print time) may split, with a "continued" marker */
+  table.pf-split{break-inside:auto!important;page-break-inside:auto!important}
+  tfoot.pf-contd td{text-align:center;font-weight:800;color:#0f766e;background:#ecfdf5;border-top:1px dashed #7fe3d4;padding:6px}
+
   a[href]:after{content:''}
 }
 /* On phones, replace the crowded orbit with a clean numbered grid */
@@ -887,6 +909,28 @@ document.getElementById('nextBtn').onclick = () => openPanel((panelIndex + 1) % 
 
 // Export
 document.getElementById('printBtn').onclick = () => window.print();
+
+// Print pagination: only genuinely oversized tables may split, and get a "continued" marker
+function preparePrintTables(on) {
+  document.querySelectorAll('#content-store table').forEach(t => {
+    const old = t.querySelector('tfoot.pf-contd');
+    if (old) old.remove();
+    t.classList.remove('pf-split');
+    if (!on) return;
+    const rows = t.querySelectorAll('tbody tr').length;
+    if (rows > 18) {
+      t.classList.add('pf-split');
+      const firstRow = t.querySelector('tr');
+      const cols = firstRow ? firstRow.children.length : 1;
+      const foot = document.createElement('tfoot');
+      foot.className = 'pf-contd';
+      foot.innerHTML = `<tr><td colspan="${cols}">… مكمل في الصفحة التالية</td></tr>`;
+      t.appendChild(foot);
+    }
+  });
+}
+window.addEventListener('beforeprint', () => preparePrintTables(true));
+window.addEventListener('afterprint', () => preparePrintTables(false));
 
 // Keyboard: navigation + focus trap
 const panelEl = document.getElementById('panel');
