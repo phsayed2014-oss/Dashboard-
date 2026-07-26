@@ -468,7 +468,7 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
     <p class="sub">خطة تنفيذية بعد الإطلاق — فريق الإدارة التجارية والشركاء الداخليين.</p>
     <div class="box">
       <ul>
-        <li>الهدف الاستراتيجي: الانطلاق بشركة توزيع تحمل علامة <strong>Nostri</strong> بعد ثلاث سنوات.</li>
+        <li>الهدف الاستراتيجي: الانفصال بشركة توزيع تحمل علامة <strong>Nostri</strong> بعد ثلاث سنوات.</li>
         <li>زيادة مندوب مبيعات وتحصيل عند الوصول لمبيعات <span class="num">500,000</span> ر.س/شهر.</li>
         <li>وضع لائحة تحفيزية للصيادلة، مع مسابقات واستهدافات وتدريب وتسويق.</li>
         <li><strong>صيدليات المجمعات (ص1 · ص7 · ص18):</strong>
@@ -608,17 +608,11 @@ costRows.innerHTML += `<tr class="row-t">
 </tr>`;
 
 const LICENSE_TOTAL = 84000;
-const LAUNCH_INVEST_MONTHS = 6;
 const launchCash = tMoqCost + LICENSE_TOTAL;
-const breakEvenMonthly = Math.round(launchCash / (MARGIN_GROSS * LAUNCH_INVEST_MONTHS));
 document.getElementById('sumMoqCost').textContent = fmt(tMoqCost);
 document.getElementById('sumMoqRev').textContent = fmt(tMoqRev);
 document.getElementById('sumMoqProfit').textContent = fmt(tMoqRev - tMoqCost);
 document.getElementById('sumTotalCash').textContent = fmt(launchCash);
-const breakEl = document.getElementById('breakEvenSales');
-const launchEl = document.getElementById('launchCashTotal');
-if (breakEl) breakEl.textContent = fmt(breakEvenMonthly);
-if (launchEl) launchEl.textContent = fmt(launchCash);
 const decisionMoq = document.getElementById('decisionMoqCost');
 if (decisionMoq) decisionMoq.textContent = fmt(tMoqCost);
 
@@ -631,9 +625,10 @@ const ORBIT_SECTIONS = [
   { id:'complexes', num:2, label:'المجمعات', title:'ص1 · ص7 · ص18', sub:'الشبكة والمجمعات' },
   { id:'expansion', num:3, label:'التوسع', title:'لماذا نوسّع؟', sub:'14 منتج جديد' },
   { id:'pricing', num:4, label:'التسعير', title:'التسعير والتصنيع', sub:'14 منتج · MOQ' },
-  { id:'finance', num:5, label:'المالي', title:'الإطار المالي', sub:'سيناريوهات وتعادل' },
+  { id:'finance', num:5, label:'المالي', title:'الإطار المالي', sub:'سيناريوهات شهرية' },
   { id:'roadmap', num:6, label:'الجدول', title:'خارطة الطريق', sub:'شهر–شهرين · إطلاق الـ 14' },
-  { id:'decisions', num:7, label:'القرارات', title:'قرارات المجلس', sub:'اعتمادات مطلوبة' }
+  { id:'decisions', num:7, label:'القرارات', title:'قرارات المجلس', sub:'اعتمادات مطلوبة' },
+  { id:'operations', num:8, label:'التشغيل', title:'التشغيل', sub:'خطة ما بعد الإطلاق' }
 ];
 let panelIndex = -1;
 
