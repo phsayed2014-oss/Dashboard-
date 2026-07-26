@@ -33,7 +33,7 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:radial-gradient(el
 .topbar a:hover,.topbar button:hover{background:rgba(20,184,166,.28)}
 .hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(240px,38vw);height:min(240px,38vw);border-radius:50%;background:linear-gradient(145deg,#0f766e,#115e59 55%,#0e4d8a);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:10;box-shadow:0 0 0 10px rgba(20,184,166,.1),0 0 50px rgba(20,184,166,.28),0 16px 48px rgba(0,0,0,.35)}
 .hub::before{content:'';position:absolute;inset:-14px;border-radius:50%;border:1px dashed rgba(94,234,212,.28);animation:ringSpin 50s linear infinite}
-.hub-logo{font-family:'Alexandria',sans-serif;font-size:1.65rem;font-weight:900;letter-spacing:3px;position:relative;z-index:1}
+.hub-logo{font-family:'Alexandria',sans-serif;font-size:clamp(2.25rem,6vw,3.25rem);font-weight:900;letter-spacing:5px;position:relative;z-index:1;line-height:1}
 .hub-q{font-size:12px;font-weight:700;margin-top:6px;line-height:1.4;color:#ccfbf1;position:relative;z-index:1}
 .nodes{position:absolute;inset:0;z-index:20}
 .node{position:absolute;width:84px;height:84px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(8,40,38,.88);border:2px solid rgba(94,234,212,.35);backdrop-filter:blur(8px);cursor:pointer;text-align:center;padding:6px;transition:transform .3s var(--ease),box-shadow .3s,border-color .3s;box-shadow:0 8px 22px rgba(0,0,0,.28)}
@@ -102,7 +102,7 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
   .grid-2,.grid-3{grid-template-columns:1fr}
   .tl-i{grid-template-columns:1fr}
   .hub{width:150px;height:150px}
-  .hub-logo{font-size:1.15rem}
+  .hub-logo{font-size:1.75rem}
   .node{width:68px;height:68px}
   .node .n-label{font-size:8px}
   .orbit-ring{display:none}
@@ -120,7 +120,6 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
     <div class="hint">اضغط دائرة لفتح البند · Esc إغلاق</div>
     <div>
       <button type="button" onclick="openPanel(0)">ابدأ</button>
-      <a href="nostri-board-brief.html">عرض المجلس</a>
     </div>
   </div>
   <div class="hub">
