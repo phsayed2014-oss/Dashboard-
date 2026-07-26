@@ -170,16 +170,30 @@ td:first-child,td.name-cell{font-weight:600;color:var(--ink)}
 
 /* ===== donut charts ===== */
 .donut-wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center;padding:6px 0}
-.donut{--sz:150px;width:var(--sz);height:var(--sz);border-radius:50%;position:relative;flex-shrink:0}
-.donut::after{content:'';position:absolute;inset:22%;background:#fff;border-radius:50%;box-shadow:inset 0 0 0 1px var(--line)}
-.donut .dc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1;text-align:center}
-.donut .dc b{font-family:'Alexandria',sans-serif;font-size:1.15rem;font-weight:900;color:var(--teal);line-height:1}
-.donut .dc span{font-size:10px;color:var(--dim);margin-top:2px}
+.donut{--sz:176px;width:var(--sz);height:var(--sz);border-radius:50%;position:relative;flex-shrink:0}
+.donut::after{content:'';position:absolute;inset:19%;background:#fff;border-radius:50%;box-shadow:inset 0 0 0 1px var(--line)}
+.donut .dc{position:absolute;inset:19%;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1;text-align:center;padding:4px}
+.donut .dc b{font-family:'Alexandria',sans-serif;font-size:1.05rem;font-weight:900;color:var(--teal);line-height:1.05;white-space:nowrap;letter-spacing:-.3px}
+.donut .dc span{font-size:9.5px;color:var(--dim);margin-top:3px}
 .donut-legend{display:flex;flex-direction:column;gap:9px;font-size:12.5px;min-width:180px}
 .donut-legend .dl{display:flex;align-items:center;gap:9px}
 .donut-legend .dl .sw{width:12px;height:12px;border-radius:4px;flex-shrink:0}
 .donut-legend .dl .dt{color:var(--ink);font-weight:700;flex:1}
 .donut-legend .dl .dv{direction:ltr;font-variant-numeric:tabular-nums;font-weight:800;color:var(--teal)}
+
+/* ===== Docked master-detail: side circular rail + data panel ===== */
+.rail{position:fixed;z-index:205;top:0;bottom:0;right:0;width:108px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:18px 10px;background:linear-gradient(90deg,rgba(4,21,18,.94),rgba(4,21,18,.55));backdrop-filter:blur(10px);border-left:1px solid rgba(94,234,212,.12);transform:translateX(100%);transition:transform .5s var(--ease);overflow-y:auto}
+body.docked .rail{transform:translateX(0)}
+.rail-node{flex-shrink:0;width:70px;height:70px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:4px;background:radial-gradient(circle at 35% 30%,rgba(20,184,166,.3),rgba(8,40,38,.92) 65%);border:2px solid rgba(94,234,212,.4);color:#eafcf7;transition:transform .25s var(--ease),border-color .25s,background .25s,box-shadow .25s}
+.rail-node .rn-num{font-family:'Alexandria',sans-serif;font-weight:900;font-size:.95rem;line-height:1}
+.rail-node .rn-label{font-size:8px;font-weight:700;line-height:1.05;color:#bfe8e0;text-align:center}
+.rail-node:hover{transform:scale(1.07);border-color:#a7f3d0}
+.rail-node.active{background:linear-gradient(145deg,#0f766e,#14b8a6);border-color:#a7f3d0;transform:scale(1.1);box-shadow:0 0 0 4px rgba(20,184,166,.22)}
+.rail-node.active .rn-label{color:#f0fdfa}
+/* hide the orbit while docked, dock the panel beside the rail */
+body.docked .hub,body.docked .nodes,body.docked .orbit-ring,body.docked .connectors,body.docked .kpi-strip,body.docked .card-nav,body.docked .topbar{opacity:0;pointer-events:none;transition:opacity .4s}
+body.docked .overlay{background:transparent;backdrop-filter:none}
+body.docked .panel{top:20px;bottom:20px;left:20px;right:128px;width:auto;max-height:none;height:auto;transform:none!important;border-radius:20px}
 
 @media (max-width:860px){
   .stat-grid,.scenario-grid{grid-template-columns:1fr 1fr}
@@ -215,6 +229,11 @@ td:first-child,td.name-cell{font-weight:600;color:var(--ink)}
   .card-nav .cn-lead{text-align:center;color:#ccfbf1}
   .card-nav .cn-lead .cl-logo{font-family:'Alexandria',sans-serif;font-weight:900;letter-spacing:4px;font-size:2rem;color:#f0fdfa}
   .card-nav .cn-lead .cl-q{font-size:12px;color:#9ec7bf;margin-top:6px}
+  /* mobile docked: rail becomes a horizontal strip at the bottom */
+  .rail{top:auto;left:0;right:0;bottom:0;width:auto;height:92px;flex-direction:row;justify-content:flex-start;gap:10px;padding:12px 14px;overflow-x:auto;overflow-y:hidden;border-left:none;border-top:1px solid rgba(94,234,212,.12);transform:translateY(100%)}
+  body.docked .rail{transform:translateY(0)}
+  .rail-node{width:62px;height:62px}
+  body.docked .panel{left:8px;right:8px;top:8px;bottom:104px;border-radius:16px}
 }
 
 </style>
@@ -251,6 +270,7 @@ td:first-child,td.name-cell{font-weight:600;color:var(--ink)}
 </div>
 
 <div class="overlay" id="overlay"></div>
+<nav class="rail" id="rail" aria-label="التنقل بين البنود"></nav>
 <div class="panel" id="panel" role="dialog" aria-modal="true">
   <div class="panel-head">
     <div>
@@ -698,14 +718,14 @@ const batchAEl = document.getElementById('batchAMoq');
 if (batchAEl) batchAEl.textContent = '~' + fmt(batchAMoq);
 
 const ORBIT_SECTIONS = [
-  { id:'baseline', num:1, label:'أين نحن؟', title:'أين نحن؟', sub:'نصف 2026 · Private Label' },
+  { id:'baseline', num:1, label:'الوضع الحالي', title:'أين نحن؟', sub:'نصف 2026 · Private Label' },
   { id:'complexes', num:2, label:'المجمعات', title:'ص1 · ص7 · ص18', sub:'Nostri في المجمعات' },
   { id:'expansion', num:3, label:'التوسع', title:'لماذا نوسّع؟', sub:'14 منتج جديد' },
   { id:'pricing', num:4, label:'التسعير', title:'التسعير والتصنيع', sub:'14 منتج · MOQ' },
-  { id:'finance', num:5, label:'المالي', title:'الإطار المالي', sub:'سيناريوهات شهرية' },
+  { id:'finance', num:5, label:'الإطار المالي', title:'الإطار المالي', sub:'سيناريوهات شهرية' },
   { id:'operations', num:6, label:'التشغيل', title:'التشغيل', sub:'خطة ما بعد الإطلاق' },
   { id:'decisions', num:7, label:'القرارات', title:'قرارات المجلس', sub:'اعتمادات مطلوبة' },
-  { id:'roadmap', num:8, label:'الجدول', title:'خارطة الطريق', sub:'شهر–شهرين · إطلاق الـ 14' }
+  { id:'roadmap', num:8, label:'خارطة الطريق', title:'خارطة الطريق', sub:'شهر–شهرين · إطلاق الـ 14' }
 ];
 let panelIndex = -1;
 let lastFocused = null;
@@ -751,6 +771,23 @@ function buildCardNav() {
     c.onclick = () => openPanel(i);
     g.appendChild(c);
   });
+}
+
+function buildRail() {
+  const r = document.getElementById('rail');
+  r.innerHTML = '';
+  ORBIT_SECTIONS.forEach((s, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'rail-node';
+    b.title = s.title;
+    b.innerHTML = `<span class="rn-num">${s.num}</span><span class="rn-label">${s.label}</span>`;
+    b.onclick = () => openPanel(i);
+    r.appendChild(b);
+  });
+}
+function updateRail(i) {
+  document.querySelectorAll('#rail .rail-node').forEach((n, idx) => n.classList.toggle('active', idx === i));
 }
 
 const progressEl = document.getElementById('panelProgress');
@@ -826,8 +863,10 @@ function openPanel(i) {
   body.scrollTop = 0;
   document.getElementById('overlay').classList.add('open');
   document.getElementById('panel').classList.add('open');
+  document.body.classList.add('docked');
   document.querySelectorAll('.node').forEach((n, idx) => n.classList.toggle('active', idx === i));
   updateProgress(i);
+  updateRail(i);
   animateBarsIn(body);
   requestAnimationFrame(() => document.getElementById('closeBtn').focus());
 }
@@ -835,6 +874,7 @@ function openPanel(i) {
 function closePanel() {
   document.getElementById('overlay').classList.remove('open');
   document.getElementById('panel').classList.remove('open');
+  document.body.classList.remove('docked');
   document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
   panelIndex = -1;
   if (lastFocused && lastFocused.focus) lastFocused.focus();
@@ -867,6 +907,7 @@ document.addEventListener('keydown', e => {
 
 placeNodes();
 buildCardNav();
+buildRail();
 window.addEventListener('resize', placeNodes);
 requestAnimationFrame(() => {
   document.getElementById('stage').classList.add('ready');
