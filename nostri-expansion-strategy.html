@@ -129,7 +129,7 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
   </div>
   <div class="nodes" id="nodes"></div>
   <div class="kpi-strip">
-    <div class="kpi-chip"><div class="v">340,645</div><div class="l">H1 شبكة</div></div>
+    <div class="kpi-chip"><div class="v">340,645</div><div class="l">Private Label · نصف 2026</div></div>
     <div class="kpi-chip"><div class="v">126,435</div><div class="l">مجمعات 37.1%</div></div>
     <div class="kpi-chip"><div class="v">1,000,000</div><div class="l">هدف / شهر</div></div>
     <div class="kpi-chip"><div class="v">7+14</div><div class="l">منتج</div></div>
@@ -154,12 +154,12 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
 
 <div id="content-store" aria-hidden="true">
   <section id="baseline">
-    <h2><span class="sec-num">1</span> الوضع الحالي</h2>
-    <p class="sub">7 منتجات في المحفظة · إجمالي مبيعات H1 للشبكة 340,645 ر.س (تقرير المورد، يناير–يونيو 2026).</p>
+    <h2><span class="sec-num">1</span> أين نحن؟</h2>
+    <p class="sub">7 منتجات في المحفظة · إجمالي مبيعات النصف الأول لعام 2026 لمحفظة <strong>Private Label</strong>: 340,645 ر.س (تقرير المورد، يناير–يونيو 2026).</p>
 
     <div class="grid-2">
       <div class="box">
-        <h3>ملخص الشبكة</h3>
+        <h3>ملخص محفظة Private Label</h3>
         <table>
           <tbody>
             <tr><td>إجمالي المبيعات (بسعر البيع)</td><td class="num">340,645</td></tr>
@@ -179,7 +179,7 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
     <div style="overflow-x:auto;margin-top:14px">
       <table>
         <thead>
-          <tr><th>#</th><th>الصنف</th><th>الكود</th><th>مباع</th><th>مخزون</th><th>إيراد H1</th><th>%</th><th>سعر وحدة</th></tr>
+          <tr><th>#</th><th>الصنف</th><th>الكود</th><th>مباع</th><th>مخزون</th><th>إيراد نصف 2026</th><th>%</th><th>سعر وحدة</th></tr>
         </thead>
         <tbody id="prodRows"></tbody>
       </table>
@@ -188,11 +188,11 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
 
   <section id="complexes">
     <h2><span class="sec-num">2</span> المجمعات — ص1 · ص7 · ص18</h2>
-    <p class="sub">أرقام H1 (ر.س بسعر البيع).</p>
+    <p class="sub">مبيعات النصف الأول لعام 2026 (ر.س بسعر البيع).</p>
 
     <table style="margin-bottom:16px;max-width:640px">
       <thead>
-        <tr><th>المجمع</th><th>إيراد H1</th><th>وحدات</th><th>% من الشبكة</th></tr>
+        <tr><th>المجمع</th><th>إيراد نصف 2026</th><th>وحدات</th><th>% من محفظة PL</th></tr>
       </thead>
       <tbody>
         <tr><td>ص1</td><td class="num">68,805</td><td class="num">1,224</td><td class="num">20.2%</td></tr>
@@ -205,7 +205,7 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
     <div style="overflow-x:auto">
       <table>
         <thead>
-          <tr><th>الصنف</th><th>ص1</th><th>ص7</th><th>ص18</th><th>مجموع المجمعات</th><th>% من صنف الشبكة</th></tr>
+          <tr><th>الصنف</th><th>ص1</th><th>ص7</th><th>ص18</th><th>مجموع المجمعات</th><th>% من صنف المحفظة</th></tr>
         </thead>
         <tbody id="cxRows"></tbody>
       </table>
@@ -223,7 +223,7 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
   <section id="expansion">
     <h2><span class="sec-num">3</span> لماذا نوسّع المحفظة؟</h2>
     <p style="font-size:15px;margin-bottom:12px">
-      في النصف الأول من 2026 تحركت المنتجات الحالية بشكل جيد، والمجمعات الثلاث (ص1، ص7، ص18) مثلت <strong>37.1%</strong> من مبيعات الشبكة.
+      في النصف الأول من 2026 تحركت المنتجات الحالية بشكل جيد، والمجمعات الثلاث (ص1، ص7، ص18) مثلت <strong>37.1%</strong> من مبيعات محفظة Private Label.
       التوسع يعني إضافة أصناف تحت نفس العلامة دون إضعاف ما يعمل اليوم.
     </p>
     <p style="font-size:15px;margin-bottom:12px">
@@ -343,6 +343,7 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
           <li>اعتماد توسيع المحفظة: 7 + 14 = 21 منتجاً</li>
           <li>اعتماد مستهدف 1,000,000 ر.س/شهر للـ 14 الجديدة بتوزيع 400-200-200-200</li>
           <li>اعتماد ميزانية ترخيص الأصناف: <strong>84,000 ر.س</strong> (6,000 × 14)</li>
+          <li>اعتماد مبلغ تصنيع الأصناف (MOQ أول دفعة): <strong id="decisionMoqCost">—</strong> ر.س — تقريبي حتى توقيع عقد Astrix</li>
           <li>تفويض التفاوض وتوقيع عقد التصنيع مع Astrix</li>
           <li>اعتماد تخصيص موارد <strong>الإدارة التجارية</strong> لبرنامج المجمعات والتواصل مع الأطباء (القسم 2)</li>
         </ul>
@@ -351,6 +352,7 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
         <h3>اعتماد التسعير والتصنيع</h3>
         <ul>
           <li>تثبيت الأسعار النهائية عند توقيع العقد</li>
+          <li>اعتماد جدول MOQ وتكلفة/حبة لكل صنف (جدول التسعير — البند 4)</li>
         </ul>
       </div>
     </div>
@@ -382,7 +384,7 @@ productsH1.forEach((p,i)=>{
     <td class="num">${p.unit}</td>
   </tr>`;
 });
-prodRows.innerHTML += `<tr class="row-t"><td colspan="3">الإجمالي (تقرير H1)</td><td class="num">6,466</td><td class="num">14,909</td><td class="num">340,645</td><td class="num">100%</td><td></td></tr>`;
+prodRows.innerHTML += `<tr class="row-t"><td colspan="3">الإجمالي (نصف 2026)</td><td class="num">6,466</td><td class="num">14,909</td><td class="num">340,645</td><td class="num">100%</td><td></td></tr>`;
 
 const barColors = ['#0f766e','#1d4ed8','#b45309','#7c3aed','#be123c','#0284c7'];
 const shareBars = document.getElementById('shareBars');
@@ -423,7 +425,7 @@ Object.keys(cx).forEach(k=>{
     <td class="num">${(t/r.all*100).toFixed(1)}%</td>
   </tr>`;
 });
-cxRows.innerHTML += `<tr class="row-t"><td>الإجمالي</td><td class="num">${fmt(s1)}</td><td class="num">${fmt(s7)}</td><td class="num">${fmt(s18)}</td><td class="num">${fmt(st)}</td><td class="num">37.1% من الشبكة</td></tr>`;
+cxRows.innerHTML += `<tr class="row-t"><td>الإجمالي</td><td class="num">${fmt(s1)}</td><td class="num">${fmt(s7)}</td><td class="num">${fmt(s18)}</td><td class="num">${fmt(st)}</td><td class="num">37.1% من المحفظة</td></tr>`;
 
 const MARGIN_GROSS = 0.80;
 const sellFromCost = c => c / (1 - MARGIN_GROSS);
@@ -483,13 +485,15 @@ document.getElementById('sumMoqCost').textContent = fmt(tMoqCost);
 document.getElementById('sumMoqRev').textContent = fmt(tMoqRev);
 document.getElementById('sumMoqProfit').textContent = fmt(tMoqRev - tMoqCost);
 document.getElementById('sumTotalCash').textContent = fmt(tMoqCost + LICENSE_TOTAL);
+const decisionMoq = document.getElementById('decisionMoqCost');
+if (decisionMoq) decisionMoq.textContent = fmt(tMoqCost);
 
 const batchA = ['Baby Shampoo','Mouth Wash HA','Vitamin C','Strepsils Menthol','Vit D Drops'];
 const batchAMoq = newProducts.filter(p => batchA.includes(p.name)).reduce((s,p) => s + p.moqCost, 0);
 document.getElementById('batchAMoq').textContent = '~' + fmt(batchAMoq);
 
 const ORBIT_SECTIONS = [
-  { id:'baseline', num:1, label:'H1', title:'الوضع الحالي', sub:'مبيعات النصف الأول 2026' },
+  { id:'baseline', num:1, label:'أين نحن؟', title:'أين نحن؟', sub:'مبيعات النصف الأول لعام 2026 · Private Label' },
   { id:'complexes', num:2, label:'المجمعات', title:'ص1 · ص7 · ص18', sub:'أرقام ونسب فقط' },
   { id:'expansion', num:3, label:'التوسع', title:'لماذا نوسّع؟', sub:'منتجات سريعة البيع' },
   { id:'pricing', num:4, label:'التسعير', title:'التسعير والتصنيع', sub:'14 منتج · MOQ' },
