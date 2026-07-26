@@ -51,8 +51,8 @@
     "formula": "sellPrice = unitCost / (1 - marginGrossPct)",
     "licensePerSkuSar": 6000,
     "licenseTotalSar": 84000,
-    "totalMoqCostSar": 640000,
-    "totalMoqRevenueAtSellPriceSar": 3200000,
+    "totalMoqCostSar": 616000,
+    "totalMoqRevenueAtSellPriceSar": 3071000,
     "products": [
       {"sku": "Baby Shampoo", "unitCost": 10, "moq": 3000, "sellPrice": 50, "profitPerUnit": 40},
       {"sku": "Gel for Edema", "unitCost": 10, "moq": 5000, "sellPrice": 50, "profitPerUnit": 40},
@@ -65,7 +65,7 @@
       {"sku": "Strepsils Menthol", "unitCost": 12, "moq": 5000, "sellPrice": 60, "profitPerUnit": 48},
       {"sku": "Strepsils Honey & Lemon", "unitCost": 12, "moq": 5000, "sellPrice": 60, "profitPerUnit": 48},
       {"sku": "Zn Syrup", "unitCost": 15, "moq": 3000, "sellPrice": 75, "profitPerUnit": 60},
-      {"sku": "Vit D Drops", "unitCost": 15, "moq": 3000, "sellPrice": 75, "profitPerUnit": 60},
+      {"sku": "Vit D Drops", "unitCost": 7, "moq": 3000, "sellPrice": 32, "profitPerUnit": 25, "note": "سعر بيع أقل قليلاً عن معادلة 80%"},
       {"sku": "Vision Tablet", "unitCost": 15, "moq": 3000, "sellPrice": 75, "profitPerUnit": 60},
       {"sku": "Natal / Pregnatabs", "unitCost": 15, "moq": 3000, "sellPrice": 75, "profitPerUnit": 60}
     ],
