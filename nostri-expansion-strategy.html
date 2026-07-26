@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>Nostri | استراتيجية إضافة 14 منتج — مبنية على مبيعات H1 2026</title>
+<title>Nostri | ورقة تشغيلية</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Alexandria:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -23,43 +23,31 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:
   var(--bg);color:var(--ink);line-height:1.7}
 .wrap{max-width:1120px;margin:0 auto;padding:28px 18px 80px}
 .hero{
-  background:linear-gradient(135deg,#041512 0%,#0f766e 55%,#0e4d8a 100%);
-  color:#fff;border-radius:28px;padding:36px 32px;position:relative;overflow:hidden;
-  box-shadow:0 24px 60px rgba(4,21,18,.35);margin-bottom:22px;
-  animation:heroIn .9s var(--ease) both;
+  background:linear-gradient(128deg,#052e2a 0%,#0f766e 48%,#134e6f 100%);
+  color:#fff;border-radius:20px;padding:28px 32px 26px;position:relative;overflow:hidden;
+  box-shadow:0 16px 48px rgba(4,21,18,.22);margin-bottom:20px;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;
 }
-.hero .orb{position:absolute;border-radius:50%;pointer-events:none;opacity:.45}
-.hero .orb-1{width:280px;height:280px;top:-80px;left:-60px;background:radial-gradient(circle,rgba(94,234,212,.5),transparent 70%);animation:float 8s ease-in-out infinite}
-.hero .orb-2{width:160px;height:160px;bottom:-40px;right:12%;background:radial-gradient(circle,rgba(147,197,253,.45),transparent 70%);animation:float 6s ease-in-out infinite reverse}
-.hero > .brand,.hero > h1,.hero > p,.hero > .meta{position:relative;z-index:1}
-@keyframes heroIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-@keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(12px,-10px) scale(1.05)}}
-.hero::after{
-  content:"";position:absolute;inset:auto -20% -40% 40%;height:220px;
-  background:radial-gradient(circle,rgba(94,234,212,.35),transparent 60%);pointer-events:none;
+.hero::before{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.04) 50%,transparent);
+  pointer-events:none;
 }
-.brand{font-family:'Alexandria',sans-serif;font-weight:900;letter-spacing:3px;font-size:clamp(2rem,5vw,3rem)}
-.hero h1{font-family:'Alexandria',sans-serif;font-size:clamp(1.25rem,3.2vw,1.85rem);font-weight:800;margin-top:10px;max-width:20ch;line-height:1.35}
-.hero p{margin-top:10px;color:#99f6e4;max-width:62ch;font-size:14.5px}
-.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
-.chip{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700}
-.nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px;position:sticky;top:8px;z-index:20;background:rgba(243,247,246,.9);backdrop-filter:blur(10px);padding:8px 0}
-.nav a{text-decoration:none;color:var(--teal);background:#fff;border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:12px;font-weight:700;box-shadow:var(--shadow);transition:transform .25s var(--ease),background .25s,box-shadow .25s}
-.nav a:hover{background:var(--teal-soft);transform:translateY(-2px);box-shadow:0 12px 28px rgba(15,118,110,.12)}
+.hero-main{position:relative;z-index:1}
+.brand{font-family:'Alexandria',sans-serif;font-weight:900;letter-spacing:4px;font-size:clamp(1.75rem,4vw,2.5rem);line-height:1}
+.hero-tag{margin-top:8px;font-size:14px;font-weight:600;color:rgba(204,251,241,.92)}
+.hero-link{position:relative;z-index:1;font-size:12px;font-weight:700;color:#5eead4;text-decoration:none;padding:8px 14px;border:1px solid rgba(94,234,212,.35);border-radius:10px;background:rgba(0,0,0,.12);transition:background .2s}
+.hero-link:hover{background:rgba(0,0,0,.22)}
+.nav{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 18px;padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.nav a{text-decoration:none;color:var(--dim);padding:6px 11px;border-radius:8px;font-size:12px;font-weight:700;transition:color .2s,background .2s}
+.nav a:hover{color:var(--teal);background:var(--teal-soft)}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow);animation:kpiIn .7s var(--ease) both}
-.kpi:nth-child(1){animation-delay:.05s}.kpi:nth-child(2){animation-delay:.12s}.kpi:nth-child(3){animation-delay:.19s}.kpi:nth-child(4){animation-delay:.26s}
-@keyframes kpiIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.kpi:hover{box-shadow:0 14px 36px rgba(15,118,110,.1)}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 16px;box-shadow:var(--shadow)}
 .kpi .v{font-family:'Alexandria',sans-serif;font-size:1.45rem;font-weight:800;color:var(--teal)}
 .kpi .l{font-size:12px;color:var(--dim);margin-top:4px}
-section{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px;margin-bottom:16px;box-shadow:var(--shadow);animation:secIn .65s var(--ease) both}
-section:nth-of-type(1){animation-delay:.08s}section:nth-of-type(2){animation-delay:.12s}section:nth-of-type(3){animation-delay:.16s}
-section:nth-of-type(4){animation-delay:.2s}section:nth-of-type(5){animation-delay:.24s}section:nth-of-type(6){animation-delay:.28s}section:nth-of-type(7){animation-delay:.32s}
-@keyframes secIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-section:hover{box-shadow:0 16px 40px rgba(15,118,110,.07)}
-section h2{font-family:'Alexandria',sans-serif;font-size:1.2rem;font-weight:800;color:var(--teal);margin-bottom:6px;display:flex;align-items:center;gap:10px}
-section h2 .sec-num{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-l));color:#fff;font-size:.85rem;font-weight:800;flex-shrink:0;box-shadow:0 4px 14px rgba(15,118,110,.35)}
+section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin-bottom:14px;box-shadow:var(--shadow)}
+section h2{font-family:'Alexandria',sans-serif;font-size:1.15rem;font-weight:800;color:var(--ink);margin-bottom:10px;display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--teal-soft);padding-bottom:10px}
+section h2 .sec-num{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;border-radius:8px;background:var(--teal);color:#fff;font-size:.8rem;font-weight:800}
 section .sub{color:var(--dim);font-size:13px;margin-bottom:16px}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
@@ -80,10 +68,21 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
 .note{background:var(--amber-soft);border:1px solid #fdba74;border-radius:14px;padding:12px 14px;font-size:13px;color:#9a3412;margin:12px 0}
 .info{background:var(--blue-soft);border:1px solid #93c5fd;border-radius:14px;padding:12px 14px;font-size:13px;color:#1e3a8a;margin:12px 0}
 .ok{background:var(--teal-soft);border:1px solid #99f6e4;border-radius:14px;padding:12px 14px;font-size:13px;color:#065f46;margin:12px 0}
-.chart-box{height:280px;position:relative}
-.chart-ring{position:absolute;inset:auto auto 8px 8px;width:56px;height:56px;border-radius:50%;border:3px solid rgba(15,118,110,.15);border-top-color:var(--teal-l);animation:spin 1.2s linear infinite;opacity:0;pointer-events:none}
-.chart-box.ready .chart-ring{display:none}
-@keyframes spin{to{transform:rotate(360deg)}}
+.chart-box{height:auto;position:relative}
+.bar-list{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.bar-row{display:grid;grid-template-columns:72px 1fr 44px;gap:8px;align-items:center;font-size:12px}
+.bar-row .lbl{font-weight:700;color:var(--ink)}
+.bar-row .pct{text-align:left;direction:ltr;color:var(--dim);font-variant-numeric:tabular-nums}
+.bar-track{height:10px;background:#e8efed;border-radius:6px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-l));border-radius:6px;width:0;transition:width 1s var(--ease)}
+.split-bar{display:flex;height:14px;border-radius:8px;overflow:hidden;margin:12px 0 8px}
+.split-bar span{display:block;height:100%}
+.split-profit{flex:80;background:var(--teal)}
+.split-cost{flex:20;background:#cbd5e1}
+.split-legend{display:flex;gap:16px;font-size:12px;color:var(--dim)}
+.split-legend b{color:var(--ink)}
+.mo-table{width:100%;font-size:13px;margin-top:4px}
+.mo-table th,.mo-table td{padding:8px 10px}
 .tl-i{transition:transform .3s var(--ease),box-shadow .3s}
 .tl-i:hover{transform:translateX(-4px);box-shadow:0 8px 24px rgba(15,118,110,.08)}
 .tl{display:grid;gap:10px}
@@ -91,7 +90,6 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
 .tl-p{font-weight:800;color:var(--teal);font-size:13px}
 .tl-t{font-weight:800;font-size:14px}
 .tl-d{font-size:12.5px;color:var(--dim);margin-top:2px}
-.footer{text-align:center;color:var(--dim);font-size:12px;margin-top:28px}
 @media (max-width:860px){
   .kpis,.grid-2,.grid-3{grid-template-columns:1fr}
   .tl-i{grid-template-columns:1fr}
@@ -102,18 +100,11 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
 <body>
 <div class="wrap">
   <header class="hero">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="brand">NOSTRI</div>
-    <h1>استراتيجية إضافة منتجات جديدة — ورقة تشغيلية</h1>
-    <p>تفاصيل H1 2026، المجمعات، التسعير، والجدول الزمني. لعرض المجلس المختصر (بدون تفصيل أصناف): <a href="nostri-board-brief.html" style="color:#5eead4;font-weight:700">nostri-board-brief.html</a></p>
-    <div class="meta">
-      <span class="chip">الفترة: 01/01–30/06/2026</span>
-      <span class="chip">7 منتجات في المحفظة</span>
-      <span class="chip">ترخيص الصنف: 6,000 ر.س</span>
-      <span class="chip">تسعير: هامش إجمالي 80%</span>
-      <span class="chip">تكلفة/حبة + MOQ من Astrix (تقريبي)</span>
+    <div class="hero-main">
+      <div class="brand">NOSTRI</div>
+      <div class="hero-tag">ورقة تشغيلية — توسعة المحفظة</div>
     </div>
+    <a class="hero-link" href="nostri-board-brief.html">عرض المجلس ←</a>
   </header>
 
   <nav class="nav">
@@ -152,8 +143,8 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
         </table>
       </div>
       <div class="box">
-        <h3>توزيع الإيراد حسب الصنف</h3>
-        <div class="chart-box"><div class="chart-ring"></div><canvas id="cProducts"></canvas></div>
+        <h3>حصة الإيراد حسب الصنف</h3>
+        <div class="bar-list" id="shareBars"></div>
       </div>
     </div>
 
@@ -274,26 +265,34 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
             <tr><td>استرداد الترخيص (84K)</td><td class="num">≈ 3.2 أيام ربح</td></tr>
           </tbody>
         </table>
-        <div class="chart-box" style="height:220px;margin-top:8px"><div class="chart-ring"></div><canvas id="cProfit"></canvas></div>
+        <div class="split-bar" aria-hidden="true"><span class="split-profit"></span><span class="split-cost"></span></div>
+        <div class="split-legend"><span><b>800,000</b> ربح (80%)</span><span><b>200,000</b> تكلفة (20%)</span></div>
       </div>
     </div>
   </section>
 
   <section id="roadmap">
     <h2><span class="sec-num">6</span> خارطة الطريق</h2>
-    <p class="sub">إطلاق على دفعات — التفاصيل التشغيلية مع الفريق التجاري.</p>
-    <div class="grid-2">
-      <div class="tl">
+    <p class="sub">إطلاق على دفعات — التفاصيل مع الإدارة التجارية.</p>
+    <div class="tl">
         <div class="tl-i"><div class="tl-p">الشهر 1–2</div><div><div class="tl-t">تحضير + ترخيص الدفعة A</div><div class="tl-d">عقد Astrix · SFDA · ترخيص 5 أصناف (30K) · خطة زيارات ص1/ص7/ص18 · عينات أطباء.</div></div></div>
         <div class="tl-i"><div class="tl-p">الشهر 3–4</div><div><div class="tl-t">دفعة A في السوق</div><div class="tl-d">Baby Shampoo · Mouth Wash HA · Vit C · Strepsils Menthol · Vit D. مستهدف تراكمي ~350K.</div></div></div>
         <div class="tl-i"><div class="tl-p">الشهر 5–7</div><div><div class="tl-t">دفعة B — وصفات المجمعات</div><div class="tl-d">Natal · Multivitamin · Mouth Wash H₂O₂ · Vit C+Zn · Zn Syrup. تركيز ص1 ثم ص18 ثم رفع ص7. مستهدف ~650K.</div></div></div>
         <div class="tl-i"><div class="tl-p">الشهر 8–10</div><div><div class="tl-t">دفعة C — إكمال المحفظة</div><div class="tl-d">Gel Edema · Whitening · Strepsils Honey · Vision. مستهدف ~850K.</div></div></div>
         <div class="tl-i"><div class="tl-p">الشهر 11–12</div><div><div class="tl-t">التسريع إلى 1M</div><div class="tl-d">حملات أونلاين + صب إيجنت + حوافز صيادلة → استقرار عند 1,000,000 ر.س/شهر.</div></div></div>
       </div>
-      <div class="box">
-        <h3>منحنى الوصول الشهري</h3>
-        <div class="chart-box" style="height:340px"><div class="chart-ring"></div><canvas id="cTimeline"></canvas></div>
-      </div>
+
+    <div class="box" style="margin-top:14px">
+      <h3>مستهدف المبيعات الشهري (المنتجات الجديدة)</h3>
+      <table class="mo-table">
+        <thead><tr><th>الشهر</th><th>مستهدف تراكمي (ر.س)</th></tr></thead>
+        <tbody>
+          <tr><td>3–4</td><td class="num">350,000</td></tr>
+          <tr><td>5–7</td><td class="num">650,000</td></tr>
+          <tr><td>8–10</td><td class="num">850,000</td></tr>
+          <tr class="row-t"><td>11–12</td><td class="num">1,000,000</td></tr>
+        </tbody>
+      </table>
     </div>
 
     <div style="overflow-x:auto;margin-top:14px">
@@ -334,11 +333,6 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
     </div>
   </section>
 
-  <footer class="footer">
-    <p><strong>NOSTRI</strong> — استراتيجية التوسع 14 منتجاً · مجموعة التعاون للاستثمار</p>
-    <p>مصدر الأرقام: تقارير مبيعات أصناف المورد 01/01–30/06/2026 (كل الفروع + ص1 + ص7 + ص18)</p>
-    <p style="margin-top:6px">سري — للعرض على مجلس الإدارة · يوليو 2026</p>
-  </footer>
 </div>
 
 <script>
@@ -367,6 +361,23 @@ productsH1.forEach((p,i)=>{
   </tr>`;
 });
 prodRows.innerHTML += `<tr class="row-t"><td colspan="3">الإجمالي (تقرير H1)</td><td class="num">6,466</td><td class="num">14,909</td><td class="num">340,645</td><td class="num">100%</td><td></td></tr>`;
+
+const barColors = ['#0f766e','#1d4ed8','#b45309','#7c3aed','#be123c','#0284c7'];
+const shareBars = document.getElementById('shareBars');
+const maxRev = Math.max(...productsH1.map(p => p.revenue));
+productsH1.forEach((p, i) => {
+  const pct = totalRev ? (p.revenue / totalRev * 100) : 0;
+  const w = maxRev ? (p.revenue / maxRev * 100) : 0;
+  const short = p.name.split(' ')[0];
+  shareBars.innerHTML += `<div class="bar-row">
+    <span class="lbl">${short}</span>
+    <div class="bar-track"><div class="bar-fill" style="background:${barColors[i % barColors.length]}" data-w="${w}"></div></div>
+    <span class="pct">${pct.toFixed(1)}%</span>
+  </div>`;
+});
+requestAnimationFrame(() => {
+  document.querySelectorAll('.bar-fill').forEach(el => { el.style.width = el.dataset.w + '%'; });
+});
 
 const cx = {
   reflex:{p1:29575,p7:7020,p18:5135,all:111930},
@@ -454,85 +465,6 @@ document.getElementById('sumTotalCash').textContent = fmt(tMoqCost + LICENSE_TOT
 const batchA = ['Baby Shampoo','Mouth Wash HA','Vitamin C','Strepsils Menthol','Vit D Drops'];
 const batchAMoq = newProducts.filter(p => batchA.includes(p.name)).reduce((s,p) => s + p.moqCost, 0);
 document.getElementById('batchAMoq').textContent = '~' + fmt(batchAMoq);
-
-function makeChart(id, config) {
-  const el = document.getElementById(id);
-  if (!el || typeof Chart === 'undefined') return null;
-  try {
-    const box = el.closest('.chart-box');
-    const chart = new Chart(el, config);
-    if (box) requestAnimationFrame(() => box.classList.add('ready'));
-    return chart;
-  } catch (err) {
-    console.warn('Chart failed:', id, err);
-    const box = el.closest('.chart-box');
-    if (box) {
-      box.classList.add('ready');
-      box.insertAdjacentHTML('beforeend', '<p style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:13px">تعذّر تحميل الرسم</p>');
-    }
-    return null;
-  }
-}
-
-Chart.defaults.font.family = "'IBM Plex Sans Arabic', sans-serif";
-const colors = ['#0f766e','#1d4ed8','#b45309','#7c3aed','#be123c','#0284c7','#059669'];
-
-if (typeof Chart !== 'undefined') {
-makeChart('cProducts', {
-  type:'doughnut',
-  data:{
-    labels: productsH1.map(p=>p.name.split(' ')[0]),
-    datasets:[{data:productsH1.map(p=>p.revenue), backgroundColor:colors, borderWidth:2, borderColor:'#fff', hoverOffset:10}]
-  },
-  options:{
-    responsive:true,
-    maintainAspectRatio:false,
-    cutout:'62%',
-    animation:{duration:1200},
-    plugins:{legend:{position:'bottom', labels:{font:{size:11}, usePointStyle:true, pointStyle:'circle'}}}
-  }
-});
-
-makeChart('cProfit', {
-  type:'doughnut',
-  data:{labels:['ربح مستهدف 80%','سقف تصنيع 20%'], datasets:[{data:[800000,200000], backgroundColor:['#0f766e','#e2e8f0'], borderWidth:2, borderColor:'#fff', hoverOffset:8}]},
-  options:{responsive:true, maintainAspectRatio:false, cutout:'58%', animation:{duration:1200}, plugins:{legend:{position:'bottom', labels:{usePointStyle:true}}}}
-});
-
-makeChart('cTimeline', {
-  type:'line',
-  data:{
-    labels:['ش1','ش2','ش3','ش4','ش5','ش6','ش7','ش8','ش9','ش10','ش11','ش12'],
-    datasets:[{
-      label:'مبيعات شهرية (ر.س)',
-      data:[0,0,350000,450000,550000,650000,750000,850000,900000,950000,980000,1000000],
-      borderColor:'#0f766e',
-      backgroundColor:'rgba(15,118,110,.15)',
-      fill:true,
-      tension:0.35,
-      pointRadius:4,
-      pointBackgroundColor:'#0f766e',
-      borderWidth:2,
-      pointHoverRadius:6,
-      pointBorderWidth:2,
-      pointBorderColor:'#fff'
-    }]
-  },
-  options:{
-    responsive:true,
-    maintainAspectRatio:false,
-    animation:{duration:1400},
-    plugins:{legend:{display:false}},
-    scales:{
-      y:{
-        beginAtZero:true,
-        max:1200000,
-        ticks:{callback:v=>(v/1000)+'K'}
-      }
-    }
-  }
-});
-}
 </script>
 </body>
 </html>
