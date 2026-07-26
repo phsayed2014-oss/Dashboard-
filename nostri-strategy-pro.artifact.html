@@ -132,27 +132,6 @@ td:first-child,td.name-cell{font-weight:600;color:var(--ink)}
 .channel-card p{font-size:12px;color:var(--dim);margin:0;line-height:1.5}
 .lead{font-size:15px;color:var(--ink);line-height:1.65;margin-bottom:12px}
 
-/* ===== Cover / intro screen ===== */
-.cover{position:fixed;inset:0;z-index:400;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;background:radial-gradient(ellipse at 30% 15%,#0a4a52 0%,#06332e 42%,#041512 100%);transition:opacity .8s var(--ease),visibility .8s}
-.cover::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 70% 75%,rgba(59,130,246,.12),transparent 42%),radial-gradient(circle at 25% 25%,rgba(20,184,166,.16),transparent 40%);pointer-events:none}
-.cover.hide{opacity:0;visibility:hidden}
-.cover-ring{position:absolute;border-radius:50%;border:1px solid rgba(94,234,212,.16);pointer-events:none}
-.cover-ring.a{width:min(70vw,520px);height:min(70vw,520px);animation:ringSpin 60s linear infinite}
-.cover-ring.b{width:min(88vw,680px);height:min(88vw,680px);opacity:.5;animation:ringSpin 90s linear infinite reverse}
-.cover-inner{position:relative;z-index:1;animation:coverUp .9s var(--ease) both}
-@keyframes coverUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-.cover-badge{font-size:12px;font-weight:700;letter-spacing:2px;color:#5eead4;text-transform:uppercase;margin-bottom:18px;opacity:.9}
-.cover-logo{font-family:'Alexandria',sans-serif;font-size:clamp(3rem,11vw,6rem);font-weight:900;letter-spacing:8px;color:#f0fdfa;line-height:1;text-shadow:0 6px 40px rgba(20,184,166,.35)}
-.cover-title{font-family:'Alexandria',sans-serif;font-size:clamp(1.15rem,3.4vw,1.7rem);font-weight:700;color:#ccfbf1;margin-top:16px}
-.cover-sub{font-size:clamp(.85rem,2.2vw,1rem);color:#8fbdb4;margin-top:10px;max-width:520px}
-.cover-meta{display:flex;gap:26px;justify-content:center;flex-wrap:wrap;margin-top:26px}
-.cover-meta .cm{text-align:center}
-.cover-meta .cm .n{font-family:'Alexandria',sans-serif;font-size:1.5rem;font-weight:900;color:#5eead4;line-height:1}
-.cover-meta .cm .t{font-size:11px;color:#8fbdb4;margin-top:5px}
-.cover-start{margin-top:34px;display:inline-flex;align-items:center;gap:10px;border:none;cursor:pointer;font-family:'IBM Plex Sans Arabic',sans-serif;font-weight:800;font-size:15px;color:#04211d;background:linear-gradient(135deg,#5eead4,#14b8a6);padding:15px 40px;border-radius:999px;box-shadow:0 10px 30px rgba(20,184,166,.4);transition:transform .3s var(--ease),box-shadow .3s}
-.cover-start:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 16px 40px rgba(20,184,166,.55)}
-.cover-hint{font-size:11px;color:#6f9a92;margin-top:16px}
-
 /* ===== hub↔node connectors ===== */
 .connectors{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:visible;width:100%;height:100%;opacity:0;transition:opacity .9s var(--ease)}
 .stage.ready .connectors{opacity:1}
@@ -240,24 +219,6 @@ td:first-child,td.name-cell{font-weight:600;color:var(--ink)}
 
 </style>
 
-
-<div class="cover" id="cover">
-  <div class="cover-ring a"></div>
-  <div class="cover-ring b"></div>
-  <div class="cover-inner">
-    <div class="cover-badge">الخطة الاستراتيجية · نصف 2026</div>
-    <div class="cover-logo">NOSTRI</div>
-    <div class="cover-title">استراتيجية توسيع المحفظة والوصول لمليون ريال شهرياً</div>
-    <div class="cover-sub">9 منتجات قائمة + 14 منتجاً جديداً · شبكة 49 صيدلية · برنامج المجمعات الطبية</div>
-    <div class="cover-meta">
-      <div class="cm"><div class="n">23</div><div class="t">منتج بعد التوسع</div></div>
-      <div class="cm"><div class="n">1,000,000</div><div class="t">مستهدف شهري (ر.س)</div></div>
-      <div class="cm"><div class="n">80%+</div><div class="t">هامش إجمالي</div></div>
-    </div>
-    <button class="cover-start" id="coverStart" type="button">ابدأ العرض <span aria-hidden="true">←</span></button>
-    <div class="cover-hint">اضغط على أي بند في المدار لعرض تفاصيله · للتنقل استخدم الأسهم</div>
-  </div>
-</div>
 
 <div class="topbar">
   <div class="brand">NOSTRI</div>
@@ -884,11 +845,7 @@ document.getElementById('overlay').onclick = closePanel;
 document.getElementById('prevBtn').onclick = () => openPanel((panelIndex - 1 + ORBIT_SECTIONS.length) % ORBIT_SECTIONS.length);
 document.getElementById('nextBtn').onclick = () => openPanel((panelIndex + 1) % ORBIT_SECTIONS.length);
 
-// Cover + export
-document.getElementById('coverStart').onclick = () => {
-  document.getElementById('cover').classList.add('hide');
-  document.getElementById('stage').classList.add('ready');
-};
+// Export
 document.getElementById('printBtn').onclick = () => window.print();
 
 // Keyboard: navigation + focus trap
@@ -911,5 +868,8 @@ document.addEventListener('keydown', e => {
 placeNodes();
 buildCardNav();
 window.addEventListener('resize', placeNodes);
-requestAnimationFrame(() => animateBarsIn(document.getElementById('content-store')));
+requestAnimationFrame(() => {
+  document.getElementById('stage').classList.add('ready');
+  animateBarsIn(document.getElementById('content-store'));
+});
 </script>
