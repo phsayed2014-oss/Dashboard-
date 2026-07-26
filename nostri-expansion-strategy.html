@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Nostri | استراتيجية إضافة 14 منتج — مبنية على مبيعات H1 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Alexandria:wght@600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f3f7f6; --ink:#0c1929; --dim:#4a5d73; --line:#d7e5e1;
+  --teal:#0f766e; --teal-l:#14b8a6; --teal-soft:#ecfdf5;
+  --blue:#1d4ed8; --blue-soft:#eff6ff; --amber:#b45309; --amber-soft:#fff7ed;
+  --rose:#be123c; --rose-soft:#fff1f2; --violet:#6d28d9; --card:#fff;
+  --shadow:0 10px 30px rgba(15,118,110,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans Arabic',sans-serif;background:
+  radial-gradient(1200px 500px at 100% -10%,rgba(20,184,166,.18),transparent 50%),
+  radial-gradient(900px 400px at 0% 0%,rgba(29,78,216,.10),transparent 45%),
+  var(--bg);color:var(--ink);line-height:1.7}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 18px 80px}
+.hero{
+  background:linear-gradient(135deg,#041512 0%,#0f766e 55%,#0e4d8a 100%);
+  color:#fff;border-radius:28px;padding:36px 32px;position:relative;overflow:hidden;
+  box-shadow:0 24px 60px rgba(4,21,18,.35);margin-bottom:22px;
+}
+.hero::after{
+  content:"";position:absolute;inset:auto -20% -40% 40%;height:220px;
+  background:radial-gradient(circle,rgba(94,234,212,.35),transparent 60%);pointer-events:none;
+}
+.brand{font-family:'Alexandria',sans-serif;font-weight:900;letter-spacing:3px;font-size:clamp(2rem,5vw,3rem)}
+.hero h1{font-family:'Alexandria',sans-serif;font-size:clamp(1.25rem,3.2vw,1.85rem);font-weight:800;margin-top:10px;max-width:20ch;line-height:1.35}
+.hero p{margin-top:10px;color:#99f6e4;max-width:62ch;font-size:14.5px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px;position:sticky;top:8px;z-index:20;background:rgba(243,247,246,.9);backdrop-filter:blur(10px);padding:8px 0}
+.nav a{text-decoration:none;color:var(--teal);background:#fff;border:1px solid var(--line);padding:8px 12px;border-radius:999px;font-size:12px;font-weight:700;box-shadow:var(--shadow)}
+.nav a:hover{background:var(--teal-soft)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+.kpi .v{font-family:'Alexandria',sans-serif;font-size:1.45rem;font-weight:800;color:var(--teal)}
+.kpi .l{font-size:12px;color:var(--dim);margin-top:4px}
+section{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px;margin-bottom:16px;box-shadow:var(--shadow)}
+section h2{font-family:'Alexandria',sans-serif;font-size:1.2rem;font-weight:800;color:var(--teal);margin-bottom:6px}
+section .sub{color:var(--dim);font-size:13px;margin-bottom:16px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.box{background:#f8fbfa;border:1px solid var(--line);border-radius:16px;padding:16px}
+.box h3{font-size:14px;font-weight:800;color:var(--teal);margin-bottom:8px}
+.box p,.box li{font-size:13px;color:var(--dim)}
+.box ul{padding-right:18px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--teal-soft);color:var(--teal);text-align:right;padding:10px 12px;border-bottom:2px solid #99f6e4;font-weight:700}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.num{direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
+.row-t{background:var(--teal-soft)!important;font-weight:800}
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700}
+.tag-g{background:#d1fae5;color:#065f46}.tag-b{background:#dbeafe;color:#1e40af}
+.tag-a{background:#ffedd5;color:#9a3412}.tag-r{background:#ffe4e6;color:#9f1239}
+.tag-p{background:#ede9fe;color:#5b21b6}
+.note{background:var(--amber-soft);border:1px solid #fdba74;border-radius:14px;padding:12px 14px;font-size:13px;color:#9a3412;margin:12px 0}
+.info{background:var(--blue-soft);border:1px solid #93c5fd;border-radius:14px;padding:12px 14px;font-size:13px;color:#1e3a8a;margin:12px 0}
+.ok{background:var(--teal-soft);border:1px solid #99f6e4;border-radius:14px;padding:12px 14px;font-size:13px;color:#065f46;margin:12px 0}
+.chart-box{height:280px;position:relative}
+.tl{display:grid;gap:10px}
+.tl-i{display:grid;grid-template-columns:110px 1fr;gap:12px;padding:12px;border-radius:14px;background:#fff;border:1px solid var(--line)}
+.tl-p{font-weight:800;color:var(--teal);font-size:13px}
+.tl-t{font-weight:800;font-size:14px}
+.tl-d{font-size:12.5px;color:var(--dim);margin-top:2px}
+.footer{text-align:center;color:var(--dim);font-size:12px;margin-top:28px}
+@media (max-width:860px){
+  .kpis,.grid-2,.grid-3{grid-template-columns:1fr}
+  .tl-i{grid-template-columns:1fr}
+  .hero{padding:26px 20px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="brand">NOSTRI</div>
+    <h1>استراتيجية إضافة 14 منتجاً جديداً</h1>
+    <p>خطة مبنية على مبيعات H1 2026 الفعلية لكل الصيدليات، مع تفصيل مجمعات ص1 · ص7 · ص18. المستهدف: مليون ريال شهرياً من المنتجات الجديدة.</p>
+    <div class="meta">
+      <span class="chip">الفترة: 01/01–30/06/2026</span>
+      <span class="chip">7 منتجات قائمة (6 نشطة + 1 غير متوفر)</span>
+      <span class="chip">ترخيص الصنف: 6,000 ر.س</span>
+      <span class="chip">تصنيع: يُحدَّد لاحقاً</span>
+    </div>
+  </header>
+
+  <nav class="nav">
+    <a href="#baseline">الوضع الحالي</a>
+    <a href="#complexes">المجمعات</a>
+    <a href="#insights">الدروس</a>
+    <a href="#products">الـ 14 منتج</a>
+    <a href="#finance">المالي</a>
+    <a href="#roadmap">الجدول</a>
+    <a href="#decisions">قرارات المجلس</a>
+  </nav>
+
+  <div class="kpis">
+    <div class="kpi"><div class="v">340.6K</div><div class="l">مبيعات الشبكة H1 (ر.س)</div></div>
+    <div class="kpi"><div class="v">126.4K</div><div class="l">مجمعات ص1+ص7+ص18 (37%)</div></div>
+    <div class="kpi"><div class="v">56.8K</div><div class="l">متوسط شهري للمحفظة الحالية</div></div>
+    <div class="kpi"><div class="v">1.0M</div><div class="l">مستهدف المنتجات الجديدة / شهر</div></div>
+  </div>
+
+  <section id="baseline">
+    <h2>1) الوضع الحالي — محفظة Nostri القائمة</h2>
+    <p class="sub">تقرير مبيعات أصناف المورد · شركة مصنع العناية الوحيدة · كل الصيدليات · 6 أصناف بمبيعات موثقة + صنف سابع غير متوفر.</p>
+
+    <div class="grid-2">
+      <div class="box">
+        <h3>ملخص الشبكة</h3>
+        <table>
+          <tbody>
+            <tr><td>إجمالي المبيعات (بسعر البيع)</td><td class="num">340,645</td></tr>
+            <tr><td>التكلفة</td><td class="num">40,344</td></tr>
+            <tr><td>هامش إجمالي تقريبي</td><td class="num">88.2%</td></tr>
+            <tr><td>الكمية المباعة</td><td class="num">6,466 وحدة</td></tr>
+            <tr><td>متوسط شهري</td><td class="num">56,774</td></tr>
+            <tr class="row-t"><td>فجوة المستهدف الجديد</td><td class="num">×17.6 من المتوسط الشهري الحالي</td></tr>
+          </tbody>
+        </table>
+        <div class="ok">الهامش الحالي مرتفع (~88%) — هدف 80% للـ 14 منتجاً الجديدة واقعي إذا بقيت تكلفة التصنيع قريبة من هيكل التكلفة الحالي.</div>
+      </div>
+      <div class="box">
+        <h3>توزيع الإيراد حسب الصنف</h3>
+        <div class="chart-box"><canvas id="cProducts"></canvas></div>
+      </div>
+    </div>
+
+    <div style="overflow-x:auto;margin-top:14px">
+      <table>
+        <thead>
+          <tr><th>#</th><th>الصنف</th><th>الكود</th><th>مباع</th><th>مخزون</th><th>إيراد H1</th><th>%</th><th>سعر وحدة</th><th>الدور الاستراتيجي</th></tr>
+        </thead>
+        <tbody id="prodRows"></tbody>
+      </table>
+    </div>
+    <div class="note">الصنف السابع في المحفظة: <strong>غير متوفر</strong> — لا يظهر في تقارير المبيعات. لا يُعتمد عليه في التوقعات حتى يعود للتوفر، ويُعامل كفرصة إعادة إطلاق لاحقاً.</div>
+  </section>
+
+  <section id="complexes">
+    <h2>2) مبيعات المجمعات — ص1 · ص7 · ص18</h2>
+    <p class="sub">هذه الصيدليات الثلاث هي قلب قناة الوصفات الطبية. أي توسع في المنتجات الجديدة يجب أن يبدأ منها.</p>
+
+    <div class="grid-3">
+      <div class="box" style="background:linear-gradient(180deg,#ecfdf5,#fff)">
+        <h3>ص1 — الأقوى</h3>
+        <div class="kpi" style="border:none;box-shadow:none;padding:0"><div class="v">68,805</div><div class="l">ر.س · 1,224 وحدة · 20.2% من الشبكة</div></div>
+        <p style="margin-top:8px">محرك REFLEX (29,575) + Nostriderm + Oracure. مركز إطلاق للمنتجات الطبية عالية القيمة.</p>
+        <span class="tag tag-g">أولوية قصوى</span>
+      </div>
+      <div class="box" style="background:linear-gradient(180deg,#fff7ed,#fff)">
+        <h3>ص7 — تحتاج تنشيط</h3>
+        <div class="kpi" style="border:none;box-shadow:none;padding:0"><div class="v">16,610</div><div class="l">ر.س · 287 وحدة · 4.9% من الشبكة</div></div>
+        <p style="margin-top:8px">أضعف المجمعات الثلاثة. فرصة رفع عبر زيارات أطباء، عينات، وحوافز صيادلة قبل إطلاق الدفعة الأولى.</p>
+        <span class="tag tag-a">فرصة نمو</span>
+      </div>
+      <div class="box" style="background:linear-gradient(180deg,#eff6ff,#fff)">
+        <h3>ص18 — تخصصية</h3>
+        <div class="kpi" style="border:none;box-shadow:none;padding:0"><div class="v">41,020</div><div class="l">ر.س · 663 وحدة · 12.0% من الشبكة</div></div>
+        <p style="margin-top:8px">قوية في INTIMO (16,800) و NOSTRIDERM (12,155). مناسبة لخط النساء / الجلدية / التجميل العلاجي.</p>
+        <span class="tag tag-b">تخصص نسائي وجلدي</span>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:14px">
+      <div class="box">
+        <h3>حصة المجمعات من الشبكة</h3>
+        <div class="chart-box"><canvas id="cComplexShare"></canvas></div>
+        <div class="info">المجمعات = <strong>126,435 ر.س (37.1%)</strong> من مبيعات H1. هذا يؤكد توزيع المستهدف الجديد: <strong>400K للمجمعات (40%)</strong>.</div>
+      </div>
+      <div class="box">
+        <h3>مبيعات كل مجمع حسب الصنف</h3>
+        <div class="chart-box"><canvas id="cComplexBars"></canvas></div>
+      </div>
+    </div>
+
+    <div style="overflow-x:auto;margin-top:14px">
+      <table>
+        <thead>
+          <tr><th>الصنف</th><th>ص1</th><th>ص7</th><th>ص18</th><th>مجموع المجمعات</th><th>% من الصنف في الشبكة</th></tr>
+        </thead>
+        <tbody id="cxRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="insights">
+    <h2>3) ماذا تعلّمنا من H1؟ — قواعد بناء الـ 14 منتج</h2>
+    <p class="sub">الاستراتيجية لا تبدأ من قائمة منتجات فارغة؛ بل من أنماط البيع المثبتة.</p>
+    <div class="grid-2">
+      <div class="box">
+        <h3>ما ينجح فعلاً</h3>
+        <ul>
+          <li><strong>REFLEX (32.9%)</strong> يثبت الطلب على المسكنات الموضعية / المساج — نوسّع بـ Gel for Edema وخطوط جلدية.</li>
+          <li><strong>ORACURE (18.5%)</strong> أعلى حجم وحدات — نوسّع صحة الفم (HA + H₂O₂) وأقراص الحلق.</li>
+          <li><strong>NOSTRICURE</strong> يثبت قبول جل الفم/التقرحات — يدعم خط Oro/Throat.</li>
+          <li><strong>INTIMO + NOSTRIDERM</strong> يتركزان في المجمعات (60%+) — مناسبان لوصفات النساء والجلدية.</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h3>فجوات يجب سدّها بالـ 14</h3>
+        <ul>
+          <li>لا فيتامينات / مكملات / حمل / أطفال في المحفظة الحالية → أكبر فرصة وصفات في المجمعات.</li>
+          <li>ص7 متأخرة → أي إطلاق جديد بدون تنشيطها يضيّع 40% من قناة المجمعات.</li>
+          <li>مخزون مرتفع نسبياً في Oracure/Intimo/Rizer → الإطلاق الجديد يُدار بدفعات صغيرة أولاً.</li>
+          <li>الصنف السابع غير المتوفر → لا يُحسب في الطاقة البيعية الحالية.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="products">
+    <h2>4) محفظة الـ 14 منتج الجديد — مربوطة بالبيانات</h2>
+    <p class="sub">7 قائمة + 14 جديد = 21 منتجاً. الأسماء تحت هوية Nostri. متوسط مستهدف ~71.4K ر.س/منتج/شهر.</p>
+
+    <div class="grid-3" style="margin-bottom:14px">
+      <div class="box"><h3>دفعة A — روافع مثبتة</h3><p>صحة الفم + حلق + Vit C/D — تعتمد على نجاح Oracure/Nostricure وسهولة البيع في الصيدليات والأونلاين.</p><span class="tag tag-g">شهر 3–4</span></div>
+      <div class="box"><h3>دفعة B — وصفات المجمعات</h3><p>Natal، Multivitamin، Vit C+Zn، Zn Syrup — تركّز على ص1/ص7/ص18 عبر الأطباء.</p><span class="tag tag-b">شهر 5–7</span></div>
+      <div class="box"><h3>دفعة C — تمديد الخطوط</h3><p>Gel Edema، Whitening، Vision، Strepsils Honey — توسّع Reflex/Derm وتغطية بصرية.</p><span class="tag tag-p">شهر 8–10</span></div>
+    </div>
+
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>#</th><th>التركيبة</th><th>الاسم التجاري</th><th>الفئة</th><th>مستهدف شهري</th><th>القناة الرئيسية</th><th>لماذا؟ (من بيانات H1)</th></tr>
+        </thead>
+        <tbody id="newRows"></tbody>
+        <tr class="row-t"><td colspan="4">إجمالي 14 منتج جديد</td><td class="num">1,000,000</td><td colspan="2">= 12,000,000 ر.س/سنة</td></tr>
+      </table>
+    </div>
+
+    <div class="grid-2" style="margin-top:14px">
+      <div class="box"><h3>توزيع المستهدف حسب الفئة</h3><div class="chart-box"><canvas id="cCats"></canvas></div></div>
+      <div class="box"><h3>توزيع القنوات المستهدف</h3><div class="chart-box"><canvas id="cChannels"></canvas></div>
+        <table style="margin-top:8px">
+          <tbody>
+            <tr><td>مجمعات (ص1+ص7+ص18 أولاً)</td><td class="num">400,000</td></tr>
+            <tr><td>صيدليات خارجية</td><td class="num">200,000</td></tr>
+            <tr><td>صب إيجنت</td><td class="num">200,000</td></tr>
+            <tr><td>أونلاين (نون مينتس + ترينديول)</td><td class="num">200,000</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="ok">
+      <strong>خطة المجمعات (400K):</strong>
+      ص1 تقود بـ ~45% من هدف المجمعات (~180K) لأنها بالفعل 54% من مبيعات المجمعات الحالية ·
+      ص18 ~35% (~140K) لخطوط النساء/الجلدية/التجميل ·
+      ص7 ~20% (~80K) كهدف تنشيط (ارتفع من قاعدة 16.6K في 6 أشهر).
+    </div>
+  </section>
+
+  <section id="finance">
+    <h2>5) الإطار المالي — ترخيص 6,000 ر.س وتصنيع لاحقاً</h2>
+    <p class="sub">تكلفة ترخيص الصنف مؤكدة. تكلفة التصنيع ستُدخل فور وصول عرض Astrix.</p>
+
+    <div class="grid-2">
+      <div class="box">
+        <h3>استثمار الإطلاق (مرة واحدة)</h3>
+        <table>
+          <tbody>
+            <tr><td>ترخيص صنف × 14</td><td class="num">6,000 × 14</td></tr>
+            <tr class="row-t"><td>إجمالي الترخيص</td><td class="num">84,000 ر.س</td></tr>
+            <tr><td>تسجيل قنوات (إن بقي سارياً)</td><td class="num">يُراجع تشغيلياً</td></tr>
+            <tr><td>تكلفة التصنيع / الوحدة</td><td class="num">لاحقاً ← Astrix</td></tr>
+          </tbody>
+        </table>
+        <div class="note">يُفضَّل دفع الترخيص على 3 دفعات مع الإطلاق المرحلي: 5 + 5 + 4 منتجات → سيولة أوضح (30K + 30K + 24K).</div>
+      </div>
+      <div class="box">
+        <h3>مستهدف التشغيل الشهري (عند الاكتمال)</h3>
+        <table>
+          <tbody>
+            <tr class="row-t"><td>مبيعات الـ 14 منتج</td><td class="num">1,000,000</td></tr>
+            <tr><td>ربح مستهدف ≥80%</td><td class="num">≥ 800,000</td></tr>
+            <tr><td>سقف تكلفة تصنيع للوصول لـ 80%</td><td class="num">≤ 200,000 / شهر</td></tr>
+            <tr><td>استرداد رسوم الترخيص (84K)</td><td class="num">≈ 3.2 أيام ربح عند 800K</td></tr>
+          </tbody>
+        </table>
+        <div class="chart-box" style="height:220px;margin-top:8px"><canvas id="cProfit"></canvas></div>
+      </div>
+    </div>
+
+    <div class="info" style="margin-top:12px">
+      <strong>سيناريوهات الحساسية (بعد وصول تكلفة التصنيع):</strong>
+      إذا كانت تكلفة التصنيع 15% → ربح 85% ·
+      إذا 20% → ربح 80% (المستهدف) ·
+      إذا 25% → ربح 75% (يحتاج مراجعة تسعير أو مزيج منتجات).
+      سيتم تحديث هذا القسم فور إرسال أرقام التصنيع.
+    </div>
+  </section>
+
+  <section id="roadmap">
+    <h2>6) خارطة الطريق — 12 شهراً</h2>
+    <p class="sub">إطلاق مرحلي مرتبط بنجاح المجمعات، مع تنشيط ص7 قبل الدفعة الثانية.</p>
+    <div class="grid-2">
+      <div class="tl">
+        <div class="tl-i"><div class="tl-p">الشهر 1–2</div><div><div class="tl-t">تحضير + ترخيص الدفعة A</div><div class="tl-d">عقد Astrix · SFDA · ترخيص 5 أصناف (30K) · خطة زيارات ص1/ص7/ص18 · عينات أطباء.</div></div></div>
+        <div class="tl-i"><div class="tl-p">الشهر 3–4</div><div><div class="tl-t">دفعة A في السوق</div><div class="tl-d">Baby Shampoo · Mouth Wash HA · Vit C · Strepsils Menthol · Vit D. مستهدف تراكمي ~350K.</div></div></div>
+        <div class="tl-i"><div class="tl-p">الشهر 5–7</div><div><div class="tl-t">دفعة B — وصفات المجمعات</div><div class="tl-d">Natal · Multivitamin · Mouth Wash H₂O₂ · Vit C+Zn · Zn Syrup. تركيز ص1 ثم ص18 ثم رفع ص7. مستهدف ~650K.</div></div></div>
+        <div class="tl-i"><div class="tl-p">الشهر 8–10</div><div><div class="tl-t">دفعة C — إكمال المحفظة</div><div class="tl-d">Gel Edema · Whitening · Strepsils Honey · Vision. مستهدف ~850K.</div></div></div>
+        <div class="tl-i"><div class="tl-p">الشهر 11–12</div><div><div class="tl-t">التسريع إلى 1M</div><div class="tl-d">حملات أونلاين + صب إيجنت + حوافز صيادلة → استقرار عند 1,000,000 ر.س/شهر.</div></div></div>
+      </div>
+      <div class="box">
+        <h3>منحنى الوصول الشهري</h3>
+        <div class="chart-box" style="height:340px"><canvas id="cTimeline"></canvas></div>
+      </div>
+    </div>
+
+    <div style="overflow-x:auto;margin-top:14px">
+      <table>
+        <thead><tr><th>KPI</th><th>المستهدف</th><th>التكرار</th><th>المسؤول</th></tr></thead>
+        <tbody>
+          <tr><td>مبيعات الـ 14 الجديدة</td><td class="num">1,000,000 / شهر</td><td>شهري</td><td>المدير التجاري</td></tr>
+          <tr><td>مبيعات المجمعات (ص1+ص7+ص18)</td><td class="num">400,000 / شهر</td><td>شهري</td><td>مدير المبيعات الطبية</td></tr>
+          <tr><td>حصة ص1 من هدف المجمعات</td><td class="num">≈ 180,000</td><td>شهري</td><td>مشرف المجمع</td></tr>
+          <tr><td>حصة ص18</td><td class="num">≈ 140,000</td><td>شهري</td><td>مشرف المجمع</td></tr>
+          <tr><td>حصة ص7 (تنشيط)</td><td class="num">≈ 80,000</td><td>شهري</td><td>مشرف المجمع</td></tr>
+          <tr><td>هامش الربح</td><td class="num">≥ 80%</td><td>شهري</td><td>المدير المالي</td></tr>
+          <tr><td>ترخيص SFDA / تسجيل</td><td class="num">14/14</td><td>عند الإنجاز</td><td>الشؤون التنظيمية</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="decisions">
+    <h2>7) التوصيات وقرارات مجلس الإدارة</h2>
+    <div class="grid-2">
+      <div class="box" style="background:var(--teal-soft);border-color:#99f6e4">
+        <h3>يُطلب اعتماده الآن</h3>
+        <ul>
+          <li>اعتماد توسيع المحفظة: 7 + 14 = 21 منتجاً</li>
+          <li>اعتماد مستهدف 1,000,000 ر.س/شهر للـ 14 الجديدة بتوزيع 400-200-200-200</li>
+          <li>اعتماد ميزانية ترخيص الأصناف: <strong>84,000 ر.س</strong> (6,000 × 14) على 3 دفعات</li>
+          <li>تفويض التفاوض وتوقيع عقد التصنيع مع Astrix</li>
+          <li>اعتماد برنامج تنشيط ص7 قبل الدفعة B</li>
+          <li>دعم الإدارة التجارية للتواصل المباشر مع أطباء ص1/ص7/ص18</li>
+        </ul>
+      </div>
+      <div class="box" style="background:var(--blue-soft);border-color:#93c5fd">
+        <h3>مؤجّل — بانتظار بياناتك</h3>
+        <ul>
+          <li>⏳ تكلفة تصنيع كل صنف من Astrix (ستُرسل لاحقاً)</li>
+          <li>⏳ تسعير البيع النهائي لكل SKU بعد التكلفة</li>
+          <li>⏳ تحديد/إعادة إطلاق الصنف السابع غير المتوفر</li>
+          <li>⏳ الميزانية التسويقية التفصيلية للحملات</li>
+        </ul>
+        <div class="note" style="margin-top:10px;margin-bottom:0">بعد وصول تكلفة التصنيع سأُحدّث نموذج الربحية سيناريو بسوق سيناريو وأثبت الأسعار المقترحة لكل منتج.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p><strong>NOSTRI</strong> — استراتيجية التوسع 14 منتجاً · مجموعة التعاون للاستثمار</p>
+    <p>مصدر الأرقام: تقارير مبيعات أصناف المورد 01/01–30/06/2026 (كل الفروع + ص1 + ص7 + ص18)</p>
+    <p style="margin-top:6px">سري — للعرض على مجلس الإدارة · يوليو 2026</p>
+  </footer>
+</div>
+
+<script>
+const fmt = n => Math.round(n).toLocaleString('ar-SA');
+const productsH1 = [
+  {name:'REFLEX MASSAGE Emulgel 100ml', code:'1-02-066-034', sold:1722, stock:974, revenue:111930, unit:65, role:'محرك الإيراد — توسعة موضعية/جلدية'},
+  {name:'ORACURE Mouth Wash 300ml', code:'1-12-109-038', sold:1797, stock:5091, revenue:62895, unit:35, role:'أعلى حجم — توسعة صحة الفم'},
+  {name:'NOSTRICURE Oral Gel 30ml', code:'1-09-066-046', sold:1157, stock:815, revenue:46280, unit:40, role:'يثبت قبول جل الفم'},
+  {name:'INTIMO Vaginal Wash 250ml', code:'1-14-166-032', sold:612, stock:3602, revenue:45900, unit:75, role:'قوي في المجمعات (خصوصاً ص18)'},
+  {name:'NOSTRIDERM Ointment 50ml', code:'1-09-118-050', sold:592, stock:1487, revenue:38480, unit:65, role:'جلدي وصفي — ص1 وص18'},
+  {name:'RIZER Apply Cream 75ml', code:'2-09-031-483', sold:586, stock:2940, revenue:35160, unit:60, role:'خط جلدي مساند'},
+  {name:'الصنف السابع', code:'—', sold:0, stock:0, revenue:0, unit:0, role:'غير متوفر — خارج التوقعات حالياً', unavailable:true}
+];
+const totalRev = 340645;
+const prodRows = document.getElementById('prodRows');
+productsH1.forEach((p,i)=>{
+  const pct = totalRev ? (p.revenue/totalRev*100) : 0;
+  prodRows.innerHTML += `<tr>
+    <td>${i+1}</td>
+    <td>${p.name}${p.unavailable?' <span class="tag tag-r">غير متوفر</span>':''}</td>
+    <td class="num">${p.code}</td>
+    <td class="num">${fmt(p.sold)}</td>
+    <td class="num">${fmt(p.stock)}</td>
+    <td class="num">${fmt(p.revenue)}</td>
+    <td class="num">${pct.toFixed(1)}%</td>
+    <td class="num">${p.unit||'—'}</td>
+    <td>${p.role}</td>
+  </tr>`;
+});
+prodRows.innerHTML += `<tr class="row-t"><td colspan="3">الإجمالي (6 أصناف نشطة)</td><td class="num">6,466</td><td class="num">14,909</td><td class="num">340,645</td><td class="num">100%</td><td></td><td></td></tr>`;
+
+const cx = {
+  reflex:{p1:29575,p7:7020,p18:5135,all:111930},
+  oracure:{p1:9380,p7:2065,p18:2870,all:62895},
+  nostricure:{p1:4880,p7:1120,p18:2800,all:46280},
+  intimo:{p1:6750,p7:4200,p18:16800,all:45900},
+  nostriderm:{p1:11440,p7:585,p18:12155,all:38480},
+  rizer:{p1:6780,p7:1620,p18:1260,all:35160}
+};
+const labels = {reflex:'REFLEX',oracure:'ORACURE',nostricure:'NOSTRICURE',intimo:'INTIMO',nostriderm:'NOSTRIDERM',rizer:'RIZER'};
+const cxRows = document.getElementById('cxRows');
+let s1=0,s7=0,s18=0,st=0;
+Object.keys(cx).forEach(k=>{
+  const r=cx[k]; const t=r.p1+r.p7+r.p18; s1+=r.p1;s7+=r.p7;s18+=r.p18;st+=t;
+  cxRows.innerHTML += `<tr>
+    <td>${labels[k]}</td>
+    <td class="num">${fmt(r.p1)}</td>
+    <td class="num">${fmt(r.p7)}</td>
+    <td class="num">${fmt(r.p18)}</td>
+    <td class="num">${fmt(t)}</td>
+    <td class="num">${(t/r.all*100).toFixed(1)}%</td>
+  </tr>`;
+});
+cxRows.innerHTML += `<tr class="row-t"><td>الإجمالي</td><td class="num">${fmt(s1)}</td><td class="num">${fmt(s7)}</td><td class="num">${fmt(s18)}</td><td class="num">${fmt(st)}</td><td class="num">37.1% من الشبكة</td></tr>`;
+
+const newProducts = [
+  {name:'Baby Shampoo', brand:'نوستري بيبي جينتل', cat:'عناية أطفال', monthly:65000, channel:'صيدليات + أونلاين', why:'فجوة أطفال غير مغطاة حالياً'},
+  {name:'Gel for Edema', brand:'نوستري ديفلا جل', cat:'جلدية / وذمة', monthly:70000, channel:'مجمعات (ص1 أولاً)', why:'امتداد لنجاح REFLEX الموضعي'},
+  {name:'Multivitamin', brand:'نوستري فايتال ماكس', cat:'فيتامينات', monthly:85000, channel:'مجمعات + صيدليات', why:'فجوة وصفات عالية في المجمعات'},
+  {name:'Natal — Prenatal', brand:'نوستري ناتال', cat:'فيتامينات الحمل', monthly:90000, channel:'مجمعات (ص18/ص1)', why:'وصفات نساء — ص18 قوية في Intimo'},
+  {name:'Mouth Wash HA', brand:'نوستري أورو HA', cat:'صحة الفم', monthly:70000, channel:'صيدليات + أونلاين', why:'امتداد ORACURE الأعلى حجماً'},
+  {name:'Mouth Wash H₂O₂', brand:'نوستري أورو بيور', cat:'صحة الفم', monthly:65000, channel:'صيدليات + أونلاين', why:'تنويع خط الفم'},
+  {name:'Whitening Cream', brand:'نوستري لومينا', cat:'تجميل علاجي', monthly:80000, channel:'صيدليات + أونلاين', why:'امتداد جلدي بعد Nostriderm/Rizer'},
+  {name:'Vitamin C', brand:'نوستري سي أكتيف', cat:'فيتامينات', monthly:60000, channel:'مجمعات + صيدليات', why:'مكمل سريع الدوران'},
+  {name:'Vitamin C + Zn', brand:'نوستري سي زدن شيلد', cat:'مناعة', monthly:70000, channel:'مجمعات طبية', why:'وصفات مناعة في ص1'},
+  {name:'Strepsils Menthol', brand:'نوستري ثروت كول', cat:'الحلق', monthly:75000, channel:'صيدليات + صب إيجنت', why:'قرب وظيفي من Nostricure/Oro'},
+  {name:'Strepsils Honey & Lemon', brand:'نوستري ثروت سوث', cat:'الحلق', monthly:70000, channel:'صيدليات + صب إيجنت', why:'تنويع نكهات لزيادة التكرار'},
+  {name:'Zn Syrup', brand:'نوستري زنك بلس', cat:'مكملات أطفال', monthly:65000, channel:'مجمعات + صيدليات', why:'أطفال + مجمعات'},
+  {name:'Vit D Drops', brand:'نوستري دي دروبس', cat:'فيتامينات أطفال', monthly:60000, channel:'مجمعات طبية', why:'وصفات أطفال/نساء'},
+  {name:'Vision Tablet', brand:'نوستري فيجن جارد', cat:'صحة العين', monthly:75000, channel:'مجمعات + صيدليات', why:'فئة جديدة عالية القيمة'}
+];
+const newRows = document.getElementById('newRows');
+newProducts.forEach((p,i)=>{
+  newRows.innerHTML += `<tr>
+    <td>${i+1}</td><td>${p.name}</td><td><strong>${p.brand}</strong></td><td>${p.cat}</td>
+    <td class="num">${fmt(p.monthly)}</td><td>${p.channel}</td><td>${p.why}</td>
+  </tr>`;
+});
+
+Chart.defaults.font.family = "'IBM Plex Sans Arabic', sans-serif";
+const colors = ['#0f766e','#1d4ed8','#b45309','#7c3aed','#be123c','#0284c7','#059669'];
+
+new Chart(document.getElementById('cProducts'), {
+  type:'doughnut',
+  data:{
+    labels: productsH1.filter(p=>!p.unavailable).map(p=>p.name.split(' ')[0]),
+    datasets:[{data:productsH1.filter(p=>!p.unavailable).map(p=>p.revenue), backgroundColor:colors, borderWidth:2, borderColor:'#fff'}]
+  },
+  options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{font:{size:11}}}}}
+});
+
+new Chart(document.getElementById('cComplexShare'), {
+  type:'doughnut',
+  data:{
+    labels:['ص1 68.8K','ص18 41.0K','ص7 16.6K','باقي الصيدليات 214.2K'],
+    datasets:[{data:[68805,41020,16610,214210], backgroundColor:['#0f766e','#1d4ed8','#b45309','#cbd5e1'], borderWidth:2, borderColor:'#fff'}]
+  },
+  options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{font:{size:11}}}}}
+});
+
+new Chart(document.getElementById('cComplexBars'), {
+  type:'bar',
+  data:{
+    labels:Object.values(labels),
+    datasets:[
+      {label:'ص1', data:Object.keys(cx).map(k=>cx[k].p1), backgroundColor:'#0f766e', borderRadius:6},
+      {label:'ص7', data:Object.keys(cx).map(k=>cx[k].p7), backgroundColor:'#b45309', borderRadius:6},
+      {label:'ص18', data:Object.keys(cx).map(k=>cx[k].p18), backgroundColor:'#1d4ed8', borderRadius:6}
+    ]
+  },
+  options:{responsive:true, maintainAspectRatio:false, scales:{y:{ticks:{callback:v=>(v/1000)+'K'}}}}
+});
+
+const catMap = {};
+newProducts.forEach(p => catMap[p.cat]=(catMap[p.cat]||0)+p.monthly);
+new Chart(document.getElementById('cCats'), {
+  type:'bar',
+  data:{labels:Object.keys(catMap), datasets:[{data:Object.values(catMap), backgroundColor:colors, borderRadius:6}]},
+  options:{responsive:true, maintainAspectRatio:false, indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{ticks:{callback:v=>(v/1000)+'K'}}}}
+});
+
+new Chart(document.getElementById('cChannels'), {
+  type:'doughnut',
+  data:{labels:['مجمعات 400K','صيدليات 200K','صب 200K','أونلاين 200K'], datasets:[{data:[400000,200000,200000,200000], backgroundColor:colors, borderWidth:2, borderColor:'#fff'}]},
+  options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{font:{size:11}}}}}
+});
+
+new Chart(document.getElementById('cProfit'), {
+  type:'doughnut',
+  data:{labels:['ربح مستهدف 80%','سقف تصنيع 20%'], datasets:[{data:[800000,200000], backgroundColor:['#0f766e','#e2e8f0'], borderWidth:2, borderColor:'#fff'}]},
+  options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}}
+});
+
+new Chart(document.getElementById('cTimeline'), {
+  type:'line',
+  data:{
+    labels:['ش1','ش2','ش3','ش4','ش5','ش6','ش7','ش8','ش9','ش10','ش11','ش12'],
+    datasets:[{
+      data:[0,0,350000,450000,550000,650000,750000,850000,900000,950000,980000,1000000],
+      borderColor:'#0f766e', backgroundColor:'rgba(15,118,110,.12)', fill:true, tension:.35, pointRadius:3
+    }]
+  },
+  options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>(v/1000)+'K'}, max:1200000}}}
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+{
+  "period": "2026-01-01 to 2026-06-30",
+  "supplier": "شركة مصنع العناية الوحيدة للصناعات الدوائية",
+  "supplierCode": "107301",
+  "portfolio": {
+    "totalSkus": 7,
+    "activeWithSales": 6,
+    "unavailable": 1,
+    "unavailableNote": "الصنف السابع ضمن المحفظة وغير متوفر / بلا مبيعات في الفترة"
+  },
+  "allPharmacies": {
+    "revenue": 340645.18,
+    "cost": 40344.25,
+    "soldQty": 6466,
+    "stockQty": 14909,
+    "grossMarginPct": 88.16,
+    "monthlyAvg": 56774.2
+  },
+  "products": [
+    {"key": "reflex", "name": "REFLEX MASSAGE Emulgel 100ml", "code": "1-02-066-034", "sold": 1722, "stock": 974, "revenue": 111930, "cost": 10332, "unitPrice": 65},
+    {"key": "oracure", "name": "ORACURE Mouth Wash 300ml", "code": "1-12-109-038", "sold": 1797, "stock": 5091, "revenue": 62895.18, "cost": 12129.75, "unitPrice": 35},
+    {"key": "nostricure", "name": "NOSTRICURE Oral Gel 30ml", "code": "1-09-066-046", "sold": 1157, "stock": 815, "revenue": 46280, "cost": 5785, "unitPrice": 40},
+    {"key": "intimo", "name": "INTIMO Vaginal Wash 250ml", "code": "1-14-166-032", "sold": 612, "stock": 3602, "revenue": 45900, "cost": 4590, "unitPrice": 75},
+    {"key": "nostriderm", "name": "NOSTRIDERM Ointment 50ml", "code": "1-09-118-050", "sold": 592, "stock": 1487, "revenue": 38480, "cost": 3552, "unitPrice": 65},
+    {"key": "rizer", "name": "RIZER Apply Cream 75ml", "code": "2-09-031-483", "sold": 586, "stock": 2940, "revenue": 35160, "cost": 3955.5, "unitPrice": 60}
+  ],
+  "complexes": {
+    "p1": {"label": "ص1", "revenue": 68805.027, "sold": 1224, "shareOfNetwork": 0.202},
+    "p7": {"label": "ص7", "revenue": 16610.006, "sold": 287, "shareOfNetwork": 0.049},
+    "p18": {"label": "ص18", "revenue": 41020.008, "sold": 663, "shareOfNetwork": 0.120},
+    "total": {"revenue": 126435.041, "sold": 2174, "shareOfNetwork": 0.371},
+    "otherPharmacies": {"revenue": 214210.139, "shareOfNetwork": 0.629}
+  },
+  "complexesByProduct": {
+    "reflex": {"p1": 29575, "p7": 7020, "p18": 5135, "total": 41730},
+    "oracure": {"p1": 9380.027, "p7": 2065.006, "p18": 2870.008, "total": 14315.041},
+    "nostricure": {"p1": 4880, "p7": 1120, "p18": 2800, "total": 8800},
+    "intimo": {"p1": 6750, "p7": 4200, "p18": 16800, "total": 27750},
+    "nostriderm": {"p1": 11440, "p7": 585, "p18": 12155, "total": 24180},
+    "rizer": {"p1": 6780, "p7": 1620, "p18": 1260, "total": 9660}
+  },
+  "licensing": {
+    "perSkuSar": 6000,
+    "newSkus": 14,
+    "totalSar": 84000,
+    "note": "تكلفة ترخيص الصنف — مرة واحدة لكل منتج جديد"
+  },
+  "manufacturingCost": null,
+  "target": {
+    "newProductsMonthlyRevenue": 1000000,
+    "channels": {"complexes": 400000, "externalPharmacies": 200000, "subAgent": 200000, "online": 200000},
+    "targetMarginPct": 80
+  }
+}
