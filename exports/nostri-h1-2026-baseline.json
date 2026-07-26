@@ -46,6 +46,31 @@
     "note": "تكلفة ترخيص الصنف — مرة واحدة لكل منتج جديد"
   },
   "manufacturingCost": null,
+  "manufacturingEstimate": {
+    "marginGrossPct": 80,
+    "formula": "sellPrice = unitCost / (1 - marginGrossPct)",
+    "licensePerSkuSar": 6000,
+    "licenseTotalSar": 84000,
+    "totalMoqCostSar": 640000,
+    "totalMoqRevenueAtSellPriceSar": 3200000,
+    "products": [
+      {"sku": "Baby Shampoo", "unitCost": 10, "moq": 3000, "sellPrice": 50, "profitPerUnit": 40},
+      {"sku": "Gel for Edema", "unitCost": 10, "moq": 5000, "sellPrice": 50, "profitPerUnit": 40},
+      {"sku": "Multivitamin", "unitCost": 10, "moq": 3000, "sellPrice": 50, "profitPerUnit": 40},
+      {"sku": "Mouth Wash HA", "unitCost": 10, "moq": 5000, "sellPrice": 50, "profitPerUnit": 40},
+      {"sku": "Mouth Wash H2O2", "unitCost": 10, "moq": 3000, "sellPrice": 50, "profitPerUnit": 40},
+      {"sku": "Whitening Cream", "unitCost": 15, "moq": 3000, "sellPrice": 75, "profitPerUnit": 60},
+      {"sku": "Vitamin C", "unitCost": 10, "moq": 5000, "sellPrice": 50, "profitPerUnit": 40},
+      {"sku": "Vitamin C + Zn", "unitCost": 11, "moq": 5000, "sellPrice": 55, "profitPerUnit": 44},
+      {"sku": "Strepsils Menthol", "unitCost": 12, "moq": 5000, "sellPrice": 60, "profitPerUnit": 48},
+      {"sku": "Strepsils Honey & Lemon", "unitCost": 12, "moq": 5000, "sellPrice": 60, "profitPerUnit": 48},
+      {"sku": "Zn Syrup", "unitCost": 15, "moq": 3000, "sellPrice": 75, "profitPerUnit": 60},
+      {"sku": "Vit D Drops", "unitCost": 15, "moq": 3000, "sellPrice": 75, "profitPerUnit": 60},
+      {"sku": "Vision Tablet", "unitCost": 15, "moq": 3000, "sellPrice": 75, "profitPerUnit": 60},
+      {"sku": "Natal / Pregnatabs", "unitCost": 15, "moq": 3000, "sellPrice": 75, "profitPerUnit": 60}
+    ],
+    "note": "Astrix approximate costs — subject to contract"
+  },
   "target": {
     "newProductsMonthlyRevenue": 1000000,
     "channels": {"complexes": 400000, "externalPharmacies": 200000, "subAgent": 200000, "online": 200000},
