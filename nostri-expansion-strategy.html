@@ -14,33 +14,44 @@
   --rose:#be123c; --rose-soft:#fff1f2; --violet:#6d28d9; --card:#fff;
   --shadow:0 10px 30px rgba(15,118,110,.08);
   --ease:cubic-bezier(.22,1,.36,1);
+  --gold:#e8c468; --gold-dim:#b8943a;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{font-family:'IBM Plex Sans Arabic',sans-serif;background:radial-gradient(ellipse at 30% 15%,#0a4a52 0%,#06332e 42%,#041512 100%);color:#f0fdfa;line-height:1.7;overflow:hidden}
+body{font-family:'IBM Plex Sans Arabic',sans-serif;background:#050807 radial-gradient(ellipse at 50% 35%,#0a2a28 0%,#050807 55%,#000 100%);color:#fff;line-height:1.7;overflow:hidden}
 #content-store{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
 #content-store section{background:transparent;border:none;box-shadow:none;padding:0;margin:0}
 .stage{position:relative;width:100%;height:100%;overflow:hidden}
-.stage-bg{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 70% 75%,rgba(59,130,246,.1),transparent 42%),radial-gradient(circle at 25% 25%,rgba(20,184,166,.14),transparent 38%)}
-.orbit-ring{position:absolute;left:50%;top:50%;border-radius:50%;border:1px solid rgba(94,234,212,.18);transform:translate(-50%,-50%);pointer-events:none}
-.orbit-ring.r1{width:min(76vw,600px);height:min(76vw,600px);animation:ringSpin 70s linear infinite}
-.orbit-ring.r2{width:min(90vw,720px);height:min(90vw,720px);opacity:.45;animation:ringSpin 95s linear infinite reverse}
+.stage-bg{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 42%,rgba(20,184,166,.08),transparent 50%)}
+.orbit-glass{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(94vw,860px);height:min(72vh,600px);z-index:12;border-radius:26px;background:rgba(12,36,34,.42);border:1px solid rgba(94,234,212,.22);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 28px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.06)}
+body.layout-compass .orbit-glass{display:none}
+.orbit-arrows{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.orbit-arrows path{fill:none;stroke:rgba(94,234,212,.35);stroke-width:1.2;stroke-dasharray:5 7}
+.orbit-arrows marker path{fill:rgba(148,210,200,.7);stroke:none}
+.orbit-ring{position:absolute;left:50%;top:50%;border-radius:50%;border:1px solid rgba(94,234,212,.12);transform:translate(-50%,-50%);pointer-events:none;z-index:0}
+.orbit-ring.r1{width:min(58%,520px);height:min(58%,520px);aspect-ratio:1}
+.orbit-ring.r2{display:none}
 @keyframes ringSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.topbar .brand-sub{display:block;font-size:9px;font-weight:600;color:var(--gold);letter-spacing:1px;margin-top:2px}
+.topbar .brand-wrap{display:flex;flex-direction:column;align-items:flex-start}
+.topbar .brand-line{display:flex;align-items:center;gap:8px}
+.topbar .goal-pill{font-size:10px;font-weight:700;color:#a7f3d0;background:rgba(15,118,110,.35);border:1px solid rgba(94,234,212,.35);padding:4px 10px;border-radius:999px}
 .topbar{position:absolute;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:linear-gradient(180deg,rgba(4,21,18,.75),transparent)}
 .topbar .brand{font-family:'Alexandria',sans-serif;font-weight:900;letter-spacing:3px;font-size:1.05rem}
 .topbar .hint{font-size:11px;color:#94b8b0}
 .topbar a,.topbar button{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:#fff;padding:7px 12px;border-radius:10px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;text-decoration:none;margin-left:6px}
 .topbar a:hover,.topbar button:hover{background:rgba(20,184,166,.28)}
-.hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(240px,38vw);height:min(240px,38vw);border-radius:50%;background:linear-gradient(145deg,#0f766e,#115e59 55%,#0e4d8a);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:10;box-shadow:0 0 0 10px rgba(20,184,166,.1),0 0 50px rgba(20,184,166,.28),0 16px 48px rgba(0,0,0,.35)}
-.hub::before{content:'';position:absolute;inset:-14px;border-radius:50%;border:1px dashed rgba(94,234,212,.28);animation:ringSpin 50s linear infinite}
-.hub-logo{font-family:'Alexandria',sans-serif;font-size:clamp(2.25rem,6vw,3.25rem);font-weight:900;letter-spacing:5px;position:relative;z-index:1;line-height:1}
-.hub-q{font-size:12px;font-weight:700;margin-top:6px;line-height:1.4;color:#ccfbf1;position:relative;z-index:1}
+.hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(200px,32vw);height:min(200px,32vw);border-radius:50%;background:linear-gradient(145deg,rgba(15,118,110,.85),rgba(14,78,120,.9));display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:10;box-shadow:0 0 0 12px rgba(20,184,166,.1),0 0 48px rgba(20,184,166,.25);border:1px solid rgba(167,243,208,.35);backdrop-filter:blur(8px)}
+.hub::before{display:none}
+.hub-logo{font-family:'Alexandria',sans-serif;font-size:clamp(1.75rem,5vw,2.5rem);font-weight:900;letter-spacing:5px;position:relative;z-index:1;line-height:1;color:#fff}
+.hub-q{font-size:11px;font-weight:700;margin-top:8px;line-height:1.4;color:var(--gold);position:relative;z-index:1;direction:ltr}
 .nodes{position:absolute;inset:0;z-index:20}
-.node{position:absolute;width:92px;height:92px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 30%,rgba(20,184,166,.35),rgba(8,40,38,.92) 65%);border:2px solid rgba(94,234,212,.45);backdrop-filter:blur(10px);cursor:pointer;text-align:center;padding:8px;transition:transform .35s var(--ease),box-shadow .35s,border-color .35s;box-shadow:0 10px 28px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.12)}
-.node::after{content:'';position:absolute;inset:5px;border-radius:50%;border:1px solid rgba(94,234,212,.12);pointer-events:none}
-.node:hover,.node.active{transform:scale(1.12);border-color:#a7f3d0;background:radial-gradient(circle at 30% 25%,rgba(94,234,212,.45),#0f766e 70%);box-shadow:0 0 0 6px rgba(20,184,166,.2),0 14px 36px rgba(20,184,166,.35)}
-.node .n-num{font-family:'Alexandria',sans-serif;font-size:.95rem;font-weight:900;color:#ecfdf5;line-height:1;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,rgba(15,118,110,.9),rgba(14,116,144,.85));border:1px solid rgba(167,243,208,.55);box-shadow:0 2px 8px rgba(0,0,0,.25);position:relative;z-index:1}
-.node .n-label{font-size:10px;font-weight:700;margin-top:5px;line-height:1.15;color:#e0f2f1;position:relative;z-index:1}
+.node{position:absolute;width:96px;height:96px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,40,38,.55);border:1px solid rgba(94,234,212,.35);backdrop-filter:blur(12px);cursor:pointer;text-align:center;padding:8px 6px;transition:transform .4s var(--ease),box-shadow .4s,border-color .35s;box-shadow:0 8px 28px rgba(0,0,0,.4)}
+.node:hover,.node.active{transform:scale(1.14);border-color:rgba(232,196,104,.65);box-shadow:0 0 0 5px rgba(232,196,104,.12),0 16px 40px rgba(15,118,110,.35)}
+.node.active{background:rgba(15,118,110,.55)}
+.node .n-ico{font-size:14px;line-height:1;margin-bottom:2px;opacity:.9}
+.node .n-num{font-family:'Alexandria',sans-serif;font-size:1rem;font-weight:900;color:var(--gold);line-height:1;text-shadow:0 1px 8px rgba(0,0,0,.4)}
+.node .n-label{font-size:9.5px;font-weight:700;margin-top:4px;line-height:1.15;color:#fff;position:relative;z-index:1}
 .kpi-strip{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:15;flex-wrap:wrap;justify-content:center;max-width:96vw}
 .kpi-chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px);border-radius:12px;padding:8px 14px;text-align:center;min-width:88px}
 .kpi-chip .v{font-family:'Alexandria',sans-serif;font-size:1.05rem;font-weight:800;color:#5eead4}
@@ -132,9 +143,8 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
 .channel-card p{font-size:12px;color:var(--dim);margin:0;line-height:1.5}
 .lead{font-size:15px;color:var(--ink);line-height:1.65;margin-bottom:12px}
 /* ——— عرض البوصلة ——— */
-body.layout-compass .orbit-ring,
-body.layout-compass .hub,
-body.layout-compass .nodes{display:none}
+body.layout-compass .orbit-glass,
+body.layout-compass .orbit-ring{display:none}
 .compass-ui{display:none;position:absolute;inset:52px 16px 72px;z-index:18;align-items:center;justify-content:center;padding:8px}
 body.layout-compass .compass-ui{display:flex}
 .compass-card{width:min(960px,96vw);height:min(540px,calc(100vh - 140px));background:linear-gradient(160deg,rgba(24,32,30,.96),rgba(12,18,17,.98));border:1px solid rgba(148,184,176,.2);border-radius:22px;box-shadow:0 24px 64px rgba(0,0,0,.45);display:grid;grid-template-columns:minmax(168px,22%) 1fr;gap:0;overflow:hidden}
@@ -184,15 +194,36 @@ body.layout-compass .compass-ui{display:flex}
   <div class="orbit-ring r1"></div>
   <div class="orbit-ring r2"></div>
   <div class="topbar">
-    <div class="brand">NOSTRI</div>
-    <div class="hint" id="topHint">اضغط بنداً لفتح التفاصيل · Esc إغلاق</div>
+    <div class="brand-wrap">
+      <div class="brand-line">
+        <div class="brand">NOSTRI</div>
+        <span class="goal-pill">1M SAR / Month</span>
+      </div>
+      <span class="brand-sub">Orbit Strategy · الهدف في المنتصف</span>
+    </div>
+    <div class="hint" id="topHint">اضغط دائرة لفتح البند · Esc إغلاق</div>
     <div>
-      <button type="button" id="btnOrbit" onclick="setLayout('orbit')">دائرة</button>
-      <button type="button" id="btnCompass" class="active-view" onclick="setLayout('compass')">بوصلة</button>
+      <button type="button" id="btnOrbit" class="active-view" onclick="setLayout('orbit')">دائرة</button>
+      <button type="button" id="btnCompass" onclick="setLayout('compass')">بوصلة</button>
       <button type="button" onclick="openPanel(0)">ابدأ</button>
     </div>
   </div>
-  <div class="compass-ui" id="compassUi" aria-hidden="false">
+  <div class="orbit-glass" id="orbitGlass">
+    <svg class="orbit-arrows" id="orbitArrows" aria-hidden="true">
+      <defs>
+        <marker id="orbitArrowHead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z"/>
+        </marker>
+      </defs>
+    </svg>
+    <div class="orbit-ring r1"></div>
+    <div class="hub">
+      <div class="hub-logo">NOSTRI</div>
+      <div class="hub-q">1M SAR / Month</div>
+    </div>
+    <div class="nodes" id="nodes"></div>
+  </div>
+  <div class="compass-ui" id="compassUi" aria-hidden="true">
     <div class="compass-card">
       <div class="compass-card-hd">
         <span class="ttl">NOSTRI · استراتيجية المحفظة</span>
@@ -216,11 +247,6 @@ body.layout-compass .compass-ui{display:flex}
       <p class="compass-foot">كل الاتجاهات تخدم الهدف — اختر بنداً من القائمة أو من البوصلة</p>
     </div>
   </div>
-  <div class="hub">
-    <div class="hub-logo">NOSTRI</div>
-    <div class="hub-q">الوصول لمليون ريال شهرياً</div>
-  </div>
-  <div class="nodes" id="nodes"></div>
   <div class="kpi-strip">
     <div class="kpi-chip"><div class="v">340,645</div><div class="l">Private Label · نصف 2026</div></div>
     <div class="kpi-chip"><div class="v">126,435</div><div class="l">مجمعات 37.1%</div></div>
@@ -686,17 +712,17 @@ const batchAMoq = newProducts.filter(p => batchA.includes(p.name)).reduce((s,p) 
 document.getElementById('batchAMoq').textContent = '~' + fmt(batchAMoq);
 
 const ORBIT_SECTIONS = [
-  { id:'baseline', num:1, label:'أين نحن؟', title:'أين نحن؟', sub:'نصف 2026 · Private Label' },
-  { id:'complexes', num:2, label:'المجمعات', title:'ص1 · ص7 · ص18', sub:'Nostri في المجمعات' },
-  { id:'expansion', num:3, label:'التوسع', title:'لماذا نوسّع؟', sub:'14 منتج جديد' },
-  { id:'pricing', num:4, label:'التسعير', title:'التسعير والتصنيع', sub:'14 منتج · MOQ' },
-  { id:'finance', num:5, label:'المالي', title:'الإطار المالي', sub:'سيناريوهات شهرية' },
-  { id:'operations', num:6, label:'التشغيل', title:'التشغيل', sub:'خطة ما بعد الإطلاق' },
-  { id:'decisions', num:7, label:'القرارات', title:'قرارات المجلس', sub:'اعتمادات مطلوبة' },
-  { id:'roadmap', num:8, label:'الجدول', title:'خارطة الطريق', sub:'شهر–شهرين · إطلاق الـ 14' }
+  { id:'baseline', num:1, label:'أين نحن؟', title:'أين نحن؟', sub:'نصف 2026 · Private Label', icon:'◎' },
+  { id:'complexes', num:2, label:'المجمعات', title:'ص1 · ص7 · ص18', sub:'Nostri في المجمعات', icon:'+' },
+  { id:'expansion', num:3, label:'التوسع', title:'لماذا نوسّع؟', sub:'14 منتج جديد', icon:'↗' },
+  { id:'pricing', num:4, label:'التسعير', title:'التسعير والتصنيع', sub:'14 منتج · MOQ', icon:'◈' },
+  { id:'finance', num:5, label:'المالي', title:'الإطار المالي', sub:'سيناريوهات شهرية', icon:'₪' },
+  { id:'operations', num:6, label:'التشغيل', title:'التشغيل', sub:'خطة ما بعد الإطلاق', icon:'⚙' },
+  { id:'decisions', num:7, label:'القرارات', title:'قرارات المجلس', sub:'اعتمادات مطلوبة', icon:'✓' },
+  { id:'roadmap', num:8, label:'الجدول', title:'خارطة الطريق', sub:'شهر–شهرين · إطلاق الـ 14', icon:'▦' }
 ];
 let panelIndex = -1;
-let layoutMode = 'compass';
+let layoutMode = 'orbit';
 
 const COMPASS_SLOTS = [
   { slot: 'n',  dx: 0,    dy: -1 },
@@ -754,33 +780,59 @@ function buildCompass() {
 function setActiveNav(i) {
   document.querySelectorAll('.node').forEach((n, idx) => n.classList.toggle('active', idx === i));
   document.querySelectorAll('.compass-rail .cr-item').forEach((el, idx) => el.classList.toggle('active', idx === i));
-  document.querySelectorAll('.compass-dir button').forEach((btn, idx) => {
-    const wrap = btn.closest('.compass-dir');
-    const all = [...document.querySelectorAll('.compass-dir')];
-    btn.classList.toggle('active', all.indexOf(wrap) === i);
+  document.querySelectorAll('.compass-dir').forEach((wrap, idx) => {
+    wrap.querySelector('button')?.classList.toggle('active', idx === i);
   });
+}
+
+function drawOrbitArrows(points) {
+  const svg = document.getElementById('orbitArrows');
+  if (!svg || !points.length) return;
+  const defs = svg.querySelector('defs').outerHTML;
+  const paths = [];
+  const n = points.length;
+  for (let i = 0; i < n; i++) {
+    const a = points[i];
+    const b = points[(i + 1) % n];
+    const mx = (a.x + b.x) / 2;
+    const my = (a.y + b.y) / 2;
+    const cx = 50 + (mx - 50) * 0.15;
+    const cy = 50 + (my - 50) * 0.15;
+    paths.push(`<path d="M ${a.x} ${a.y} Q ${cx} ${cy} ${b.x} ${b.y}" marker-end="url(#orbitArrowHead)"/>`);
+  }
+  svg.innerHTML = defs + paths.join('');
 }
 
 function placeNodes() {
   const el = document.getElementById('nodes');
+  const box = document.getElementById('orbitGlass');
+  if (!el || !box) return;
   el.innerHTML = '';
   const n = ORBIT_SECTIONS.length;
-  const isMobile = window.innerWidth < 700;
-  const rx = isMobile ? window.innerWidth * 0.34 : Math.min(320, window.innerWidth * 0.36);
-  const ry = isMobile ? window.innerHeight * 0.3 : Math.min(260, window.innerHeight * 0.34);
+  const rect = box.getBoundingClientRect();
+  const isMobile = rect.width < 520;
+  const rx = isMobile ? rect.width * 0.36 : Math.min(280, rect.width * 0.38);
+  const ry = isMobile ? rect.height * 0.34 : Math.min(230, rect.height * 0.36);
+  const cx = rect.width / 2;
+  const cy = rect.height / 2;
+  const arrowPts = [];
   ORBIT_SECTIONS.forEach((s, i) => {
     const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
-    const x = 50 + (rx / window.innerWidth * 100) * Math.cos(angle);
-    const y = 47 + (ry / window.innerHeight * 100) * Math.sin(angle);
+    const px = cx + rx * Math.cos(angle);
+    const py = cy + ry * Math.sin(angle);
+    const xPct = (px / rect.width) * 100;
+    const yPct = (py / rect.height) * 100;
+    arrowPts.push({ x: xPct, y: yPct });
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'node';
-    btn.style.left = `calc(${x}% - 46px)`;
-    btn.style.top = `calc(${y}% - 46px)`;
-    btn.innerHTML = `<span class="n-num">${s.num}</span><span class="n-label">${s.label}</span>`;
+    btn.style.left = `calc(${xPct}% - 48px)`;
+    btn.style.top = `calc(${yPct}% - 48px)`;
+    btn.innerHTML = `<span class="n-ico" aria-hidden="true">${s.icon || '•'}</span><span class="n-num">${s.num}</span><span class="n-label">${s.label}</span>`;
     btn.onclick = () => openPanel(i);
     el.appendChild(btn);
   });
+  drawOrbitArrows(arrowPts);
 }
 
 function animateBarsIn(root) {
@@ -827,7 +879,7 @@ document.addEventListener('keydown', e => {
 });
 
 placeNodes();
-setLayout('compass');
+setLayout('orbit');
 window.addEventListener('resize', () => { if (layoutMode === 'orbit') placeNodes(); });
 requestAnimationFrame(() => animateBarsIn(document.getElementById('content-store')));
 </script>
