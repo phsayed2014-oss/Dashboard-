@@ -131,6 +131,39 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
 .channel-card h4{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:4px}
 .channel-card p{font-size:12px;color:var(--dim);margin:0;line-height:1.5}
 .lead{font-size:15px;color:var(--ink);line-height:1.65;margin-bottom:12px}
+/* ——— عرض البوصلة ——— */
+body.layout-compass .orbit-ring,
+body.layout-compass .hub,
+body.layout-compass .nodes{display:none}
+.compass-ui{display:none;position:absolute;inset:52px 16px 72px;z-index:18;align-items:center;justify-content:center;padding:8px}
+body.layout-compass .compass-ui{display:flex}
+.compass-card{width:min(960px,96vw);height:min(540px,calc(100vh - 140px));background:linear-gradient(160deg,rgba(24,32,30,.96),rgba(12,18,17,.98));border:1px solid rgba(148,184,176,.2);border-radius:22px;box-shadow:0 24px 64px rgba(0,0,0,.45);display:grid;grid-template-columns:minmax(168px,22%) 1fr;gap:0;overflow:hidden}
+.compass-card-hd{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.06)}
+.compass-card-hd .ttl{font-size:12px;color:#94b8b0}
+.compass-card-hd .ico{font-size:1.25rem;opacity:.85}
+.compass-rail{padding:12px 10px 16px 16px;border-left:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.compass-rail .cr-item{display:flex;align-items:center;gap:10px;width:100%;text-align:right;border:none;background:transparent;color:#cbd5e1;font-family:inherit;font-size:12px;font-weight:600;padding:10px 10px;border-radius:12px;cursor:pointer;transition:background .2s,color .2s}
+.compass-rail .cr-item:hover{background:rgba(20,184,166,.12);color:#f0fdfa}
+.compass-rail .cr-item.active{background:rgba(15,118,110,.35);color:#fff;border:1px solid rgba(94,234,212,.35)}
+.compass-rail .cr-item .cr-n{font-family:'Alexandria',sans-serif;font-size:11px;font-weight:800;width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#5eead4}
+.compass-rose-wrap{position:relative;display:flex;align-items:center;justify-content:center;padding:16px;min-height:0}
+.compass-rose{position:relative;width:min(100%,420px);aspect-ratio:1;max-height:100%}
+.compass-rose svg.compass-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.35}
+.compass-rose svg line{stroke:rgba(94,234,212,.55);stroke-width:1;stroke-dasharray:4 6}
+.compass-hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:38%;aspect-ratio:1;border-radius:50%;background:linear-gradient(145deg,#0f766e,#0e4d8a);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 0 0 8px rgba(20,184,166,.12),0 12px 40px rgba(0,0,0,.4);z-index:2}
+.compass-hub .hub-logo{font-family:'Alexandria',sans-serif;font-size:clamp(1.1rem,3.5vw,1.65rem);font-weight:900;letter-spacing:4px;color:#ecfdf5}
+.compass-hub .hub-q{font-size:10px;font-weight:700;color:#ccfbf1;margin-top:4px;line-height:1.35;padding:0 8px}
+.compass-dir{position:absolute;z-index:3;transform:translate(-50%,-50%)}
+.compass-dir button{border:none;cursor:pointer;font-family:inherit;background:rgba(8,40,38,.88);border:1px solid rgba(94,234,212,.4);color:#e0f2f1;padding:8px 12px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;backdrop-filter:blur(8px);transition:transform .25s var(--ease),box-shadow .25s,border-color .25s;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.compass-dir button:hover,.compass-dir button.active{border-color:#a7f3d0;background:rgba(15,118,110,.75);transform:scale(1.06);box-shadow:0 0 0 4px rgba(20,184,166,.2)}
+.compass-foot{grid-column:1/-1;padding:10px 20px 14px;font-size:11px;color:#64748b;text-align:center;border-top:1px solid rgba(255,255,255,.06)}
+.topbar button.active-view{background:rgba(20,184,166,.45);border-color:rgba(167,243,208,.5)}
+@media (max-width:720px){
+  .compass-card{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;height:auto;max-height:none}
+  .compass-rail{flex-direction:row;flex-wrap:wrap;border-left:none;border-bottom:1px solid rgba(255,255,255,.06);max-height:120px}
+  .compass-rose{width:min(92vw,340px)}
+  body.layout-compass .compass-ui{inset:48px 8px 64px}
+}
 @media (max-width:860px){
   .stat-grid,.scenario-grid{grid-template-columns:1fr 1fr}
   .channel-grid{grid-template-columns:1fr}
@@ -152,9 +185,35 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
   <div class="orbit-ring r2"></div>
   <div class="topbar">
     <div class="brand">NOSTRI</div>
-    <div class="hint">اضغط دائرة لفتح البند · Esc إغلاق</div>
+    <div class="hint" id="topHint">اضغط بنداً لفتح التفاصيل · Esc إغلاق</div>
     <div>
+      <button type="button" id="btnOrbit" onclick="setLayout('orbit')">دائرة</button>
+      <button type="button" id="btnCompass" class="active-view" onclick="setLayout('compass')">بوصلة</button>
       <button type="button" onclick="openPanel(0)">ابدأ</button>
+    </div>
+  </div>
+  <div class="compass-ui" id="compassUi" aria-hidden="false">
+    <div class="compass-card">
+      <div class="compass-card-hd">
+        <span class="ttl">NOSTRI · استراتيجية المحفظة</span>
+        <span class="ico" aria-hidden="true">🧭</span>
+      </div>
+      <nav class="compass-rail" id="compassRail" aria-label="أبواب الخطة"></nav>
+      <div class="compass-rose-wrap">
+        <div class="compass-rose" id="compassRose">
+          <svg class="compass-lines" viewBox="0 0 200 200" aria-hidden="true">
+            <line x1="100" y1="100" x2="100" y2="18"/><line x1="100" y1="100" x2="158" y2="42"/>
+            <line x1="100" y1="100" x2="182" y2="100"/><line x1="100" y1="100" x2="158" y2="158"/>
+            <line x1="100" y1="100" x2="100" y2="182"/><line x1="100" y1="100" x2="42" y2="158"/>
+            <line x1="100" y1="100" x2="18" y2="100"/><line x1="100" y1="100" x2="42" y2="42"/>
+          </svg>
+          <div class="compass-hub">
+            <div class="hub-logo">NOSTRI</div>
+            <div class="hub-q">مليون ر.س/شهر</div>
+          </div>
+        </div>
+      </div>
+      <p class="compass-foot">كل الاتجاهات تخدم الهدف — اختر بنداً من القائمة أو من البوصلة</p>
     </div>
   </div>
   <div class="hub">
@@ -637,6 +696,70 @@ const ORBIT_SECTIONS = [
   { id:'roadmap', num:8, label:'الجدول', title:'خارطة الطريق', sub:'شهر–شهرين · إطلاق الـ 14' }
 ];
 let panelIndex = -1;
+let layoutMode = 'compass';
+
+const COMPASS_SLOTS = [
+  { slot: 'n',  dx: 0,    dy: -1 },
+  { slot: 'ne', dx: 0.72, dy: -0.72 },
+  { slot: 'e',  dx: 1,    dy: 0 },
+  { slot: 'se', dx: 0.72, dy: 0.72 },
+  { slot: 's',  dx: 0,    dy: 1 },
+  { slot: 'sw', dx: -0.72,dy: 0.72 },
+  { slot: 'w',  dx: -1,   dy: 0 },
+  { slot: 'nw', dx: -0.72,dy: -0.72 }
+];
+
+function setLayout(mode) {
+  layoutMode = mode;
+  document.body.classList.toggle('layout-compass', mode === 'compass');
+  document.getElementById('btnCompass').classList.toggle('active-view', mode === 'compass');
+  document.getElementById('btnOrbit').classList.toggle('active-view', mode === 'orbit');
+  document.getElementById('topHint').textContent = mode === 'compass'
+    ? 'بوصلة · اضغط اتجاهاً أو من القائمة'
+    : 'اضغط دائرة لفتح البند · Esc إغلاق';
+  if (mode === 'compass') buildCompass();
+  else placeNodes();
+}
+
+function buildCompass() {
+  const rail = document.getElementById('compassRail');
+  const rose = document.getElementById('compassRose');
+  rail.innerHTML = '';
+  rose.querySelectorAll('.compass-dir').forEach(el => el.remove());
+  ORBIT_SECTIONS.forEach((s, i) => {
+    const rb = document.createElement('button');
+    rb.type = 'button';
+    rb.className = 'cr-item';
+    rb.dataset.idx = i;
+    rb.innerHTML = `<span class="cr-n">${s.num}</span><span>${s.label}</span>`;
+    rb.onclick = () => openPanel(i);
+    rail.appendChild(rb);
+
+    const slot = COMPASS_SLOTS[i];
+    const wrap = document.createElement('div');
+    wrap.className = 'compass-dir';
+    const pctX = 50 + slot.dx * 42;
+    const pctY = 50 + slot.dy * 42;
+    wrap.style.left = pctX + '%';
+    wrap.style.top = pctY + '%';
+    const db = document.createElement('button');
+    db.type = 'button';
+    db.textContent = s.label;
+    db.onclick = () => openPanel(i);
+    wrap.appendChild(db);
+    rose.appendChild(wrap);
+  });
+}
+
+function setActiveNav(i) {
+  document.querySelectorAll('.node').forEach((n, idx) => n.classList.toggle('active', idx === i));
+  document.querySelectorAll('.compass-rail .cr-item').forEach((el, idx) => el.classList.toggle('active', idx === i));
+  document.querySelectorAll('.compass-dir button').forEach((btn, idx) => {
+    const wrap = btn.closest('.compass-dir');
+    const all = [...document.querySelectorAll('.compass-dir')];
+    btn.classList.toggle('active', all.indexOf(wrap) === i);
+  });
+}
 
 function placeNodes() {
   const el = document.getElementById('nodes');
@@ -681,14 +804,14 @@ function openPanel(i) {
   body.scrollTop = 0;
   document.getElementById('overlay').classList.add('open');
   document.getElementById('panel').classList.add('open');
-  document.querySelectorAll('.node').forEach((n, idx) => n.classList.toggle('active', idx === i));
+  setActiveNav(i);
   animateBarsIn(body);
 }
 
 function closePanel() {
   document.getElementById('overlay').classList.remove('open');
   document.getElementById('panel').classList.remove('open');
-  document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+  setActiveNav(-1);
   panelIndex = -1;
 }
 
@@ -704,7 +827,8 @@ document.addEventListener('keydown', e => {
 });
 
 placeNodes();
-window.addEventListener('resize', placeNodes);
+setLayout('compass');
+window.addEventListener('resize', () => { if (layoutMode === 'orbit') placeNodes(); });
 requestAnimationFrame(() => animateBarsIn(document.getElementById('content-store')));
 </script>
 </body>
