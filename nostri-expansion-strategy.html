@@ -167,6 +167,14 @@ td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
         <tbody id="cxRows"></tbody>
       </table>
     </div>
+
+    <div class="box" style="margin-top:16px;background:var(--blue-soft);border-color:#93c5fd">
+      <h3>برنامج عمل المجمعات (ص1 · ص7 · ص18)</h3>
+      <p style="font-size:14px;color:#1e3a8a;margin:0">
+        تنفيذ من <strong>الإدارة التجارية</strong>: زيارات المندوبين الطبيين، لقاءات مع الأطباء، وعينات حيث يلزم.
+        المطلوب دعم تنظيمي ووقت كافٍ للفريق — الهدف أن تكون منتجات Nostri <strong>الخيار الأول في البروتوكول العلاجي</strong> في التخصصات التي نغطيها، مع ربط ذلك بمستهدف المجمعات <strong>400,000 ر.س/شهر</strong> عند اكتمال المحفظة.
+      </p>
+    </div>
   </section>
 
   <section id="expansion">
@@ -201,25 +209,17 @@ td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
       </table>
     </div>
 
-    <div class="grid-2" style="margin-top:14px">
-      <div class="box">
-        <h3>ملخص الاستثمار الأولي (لو طُلبت كل MOQ مرة واحدة)</h3>
-        <table>
-          <tbody>
-            <tr><td>تصنيع أول دفعة (مجموع MOQ)</td><td class="num">640,000</td></tr>
-            <tr><td>ترخيص 14 صنف</td><td class="num">84,000</td></tr>
-            <tr class="row-t"><td>إجمالي نقدي أقصى نظري</td><td class="num">724,000</td></tr>
-            <tr><td>إيراد محتمل لبيع كل MOQ</td><td class="num">3,200,000</td></tr>
-            <tr><td>ربح إجمالي محتمل (80%)</td><td class="num">2,560,000</td></tr>
-          </tbody>
-        </table>
-        <div class="note">عملياً لا يُطلب MOQ الـ 14 معاً — يُربط بالدفعات A/B/C. أرقام Astrix <strong>تقريبية</strong> وقابلة للتعديل في العقد.</div>
-      </div>
-      <div class="box">
-        <h3>ربط المستهدف الشهري (1M) بالكميات</h3>
-        <div class="chart-box"><canvas id="cUnits"></canvas></div>
-        <div class="info">مجموع الوحدات المطلوبة شهرياً عند تحقق 1M ≈ <strong id="totalUnitsMo">—</strong> وحدة/شهر (متوسط سعر ~57 ر.س).</div>
-      </div>
+    <div class="box" style="margin-top:14px;max-width:520px">
+      <h3>ملخص الاستثمار الأولي (لو طُلبت كل MOQ مرة واحدة)</h3>
+      <table>
+        <tbody>
+          <tr><td>تصنيع أول دفعة (مجموع MOQ)</td><td class="num">640,000</td></tr>
+          <tr><td>ترخيص 14 صنف</td><td class="num">84,000</td></tr>
+          <tr class="row-t"><td>إجمالي نقدي أقصى نظري</td><td class="num">724,000</td></tr>
+          <tr><td>إيراد محتمل لبيع كل MOQ</td><td class="num">3,200,000</td></tr>
+          <tr><td>ربح إجمالي محتمل (80%)</td><td class="num">2,560,000</td></tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
@@ -276,13 +276,13 @@ td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
       <table>
         <thead><tr><th>KPI</th><th>المستهدف</th><th>التكرار</th><th>المسؤول</th></tr></thead>
         <tbody>
-          <tr><td>مبيعات الـ 14 الجديدة</td><td class="num">1,000,000 / شهر</td><td>شهري</td><td>المدير التجاري</td></tr>
-          <tr><td>مبيعات المجمعات (ص1+ص7+ص18)</td><td class="num">400,000 / شهر</td><td>شهري</td><td>مدير المبيعات الطبية</td></tr>
-          <tr><td>حصة ص1 من هدف المجمعات</td><td class="num">≈ 180,000</td><td>شهري</td><td>مشرف المجمع</td></tr>
-          <tr><td>حصة ص18</td><td class="num">≈ 140,000</td><td>شهري</td><td>مشرف المجمع</td></tr>
-          <tr><td>حصة ص7</td><td class="num">≈ 80,000</td><td>شهري</td><td>مشرف المجمع</td></tr>
-          <tr><td>هامش الربح</td><td class="num">≥ 80%</td><td>شهري</td><td>المدير المالي</td></tr>
-          <tr><td>ترخيص SFDA / تسجيل</td><td class="num">14/14</td><td>عند الإنجاز</td><td>الشؤون التنظيمية</td></tr>
+          <tr><td>مبيعات الـ 14 الجديدة</td><td class="num">1,000,000 / شهر</td><td>شهري</td><td>الإدارة التجارية</td></tr>
+          <tr><td>مبيعات المجمعات (ص1+ص7+ص18)</td><td class="num">400,000 / شهر</td><td>شهري</td><td>الإدارة التجارية</td></tr>
+          <tr><td>حصة ص1 من هدف المجمعات</td><td class="num">≈ 180,000</td><td>شهري</td><td>الإدارة التجارية</td></tr>
+          <tr><td>حصة ص18</td><td class="num">≈ 140,000</td><td>شهري</td><td>الإدارة التجارية</td></tr>
+          <tr><td>حصة ص7</td><td class="num">≈ 80,000</td><td>شهري</td><td>الإدارة التجارية</td></tr>
+          <tr><td>هامش الربح</td><td class="num">≥ 80%</td><td>شهري</td><td>الإدارة التجارية</td></tr>
+          <tr><td>ترخيص SFDA / تسجيل</td><td class="num">14/14</td><td>عند الإنجاز</td><td>الإدارة التجارية</td></tr>
         </tbody>
       </table>
     </div>
@@ -298,7 +298,7 @@ td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
           <li>اعتماد مستهدف 1,000,000 ر.س/شهر للـ 14 الجديدة بتوزيع 400-200-200-200</li>
           <li>اعتماد ميزانية ترخيص الأصناف: <strong>84,000 ر.س</strong> (6,000 × 14) على 3 دفعات</li>
           <li>تفويض التفاوض وتوقيع عقد التصنيع مع Astrix</li>
-          <li>اعتماد برنامج عمل المجمعات (ص1 · ص7 · ص18)</li>
+          <li>اعتماد تخصيص موارد <strong>الإدارة التجارية</strong> لبرنامج المجمعات والتواصل مع الأطباء (القسم 2)</li>
         </ul>
       </div>
       <div class="box" style="background:var(--blue-soft);border-color:#93c5fd">
@@ -421,12 +421,17 @@ costRows.innerHTML += `<tr class="row-t">
   <td class="num">${fmt(tMoqRev)}</td>
   <td class="num">${fmt(tMoqRev - tMoqCost)}</td>
 </tr>`;
-document.getElementById('totalUnitsMo').textContent = fmt(Math.round(tUnitsMo));
+
+function makeChart(id, config) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  new Chart(el, config);
+}
 
 Chart.defaults.font.family = "'IBM Plex Sans Arabic', sans-serif";
 const colors = ['#0f766e','#1d4ed8','#b45309','#7c3aed','#be123c','#0284c7','#059669'];
 
-new Chart(document.getElementById('cProducts'), {
+makeChart('cProducts', {
   type:'doughnut',
   data:{
     labels: productsH1.map(p=>p.name.split(' ')[0]),
@@ -435,31 +440,40 @@ new Chart(document.getElementById('cProducts'), {
   options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{font:{size:11}}}}}
 });
 
-new Chart(document.getElementById('cProfit'), {
+makeChart('cProfit', {
   type:'doughnut',
   data:{labels:['ربح مستهدف 80%','سقف تصنيع 20%'], datasets:[{data:[800000,200000], backgroundColor:['#0f766e','#e2e8f0'], borderWidth:2, borderColor:'#fff'}]},
   options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}}
 });
 
-new Chart(document.getElementById('cUnits'), {
-  type:'bar',
-  data:{
-    labels: newProducts.map(p => p.name.split(' ')[0]),
-    datasets:[{label:'وحدات/شهر عند 1M', data: newProducts.map(p => Math.round(p.unitsMonthly)), backgroundColor:'#1d4ed8', borderRadius:5}]
-  },
-  options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>fmt(v)}}}}
-});
-
-new Chart(document.getElementById('cTimeline'), {
+makeChart('cTimeline', {
   type:'line',
   data:{
     labels:['ش1','ش2','ش3','ش4','ش5','ش6','ش7','ش8','ش9','ش10','ش11','ش12'],
     datasets:[{
+      label:'مبيعات شهرية (ر.س)',
       data:[0,0,350000,450000,550000,650000,750000,850000,900000,950000,980000,1000000],
-      borderColor:'#0f766e', backgroundColor:'rgba(15,118,110,.12)', fill:true, tension:.35, pointRadius:3
+      borderColor:'#0f766e',
+      backgroundColor:'rgba(15,118,110,.15)',
+      fill:true,
+      tension:0.35,
+      pointRadius:4,
+      pointBackgroundColor:'#0f766e',
+      borderWidth:2
     }]
   },
-  options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>(v/1000)+'K'}, max:1200000}}}
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      y:{
+        beginAtZero:true,
+        max:1200000,
+        ticks:{callback:v=>(v/1000)+'K'}
+      }
+    }
+  }
 });
 </script>
 </body>
