@@ -87,7 +87,8 @@ td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
       <span class="chip">الفترة: 01/01–30/06/2026</span>
       <span class="chip">7 منتجات قائمة (6 نشطة + 1 غير متوفر)</span>
       <span class="chip">ترخيص الصنف: 6,000 ر.س</span>
-      <span class="chip">تصنيع: يُحدَّد لاحقاً</span>
+      <span class="chip">تسعير: هامش إجمالي 80%</span>
+      <span class="chip">تكلفة/حبة + MOQ من Astrix (تقريبي)</span>
     </div>
   </header>
 
@@ -96,6 +97,7 @@ td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
     <a href="#complexes">المجمعات</a>
     <a href="#insights">الدروس</a>
     <a href="#products">الـ 14 منتج</a>
+    <a href="#pricing">التسعير والتصنيع</a>
     <a href="#finance">المالي</a>
     <a href="#roadmap">الجدول</a>
     <a href="#decisions">قرارات المجلس</a>
@@ -258,48 +260,80 @@ td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
     </div>
   </section>
 
+  <section id="pricing">
+    <h2>5) التسعير والتصنيع — 14 منتج (تقريبي)</h2>
+    <p class="sub">سعر البيع محسوب على <strong>هامش إجمالي ربح 80%</strong> من سعر البيع (التكلفة = 20% من السعر). المعادلة: <strong>سعر البيع = تكلفة الحبة ÷ 0.2</strong>.</p>
+
+    <div class="ok">مثال: تكلفة 10 ر.س → بيع <strong>50 ر.س</strong> (ربح 40 ر.س · 80%) · تكلفة 15 ر.س → بيع <strong>75 ر.س</strong> (ربح 60 ر.س · 80%).</div>
+
+    <div style="overflow-x:auto;margin-top:14px">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>المنتج</th><th>تكلفة/حبة</th><th>MOQ</th><th>سعر البيع</th><th>ربح/حبة</th><th>هامش %</th>
+            <th>تكلفة أول دفعة MOQ</th><th>إيراد إذا بيعت الدفعة كاملة</th><th>ربح الدفعة</th>
+          </tr>
+        </thead>
+        <tbody id="costRows"></tbody>
+      </table>
+    </div>
+
+    <div class="grid-2" style="margin-top:14px">
+      <div class="box">
+        <h3>ملخص الاستثمار الأولي (لو طُلبت كل MOQ مرة واحدة)</h3>
+        <table>
+          <tbody>
+            <tr><td>تصنيع أول دفعة (مجموع MOQ)</td><td class="num">640,000</td></tr>
+            <tr><td>ترخيص 14 صنف</td><td class="num">84,000</td></tr>
+            <tr class="row-t"><td>إجمالي نقدي أقصى نظري</td><td class="num">724,000</td></tr>
+            <tr><td>إيراد محتمل لبيع كل MOQ</td><td class="num">3,200,000</td></tr>
+            <tr><td>ربح إجمالي محتمل (80%)</td><td class="num">2,560,000</td></tr>
+          </tbody>
+        </table>
+        <div class="note">عملياً لا يُطلب MOQ الـ 14 معاً — يُربط بالدفعات A/B/C. أرقام Astrix <strong>تقريبية</strong> وقابلة للتعديل في العقد.</div>
+      </div>
+      <div class="box">
+        <h3>ربط المستهدف الشهري (1M) بالكميات</h3>
+        <div class="chart-box"><canvas id="cUnits"></canvas></div>
+        <div class="info">مجموع الوحدات المطلوبة شهرياً عند تحقق 1M ≈ <strong id="totalUnitsMo">—</strong> وحدة/شهر (متوسط سعر ~57 ر.س).</div>
+      </div>
+    </div>
+  </section>
+
   <section id="finance">
-    <h2>5) الإطار المالي — ترخيص 6,000 ر.س وتصنيع لاحقاً</h2>
-    <p class="sub">تكلفة ترخيص الصنف مؤكدة. تكلفة التصنيع ستُدخل فور وصول عرض Astrix.</p>
+    <h2>6) الإطار المالي — ترخيص + ربحية 80%</h2>
+    <p class="sub">بعد إدخال تكلفة التصنيع: التشغيل الشهري عند 1M مبيعات = 200K تكلفة و 800K ربح إجمالي (80%).</p>
 
     <div class="grid-2">
       <div class="box">
-        <h3>استثمار الإطلاق (مرة واحدة)</h3>
+        <h3>استثمار الإطلاق (مرحلي)</h3>
         <table>
           <tbody>
-            <tr><td>ترخيص صنف × 14</td><td class="num">6,000 × 14</td></tr>
-            <tr class="row-t"><td>إجمالي الترخيص</td><td class="num">84,000 ر.س</td></tr>
-            <tr><td>تسجيل قنوات (إن بقي سارياً)</td><td class="num">يُراجع تشغيلياً</td></tr>
-            <tr><td>تكلفة التصنيع / الوحدة</td><td class="num">لاحقاً ← Astrix</td></tr>
+            <tr><td>ترخيص صنف × 14</td><td class="num">6,000 × 14 = 84,000</td></tr>
+            <tr><td>دفعة A (5 أصناف) — ترخيص</td><td class="num">30,000</td></tr>
+            <tr><td>دفعة A — MOQ تصنيع تقريبي</td><td class="num">~235,000</td></tr>
+            <tr><td>دفعة B (5 أصناف)</td><td class="num">ترخيص 30K + MOQ ~205K</td></tr>
+            <tr><td>دفعة C (4 أصناف)</td><td class="num">ترخيص 24K + MOQ ~200K</td></tr>
           </tbody>
         </table>
-        <div class="note">يُفضَّل دفع الترخيص على 3 دفعات مع الإطلاق المرحلي: 5 + 5 + 4 منتجات → سيولة أوضح (30K + 30K + 24K).</div>
       </div>
       <div class="box">
         <h3>مستهدف التشغيل الشهري (عند الاكتمال)</h3>
         <table>
           <tbody>
             <tr class="row-t"><td>مبيعات الـ 14 منتج</td><td class="num">1,000,000</td></tr>
-            <tr><td>ربح مستهدف ≥80%</td><td class="num">≥ 800,000</td></tr>
-            <tr><td>سقف تكلفة تصنيع للوصول لـ 80%</td><td class="num">≤ 200,000 / شهر</td></tr>
-            <tr><td>استرداد رسوم الترخيص (84K)</td><td class="num">≈ 3.2 أيام ربح عند 800K</td></tr>
+            <tr><td>تكلفة تصنيع (20%)</td><td class="num">200,000</td></tr>
+            <tr class="row-t"><td>ربح إجمالي (80%)</td><td class="num">800,000</td></tr>
+            <tr><td>استرداد الترخيص (84K)</td><td class="num">≈ 3.2 أيام ربح</td></tr>
           </tbody>
         </table>
         <div class="chart-box" style="height:220px;margin-top:8px"><canvas id="cProfit"></canvas></div>
       </div>
     </div>
-
-    <div class="info" style="margin-top:12px">
-      <strong>سيناريوهات الحساسية (بعد وصول تكلفة التصنيع):</strong>
-      إذا كانت تكلفة التصنيع 15% → ربح 85% ·
-      إذا 20% → ربح 80% (المستهدف) ·
-      إذا 25% → ربح 75% (يحتاج مراجعة تسعير أو مزيج منتجات).
-      سيتم تحديث هذا القسم فور إرسال أرقام التصنيع.
-    </div>
   </section>
 
   <section id="roadmap">
-    <h2>6) خارطة الطريق — 12 شهراً</h2>
+    <h2>7) خارطة الطريق — 12 شهراً</h2>
     <p class="sub">إطلاق مرحلي مرتبط بنجاح المجمعات، مع تنشيط ص7 قبل الدفعة الثانية.</p>
     <div class="grid-2">
       <div class="tl">
@@ -332,7 +366,7 @@ td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
   </section>
 
   <section id="decisions">
-    <h2>7) التوصيات وقرارات مجلس الإدارة</h2>
+    <h2>8) التوصيات وقرارات مجلس الإدارة</h2>
     <div class="grid-2">
       <div class="box" style="background:var(--teal-soft);border-color:#99f6e4">
         <h3>يُطلب اعتماده الآن</h3>
@@ -346,14 +380,14 @@ td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
         </ul>
       </div>
       <div class="box" style="background:var(--blue-soft);border-color:#93c5fd">
-        <h3>مؤجّل — بانتظار بياناتك</h3>
+        <h3>اعتماد التسعير والتصنيع</h3>
         <ul>
-          <li>⏳ تكلفة تصنيع كل صنف من Astrix (ستُرسل لاحقاً)</li>
-          <li>⏳ تسعير البيع النهائي لكل SKU بعد التكلفة</li>
-          <li>⏳ تحديد/إعادة إطلاق الصنف السابع غير المتوفر</li>
-          <li>⏳ الميزانية التسويقية التفصيلية للحملات</li>
+          <li>✅ اعتماد جدول التكلفة و MOQ التقريبي (Astrix)</li>
+          <li>✅ اعتماد أسعار البيع بهامش إجمالي <strong>80%</strong> (جدول القسم 5)</li>
+          <li>⏳ تثبيت الأسعار النهائية في العقد إذا تغيّرت التكلفة</li>
+          <li>⏳ إعادة إطلاق الصنف السابع غير المتوفر</li>
+          <li>⏳ الميزانية التسويقية التفصيلية</li>
         </ul>
-        <div class="note" style="margin-top:10px;margin-bottom:0">بعد وصول تكلفة التصنيع سأُحدّث نموذج الربحية سيناريو بسوق سيناريو وأثبت الأسعار المقترحة لكل منتج.</div>
       </div>
     </div>
   </section>
@@ -418,22 +452,61 @@ Object.keys(cx).forEach(k=>{
 });
 cxRows.innerHTML += `<tr class="row-t"><td>الإجمالي</td><td class="num">${fmt(s1)}</td><td class="num">${fmt(s7)}</td><td class="num">${fmt(s18)}</td><td class="num">${fmt(st)}</td><td class="num">37.1% من الشبكة</td></tr>`;
 
+const MARGIN_GROSS = 0.80;
+const sellFromCost = c => c / (1 - MARGIN_GROSS);
+
 const newProducts = [
-  {name:'Baby Shampoo', brand:'نوستري بيبي جينتل', cat:'عناية أطفال', monthly:65000, channel:'صيدليات + أونلاين', why:'فجوة أطفال غير مغطاة حالياً'},
-  {name:'Gel for Edema', brand:'نوستري ديفلا جل', cat:'جلدية / وذمة', monthly:70000, channel:'مجمعات (ص1 أولاً)', why:'امتداد لنجاح REFLEX الموضعي'},
-  {name:'Multivitamin', brand:'نوستري فايتال ماكس', cat:'فيتامينات', monthly:85000, channel:'مجمعات + صيدليات', why:'فجوة وصفات عالية في المجمعات'},
-  {name:'Natal — Prenatal', brand:'نوستري ناتال', cat:'فيتامينات الحمل', monthly:90000, channel:'مجمعات (ص18/ص1)', why:'وصفات نساء — ص18 قوية في Intimo'},
-  {name:'Mouth Wash HA', brand:'نوستري أورو HA', cat:'صحة الفم', monthly:70000, channel:'صيدليات + أونلاين', why:'امتداد ORACURE الأعلى حجماً'},
-  {name:'Mouth Wash H₂O₂', brand:'نوستري أورو بيور', cat:'صحة الفم', monthly:65000, channel:'صيدليات + أونلاين', why:'تنويع خط الفم'},
-  {name:'Whitening Cream', brand:'نوستري لومينا', cat:'تجميل علاجي', monthly:80000, channel:'صيدليات + أونلاين', why:'امتداد جلدي بعد Nostriderm/Rizer'},
-  {name:'Vitamin C', brand:'نوستري سي أكتيف', cat:'فيتامينات', monthly:60000, channel:'مجمعات + صيدليات', why:'مكمل سريع الدوران'},
-  {name:'Vitamin C + Zn', brand:'نوستري سي زدن شيلد', cat:'مناعة', monthly:70000, channel:'مجمعات طبية', why:'وصفات مناعة في ص1'},
-  {name:'Strepsils Menthol', brand:'نوستري ثروت كول', cat:'الحلق', monthly:75000, channel:'صيدليات + صب إيجنت', why:'قرب وظيفي من Nostricure/Oro'},
-  {name:'Strepsils Honey & Lemon', brand:'نوستري ثروت سوث', cat:'الحلق', monthly:70000, channel:'صيدليات + صب إيجنت', why:'تنويع نكهات لزيادة التكرار'},
-  {name:'Zn Syrup', brand:'نوستري زنك بلس', cat:'مكملات أطفال', monthly:65000, channel:'مجمعات + صيدليات', why:'أطفال + مجمعات'},
-  {name:'Vit D Drops', brand:'نوستري دي دروبس', cat:'فيتامينات أطفال', monthly:60000, channel:'مجمعات طبية', why:'وصفات أطفال/نساء'},
-  {name:'Vision Tablet', brand:'نوستري فيجن جارد', cat:'صحة العين', monthly:75000, channel:'مجمعات + صيدليات', why:'فئة جديدة عالية القيمة'}
+  {name:'Baby Shampoo', brand:'نوستري بيبي جينتل', cat:'عناية أطفال', monthly:65000, channel:'صيدليات + أونلاين', why:'فجوة أطفال غير مغطاة حالياً', cost:10, moq:3000},
+  {name:'Gel for Edema', brand:'نوستري ديفلا جل', cat:'جلدية / وذمة', monthly:70000, channel:'مجمعات (ص1 أولاً)', why:'امتداد لنجاح REFLEX الموضعي', cost:10, moq:5000},
+  {name:'Multivitamin', brand:'نوستري فايتال ماكس', cat:'فيتامينات', monthly:85000, channel:'مجمعات + صيدليات', why:'فجوة وصفات عالية في المجمعات', cost:10, moq:3000},
+  {name:'Natal — Prenatal', brand:'نوستري ناتال', cat:'فيتامينات الحمل', monthly:90000, channel:'مجمعات (ص18/ص1)', why:'وصفات نساء — ص18 قوية في Intimo', cost:15, moq:3000},
+  {name:'Mouth Wash HA', brand:'نوستري أورو HA', cat:'صحة الفم', monthly:70000, channel:'صيدليات + أونلاين', why:'امتداد ORACURE الأعلى حجماً', cost:10, moq:5000},
+  {name:'Mouth Wash H₂O₂', brand:'نوستري أورو بيور', cat:'صحة الفم', monthly:65000, channel:'صيدليات + أونلاين', why:'تنويع خط الفم', cost:10, moq:3000},
+  {name:'Whitening Cream', brand:'نوستري لومينا', cat:'تجميل علاجي', monthly:80000, channel:'صيدليات + أونلاين', why:'امتداد جلدي بعد Nostriderm/Rizer', cost:15, moq:3000},
+  {name:'Vitamin C', brand:'نوستري سي أكتيف', cat:'فيتامينات', monthly:60000, channel:'مجمعات + صيدليات', why:'مكمل سريع الدوران', cost:10, moq:5000},
+  {name:'Vitamin C + Zn', brand:'نوستري سي زدن شيلد', cat:'مناعة', monthly:70000, channel:'مجمعات طبية', why:'وصفات مناعة في ص1', cost:11, moq:5000},
+  {name:'Strepsils Menthol', brand:'نوستري ثروت كول', cat:'الحلق', monthly:75000, channel:'صيدليات + صب إيجنت', why:'قرب وظيفي من Nostricure/Oro', cost:12, moq:5000},
+  {name:'Strepsils Honey & Lemon', brand:'نوستري ثروت سوث', cat:'الحلق', monthly:70000, channel:'صيدليات + صب إيجنت', why:'تنويع نكهات لزيادة التكرار', cost:12, moq:5000},
+  {name:'Zn Syrup', brand:'نوستري زنك بلس', cat:'مكملات أطفال', monthly:65000, channel:'مجمعات + صيدليات', why:'أطفال + مجمعات', cost:15, moq:3000},
+  {name:'Vit D Drops', brand:'نوستري دي دروبس', cat:'فيتامينات أطفال', monthly:60000, channel:'مجمعات طبية', why:'وصفات أطفال/نساء', cost:15, moq:3000},
+  {name:'Vision Tablet', brand:'نوستري فيجن جارد', cat:'صحة العين', monthly:75000, channel:'مجمعات + صيدليات', why:'فئة جديدة عالية القيمة', cost:15, moq:3000}
 ];
+newProducts.forEach(p => {
+  p.sell = sellFromCost(p.cost);
+  p.profit = p.sell - p.cost;
+  p.moqCost = p.cost * p.moq;
+  p.moqRevenue = p.sell * p.moq;
+  p.unitsMonthly = p.monthly / p.sell;
+});
+
+const costRows = document.getElementById('costRows');
+let tCost=0, tMoqCost=0, tMoqRev=0, tUnitsMo=0;
+newProducts.forEach((p,i)=>{
+  tCost += p.cost * p.moq;
+  tMoqCost += p.moqCost;
+  tMoqRev += p.moqRevenue;
+  tUnitsMo += p.unitsMonthly;
+  costRows.innerHTML += `<tr>
+    <td>${i+1}</td>
+    <td>${p.name}</td>
+    <td class="num">${p.cost}</td>
+    <td class="num">${fmt(p.moq)}</td>
+    <td class="num">${fmt(p.sell)}</td>
+    <td class="num">${fmt(p.profit)}</td>
+    <td class="num">80%</td>
+    <td class="num">${fmt(p.moqCost)}</td>
+    <td class="num">${fmt(p.moqRevenue)}</td>
+    <td class="num">${fmt(p.moqRevenue - p.moqCost)}</td>
+  </tr>`;
+});
+costRows.innerHTML += `<tr class="row-t">
+  <td colspan="7">الإجمالي (14 صنف)</td>
+  <td class="num">${fmt(tMoqCost)}</td>
+  <td class="num">${fmt(tMoqRev)}</td>
+  <td class="num">${fmt(tMoqRev - tMoqCost)}</td>
+</tr>`;
+document.getElementById('totalUnitsMo').textContent = fmt(Math.round(tUnitsMo));
+
 const newRows = document.getElementById('newRows');
 newProducts.forEach((p,i)=>{
   newRows.innerHTML += `<tr>
@@ -494,6 +567,15 @@ new Chart(document.getElementById('cProfit'), {
   type:'doughnut',
   data:{labels:['ربح مستهدف 80%','سقف تصنيع 20%'], datasets:[{data:[800000,200000], backgroundColor:['#0f766e','#e2e8f0'], borderWidth:2, borderColor:'#fff'}]},
   options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}}
+});
+
+new Chart(document.getElementById('cUnits'), {
+  type:'bar',
+  data:{
+    labels: newProducts.map(p => p.name.split(' ')[0]),
+    datasets:[{label:'وحدات/شهر عند 1M', data: newProducts.map(p => Math.round(p.unitsMonthly)), backgroundColor:'#1d4ed8', borderRadius:5}]
+  },
+  options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>fmt(v)}}}}
 });
 
 new Chart(document.getElementById('cTimeline'), {
