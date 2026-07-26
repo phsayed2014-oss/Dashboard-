@@ -233,8 +233,13 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
     <h2><span class="sec-num">2</span> المجمعات — ص1 · ص7 · ص18</h2>
     <p class="sub">مبيعات النصف الأول لعام 2026 (ر.س بسعر البيع).</p>
 
+    <div class="box" style="margin-bottom:16px;background:var(--teal-soft);border-color:#99f6e4">
+      <h3>Nostri في المجمعات</h3>
+      <p style="font-size:14px;color:var(--ink);margin:0;line-height:1.65">حدثت زيادة في مبيعات المجمعات (ص1 · ص7 · ص18) بسبب دعم الإدارة ووجود قناة تواصل مع الأطباء، مما ساهم في زيادة كتابة الأصناف.</p>
+    </div>
+
     <div class="box" style="margin-bottom:16px">
-      <h3>توزيع المبيعات على الشبكة</h3>
+      <h3>توزيع المبيعات (خارجية مقابل مجمعات)</h3>
       <p style="font-size:13px;color:var(--dim);margin-bottom:12px">نصف 2026: نحو ثلثي المبيعات من 46 صيدلية خارجية، والباقي من 3 صيدليات في مجمعات (ص1 · ص7 · ص18).</p>
       <div class="bar-list" style="margin-bottom:12px">
         <div class="bar-row">
@@ -271,11 +276,6 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
         </thead>
         <tbody id="cxRows"></tbody>
       </table>
-    </div>
-
-    <div class="box" style="margin-top:16px">
-      <h3>مبيعات المجمعات</h3>
-      <p style="font-size:14px;color:var(--ink);margin:0;line-height:1.65">حدثت زيادة في مبيعات المجمعات (ص1 · ص7 · ص18) بسبب دعم الإدارة ووجود قناة تواصل مع الأطباء، مما ساهم في زيادة كتابة الأصناف.</p>
     </div>
 
   </section>
@@ -627,7 +627,7 @@ document.getElementById('batchAMoq').textContent = '~' + fmt(batchAMoq);
 
 const ORBIT_SECTIONS = [
   { id:'baseline', num:1, label:'أين نحن؟', title:'أين نحن؟', sub:'نصف 2026 · Private Label' },
-  { id:'complexes', num:2, label:'المجمعات', title:'ص1 · ص7 · ص18', sub:'الشبكة والمجمعات' },
+  { id:'complexes', num:2, label:'المجمعات', title:'ص1 · ص7 · ص18', sub:'Nostri في المجمعات' },
   { id:'expansion', num:3, label:'التوسع', title:'لماذا نوسّع؟', sub:'14 منتج جديد' },
   { id:'pricing', num:4, label:'التسعير', title:'التسعير والتصنيع', sub:'14 منتج · MOQ' },
   { id:'finance', num:5, label:'المالي', title:'الإطار المالي', sub:'سيناريوهات شهرية' },
