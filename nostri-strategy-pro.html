@@ -490,18 +490,6 @@ td:first-child,td.name-cell{font-weight:600;color:var(--ink)}
 
     <div class="grid-2">
       <div class="box">
-        <h3>استثمار الإطلاق (مرحلي)</h3>
-        <table>
-          <tbody>
-            <tr><td>ترخيص صنف (One Time Payement) × 14</td><td class="num">6,000 × 14 = 84,000</td></tr>
-            <tr><td>دفعة A (5 أصناف) — ترخيص (One Time Payement)</td><td class="num">30,000</td></tr>
-            <tr><td>دفعة A — MOQ تصنيع تقريبي</td><td class="num" id="batchAMoq">—</td></tr>
-            <tr><td>دفعة B (5 أصناف)</td><td class="num">ترخيص 30K + MOQ ~205K</td></tr>
-            <tr><td>دفعة C (4 أصناف)</td><td class="num">ترخيص 24K + MOQ ~200K</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="box">
         <h3>مستهدف التشغيل الشهري (عند الاكتمال)</h3>
         <table>
           <tbody>
@@ -514,6 +502,7 @@ td:first-child,td.name-cell{font-weight:600;color:var(--ink)}
         <div class="split-bar" aria-hidden="true"><span class="split-profit"></span><span class="split-cost"></span></div>
         <div class="split-legend"><span><b>800,000</b> ربح (80%)</span><span><b>200,000</b> تكلفة (20%)</span></div>
       </div>
+      <div class="box" id="finDonut" style="display:flex;align-items:center;justify-content:center"></div>
     </div>
   </section>
 
@@ -750,7 +739,8 @@ if (decisionMoq) decisionMoq.textContent = fmt(tMoqCost);
 
 const batchA = ['Baby Shampoo','Mouth Wash HA','Vitamin C','Strepsils Menthol','Vit D Drops'];
 const batchAMoq = newProducts.filter(p => batchA.includes(p.name)).reduce((s,p) => s + p.moqCost, 0);
-document.getElementById('batchAMoq').textContent = '~' + fmt(batchAMoq);
+const batchAEl = document.getElementById('batchAMoq');
+if (batchAEl) batchAEl.textContent = '~' + fmt(batchAMoq);
 
 const ORBIT_SECTIONS = [
   { id:'baseline', num:1, label:'أين نحن؟', title:'أين نحن؟', sub:'نصف 2026 · Private Label' },
@@ -841,11 +831,11 @@ function makeDonut(segments, centerMain, centerSub) {
 
 function injectCharts(id, body) {
   if (id === 'finance') {
-    const bar = body.querySelector('.split-bar');
-    if (bar) bar.parentNode.insertBefore(makeDonut([
+    const mount = body.querySelector('#finDonut');
+    if (mount) mount.appendChild(makeDonut([
       { label: 'ربح إجمالي (80%)', value: 800000, color: '#0f766e' },
       { label: 'تكلفة تصنيع (20%)', value: 200000, color: '#cbd5e1' }
-    ], '80%', 'ربح إجمالي'), bar);
+    ], '80%', 'ربح إجمالي'));
   }
   if (id === 'roadmap') {
     const grid = body.querySelector('.channel-grid');
