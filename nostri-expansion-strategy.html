@@ -191,8 +191,6 @@ body.layout-compass .compass-ui{display:flex}
 
 <div class="stage" id="stage">
   <div class="stage-bg"></div>
-  <div class="orbit-ring r1"></div>
-  <div class="orbit-ring r2"></div>
   <div class="topbar">
     <div class="brand-wrap">
       <div class="brand-line">
@@ -209,7 +207,7 @@ body.layout-compass .compass-ui{display:flex}
     </div>
   </div>
   <div class="orbit-glass" id="orbitGlass">
-    <svg class="orbit-arrows" id="orbitArrows" aria-hidden="true">
+    <svg class="orbit-arrows" id="orbitArrows" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
       <defs>
         <marker id="orbitArrowHead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
           <path d="M0,0 L6,3 L0,6 Z"/>
@@ -716,7 +714,7 @@ const ORBIT_SECTIONS = [
   { id:'complexes', num:2, label:'المجمعات', title:'ص1 · ص7 · ص18', sub:'Nostri في المجمعات', icon:'+' },
   { id:'expansion', num:3, label:'التوسع', title:'لماذا نوسّع؟', sub:'14 منتج جديد', icon:'↗' },
   { id:'pricing', num:4, label:'التسعير', title:'التسعير والتصنيع', sub:'14 منتج · MOQ', icon:'◈' },
-  { id:'finance', num:5, label:'المالي', title:'الإطار المالي', sub:'سيناريوهات شهرية', icon:'₪' },
+  { id:'finance', num:5, label:'المالي', title:'الإطار المالي', sub:'سيناريوهات شهرية', icon:'◆' },
   { id:'operations', num:6, label:'التشغيل', title:'التشغيل', sub:'خطة ما بعد الإطلاق', icon:'⚙' },
   { id:'decisions', num:7, label:'القرارات', title:'قرارات المجلس', sub:'اعتمادات مطلوبة', icon:'✓' },
   { id:'roadmap', num:8, label:'الجدول', title:'خارطة الطريق', sub:'شهر–شهرين · إطلاق الـ 14', icon:'▦' }
