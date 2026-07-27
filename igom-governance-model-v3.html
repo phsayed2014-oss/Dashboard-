@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نموذج الحوكمة والتشغيل المتكامل IGOM - شركة راصان</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --navy:#0f2f4f;
+      --navy-2:#12395f;
+      --blue:#1e5f91;
+      --cyan:#29a3b8;
+      --light:#f4f8fb;
+      --white:#ffffff;
+      --text:#243746;
+      --muted:#657786;
+      --gold:#d6a84b;
+      --green:#2d8b73;
+      --red:#a94d5d;
+      --purple:#7357a6;
+      --line:#c3d6e4;
+      --shadow:0 12px 30px rgba(15,47,79,.12);
+      --shadow-lg:0 22px 55px rgba(15,47,79,.20);
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:"Tajawal","Tahoma","Arial",sans-serif;
+      background:
+        radial-gradient(1200px 600px at 100% -10%,rgba(41,163,184,.10),transparent 60%),
+        radial-gradient(1000px 500px at 0% 0%,rgba(30,95,145,.10),transparent 55%),
+        linear-gradient(180deg,#eef5f9 0%,#f9fbfc 100%);
+      color:var(--text);
+      line-height:1.9;
+    }
+    .page{
+      max-width:1400px;
+      margin:auto;
+      padding:34px 22px 60px;
+    }
+
+    /* ============ HERO / العنوان الاحترافي ============ */
+    .hero{
+      background:
+        radial-gradient(900px 500px at 100% 0%,rgba(41,163,184,.38),transparent 55%),
+        radial-gradient(700px 500px at 0% 100%,rgba(115,87,166,.28),transparent 55%),
+        linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 45%,var(--blue) 100%);
+      color:#fff;
+      padding:0;
+      border-radius:30px;
+      box-shadow:var(--shadow-lg);
+      position:relative;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .hero:before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);
+      background-size:44px 44px;
+      mask-image:radial-gradient(circle at 80% 10%,#000,transparent 70%);
+      opacity:.6;
+    }
+    .hero:after{
+      content:"";
+      position:absolute;
+      width:360px;height:360px;
+      right:-100px;top:-150px;
+      border-radius:50%;
+      background:radial-gradient(circle,rgba(255,255,255,.18),transparent 65%);
+    }
+    /* top accent strip */
+    .hero-strip{
+      position:relative;
+      z-index:3;
+      height:6px;
+      background:linear-gradient(90deg,var(--gold),var(--cyan),var(--purple),var(--gold));
+      background-size:300% 100%;
+      animation:strip 8s linear infinite;
+    }
+    @keyframes strip{to{background-position:300% 0}}
+    .hero-inner{
+      position:relative;
+      z-index:2;
+      padding:48px 52px;
+      display:grid;
+      grid-template-columns:auto 1px 1fr;
+      gap:34px;
+      align-items:center;
+    }
+    .hero-emblem{
+      width:122px;height:122px;
+      border-radius:28px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(150deg,rgba(255,255,255,.24),rgba(255,255,255,.06));
+      border:1px solid rgba(255,255,255,.38);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 12px 26px rgba(0,0,0,.2);
+      position:relative;
+      flex:0 0 auto;
+      overflow:hidden;
+    }
+    .hero-emblem span{
+      font-size:34px;
+      font-weight:900;
+      letter-spacing:2px;
+      background:linear-gradient(180deg,#fff,#cfe6f4);
+      -webkit-background-clip:text;
+      background-clip:text;
+      -webkit-text-fill-color:transparent;
+      position:relative;
+      z-index:2;
+    }
+    .hero-emblem:before{
+      content:"";
+      position:absolute;
+      inset:9px;
+      border:1px solid rgba(255,255,255,.3);
+      border-radius:20px;
+    }
+    /* shimmer sweep */
+    .hero-emblem:after{
+      content:"";
+      position:absolute;
+      top:-60%;left:-30%;
+      width:40%;height:220%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);
+      transform:rotate(20deg);
+      animation:shine 5s ease-in-out infinite;
+    }
+    @keyframes shine{0%,60%{left:-40%}80%,100%{left:140%}}
+    .hero-divider{
+      width:1px;
+      align-self:stretch;
+      background:linear-gradient(180deg,transparent,rgba(255,255,255,.35),transparent);
+    }
+    .hero-content{min-width:0}
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:9px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.25);
+      padding:8px 16px;
+      border-radius:999px;
+      margin-bottom:16px;
+      font-size:13.5px;
+      letter-spacing:.6px;
+      backdrop-filter:blur(6px);
+    }
+    .badge:before{
+      content:"";
+      width:8px;height:8px;border-radius:50%;
+      background:var(--cyan);
+      box-shadow:0 0 0 4px rgba(41,163,184,.30);
+    }
+    .hero h1{
+      margin:0 0 12px;
+      font-size:clamp(30px,4.4vw,54px);
+      font-weight:900;
+      line-height:1.22;
+      letter-spacing:-.5px;
+      background:linear-gradient(180deg,#ffffff 0%,#d7e8f5 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+    .hero h2{
+      margin:0 0 16px;
+      font-size:clamp(18px,2.2vw,23px);
+      font-weight:500;
+      color:#bfe0ef;
+      display:inline-block;
+      padding-bottom:14px;
+      border-bottom:2px solid rgba(255,255,255,.16);
+    }
+    .hero p{
+      margin:0;
+      font-size:17px;
+      color:#d7e6f2;
+      max-width:1050px;
+      line-height:2;
+    }
+
+    /* hint chip for interactivity (icon-only, no words) */
+    .hint{
+      position:absolute;
+      z-index:3;
+      left:22px;bottom:18px;
+      display:flex;align-items:center;gap:7px;
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.25);
+      padding:6px 12px;border-radius:999px;
+      font-size:13px;color:#eaf4fb;
+    }
+
+    /* ============ SECTIONS ============ */
+    .section{
+      margin-top:28px;
+      background:var(--white);
+      border-radius:var(--radius);
+      padding:30px;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(15,47,79,.05);
+    }
+    .section-title{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin:0 0 20px;
+      color:var(--navy);
+      font-size:26px;
+      font-weight:800;
+    }
+    .section-title span{
+      width:12px;
+      height:38px;
+      background:linear-gradient(var(--cyan),var(--blue));
+      border-radius:10px;
+      flex:0 0 auto;
+    }
+    .intro{
+      background:#eef7fb;
+      border-right:6px solid var(--cyan);
+      padding:18px 20px;
+      border-radius:14px;
+      color:var(--navy);
+      font-weight:700;
+      margin-bottom:22px;
+    }
+
+    /* toolbar (expand/collapse all) — icon buttons, no words */
+    .toolbar{
+      display:flex;
+      justify-content:flex-start;
+      gap:10px;
+      margin-bottom:16px;
+    }
+    .toolbar button{
+      font-family:inherit;
+      cursor:pointer;
+      border:1px solid #cfe0ec;
+      background:#f2f8fc;
+      color:var(--navy);
+      width:42px;height:42px;
+      border-radius:12px;
+      font-size:18px;
+      font-weight:800;
+      display:flex;align-items:center;justify-content:center;
+      transition:background .15s ease,transform .15s ease;
+    }
+    .toolbar button:hover{background:#e4f0f8;transform:translateY(-2px)}
+    .toolbar button:active{transform:translateY(0)}
+
+    /* ============ IGOM LEVELS (collapsible) ============ */
+    .igom{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:14px;
+      position:relative;
+    }
+    .board{
+      background:linear-gradient(135deg,var(--navy),var(--blue));
+      color:#fff;
+      border-radius:16px;
+      padding:18px 34px;
+      font-size:22px;
+      font-weight:800;
+      min-width:300px;
+      text-align:center;
+      box-shadow:0 10px 24px rgba(15,47,79,.25);
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .connector{
+      width:4px;
+      height:28px;
+      background:linear-gradient(var(--blue),var(--cyan));
+      border-radius:99px;
+    }
+    .level{
+      width:100%;
+      border-radius:22px;
+      overflow:hidden;
+      border:1px solid rgba(15,47,79,.10);
+      box-shadow:0 10px 26px rgba(15,47,79,.09);
+      transition:box-shadow .2s ease;
+    }
+    .level:hover{box-shadow:0 16px 38px rgba(15,47,79,.15)}
+    .level-head{
+      color:#fff;
+      padding:16px 22px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:15px;
+      flex-wrap:wrap;
+      cursor:pointer;
+      user-select:none;
+      position:relative;
+    }
+    .level-head h3{
+      margin:0;
+      font-size:23px;
+      font-weight:800;
+    }
+    .level-head small{
+      font-size:15px;
+      opacity:.92;
+    }
+    /* chevron indicator (symbol, not a word) */
+    .level-head .chev{
+      flex:0 0 auto;
+      width:30px;height:30px;
+      border-radius:50%;
+      background:rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.3);
+      display:flex;align-items:center;justify-content:center;
+      font-size:14px;
+      transition:transform .3s ease;
+    }
+    .level.collapsed .level-head .chev{transform:rotate(-90deg)}
+    .r1 .level-head{background:linear-gradient(135deg,#8b651d,var(--gold))}
+    .r2 .level-head{background:linear-gradient(135deg,var(--navy),var(--blue))}
+    .r3 .level-head{background:linear-gradient(135deg,#236a57,var(--green))}
+    .r4 .level-head{background:linear-gradient(135deg,#5e468d,var(--purple))}
+    .level-body{
+      background:#fff;
+      padding:22px;
+      display:grid;
+      grid-template-columns:1fr 1.4fr;
+      gap:22px;
+      max-height:1600px;
+      opacity:1;
+      overflow:hidden;
+      transition:max-height .4s ease,opacity .3s ease,padding .3s ease;
+    }
+    .level.collapsed .level-body{
+      max-height:0;
+      opacity:0;
+      padding-top:0;
+      padding-bottom:0;
+    }
+    .level-people,.level-work{
+      background:var(--light);
+      border:1px solid #e0ebf2;
+      border-radius:16px;
+      padding:18px;
+    }
+    .level-body h4{
+      margin:0 0 10px;
+      color:var(--navy);
+      font-size:19px;
+      font-weight:800;
+    }
+    .level-body ul{
+      margin:0;
+      padding-right:20px;
+    }
+    .level-body li{margin-bottom:7px}
+    .r4{
+      border:2px dashed #9b87c4;
+      margin-top:6px;
+    }
+    .r4 .level-body{
+      grid-template-columns:1fr;
+    }
+    .overlay-note{
+      color:#5d467f;
+      background:#f3effa;
+      border-right:5px solid var(--purple);
+      padding:14px 16px;
+      border-radius:12px;
+      font-weight:700;
+      margin-bottom:15px;
+    }
+    .r4-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+    }
+    .r4-item{
+      background:#f8f6fc;
+      border:1px solid #ded4ee;
+      border-radius:14px;
+      padding:14px;
+      text-align:center;
+      font-weight:700;
+      color:#59437b;
+    }
+
+    /* ============ ORG MAP / خريطة التسلسل الوظيفي ============ */
+    .orgmap{position:relative;padding:14px 6px 6px}
+    .orgmap-spine{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:0;
+      position:relative;
+    }
+    .onode{
+      position:relative;
+      width:100%;
+      max-width:720px;
+      text-align:center;
+      padding:20px 24px;
+      border-radius:18px;
+      font-weight:800;
+      box-shadow:0 12px 26px rgba(15,47,79,.12);
+      border:1px solid rgba(15,47,79,.08);
+      z-index:2;
+    }
+    .onode small{
+      display:block;
+      font-weight:500;
+      margin-top:6px;
+      opacity:.9;
+      font-size:14px;
+      line-height:1.7;
+    }
+    .onode.dark{background:linear-gradient(135deg,var(--navy),#173d63);color:#fff;border-color:rgba(255,255,255,.14)}
+    .onode.blue{background:#e9f4fb;color:var(--navy);border-color:#b7d8ee}
+    .onode.gold{background:#fff7e3;color:#6a4d13;border-color:#ecd48b}
+    .onode.green{background:#eaf7f2;color:#195c4c;border-color:#a9d7c9}
+    .onode.exec{background:linear-gradient(135deg,#12395f,#1e5f91);color:#fff;border-color:rgba(255,255,255,.14)}
+    .olink{
+      width:3px;height:34px;
+      background:linear-gradient(var(--blue),var(--cyan));
+      position:relative;z-index:1;
+    }
+    .olink:before{
+      content:"";
+      position:absolute;
+      bottom:-4px;left:50%;
+      transform:translateX(-50%) rotate(45deg);
+      width:9px;height:9px;
+      border-right:3px solid var(--cyan);
+      border-bottom:3px solid var(--cyan);
+    }
+    .obranch{
+      width:100%;
+      max-width:900px;
+      position:relative;
+      padding-top:40px;
+    }
+    .obranch:before{
+      content:"";
+      position:absolute;top:0;left:22%;right:22%;
+      height:3px;
+      background:linear-gradient(90deg,var(--cyan),var(--blue),var(--cyan));
+      border-radius:10px;
+    }
+    .obranch:after{
+      content:"";
+      position:absolute;top:-34px;left:50%;
+      transform:translateX(-50%);
+      width:3px;height:34px;
+      background:linear-gradient(var(--cyan),var(--blue));
+    }
+    .obranch-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:34px;
+    }
+    .obranch-item{
+      position:relative;
+      background:#fff;
+      border-radius:18px;
+      padding:20px 18px;
+      border:1px solid #d9e8f2;
+      text-align:center;
+      box-shadow:0 10px 24px rgba(15,47,79,.10);
+    }
+    .obranch-item:before{
+      content:"";
+      position:absolute;top:-40px;left:50%;
+      transform:translateX(-50%);
+      width:3px;height:40px;
+      background:linear-gradient(var(--blue),var(--cyan));
+    }
+    .obranch-item h3{
+      margin:0 0 6px;
+      color:var(--navy);
+      font-size:20px;
+      font-weight:800;
+    }
+    .obranch-item p{margin:0;color:var(--muted);font-size:15px}
+
+    /* ============ MIND-MAP / TREE (خريطة ذهنية) ============ */
+    .tree{
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:52px;
+      padding:14px 8px 6px;
+      isolation:isolate;
+    }
+    .tree-lines{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      z-index:1;
+      pointer-events:none;
+      overflow:visible;
+    }
+    .tree-row{
+      position:relative;
+      z-index:2;
+      display:flex;
+      justify-content:center;
+      width:100%;
+    }
+    .tree-row.two{
+      gap:min(9%,90px);
+      flex-wrap:wrap;
+    }
+    .tnode{
+      position:relative;
+      text-align:center;
+      padding:18px 24px;
+      border-radius:22px;
+      font-weight:800;
+      max-width:560px;
+      box-shadow:0 14px 30px rgba(15,47,79,.14);
+      border:1px solid rgba(15,47,79,.08);
+      transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+    }
+    .tree-row.two .tnode{width:min(46%,420px);max-width:420px}
+    .tnode small{
+      display:block;
+      font-weight:500;
+      margin-top:6px;
+      opacity:.9;
+      font-size:14px;
+      line-height:1.7;
+    }
+    .tnode h3{margin:0 0 5px;font-size:19px;font-weight:800}
+    .tnode p{margin:0;font-size:14.5px;font-weight:500;opacity:.85}
+    /* connector anchor dots (mind-map feel) */
+    .tnode:after{
+      content:"";
+      position:absolute;
+      bottom:-7px;left:50%;
+      transform:translateX(-50%);
+      width:12px;height:12px;border-radius:50%;
+      background:#fff;
+      border:3px solid var(--cyan);
+      box-shadow:0 2px 6px rgba(15,47,79,.2);
+      z-index:3;
+    }
+    .tree-row:last-child .tnode:after{display:none}
+    .tnode.root{
+      background:linear-gradient(135deg,var(--navy),#173d63);color:#fff;
+      border-color:rgba(255,255,255,.14);font-size:21px;padding:20px 30px;
+    }
+    .tnode.holding{background:#e9f4fb;color:var(--navy);border-color:#b7d8ee}
+    .tnode.r1{background:#fff7e3;color:#6a4d13;border-color:#ecd48b}
+    .tnode.hub{
+      background:linear-gradient(135deg,#12395f,#1e5f91);color:#fff;
+      border-color:rgba(255,255,255,.16);font-size:20px;
+      box-shadow:0 18px 40px rgba(18,57,95,.30);
+    }
+    .tnode.sector{background:#eaf7fb;color:#12506e;border-color:#bfe1f0}
+    .tnode.sector h3{color:#0f3e57}
+    .tnode.r3{background:#eaf7f2;color:#195c4c;border-color:#a9d7c9}
+
+    @media(max-width:700px){
+      .tree{gap:40px}
+      .tree-row.two .tnode{width:100%;max-width:520px}
+    }
+
+    /* ============ CLICKABLE / selectable cards ============ */
+    .clickable{cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease}
+    .clickable:hover{transform:translateY(-3px)}
+    .clickable.active{
+      border-color:var(--cyan)!important;
+      box-shadow:0 0 0 3px rgba(41,163,184,.35),0 16px 34px rgba(15,47,79,.16)!important;
+    }
+
+    /* ============ ROLES TABLE ============ */
+    .roles{
+      width:100%;
+      border-collapse:collapse;
+      overflow:hidden;
+      border-radius:16px;
+      box-shadow:0 6px 18px rgba(15,47,79,.08);
+    }
+    .roles th,.roles td{
+      padding:15px 14px;
+      border-bottom:1px solid #e7eef3;
+      text-align:right;
+      vertical-align:top;
+    }
+    .roles th{background:var(--navy);color:#fff;font-size:16px}
+    .roles tr:nth-child(even) td{background:#f8fbfd}
+    .roles tbody tr{cursor:pointer;transition:background .15s ease}
+    .roles tbody tr:hover td{background:#eef7fb}
+    .roles tbody tr.active td{background:#e2f1f8;box-shadow:inset 3px 0 0 var(--cyan)}
+    .roles td:first-child{font-weight:700;color:var(--navy);width:10%}
+    .roles td:nth-child(2){font-weight:700;width:22%}
+
+    /* ============ FLOW ============ */
+    .flow{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      align-items:stretch;
+    }
+    .flow-item{
+      background:#f7fafc;
+      border:1px solid #dbe8f0;
+      padding:20px 14px;
+      border-radius:16px;
+      text-align:center;
+      min-height:130px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      position:relative;
+    }
+    .flow-item strong{color:var(--navy);font-size:19px}
+    .flow-item span{color:var(--muted);font-size:14px}
+    .flow-item .q{display:block;margin-top:8px;color:var(--blue);font-weight:700}
+    .return{
+      margin-top:18px;
+      background:#eef8f4;
+      border-right:5px solid var(--green);
+      padding:15px 18px;
+      border-radius:12px;
+      font-weight:700;
+      color:#235f50;
+      text-align:center;
+    }
+
+    /* ============ MEMBERS ============ */
+    .members{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    .member{
+      background:#f6fafc;
+      border:1px solid #ddeaf2;
+      padding:13px 14px;
+      border-radius:14px;
+      text-align:center;
+      font-weight:700;
+      color:#24445d;
+    }
+
+    /* ============ PRINCIPLES ============ */
+    .principles{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:14px;
+    }
+    .principle{
+      background:var(--light);
+      border:1px solid #dce9f1;
+      border-radius:16px;
+      padding:18px;
+      text-align:center;
+    }
+    .principle strong{display:block;color:var(--navy);margin-bottom:5px}
+
+    .footer{
+      margin-top:28px;
+      text-align:center;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    @media(max-width:950px){
+      .hero-inner{grid-template-columns:1fr;gap:22px;padding:34px 26px}
+      .hero-divider{display:none}
+      .hero-emblem{width:100px;height:100px}
+      .level-body{grid-template-columns:1fr}
+      .r4-grid,.members,.principles{grid-template-columns:repeat(2,1fr)}
+      .flow{grid-template-columns:1fr 1fr}
+    }
+    @media(max-width:700px){
+      .obranch-grid,.r4-grid,.members,.principles,.flow{grid-template-columns:1fr}
+      .obranch{padding-top:0}
+      .obranch:before,.obranch:after,.obranch-item:before{display:none}
+      .obranch-grid{gap:16px}
+      .section{padding:22px 16px}
+      .roles{font-size:13px}
+      .roles th,.roles td{padding:10px 8px}
+    }
+    @media print{
+      body{background:#fff}
+      .page{max-width:none;padding:0}
+      .hero,.section,.level{box-shadow:none;break-inside:avoid}
+      .toolbar,.hint{display:none}
+      .level.collapsed .level-body{max-height:none;opacity:1;padding:22px}
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+
+    <header class="hero">
+      <div class="hero-strip"></div>
+      <div class="hero-inner">
+        <div class="hero-emblem"><span>IGOM</span></div>
+        <div class="hero-divider"></div>
+        <div class="hero-content">
+          <div class="badge">Integrated Governance &amp; Operating Model</div>
+          <h1>نموذج الحوكمة والتشغيل المتكامل</h1>
+          <h2>IGOM – شركة راصان والقطاع الطبي</h2>
+          <p>
+            إطار متكامل يربط بين الحوكمة الاستراتيجية، والقيادة التنفيذية، والتشغيل وقياس الأداء،
+            مع طبقة أفقية للضمان والتحسين المستمر تغطي جميع مستويات القطاع الطبي.
+          </p>
+        </div>
+      </div>
+      <div class="hint">☝︎ اضغط على أي بند للتوسيع أو التحديد</div>
+    </header>
+
+    <section class="section">
+      <h2 class="section-title"><span></span>الهيكل العام للنموذج</h2>
+      <div class="intro">
+        يتكون النموذج من ثلاثة مستويات رأسية لإدارة القرار والتنفيذ، بالإضافة إلى مستوى رابع أفقي
+        للرقابة والضمان والتحسين المستمر.
+      </div>
+
+      <div class="toolbar">
+        <button type="button" id="expandAll" title="توسيع الكل">＋</button>
+        <button type="button" id="collapseAll" title="طي الكل">－</button>
+      </div>
+
+      <div class="igom">
+        <div class="board">مجلس الإدارة</div>
+        <div class="connector"></div>
+
+        <div class="level r1">
+          <div class="level-head">
+            <div>
+              <h3>R1 – Strategic Governance</h3>
+              <small>المستوى الاستراتيجي Strategic Level</small>
+            </div>
+            <span class="chev">▾</span>
+          </div>
+          <div class="level-body">
+            <div class="level-people">
+              <h4>التشكيل</h4>
+              <ul>
+                <li>شركة راصان Holding Company.</li>
+                <li>اللجنة التوجيهية Steering Committee.</li>
+                <li>الرئيس التنفيذي للقطاع الطبي ضمن اللجنة التوجيهية.</li>
+                <li>إدارة المشاريع وإدارة تطوير الأعمال.</li>
+              </ul>
+            </div>
+            <div class="level-work">
+              <h4>المسؤوليات</h4>
+              <ul>
+                <li>اعتماد الرؤية والاستراتيجية والتوجهات الكبرى.</li>
+                <li>اعتماد الاستثمارات والمشاريع والتوسعات الكبرى.</li>
+                <li>اعتماد السياسات والأهداف المؤسسية.</li>
+                <li>تحديد الأولويات الاستراتيجية ومتابعة تقدمها.</li>
+                <li>إزالة المعوقات التي تتطلب تدخل الشركة المالكة.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="connector"></div>
+
+        <div class="level r2">
+          <div class="level-head">
+            <div>
+              <h3>R2 – Executive Management</h3>
+              <small>المستوى التكتيكي Tactical Level</small>
+            </div>
+            <span class="chev">▾</span>
+          </div>
+          <div class="level-body">
+            <div class="level-people">
+              <h4>التشكيل</h4>
+              <ul>
+                <li>الرئيس التنفيذي للقطاع الطبي.</li>
+                <li>المدير التنفيذي لقطاع المجمعات الطبية.</li>
+                <li>المدير التنفيذي لقطاع الصيدليات.</li>
+              </ul>
+            </div>
+            <div class="level-work">
+              <h4>المسؤوليات</h4>
+              <ul>
+                <li>تحويل الاستراتيجية إلى خطط تنفيذية وبرامج عمل.</li>
+                <li>تخصيص الموارد والميزانيات والأولويات.</li>
+                <li>اتخاذ القرارات التنفيذية المشتركة بين القطاعين.</li>
+                <li>متابعة الأداء العام وقيادة التصحيح عند الانحراف.</li>
+                <li>رفع التقارير والموضوعات الاستراتيجية إلى R1.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="connector"></div>
+
+        <div class="level r3">
+          <div class="level-head">
+            <div>
+              <h3>R3 – Operations &amp; Performance</h3>
+              <small>المستوى التشغيلي Operational Level</small>
+            </div>
+            <span class="chev">▾</span>
+          </div>
+          <div class="level-body">
+            <div class="level-people">
+              <h4>التشكيل</h4>
+              <ul>
+                <li>اللجنة التنفيذية.</li>
+                <li>الإدارات المشتركة التي تخدم القطاعين.</li>
+                <li>مدراء التشغيل ومدراء الفروع.</li>
+                <li>الوحدات والفرق التشغيلية اليومية.</li>
+              </ul>
+            </div>
+            <div class="level-work">
+              <h4>المسؤوليات</h4>
+              <ul>
+                <li>التشغيل اليومي وتنفيذ الخطط والمبادرات.</li>
+                <li>متابعة مؤشرات الأداء التشغيلية والمالية.</li>
+                <li>تنسيق أعمال الإدارات المشتركة.</li>
+                <li>معالجة المشكلات والانحرافات التشغيلية.</li>
+                <li>رفع النتائج والمخاطر والتوصيات إلى R2.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="connector"></div>
+
+        <div class="level r4">
+          <div class="level-head">
+            <div>
+              <h3>R4 – Assurance &amp; Improvement</h3>
+              <small>طبقة أفقية تغطي جميع المستويات</small>
+            </div>
+            <span class="chev">▾</span>
+          </div>
+          <div class="level-body">
+            <div class="overlay-note">
+              R4 ليست مستوى إداريًا منفصلًا أسفل السلسلة، بل طبقة رقابية وتحسينية تعمل أفقيًا عبر R1 وR2 وR3.
+            </div>
+            <div class="r4-grid">
+              <div class="r4-item clickable">الجودة Quality</div>
+              <div class="r4-item clickable">الامتثال Compliance</div>
+              <div class="r4-item clickable">إدارة المخاطر Risk Management</div>
+              <div class="r4-item clickable">التدقيق الداخلي Internal Audit</div>
+              <div class="r4-item clickable">الحوكمة Governance</div>
+              <div class="r4-item clickable">إدارة الأداء المؤسسي</div>
+              <div class="r4-item clickable">مكتب إدارة المشاريع PMO</div>
+              <div class="r4-item clickable">التحسين المستمر</div>
+              <div class="r4-item clickable">ذكاء الأعمال BI</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title"><span></span>الهيكل التنظيمي داخل النموذج</h2>
+      <div class="tree" id="orgTree">
+        <svg class="tree-lines" id="treeLines" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"></svg>
+
+        <div class="tree-row">
+          <div class="tnode root clickable" data-node="board">
+            مجلس الإدارة
+          </div>
+        </div>
+
+        <div class="tree-row">
+          <div class="tnode holding clickable" data-node="holding">
+            شركة راصان المالكة
+            <small>الشركة المالكة لشركة شير، مجمعات التعاون، قطاع الصيدليات، وشركات أخرى</small>
+          </div>
+        </div>
+
+        <div class="tree-row">
+          <div class="tnode r1 clickable" data-node="r1">
+            اللجنة التوجيهية – R1
+            <small>ممثلو راصان + الرئيس التنفيذي + إدارة المشاريع + إدارة تطوير الأعمال</small>
+          </div>
+        </div>
+
+        <div class="tree-row">
+          <div class="tnode hub clickable" data-node="r2">
+            الرئيس التنفيذي للقطاع الطبي – R2
+            <small>يقود القطاع الطبي ويترجم الاستراتيجية إلى خطط تنفيذية</small>
+          </div>
+        </div>
+
+        <div class="tree-row two">
+          <div class="tnode sector clickable" data-node="dirA">
+            <h3>المدير التنفيذي لقطاع المجمعات الطبية</h3>
+            <p>إدارة المجمعات والفروع والتشغيل وتحقيق المستهدفات.</p>
+          </div>
+          <div class="tnode sector clickable" data-node="dirB">
+            <h3>المدير التنفيذي لقطاع الصيدليات</h3>
+            <p>إدارة الصيدليات والمبيعات والمخزون وتحقيق المستهدفات.</p>
+          </div>
+        </div>
+
+        <div class="tree-row">
+          <div class="tnode r3 clickable" data-node="r3">
+            اللجنة التنفيذية والإدارات المشتركة – R3
+            <small>تنفيذ الخطط، متابعة الأداء، معالجة التعثرات، ورفع النتائج</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title"><span></span>مسؤولية كل مستوى</h2>
+      <table class="roles">
+        <thead>
+          <tr>
+            <th>المستوى</th>
+            <th>الاسم</th>
+            <th>المسؤول</th>
+            <th>المخرجات</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>R1</td>
+            <td>Strategic Governance</td>
+            <td>مجلس الإدارة + راصان + اللجنة التوجيهية</td>
+            <td>الرؤية، الاستراتيجية، الاستثمار، السياسات، والمشاريع الكبرى.</td>
+          </tr>
+          <tr>
+            <td>R2</td>
+            <td>Executive Management</td>
+            <td>الرئيس التنفيذي للقطاع + المديرون التنفيذيون</td>
+            <td>الخطط التنفيذية، الميزانيات، توزيع الموارد، وقيادة القطاع.</td>
+          </tr>
+          <tr>
+            <td>R3</td>
+            <td>Operations &amp; Performance</td>
+            <td>اللجنة التنفيذية + الإدارات المشتركة + الفروع</td>
+            <td>التشغيل اليومي، تنفيذ الخطط، حل المشكلات، وتحقيق مؤشرات الأداء.</td>
+          </tr>
+          <tr>
+            <td>R4</td>
+            <td>Assurance &amp; Improvement</td>
+            <td>الجودة، المخاطر، التدقيق، PMO، BI، الامتثال والحوكمة</td>
+            <td>الرقابة، القياس، ضمان الالتزام، التوصيات، والتحسين المستمر.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title"><span></span>دورة اتخاذ القرار</h2>
+      <div class="flow">
+        <div class="flow-item clickable">
+          <strong>R1</strong>
+          <span>التوجيه والاعتماد</span>
+          <span class="q">ماذا نريد أن نحقق؟</span>
+        </div>
+        <div class="flow-item clickable">
+          <strong>R2</strong>
+          <span>القيادة والتنسيق</span>
+          <span class="q">كيف سنحقق ذلك؟</span>
+        </div>
+        <div class="flow-item clickable">
+          <strong>R3</strong>
+          <span>التنفيذ وقياس الأداء</span>
+          <span class="q">نفّذ وقِس النتائج</span>
+        </div>
+        <div class="flow-item clickable">
+          <strong>R4</strong>
+          <span>الضمان والتحسين</span>
+          <span class="q">راجع، دقق، حسّن، وارفع التوصيات</span>
+        </div>
+      </div>
+      <div class="return">
+        تعود مخرجات R4 إلى R1 وR2 لاتخاذ قرارات التطوير والتصحيح وإعادة ترتيب الأولويات.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title"><span></span>أعضاء اللجنة التنفيذية المقترحون ضمن R3</h2>
+      <div class="members">
+        <div class="member clickable">الرئيس التنفيذي للقطاع الطبي</div>
+        <div class="member clickable">المدير التنفيذي للمجمعات</div>
+        <div class="member clickable">المدير التنفيذي للصيدليات</div>
+        <div class="member clickable">الإدارة المالية</div>
+        <div class="member clickable">الموارد البشرية</div>
+        <div class="member clickable">تقنية المعلومات والتحول الرقمي</div>
+        <div class="member clickable">إدارة الجودة</div>
+        <div class="member clickable">إدارة دورة الإيرادات</div>
+        <div class="member clickable">الإدارة الطبية</div>
+        <div class="member clickable">الامتثال والتراخيص</div>
+        <div class="member clickable">المشتريات</div>
+        <div class="member clickable">سلسلة الإمداد والمستودعات</div>
+        <div class="member clickable">التسويق والاتصال المؤسسي</div>
+        <div class="member clickable">تجربة المريض</div>
+        <div class="member clickable">الهندسة الطبية والصيانة</div>
+        <div class="member clickable">السلامة والخدمات المساندة</div>
+        <div class="member clickable">إدارة المشاريع</div>
+        <div class="member clickable">ذكاء الأعمال وإدارة الأداء</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title"><span></span>المبادئ الحاكمة للنموذج</h2>
+      <div class="principles">
+        <div class="principle clickable">
+          <strong>وضوح القرار</strong>
+          تحديد من يوجه، ومن يعتمد، ومن ينفذ.
+        </div>
+        <div class="principle clickable">
+          <strong>فصل المستويات</strong>
+        </div>
+        <div class="principle clickable">
+          <strong>المساءلة</strong>
+          ربط كل مستوى بمخرجات ومؤشرات محددة.
+        </div>
+        <div class="principle clickable">
+          <strong>التحسين المستمر</strong>
+          استخدام R4 لإغلاق فجوات الأداء والالتزام.
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      نموذج الحوكمة والتشغيل المتكامل IGOM – مقترح للقطاع الطبي بشركة راصان
+    </footer>
+
+  </main>
+
+  <script>
+    // Collapsible levels (R1–R4): click header to toggle
+    document.querySelectorAll('.level .level-head').forEach(function(head){
+      head.addEventListener('click', function(){
+        head.closest('.level').classList.toggle('collapsed');
+      });
+    });
+
+    // Expand / collapse all
+    var expandBtn = document.getElementById('expandAll');
+    var collapseBtn = document.getElementById('collapseAll');
+    if(expandBtn) expandBtn.addEventListener('click', function(){
+      document.querySelectorAll('.level').forEach(function(l){ l.classList.remove('collapsed'); });
+    });
+    if(collapseBtn) collapseBtn.addEventListener('click', function(){
+      document.querySelectorAll('.level').forEach(function(l){ l.classList.add('collapsed'); });
+    });
+
+    // Selectable cards: click any item to highlight/select it
+    document.querySelectorAll('.clickable').forEach(function(el){
+      el.addEventListener('click', function(){
+        el.classList.toggle('active');
+      });
+    });
+
+    // Selectable table rows
+    document.querySelectorAll('.roles tbody tr').forEach(function(row){
+      row.addEventListener('click', function(){
+        row.classList.toggle('active');
+      });
+    });
+
+    // ===== Mind-map / tree curved connectors (SVG) =====
+    (function(){
+      var tree = document.getElementById('orgTree');
+      var svg  = document.getElementById('treeLines');
+      if(!tree || !svg) return;
+      var SVGNS = 'http://www.w3.org/2000/svg';
+
+      // parent -> child links
+      var links = [
+        ['board','holding'],
+        ['holding','r1'],
+        ['r1','r2'],
+        ['r2','dirA'],
+        ['r2','dirB'],
+        ['dirA','r3'],
+        ['dirB','r3']
+      ];
+
+      function nodeEl(name){ return tree.querySelector('[data-node="'+name+'"]'); }
+
+      function draw(){
+        var box = tree.getBoundingClientRect();
+        var w = tree.clientWidth, h = tree.clientHeight;
+        svg.setAttribute('width', w);
+        svg.setAttribute('height', h);
+        svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+        while(svg.firstChild) svg.removeChild(svg.firstChild);
+
+        // gradient + defs
+        var defs = document.createElementNS(SVGNS,'defs');
+        defs.innerHTML =
+          '<linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">' +
+            '<stop offset="0" stop-color="#1e5f91"/>' +
+            '<stop offset="1" stop-color="#29a3b8"/>' +
+          '</linearGradient>';
+        svg.appendChild(defs);
+
+        links.forEach(function(pair){
+          var p = nodeEl(pair[0]), c = nodeEl(pair[1]);
+          if(!p || !c) return;
+          var pr = p.getBoundingClientRect(), cr = c.getBoundingClientRect();
+          // start: bottom-center of parent ; end: top-center of child
+          var x1 = pr.left + pr.width/2 - box.left;
+          var y1 = pr.bottom - box.top;
+          var x2 = cr.left + cr.width/2 - box.left;
+          var y2 = cr.top - box.top;
+          var dy = (y2 - y1);
+          var c1y = y1 + dy*0.45;
+          var c2y = y2 - dy*0.45;
+          var d = 'M '+x1+' '+y1+' C '+x1+' '+c1y+' '+x2+' '+c2y+' '+x2+' '+y2;
+
+          var path = document.createElementNS(SVGNS,'path');
+          path.setAttribute('d', d);
+          path.setAttribute('fill','none');
+          path.setAttribute('stroke','url(#lg)');
+          path.setAttribute('stroke-width','3');
+          path.setAttribute('stroke-linecap','round');
+          path.setAttribute('opacity','0.9');
+          svg.appendChild(path);
+        });
+      }
+
+      draw();
+      window.addEventListener('resize', draw);
+      if(document.fonts && document.fonts.ready){ document.fonts.ready.then(draw); }
+      window.addEventListener('load', draw);
+      if(window.ResizeObserver){ new ResizeObserver(draw).observe(tree); }
+    })();
+  </script>
+</body>
+</html>
