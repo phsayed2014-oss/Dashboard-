@@ -155,6 +155,9 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
 .channel-card p{font-size:12px;color:var(--dim);margin:0;line-height:1.5}
 .panel-body .channel-card .ch-note{display:block;font-size:11.5px;color:#3d5168;margin-top:10px;padding-top:10px;border-top:1px dashed #d7e5e1;line-height:1.55;font-weight:600}
 .lead{font-size:15px;color:var(--ink);line-height:1.65;margin-bottom:12px}
+.strategy-cover{background:#f8fbfa;border:1px solid var(--line);border-radius:16px;padding:20px 24px;margin-bottom:20px;box-shadow:0 4px 18px rgba(15,118,110,.06)}
+.strategy-cover p{margin:0;font-size:16px;font-weight:700;color:var(--ink);line-height:1.7;position:relative;padding-right:24px}
+.strategy-cover p::before{content:'';position:absolute;right:0;top:0.65em;transform:translateY(-50%);width:12px;height:12px;border-radius:50%;background:linear-gradient(145deg,#5eead4,#0f766e);box-shadow:0 0 0 4px rgba(15,118,110,.12),0 2px 6px rgba(15,118,110,.2)}
 @media (max-width:860px){
   .stat-grid,.scenario-grid{grid-template-columns:1fr 1fr}
   .channel-grid{grid-template-columns:1fr}
@@ -215,6 +218,9 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
 
 <div id="content-store" aria-hidden="true">
   <section id="baseline">
+    <div class="strategy-cover" role="note">
+      <p>الهدف الاستراتيجي: الانفصال بشركة توزيع تحمل علامة <strong>Nostri</strong> بعد ثلاث سنوات.</p>
+    </div>
     <h2><span class="sec-num">1</span> أين نحن؟</h2>
     <p class="lead"><strong>9</strong> منتجات تحت علامة «نوستري» (Private Label)، تُباع عبر <strong>49</strong> صيدلية. أرقام النصف الأول من 2026 في الجدول أدناه.</p>
 
@@ -430,7 +436,6 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
     <p class="sub">خطة تنفيذية بعد الإطلاق — فريق الإدارة التجارية والشركاء الداخليين.</p>
     <div class="box">
       <ul>
-        <li>الهدف الاستراتيجي: الانفصال بشركة توزيع تحمل علامة <strong>Nostri</strong> بعد ثلاث سنوات.</li>
         <li>رفع مبيعات الأصناف الحالية لتصل إلى <span class="num">100,000</span> ر.س/شهر.</li>
         <li>زيادة مندوب مبيعات وتحصيل عند الوصول لمبيعات <span class="num">500,000</span> ر.س/شهر.</li>
         <li>وضع لسته تحفيزية للصيادلة، مع مسابقات واستهدافات وتدريب وتسويق.</li>
