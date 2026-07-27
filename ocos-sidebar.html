@@ -235,157 +235,142 @@ footer{
 @media print{.page{max-width:100%;}}
 
 /* ============================================================
-   الفهرس الجانبي — Side Index (إضافة تنقّل فقط، دون تغيير المحتوى)
+   الفهرس الجانبي التفاعلي — Interactive Side Index
+   (تنقّل فقط: يُبنى ديناميكيًا من عناوين المستند، دون أي تغيير للمحتوى)
    ============================================================ */
-:root{ --sidebar-w:300px; }
+.octoc-toggle{
+  position:fixed; top:18px; inset-inline-end:18px; z-index:1200;
+  display:inline-flex; align-items:center; gap:9px;
+  background:var(--navy); color:#fff; border:none;
+  padding:11px 18px; border-radius:30px;
+  font-family:inherit; font-size:14.5px; font-weight:600; cursor:pointer;
+  box-shadow:0 8px 22px rgba(15,42,74,.28);
+  transition:background .2s, transform .2s, box-shadow .2s, opacity .25s, visibility .25s;
+}
+.octoc-toggle:hover{ background:var(--navy-light); box-shadow:0 10px 26px rgba(15,42,74,.34); }
+.octoc-toggle:active{ transform:scale(.97); }
+.octoc-toggle .ic{ font-size:16px; line-height:1; }
+.octoc-toggle.hidden{ opacity:0; visibility:hidden; transform:scale(.9); }
 
-/* زر فتح/إغلاق الفهرس */
-.side-toc-toggle{
-  position:fixed;
-  top:20px;
-  inset-inline-start:20px;
-  z-index:1200;
-  display:flex;align-items:center;gap:9px;
-  background:var(--navy);
-  color:#fff;
-  border:none;
-  padding:11px 18px;
-  border-radius:30px;
-  font-family:inherit;
-  font-size:14.5px;
-  font-weight:600;
-  cursor:pointer;
-  box-shadow:0 6px 18px rgba(15,42,74,.28);
-  transition:background .2s ease, transform .2s ease;
+.octoc-backdrop{
+  position:fixed; inset:0; background:rgba(15,42,74,.42);
+  z-index:1290; opacity:0; visibility:hidden;
+  transition:opacity .3s, visibility .3s;
 }
-.side-toc-toggle:hover{background:var(--navy-light);}
-.side-toc-toggle:active{transform:scale(.97);}
-.side-toc-toggle .ic{font-size:17px;line-height:1;}
+.octoc-backdrop.open{ opacity:1; visibility:visible; }
 
-/* لوحة الفهرس الجانبية */
-.side-toc{
-  position:fixed;
-  top:0;
-  inset-inline-start:0;
-  height:100vh;
-  width:var(--sidebar-w);
-  max-width:86vw;
-  background:linear-gradient(180deg,var(--navy) 0%, var(--navy-light) 100%);
-  color:#fff;
-  z-index:1300;
-  box-shadow:6px 0 26px rgba(15,42,74,.35);
-  transform:translateX(-108%);
-  transition:transform .32s cubic-bezier(.4,.0,.2,1);
-  display:flex;flex-direction:column;
+.octoc{
+  position:fixed; top:0; inset-inline-end:0; height:100vh;
+  width:344px; max-width:88vw; z-index:1300;
+  background:linear-gradient(195deg,#0d2544 0%, var(--navy) 46%, #0b2039 100%);
+  color:#fff; display:flex; flex-direction:column;
+  box-shadow:-16px 0 44px rgba(9,25,48,.42);
+  transform:translateX(105%);
+  transition:transform .34s cubic-bezier(.4,0,.2,1);
 }
-html[dir="rtl"] .side-toc{
-  inset-inline-start:auto;
-  inset-inline-end:0;
-  transform:translateX(108%);
-  box-shadow:-6px 0 26px rgba(15,42,74,.35);
-}
-.side-toc.open{transform:translateX(0) !important;}
+[dir="rtl"] .octoc{ transform:translateX(-105%); }
+.octoc.open{ transform:translateX(0) !important; }
 
-.side-toc-head{
-  padding:22px 24px 16px;
-  border-bottom:1px solid rgba(255,255,255,.14);
-  display:flex;align-items:center;justify-content:space-between;
-  flex-shrink:0;
+.octoc-head{
+  flex-shrink:0; display:flex; align-items:center; justify-content:space-between;
+  padding:22px 22px 18px; gap:12px;
+  border-bottom:1px solid rgba(255,255,255,.12);
 }
-.side-toc-head h3{
-  margin:0;font-size:18px;font-weight:700;color:#fff;
+.octoc-head .t{ display:flex; align-items:center; gap:11px; }
+.octoc-head .t .dot{
+  width:10px; height:10px; border-radius:50%; background:var(--gold);
+  box-shadow:0 0 0 4px rgba(201,162,75,.2);
 }
-.side-toc-head .close-x{
-  background:rgba(255,255,255,.12);
-  border:none;color:#fff;
-  width:32px;height:32px;border-radius:50%;
-  font-size:18px;cursor:pointer;line-height:1;
-  display:flex;align-items:center;justify-content:center;
-  transition:background .2s ease;
+.octoc-head h3{ margin:0; font-size:17px; font-weight:700; letter-spacing:.3px; }
+.octoc-close{
+  flex-shrink:0; width:34px; height:34px; border-radius:50%;
+  background:rgba(255,255,255,.1); border:none; color:#fff;
+  font-size:20px; line-height:1; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .2s, transform .2s;
 }
-.side-toc-head .close-x:hover{background:rgba(255,255,255,.24);}
+.octoc-close:hover{ background:rgba(255,255,255,.22); transform:rotate(90deg); }
 
-.side-toc-list{
-  list-style:none;
-  margin:0;padding:10px 0 24px;
-  overflow-y:auto;
-  flex:1;
-}
-.side-toc-list li{margin:0;}
-.side-toc-list a{
-  display:flex;align-items:center;gap:12px;
-  padding:12px 24px;
-  color:#dce8ea;
-  text-decoration:none;
-  font-size:14.5px;
-  border-inline-start:3px solid transparent;
-  transition:background .18s ease, color .18s ease, border-color .18s ease;
-  cursor:pointer;
-}
-.side-toc-list a:hover{
-  background:rgba(255,255,255,.08);
-  color:#fff;
-}
-.side-toc-list a.active{
-  background:rgba(201,162,75,.16);
-  color:#fff;
-  border-inline-start-color:var(--gold);
-}
-.side-toc-list a .n{
-  flex-shrink:0;
-  width:28px;height:28px;border-radius:8px;
-  background:rgba(255,255,255,.12);
-  display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:700;color:var(--gold);
-}
-.side-toc-list a.active .n{background:var(--gold);color:var(--navy);}
+.octoc-body{ flex:1; overflow-y:auto; padding:12px 10px 34px; }
+.octoc-body::-webkit-scrollbar{ width:8px; }
+.octoc-body::-webkit-scrollbar-track{ background:transparent; }
+.octoc-body::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.16); border-radius:8px; }
+.octoc-body::-webkit-scrollbar-thumb:hover{ background:rgba(255,255,255,.28); }
 
-/* الطبقة المعتمة خلف اللوحة */
-.side-toc-backdrop{
-  position:fixed;inset:0;
-  background:rgba(15,42,74,.42);
-  z-index:1250;
-  opacity:0;visibility:hidden;
-  transition:opacity .3s ease, visibility .3s ease;
+/* المجموعة = باب */
+.octoc-group{ margin-bottom:4px; border-radius:12px; transition:background .2s; }
+.octoc-group.active{ background:rgba(255,255,255,.05); }
+.octoc-part{
+  display:flex; align-items:center; gap:13px; width:100%;
+  background:transparent; border:none; text-align:start;
+  color:#eaf1f5; font-family:inherit; cursor:pointer;
+  padding:11px 12px; border-radius:12px;
+  border-inline-end:3px solid transparent;
+  transition:background .18s, border-color .18s;
 }
-.side-toc-backdrop.open{opacity:1;visibility:visible;}
+.octoc-part:hover{ background:rgba(255,255,255,.07); }
+.octoc-group.active > .octoc-part{ border-inline-end-color:var(--gold); }
+.octoc-part .num{
+  flex-shrink:0; width:32px; height:32px; border-radius:9px;
+  background:rgba(255,255,255,.1); color:var(--gold);
+  display:flex; align-items:center; justify-content:center;
+  font-size:13.5px; font-weight:700;
+  transition:background .18s, color .18s;
+}
+.octoc-group.active > .octoc-part .num{ background:var(--gold); color:var(--navy); }
+.octoc-part .meta{ flex:1; min-width:0; }
+.octoc-part .eyebrow{
+  display:block; font-size:11px; color:var(--gold);
+  font-weight:600; letter-spacing:.4px; margin-bottom:2px; opacity:.92;
+}
+.octoc-part .name{ display:block; font-size:14.5px; font-weight:600; line-height:1.5; color:#fff; }
+.octoc-part .caret{
+  flex-shrink:0; color:rgba(255,255,255,.5); font-size:11px; transition:transform .25s, color .25s;
+}
+.octoc-group.active > .octoc-part .caret{ transform:rotate(-180deg); color:var(--gold); }
+.octoc-part.no-children .caret{ display:none; }
+
+/* الفصول */
+.octoc-sub{ max-height:0; overflow:hidden; transition:max-height .32s ease; }
+.octoc-group.active .octoc-sub{ max-height:1400px; }
+.octoc-sub a{
+  display:flex; align-items:flex-start; gap:9px;
+  padding:9px 14px; margin:1px 10px;
+  color:#b9c8d4; text-decoration:none; font-size:12.8px; line-height:1.6;
+  border-radius:8px; cursor:pointer;
+  transition:background .16s, color .16s;
+}
+.octoc-sub a::before{
+  content:""; flex-shrink:0; margin-top:8px;
+  width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.28);
+  transition:background .16s, transform .16s;
+}
+.octoc-sub a:hover{ background:rgba(255,255,255,.06); color:#fff; }
+.octoc-sub a.active{ color:#fff; background:rgba(201,162,75,.15); }
+.octoc-sub a.active::before{ background:var(--gold); transform:scale(1.4); }
 
 @media (max-width:640px){
-  .side-toc-toggle{top:14px;inset-inline-start:14px;padding:9px 15px;font-size:13.5px;}
+  .octoc-toggle{ top:12px; inset-inline-end:12px; padding:9px 15px; font-size:13.5px; }
+  .octoc{ width:322px; }
 }
 @media print{
-  .side-toc-toggle,.side-toc,.side-toc-backdrop{display:none !important;}
+  .octoc-toggle,.octoc,.octoc-backdrop{ display:none !important; }
 }
 </style>
 </head>
 <body>
 
-<!-- ===== الفهرس الجانبي (تنقّل فقط) ===== -->
-<button class="side-toc-toggle" id="sideTocToggle" aria-expanded="false" aria-controls="sideToc">
+<!-- ===== الفهرس الجانبي التفاعلي (يُبنى بالكامل عبر JS من عناوين المستند) ===== -->
+<button class="octoc-toggle" id="octocToggle" aria-expanded="false" aria-controls="octoc">
   <span class="ic">☰</span><span>الفهرس</span>
 </button>
-<div class="side-toc-backdrop" id="sideTocBackdrop"></div>
-<nav class="side-toc" id="sideToc" aria-label="فهرس الدليل">
-  <div class="side-toc-head">
-    <h3>محتويات الدليل</h3>
-    <button class="close-x" id="sideTocClose" aria-label="إغلاق الفهرس">×</button>
+<div class="octoc-backdrop" id="octocBackdrop"></div>
+<nav class="octoc" id="octoc" aria-label="فهرس الدليل">
+  <div class="octoc-head">
+    <div class="t"><span class="dot"></span><h3>محتويات الدليل</h3></div>
+    <button class="octoc-close" id="octocClose" aria-label="إغلاق الفهرس">&times;</button>
   </div>
-  <ul class="side-toc-list" id="sideTocList">
-    <li><a data-target="0"><span class="n">١</span><span>الباب الأول — الهوية المؤسسية</span></a></li>
-    <li><a data-target="1"><span class="n">٢</span><span>الباب الثاني — نظام التشغيل المؤسسي</span></a></li>
-    <li><a data-target="2"><span class="n">٣</span><span>الباب الثالث — نموذج الدائرة التشغيلية</span></a></li>
-    <li><a data-target="3"><span class="n">٤</span><span>الباب الرابع — الحوكمة</span></a></li>
-    <li><a data-target="4"><span class="n">٥</span><span>الباب الخامس — إدارة الأداء</span></a></li>
-    <li><a data-target="5"><span class="n">٦</span><span>الباب السادس — إدارة المخاطر</span></a></li>
-    <li><a data-target="6"><span class="n">٧</span><span>الباب السابع — إدارة التحسين</span></a></li>
-    <li><a data-target="7"><span class="n">٨</span><span>الباب الثامن — التحول الرقمي</span></a></li>
-    <li><a data-target="8"><span class="n">٩</span><span>الباب التاسع — رحلة العميل</span></a></li>
-    <li><a data-target="9"><span class="n">١٠</span><span>الباب العاشر — رحلة الموظف</span></a></li>
-    <li><a data-target="10"><span class="n">١١</span><span>الباب الحادي عشر — مؤشرات صحة المؤسسة</span></a></li>
-    <li><a data-target="11"><span class="n">١٢</span><span>الباب الثاني عشر — مؤشرات نضج الدوائر</span></a></li>
-    <li><a data-target="12"><span class="n">١٣</span><span>الباب الثالث عشر — النماذج</span></a></li>
-    <li><a data-target="13"><span class="n">١٤</span><span>الباب الرابع عشر — الملاحق</span></a></li>
-  </ul>
+  <div class="octoc-body" id="octocBody"></div>
 </nav>
 
 <div class="cover">
@@ -1008,75 +993,149 @@ html[dir="rtl"] .side-toc{
 </footer>
 </div>
 
-<!-- ===== سكربت الفهرس الجانبي (تنقّل فقط، لا يغيّر المحتوى) ===== -->
+<!-- ===== سكربت الفهرس الجانبي التفاعلي (تنقّل فقط، لا يغيّر المحتوى) ===== -->
 <script>
 (function(){
-  var toggle   = document.getElementById('sideTocToggle');
-  var panel    = document.getElementById('sideToc');
-  var backdrop = document.getElementById('sideTocBackdrop');
-  var closeBtn = document.getElementById('sideTocClose');
-  var links    = Array.prototype.slice.call(
-                   document.querySelectorAll('#sideTocList a[data-target]'));
-  var parts    = Array.prototype.slice.call(
-                   document.querySelectorAll('.part-header'));
+  var toggle   = document.getElementById('octocToggle');
+  var panel    = document.getElementById('octoc');
+  var backdrop = document.getElementById('octocBackdrop');
+  var closeBtn = document.getElementById('octocClose');
+  var bodyBox  = document.getElementById('octocBody');
 
+  var arDigits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+  function toAr(n){
+    return String(n).split('').map(function(d){ return arDigits[+d]!==undefined?arDigits[+d]:d; }).join('');
+  }
+
+  // بناء شجرة الفهرس من عناوين المستند الفعلية (لا يُعدَّل المحتوى إطلاقًا)
+  var parts   = Array.prototype.slice.call(document.querySelectorAll('.part-header'));
+  var allH3   = Array.prototype.slice.call(document.querySelectorAll('.chapter h3'));
+  var groups  = [];
+
+  parts.forEach(function(ph, i){
+    var noEl = ph.querySelector('.part-no');
+    var h2   = ph.querySelector('h2');
+    var next = parts[i+1] || null;
+    var items = [];
+    allH3.forEach(function(h3){
+      var afterThis = ph.compareDocumentPosition(h3) & Node.DOCUMENT_POSITION_FOLLOWING;
+      var beforeNext = !next || (next.compareDocumentPosition(h3) & Node.DOCUMENT_POSITION_PRECEDING);
+      if(afterThis && beforeNext){
+        items.push({ el: h3.closest('.chapter') || h3, title: h3.textContent.trim() });
+      }
+    });
+    groups.push({
+      part: ph,
+      no: i+1,
+      eyebrow: noEl ? noEl.textContent.trim() : '',
+      name: h2 ? h2.textContent.trim() : '',
+      items: items
+    });
+  });
+
+  var spy = []; // عناصر تتبّع التمرير: { a, target, group }
+
+  groups.forEach(function(g){
+    var group = document.createElement('div');
+    group.className = 'octoc-group';
+
+    var btn = document.createElement('button');
+    btn.className = 'octoc-part' + (g.items.length ? '' : ' no-children');
+    btn.innerHTML =
+      '<span class="num">' + toAr(g.no) + '</span>' +
+      '<span class="meta"><span class="eyebrow">' + g.eyebrow + '</span>' +
+      '<span class="name">' + g.name + '</span></span>' +
+      '<span class="caret">▾</span>';
+    group.appendChild(btn);
+
+    var sub = document.createElement('div');
+    sub.className = 'octoc-sub';
+    g.items.forEach(function(it){
+      var a = document.createElement('a');
+      a.href = '#';
+      a.textContent = it.title;
+      a.addEventListener('click', function(e){
+        e.preventDefault();
+        scrollToEl(it.el);
+        afterNav();
+      });
+      sub.appendChild(a);
+      spy.push({ a: a, target: it.el, group: group });
+    });
+    group.appendChild(sub);
+
+    btn.addEventListener('click', function(){
+      var isActive = group.classList.contains('active');
+      setActiveGroup(isActive ? null : group);
+      scrollToEl(g.part);
+      afterNav();
+    });
+
+    if(!g.items.length){
+      spy.push({ a: null, target: g.part, group: group });
+    }
+
+    bodyBox.appendChild(group);
+    g._group = group;
+  });
+
+  function setActiveGroup(group){
+    var open = bodyBox.querySelectorAll('.octoc-group.active');
+    Array.prototype.forEach.call(open, function(x){ if(x !== group) x.classList.remove('active'); });
+    if(group) group.classList.add('active');
+  }
+
+  function scrollToEl(el){
+    var y = el.getBoundingClientRect().top + window.pageYOffset - 24;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  }
+
+  function afterNav(){
+    if(window.matchMedia('(max-width:900px)').matches){ closePanel(); }
+  }
+
+  // فتح/إغلاق اللوحة
   function openPanel(){
     panel.classList.add('open');
     backdrop.classList.add('open');
+    toggle.classList.add('hidden');
     toggle.setAttribute('aria-expanded','true');
   }
   function closePanel(){
     panel.classList.remove('open');
     backdrop.classList.remove('open');
+    toggle.classList.remove('hidden');
     toggle.setAttribute('aria-expanded','false');
   }
-  function togglePanel(){
-    if(panel.classList.contains('open')){ closePanel(); } else { openPanel(); }
-  }
-
-  toggle.addEventListener('click', togglePanel);
+  toggle.addEventListener('click', openPanel);
   closeBtn.addEventListener('click', closePanel);
   backdrop.addEventListener('click', closePanel);
-  document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape'){ closePanel(); }
-  });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closePanel(); });
 
-  // الانتقال إلى الباب المطلوب عند الضغط على عنصر الفهرس
-  links.forEach(function(link){
-    link.addEventListener('click', function(e){
-      e.preventDefault();
-      var i = parseInt(link.getAttribute('data-target'), 10);
-      var target = parts[i];
-      if(target){
-        target.scrollIntoView({ behavior:'smooth', block:'start' });
-      }
-      // على الشاشات الصغيرة نُغلق اللوحة بعد الاختيار
-      if(window.matchMedia('(max-width:900px)').matches){
-        closePanel();
-      }
-      setActive(i);
-    });
-  });
-
-  function setActive(i){
-    links.forEach(function(l, idx){
-      if(idx === i){ l.classList.add('active'); }
-      else { l.classList.remove('active'); }
-    });
-  }
-
-  // تمييز الباب الظاهر حاليًا أثناء التمرير
-  if('IntersectionObserver' in window){
-    var obs = new IntersectionObserver(function(entries){
-      entries.forEach(function(entry){
-        if(entry.isIntersecting){
-          var idx = parts.indexOf(entry.target);
-          if(idx > -1){ setActive(idx); }
-        }
+  // تتبّع القسم الظاهر حاليًا: تمييزه وفتح بابه تلقائيًا
+  var ticking = false;
+  function onScroll(){
+    if(ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(function(){
+      ticking = false;
+      var threshold = 150, cur = null, best = -Infinity;
+      spy.forEach(function(s){
+        var top = s.target.getBoundingClientRect().top;
+        if(top - threshold <= 0 && top > best){ best = top; cur = s; }
       });
-    }, { rootMargin:'-45% 0px -50% 0px', threshold:0 });
-    parts.forEach(function(p){ obs.observe(p); });
+      spy.forEach(function(s){ if(s.a) s.a.classList.remove('active'); });
+      if(cur){
+        if(cur.a) cur.a.classList.add('active');
+        if(!cur.group.classList.contains('active')) setActiveGroup(cur.group);
+      }
+    });
   }
+  window.addEventListener('scroll', onScroll, { passive:true });
+
+  // فتح الباب الأول مبدئيًا ثم مزامنة الحالة
+  if(groups[0] && groups[0]._group) groups[0]._group.classList.add('active');
+  onScroll();
 })();
 </script>
 
