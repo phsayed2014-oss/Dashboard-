@@ -90,6 +90,23 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:radial-gradient(el
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{background:var(--teal-soft);color:var(--teal);text-align:right;padding:10px 12px;border-bottom:2px solid #99f6e4;font-weight:700}
 td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle;transition:background .2s}
+.table-scroll{overflow-x:auto;margin-top:14px;-webkit-overflow-scrolling:touch;border-radius:14px;border:1px solid var(--line);background:#fff}
+table.data-table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;margin:0;table-layout:fixed}
+table.data-table thead th{background:#ecfdf5;color:#0f766e;font-weight:800;font-size:12px;line-height:1.35;text-align:center;vertical-align:middle;padding:14px 8px;border:1px solid #a7f3d0;border-bottom:2px solid #5eead4;white-space:normal;word-break:break-word}
+table.data-table tbody td{padding:11px 8px;border:1px solid #e8efed;vertical-align:middle;text-align:center;background:#fff;word-break:break-word}
+table.data-table tbody tr:nth-child(even) td{background:#fafcfb}
+table.data-table tbody tr:hover td{background:rgba(15,118,110,.05)}
+table.data-table tbody tr.row-t td{background:var(--teal-soft)!important;font-weight:800}
+table.data-table .cell-text{text-align:right}
+table.data-table .cell-idx{font-weight:800;color:var(--teal);text-align:center}
+table.data-table .num{direction:ltr;font-variant-numeric:tabular-nums;text-align:center!important}
+table.data-table-pricing{min-width:1060px}
+table.data-table-products{min-width:820px}
+table.data-table-wide{min-width:720px}
+table.data-table-kpi{min-width:640px}
+table.data-table-kpi .cell-text{min-width:11rem}
+.panel-body table.data-table{font-size:13px}
+.panel-body .table-scroll{box-shadow:0 2px 12px rgba(15,118,110,.06)}
 tbody tr:hover td{background:rgba(15,118,110,.04)}
 .num{direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
 .row-t{background:var(--teal-soft)!important;font-weight:800}
@@ -253,10 +270,25 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
       </div>
     </div>
 
-    <div style="overflow-x:auto;margin-top:14px">
-      <table>
+    <div class="table-scroll">
+      <table class="data-table data-table-products">
+        <colgroup>
+          <col style="width:3%">
+          <col style="width:22%">
+          <col style="width:14%">
+          <col span="5" style="width:10%">
+        </colgroup>
         <thead>
-          <tr><th>#</th><th>الصنف</th><th>الكود</th><th>مباع</th><th>مخزون</th><th>إيراد نصف 2026</th><th>%</th><th>سعر وحدة</th></tr>
+          <tr>
+            <th class="cell-idx">#</th>
+            <th class="cell-text">الصنف</th>
+            <th class="cell-text">الكود</th>
+            <th>مباع</th>
+            <th>مخزون</th>
+            <th>إيراد نصف 2026</th>
+            <th>%</th>
+            <th>سعر وحدة</th>
+          </tr>
         </thead>
         <tbody id="prodRows"></tbody>
       </table>
@@ -291,22 +323,45 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
       </ul>
     </div>
 
-    <table style="margin-bottom:16px;max-width:640px">
-      <thead>
-        <tr><th>المجمع</th><th>إيراد نصف 2026</th><th>وحدات</th><th>% من محفظة PL</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>ص1</td><td class="num">68,805</td><td class="num">1,224</td><td class="num">20.2%</td></tr>
-        <tr><td>ص7</td><td class="num">16,610</td><td class="num">287</td><td class="num">4.9%</td></tr>
-        <tr><td>ص18</td><td class="num">41,020</td><td class="num">663</td><td class="num">12.0%</td></tr>
-        <tr class="row-t"><td>المجموع</td><td class="num">126,435</td><td class="num">2,174</td><td class="num">37.1%</td></tr>
-      </tbody>
-    </table>
-
-    <div style="overflow-x:auto">
-      <table>
+    <div class="table-scroll" style="margin-bottom:16px;max-width:100%">
+      <table class="data-table data-table-kpi" style="max-width:640px">
+        <colgroup>
+          <col style="width:28%">
+          <col span="3" style="width:18%">
+        </colgroup>
         <thead>
-          <tr><th>الصنف</th><th>ص1</th><th>ص7</th><th>ص18</th><th>مجموع المجمعات</th><th>% من صنف المحفظة</th></tr>
+          <tr>
+            <th class="cell-text">المجمع</th>
+            <th>إيراد نصف 2026</th>
+            <th>وحدات</th>
+            <th>% من محفظة PL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="cell-text">ص1</td><td class="num">68,805</td><td class="num">1,224</td><td class="num">20.2%</td></tr>
+          <tr><td class="cell-text">ص7</td><td class="num">16,610</td><td class="num">287</td><td class="num">4.9%</td></tr>
+          <tr><td class="cell-text">ص18</td><td class="num">41,020</td><td class="num">663</td><td class="num">12.0%</td></tr>
+          <tr class="row-t"><td class="cell-text">المجموع</td><td class="num">126,435</td><td class="num">2,174</td><td class="num">37.1%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-scroll">
+      <table class="data-table data-table-wide">
+        <colgroup>
+          <col style="width:16%">
+          <col span="4" style="width:14%">
+          <col style="width:18%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="cell-text">الصنف</th>
+            <th>ص1</th>
+            <th>ص7</th>
+            <th>ص18</th>
+            <th>مجموع المجمعات</th>
+            <th>% من صنف المحفظة</th>
+          </tr>
         </thead>
         <tbody id="cxRows"></tbody>
       </table>
@@ -350,12 +405,25 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
 
     <div class="ok">مثال: تكلفة 10 ر.س → بيع <strong>50 ر.س</strong> (ربح 40 ر.س · 80%) · تكلفة 15 ر.س → بيع <strong>75 ر.س</strong> (ربح 60 ر.س · 80%).</div>
 
-    <div style="overflow-x:auto;margin-top:14px">
-      <table>
+    <div class="table-scroll">
+      <table class="data-table data-table-pricing">
+        <colgroup>
+          <col style="width:3.5%">
+          <col style="width:13%">
+          <col span="8" style="width:10.4%">
+        </colgroup>
         <thead>
           <tr>
-            <th>#</th><th>المنتج</th><th>تكلفة/حبة</th><th>MOQ</th><th>سعر البيع</th><th>ربح/حبة</th><th>هامش %</th>
-            <th>تكلفة أول دفعة MOQ</th><th>إيراد إذا بيعت الدفعة كاملة</th><th>ربح الدفعة</th>
+            <th class="cell-idx">#</th>
+            <th class="cell-text">المنتج</th>
+            <th>تكلفة/حبة</th>
+            <th>MOQ</th>
+            <th>سعر البيع</th>
+            <th>ربح/حبة</th>
+            <th>هامش %</th>
+            <th>تكلفة أول دفعة MOQ</th>
+            <th>إيراد إذا بيعت الدفعة كاملة</th>
+            <th>ربح الدفعة</th>
           </tr>
         </thead>
         <tbody id="costRows"></tbody>
@@ -504,17 +572,30 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
       </div>
     </div>
 
-    <div style="overflow-x:auto;margin-top:14px">
-      <table>
-        <thead><tr><th>KPI</th><th>المستهدف</th><th>التكرار</th><th>المسؤول</th></tr></thead>
+    <div class="table-scroll" style="margin-top:14px">
+      <table class="data-table data-table-kpi">
+        <colgroup>
+          <col style="width:38%">
+          <col style="width:22%">
+          <col style="width:14%">
+          <col style="width:26%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="cell-text">KPI</th>
+            <th>المستهدف</th>
+            <th>التكرار</th>
+            <th>المسؤول</th>
+          </tr>
+        </thead>
         <tbody>
-          <tr><td>مبيعات المجمعات (ص1+ص7+ص18)</td><td class="num">500,000 / شهر</td><td>شهري</td><td>الإدارة التجارية</td></tr>
-          <tr><td>صيدليات خارجية</td><td class="num">300,000 / شهر</td><td>شهري</td><td>الإدارة التجارية</td></tr>
-          <tr><td>أونلاين — نون مينتس وترينديول</td><td class="num">100,000 / شهر</td><td>شهري</td><td>الإدارة التجارية</td></tr>
-          <tr><td>مبيعات B2B</td><td class="num">100,000 / شهر</td><td>شهري</td><td>الإدارة التجارية</td></tr>
-          <tr class="row-t"><td>إجمالي مستهدف العلامة (نوستري)</td><td class="num">1,000,000 / شهر</td><td>شهري</td><td>الإدارة التجارية</td></tr>
-          <tr><td>هامش الربح</td><td class="num">≥ 80%</td><td>شهري</td><td>الإدارة التجارية</td></tr>
-          <tr><td>ترخيص SFDA / تسجيل</td><td class="num">14/14</td><td>عند الإنجاز</td><td>الإدارة التجارية</td></tr>
+          <tr><td class="cell-text">مبيعات المجمعات (ص1+ص7+ص18)</td><td class="num">500,000 / شهر</td><td>شهري</td><td class="cell-text">الإدارة التجارية</td></tr>
+          <tr><td class="cell-text">صيدليات خارجية</td><td class="num">300,000 / شهر</td><td>شهري</td><td class="cell-text">الإدارة التجارية</td></tr>
+          <tr><td class="cell-text">أونلاين — نون مينتس وترينديول</td><td class="num">100,000 / شهر</td><td>شهري</td><td class="cell-text">الإدارة التجارية</td></tr>
+          <tr><td class="cell-text">مبيعات B2B</td><td class="num">100,000 / شهر</td><td>شهري</td><td class="cell-text">الإدارة التجارية</td></tr>
+          <tr class="row-t"><td class="cell-text">إجمالي مستهدف العلامة (نوستري)</td><td class="num">1,000,000 / شهر</td><td>شهري</td><td class="cell-text">الإدارة التجارية</td></tr>
+          <tr><td class="cell-text">هامش الربح</td><td class="num">≥ 80%</td><td>شهري</td><td class="cell-text">الإدارة التجارية</td></tr>
+          <tr><td class="cell-text">ترخيص SFDA / تسجيل</td><td class="num">14/14</td><td>عند الإنجاز</td><td class="cell-text">الإدارة التجارية</td></tr>
         </tbody>
       </table>
     </div>
@@ -536,9 +617,9 @@ const prodRows = document.getElementById('prodRows');
 productsH1.forEach((p,i)=>{
   const pct = totalRev ? (p.revenue/totalRev*100) : 0;
   prodRows.innerHTML += `<tr>
-    <td>${i+1}</td>
-    <td>${p.name}</td>
-    <td class="num">${p.code}</td>
+    <td class="cell-idx">${i+1}</td>
+    <td class="cell-text">${p.name}</td>
+    <td class="num cell-text">${p.code}</td>
     <td class="num">${fmt(p.sold)}</td>
     <td class="num">${fmt(p.stock)}</td>
     <td class="num">${fmt(p.revenue)}</td>
@@ -546,7 +627,7 @@ productsH1.forEach((p,i)=>{
     <td class="num">${p.unit}</td>
   </tr>`;
 });
-prodRows.innerHTML += `<tr class="row-t"><td colspan="3">الإجمالي (نصف 2026)</td><td class="num">6,466</td><td class="num">14,909</td><td class="num">340,645</td><td class="num">100%</td><td></td></tr>`;
+prodRows.innerHTML += `<tr class="row-t"><td colspan="3" class="cell-text">الإجمالي (نصف 2026)</td><td class="num">6,466</td><td class="num">14,909</td><td class="num">340,645</td><td class="num">100%</td><td></td></tr>`;
 
 const barColors = ['#0f766e','#1d4ed8','#b45309','#7c3aed','#be123c','#0284c7'];
 const shareBars = document.getElementById('shareBars');
@@ -581,7 +662,7 @@ let s1=0,s7=0,s18=0,st=0;
 Object.keys(cx).forEach(k=>{
   const r=cx[k]; const t=r.p1+r.p7+r.p18; s1+=r.p1;s7+=r.p7;s18+=r.p18;st+=t;
   cxRows.innerHTML += `<tr>
-    <td>${labels[k]}</td>
+    <td class="cell-text">${labels[k]}</td>
     <td class="num">${fmt(r.p1)}</td>
     <td class="num">${fmt(r.p7)}</td>
     <td class="num">${fmt(r.p18)}</td>
@@ -589,7 +670,7 @@ Object.keys(cx).forEach(k=>{
     <td class="num">${(t/r.all*100).toFixed(1)}%</td>
   </tr>`;
 });
-cxRows.innerHTML += `<tr class="row-t"><td>الإجمالي</td><td class="num">${fmt(s1)}</td><td class="num">${fmt(s7)}</td><td class="num">${fmt(s18)}</td><td class="num">${fmt(st)}</td><td class="num">37.1% من المحفظة</td></tr>`;
+cxRows.innerHTML += `<tr class="row-t"><td class="cell-text">الإجمالي</td><td class="num">${fmt(s1)}</td><td class="num">${fmt(s7)}</td><td class="num">${fmt(s18)}</td><td class="num">${fmt(st)}</td><td class="num">37.1% من المحفظة</td></tr>`;
 
 const MARGIN_GROSS = 0.80;
 const sellFromCost = c => c / (1 - MARGIN_GROSS);
@@ -625,8 +706,8 @@ newProducts.forEach((p,i)=>{
   tMoqCost += p.moqCost;
   tMoqRev += p.moqRevenue;
   costRows.innerHTML += `<tr>
-    <td>${i+1}</td>
-    <td>${p.name}</td>
+    <td class="cell-idx">${i+1}</td>
+    <td class="cell-text">${p.name}</td>
     <td class="num">${p.cost}</td>
     <td class="num">${fmt(p.moq)}</td>
     <td class="num">${fmt(p.sell)}</td>
@@ -638,7 +719,7 @@ newProducts.forEach((p,i)=>{
   </tr>`;
 });
 costRows.innerHTML += `<tr class="row-t">
-  <td colspan="7">الإجمالي (14 صنف)</td>
+  <td colspan="7" class="cell-text">الإجمالي (14 صنف)</td>
   <td class="num">${fmt(tMoqCost)}</td>
   <td class="num">${fmt(tMoqRev)}</td>
   <td class="num">${fmt(tMoqRev - tMoqCost)}</td>
