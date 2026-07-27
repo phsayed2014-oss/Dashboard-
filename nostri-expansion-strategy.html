@@ -22,26 +22,29 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:radial-gradient(el
 #content-store section{background:transparent;border:none;box-shadow:none;padding:0;margin:0}
 .stage{position:relative;width:100%;height:100%;overflow:hidden}
 .stage-bg{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 70% 75%,rgba(59,130,246,.1),transparent 42%),radial-gradient(circle at 25% 25%,rgba(20,184,166,.14),transparent 38%)}
-@keyframes ringSpin{to{transform:rotate(360deg)}}
-.hub{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:min(260px,42vw);height:min(260px,42vw);border-radius:50%;background:linear-gradient(145deg,#0f766e,#115e59 55%,#0e4d8a);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:10;box-shadow:0 0 0 10px rgba(20,184,166,.1),0 0 50px rgba(20,184,166,.28),0 16px 48px rgba(0,0,0,.35)}
-.hub::before{content:'';position:absolute;inset:-14px;border-radius:50%;border:1px dashed rgba(94,234,212,.28);animation:ringSpin 50s linear infinite}
+.orbit-ring{position:absolute;left:50%;top:50%;border-radius:50%;border:1px solid rgba(94,234,212,.18);transform:translate(-50%,-50%);pointer-events:none;z-index:1}
+.orbit-ring.r1{width:min(76vw,600px);height:min(76vw,600px);animation:ringSpinOrbit 70s linear infinite}
+.orbit-ring.r2{width:min(90vw,720px);height:min(90vw,720px);opacity:.45;animation:ringSpinOrbitRev 95s linear infinite reverse}
+@keyframes ringSpinOrbit{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes ringSpinOrbitRev{to{transform:translate(-50%,-50%) rotate(-360deg)}}
+@keyframes ringSpinHub{to{transform:rotate(360deg)}}
+.hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(240px,38vw);height:min(240px,38vw);border-radius:50%;background:linear-gradient(145deg,#0f766e,#115e59 55%,#0e4d8a);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:10;box-shadow:0 0 0 10px rgba(20,184,166,.1),0 0 50px rgba(20,184,166,.28),0 16px 48px rgba(0,0,0,.35)}
+.hub::before{content:'';position:absolute;inset:-14px;border-radius:50%;border:1px dashed rgba(94,234,212,.28);animation:ringSpinHub 50s linear infinite}
 .hub-logo{font-family:'Alexandria',sans-serif;font-size:clamp(2.25rem,6vw,3.25rem);font-weight:900;letter-spacing:5px;position:relative;z-index:1;line-height:1}
 .hub-q{font-size:12px;font-weight:700;margin-top:6px;line-height:1.4;color:#ccfbf1;position:relative;z-index:1}
-.side-rail{position:absolute;top:50%;transform:translateY(-50%);z-index:30;display:flex;flex-direction:column;gap:10px;align-items:center;padding:12px 8px;max-height:calc(100vh - 120px);overflow-y:auto}
-.side-rail.rail-start{right:18px}
-.side-rail.rail-end{left:18px;display:none}
-.node{position:relative;width:78px;height:78px;flex-shrink:0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 30%,rgba(20,184,166,.35),rgba(8,40,38,.92) 65%);border:2px solid rgba(94,234,212,.45);backdrop-filter:blur(10px);cursor:pointer;text-align:center;padding:6px;transition:transform .35s var(--ease),box-shadow .35s,border-color .35s;box-shadow:0 10px 28px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.12)}
-.node::after{content:'';position:absolute;inset:4px;border-radius:50%;border:1px solid rgba(94,234,212,.12);pointer-events:none}
-.node:hover,.node.active{transform:scale(1.08);border-color:#a7f3d0;background:radial-gradient(circle at 30% 25%,rgba(94,234,212,.45),#0f766e 70%);box-shadow:0 0 0 5px rgba(20,184,166,.2),0 14px 36px rgba(20,184,166,.35)}
-.node .n-num{font-family:'Alexandria',sans-serif;font-size:.9rem;font-weight:900;color:#ecfdf5;line-height:1;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,rgba(15,118,110,.9),rgba(14,116,144,.85));border:1px solid rgba(167,243,208,.55);box-shadow:0 2px 8px rgba(0,0,0,.25);position:relative;z-index:1}
-.node .n-label{font-size:9px;font-weight:700;margin-top:4px;line-height:1.15;color:#e0f2f1;position:relative;z-index:1;max-width:68px}
+.nodes{position:absolute;inset:0;z-index:20}
+.node{position:absolute;width:92px;height:92px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 30%,rgba(20,184,166,.35),rgba(8,40,38,.92) 65%);border:2px solid rgba(94,234,212,.45);backdrop-filter:blur(10px);cursor:pointer;text-align:center;padding:8px;transition:transform .35s var(--ease),box-shadow .35s,border-color .35s;box-shadow:0 10px 28px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.12)}
+.node::after{content:'';position:absolute;inset:5px;border-radius:50%;border:1px solid rgba(94,234,212,.12);pointer-events:none}
+.node:hover,.node.active{transform:scale(1.12);border-color:#a7f3d0;background:radial-gradient(circle at 30% 25%,rgba(94,234,212,.45),#0f766e 70%);box-shadow:0 0 0 6px rgba(20,184,166,.2),0 14px 36px rgba(20,184,166,.35)}
+.node .n-num{font-family:'Alexandria',sans-serif;font-size:.95rem;font-weight:900;color:#ecfdf5;line-height:1;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,rgba(15,118,110,.9),rgba(14,116,144,.85));border:1px solid rgba(167,243,208,.55);box-shadow:0 2px 8px rgba(0,0,0,.25);position:relative;z-index:1}
+.node .n-label{font-size:10px;font-weight:700;margin-top:5px;line-height:1.15;color:#e0f2f1;position:relative;z-index:1}
 .kpi-strip{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:15;flex-wrap:wrap;justify-content:center;max-width:96vw}
 .kpi-chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px);border-radius:12px;padding:8px 14px;text-align:center;min-width:88px}
 .kpi-chip .v{font-family:'Alexandria',sans-serif;font-size:1.05rem;font-weight:800;color:#5eead4}
 .kpi-chip .l{font-size:9px;color:#94b8b0;margin-top:2px}
 .overlay{position:fixed;inset:0;z-index:200;background:rgba(2,12,10,.55);backdrop-filter:blur(5px);opacity:0;visibility:hidden;transition:opacity .35s var(--ease),visibility .35s}
 .overlay.open{opacity:1;visibility:visible}
-.panel{position:fixed;z-index:210;inset:auto;top:50%;left:50%;width:min(1120px,97vw);max-height:92vh;transform:translate(-50%,-50%) scale(.96);opacity:0;background:var(--card);color:var(--ink);border-radius:22px;box-shadow:0 28px 72px rgba(0,0,0,.45);display:grid;grid-template-columns:104px 1fr;grid-template-rows:auto 1fr auto;overflow:hidden;transition:transform .45s var(--ease),opacity .4s;pointer-events:none}
+.panel{position:fixed;z-index:210;inset:auto;top:50%;left:50%;width:min(1180px,96vw);max-height:94vh;transform:translate(-50%,-50%) scale(.96);opacity:0;background:var(--card);color:var(--ink);border-radius:22px;box-shadow:0 28px 72px rgba(0,0,0,.45);display:grid;grid-template-columns:104px 1fr;grid-template-rows:auto 1fr auto;overflow:hidden;transition:transform .45s var(--ease),opacity .4s;pointer-events:none}
 .panel.open{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto}
 .panel-rail{grid-row:1 / -1;grid-column:1;background:linear-gradient(180deg,#0b3d3a,#072826);padding:16px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;overflow-y:auto;border-left:1px solid rgba(94,234,212,.15)}
 .panel-rail .p-node{width:72px;height:72px;border-radius:50%;border:2px solid rgba(94,234,212,.35);background:rgba(8,40,38,.55);color:#e0f2f1;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6px;font-family:inherit;transition:transform .25s var(--ease),border-color .25s,box-shadow .25s,background .25s}
@@ -136,12 +139,11 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
   .channel-grid{grid-template-columns:1fr}
   .grid-2,.grid-3{grid-template-columns:1fr}
   .tl-i{grid-template-columns:1fr}
-  .hub{width:150px;height:150px;top:42%}
+  .hub{width:150px;height:150px}
   .hub-logo{font-size:1.75rem}
-  .side-rail.rail-start{right:6px;gap:6px;padding:6px 4px}
-  .node{width:58px;height:58px}
-  .node .n-label{font-size:7px;max-width:52px}
-  .node .n-num{width:22px;height:22px;font-size:.75rem}
+  .node{width:68px;height:68px}
+  .node .n-label{font-size:8px}
+  .orbit-ring{display:none}
   .panel{grid-template-columns:1fr;width:min(100vw,100%);max-height:96vh;border-radius:16px}
   .panel-rail{grid-row:auto;grid-column:1;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;padding:10px;border-left:none;border-bottom:1px solid rgba(94,234,212,.15);justify-content:flex-start}
   .panel-main{grid-column:1}
@@ -154,11 +156,13 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
 
 <div class="stage" id="stage">
   <div class="stage-bg"></div>
+  <div class="orbit-ring r1"></div>
+  <div class="orbit-ring r2"></div>
   <div class="hub">
     <div class="hub-logo">NOSTRI</div>
     <div class="hub-q">الوصول لمليون ريال شهرياً</div>
   </div>
-  <nav class="side-rail rail-start" id="nodes" aria-label="بنود الخطة"></nav>
+  <div class="nodes" id="nodes"></div>
   <div class="kpi-strip">
     <div class="kpi-chip"><div class="v">340,645</div><div class="l">Private Label · نصف 2026</div></div>
     <div class="kpi-chip"><div class="v">126,435</div><div class="l">مجمعات 37.1%</div></div>
@@ -629,19 +633,10 @@ const ORBIT_SECTIONS = [
 ];
 let panelIndex = -1;
 
-function placeNodes() {
-  const el = document.getElementById('nodes');
+function buildPanelRail() {
   const rail = document.getElementById('panelRail');
-  el.innerHTML = '';
   rail.innerHTML = '';
   ORBIT_SECTIONS.forEach((s, i) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'node';
-    btn.innerHTML = `<span class="n-num">${s.num}</span><span class="n-label">${s.label}</span>`;
-    btn.onclick = () => openPanel(i);
-    el.appendChild(btn);
-
     const pbtn = document.createElement('button');
     pbtn.type = 'button';
     pbtn.className = 'p-node';
@@ -649,6 +644,29 @@ function placeNodes() {
     pbtn.onclick = () => openPanel(i);
     rail.appendChild(pbtn);
   });
+}
+
+function placeNodes() {
+  const el = document.getElementById('nodes');
+  el.innerHTML = '';
+  const n = ORBIT_SECTIONS.length;
+  const isMobile = window.innerWidth < 700;
+  const rx = isMobile ? window.innerWidth * 0.34 : Math.min(320, window.innerWidth * 0.36);
+  const ry = isMobile ? window.innerHeight * 0.3 : Math.min(260, window.innerHeight * 0.34);
+  ORBIT_SECTIONS.forEach((s, i) => {
+    const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+    const x = 50 + (rx / window.innerWidth * 100) * Math.cos(angle);
+    const y = 47 + (ry / window.innerHeight * 100) * Math.sin(angle);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'node';
+    btn.style.left = `calc(${x}% - 46px)`;
+    btn.style.top = `calc(${y}% - 46px)`;
+    btn.innerHTML = `<span class="n-num">${s.num}</span><span class="n-label">${s.label}</span>`;
+    btn.onclick = () => openPanel(i);
+    el.appendChild(btn);
+  });
+  if (panelIndex >= 0) setActiveNav(panelIndex);
 }
 
 function setActiveNav(i) {
@@ -699,7 +717,9 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight') openPanel((panelIndex - 1 + ORBIT_SECTIONS.length) % ORBIT_SECTIONS.length);
 });
 
+buildPanelRail();
 placeNodes();
+window.addEventListener('resize', placeNodes);
 requestAnimationFrame(() => animateBarsIn(document.getElementById('content-store')));
 </script>
 </body>
