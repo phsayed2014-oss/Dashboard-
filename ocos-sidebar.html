@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>OCOS - نظام تشغيل الدوائر المؤسسي</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0f2a4a;
+  --navy-light:#1c3f66;
+  --teal:#0e7c86;
+  --teal-light:#12a0ad;
+  --gold:#c9a24b;
+  --bg:#f4f7f9;
+  --card:#ffffff;
+  --text:#233240;
+  --muted:#5c6b78;
+  --border:#dfe6ec;
+}
+*{box-sizing:border-box;}
+body{
+  font-family:'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  margin:0;
+  line-height:1.9;
+}
+.page{max-width:1000px;margin:0 auto;padding:0 24px 60px;}
+
+/* Cover */
+.cover{
+  background:linear-gradient(135deg,var(--navy) 0%, var(--navy-light) 55%, var(--teal) 130%);
+  color:#fff;
+  padding:80px 40px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.cover::before{
+  content:"";
+  position:absolute;inset:0;
+  background:radial-gradient(circle at 80% 20%, rgba(201,162,75,.18), transparent 45%),
+             radial-gradient(circle at 15% 85%, rgba(255,255,255,.08), transparent 40%);
+}
+.cover-inner{position:relative;z-index:1;}
+.cover .badge{
+  display:inline-block;
+  border:1px solid rgba(255,255,255,.4);
+  padding:6px 18px;
+  border-radius:30px;
+  font-size:13px;
+  letter-spacing:1px;
+  color:#e9eef3;
+  margin-bottom:26px;
+}
+.cover h1{
+  font-size:52px;
+  margin:0 0 6px;
+  font-weight:700;
+  letter-spacing:1px;
+}
+.cover h2{
+  font-size:22px;
+  font-weight:400;
+  color:#dce8ea;
+  margin:0 0 34px;
+}
+.cover .subtitle{
+  font-size:19px;
+  color:#f2f5f7;
+  font-weight:500;
+  margin-bottom:44px;
+}
+.cover-meta{
+  display:inline-grid;
+  grid-template-columns:auto auto;
+  gap:10px 26px;
+  text-align:right;
+  font-size:14.5px;
+  background:rgba(255,255,255,.08);
+  padding:22px 30px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.15);
+}
+.cover-meta b{color:var(--gold);font-weight:600;}
+
+/* Section chrome */
+.part-header{
+  background:var(--navy);
+  color:#fff;
+  padding:34px 40px;
+  border-radius:14px;
+  margin:56px 0 26px;
+  position:relative;
+}
+.part-header .part-no{
+  font-size:14px;
+  color:var(--gold);
+  letter-spacing:2px;
+  font-weight:600;
+}
+.part-header h2{margin:6px 0 0;font-size:28px;}
+.chapter{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:26px 30px;
+  margin-bottom:20px;
+  box-shadow:0 1px 3px rgba(15,42,74,.04);
+}
+.chapter h3{
+  color:var(--navy);
+  font-size:19px;
+  border-bottom:2px solid var(--teal);
+  padding-bottom:10px;
+  margin-top:0;
+}
+.chapter h4{color:var(--teal);font-size:15.5px;margin-bottom:6px;}
+.chapter p{color:var(--text);}
+.muted{color:var(--muted);font-size:14px;}
+ul,ol{padding-inline-start:22px;}
+li{margin-bottom:6px;}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin:14px 0 6px;
+  font-size:14px;
+}
+th{
+  background:var(--navy);
+  color:#fff;
+  padding:10px 12px;
+  text-align:right;
+  font-weight:600;
+}
+td{
+  padding:9px 12px;
+  border-bottom:1px solid var(--border);
+  vertical-align:top;
+}
+tr:nth-child(even) td{background:#f8fafb;}
+
+.badge-list{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;}
+.pill{
+  background:#eef6f7;
+  color:var(--teal);
+  border:1px solid #cfe7e9;
+  padding:5px 14px;
+  border-radius:20px;
+  font-size:13px;
+  font-weight:500;
+}
+.pill.navy{background:#eef1f6;color:var(--navy);border-color:#d7dee8;}
+.pill.gold{background:#fbf3e3;color:#8a6d1e;border-color:#eddcb0;}
+
+.flow{
+  display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+  margin:16px 0;
+}
+.flow .step{
+  background:var(--teal);
+  color:#fff;
+  padding:9px 16px;
+  border-radius:8px;
+  font-size:13.5px;
+  font-weight:500;
+  white-space:nowrap;
+}
+.flow .arrow{color:var(--teal);font-weight:700;font-size:16px;}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.mini-card{
+  background:#f7fafb;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:16px 18px;
+}
+.mini-card h5{margin:0 0 8px;color:var(--navy);font-size:14.5px;}
+.mini-card p{margin:0;font-size:13.5px;color:var(--muted);}
+
+.callout{
+  background:#eef8f4;
+  border-inline-start:4px solid var(--teal);
+  padding:14px 20px;
+  border-radius:6px;
+  font-size:14px;
+  margin:14px 0;
+}
+.callout.gold{background:#fbf6ea;border-inline-start-color:var(--gold);}
+
+.toc{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:30px 36px;
+  margin-top:-50px;
+  position:relative;
+  z-index:2;
+  box-shadow:0 8px 24px rgba(15,42,74,.08);
+}
+.toc h3{color:var(--navy);margin-top:0;}
+.toc ol{columns:2;column-gap:40px;font-size:14.5px;padding-inline-start:20px;}
+.toc li{margin-bottom:9px;break-inside:avoid;}
+.toc li b{color:var(--navy);}
+
+.maturity-level{
+  display:flex;align-items:center;gap:14px;
+  padding:12px 16px;border-radius:8px;margin-bottom:8px;
+  border:1px solid var(--border);
+}
+.maturity-level .num{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:700;flex-shrink:0;
+}
+.l1 .num{background:#b6bfc7;} .l2 .num{background:#8aa3b5;}
+.l3 .num{background:var(--teal);} .l4 .num{background:var(--navy);}
+.l5 .num{background:linear-gradient(135deg,var(--gold),#e0b95f);}
+
+.score-bar{
+  display:flex;align-items:center;gap:12px;margin-bottom:10px;
+}
+.score-bar .label{width:110px;font-size:13.5px;color:var(--muted);flex-shrink:0;}
+.score-bar .track{flex:1;background:#e7ecf0;border-radius:6px;height:14px;overflow:hidden;}
+.score-bar .fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-light));}
+.score-bar .val{width:38px;font-size:13px;color:var(--navy);font-weight:600;}
+
+footer{
+  text-align:center;color:var(--muted);font-size:13px;
+  padding:40px 0 10px;border-top:1px solid var(--border);margin-top:50px;
+}
+.section-divider{text-align:center;margin:36px 0;color:var(--border);font-size:20px;letter-spacing:10px;}
+@media print{.page{max-width:100%;}}
+
+/* ============================================================
+   الفهرس الجانبي — Side Index (إضافة تنقّل فقط، دون تغيير المحتوى)
+   ============================================================ */
+:root{ --sidebar-w:300px; }
+
+/* زر فتح/إغلاق الفهرس */
+.side-toc-toggle{
+  position:fixed;
+  top:20px;
+  inset-inline-start:20px;
+  z-index:1200;
+  display:flex;align-items:center;gap:9px;
+  background:var(--navy);
+  color:#fff;
+  border:none;
+  padding:11px 18px;
+  border-radius:30px;
+  font-family:inherit;
+  font-size:14.5px;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:0 6px 18px rgba(15,42,74,.28);
+  transition:background .2s ease, transform .2s ease;
+}
+.side-toc-toggle:hover{background:var(--navy-light);}
+.side-toc-toggle:active{transform:scale(.97);}
+.side-toc-toggle .ic{font-size:17px;line-height:1;}
+
+/* لوحة الفهرس الجانبية */
+.side-toc{
+  position:fixed;
+  top:0;
+  inset-inline-start:0;
+  height:100vh;
+  width:var(--sidebar-w);
+  max-width:86vw;
+  background:linear-gradient(180deg,var(--navy) 0%, var(--navy-light) 100%);
+  color:#fff;
+  z-index:1300;
+  box-shadow:6px 0 26px rgba(15,42,74,.35);
+  transform:translateX(-108%);
+  transition:transform .32s cubic-bezier(.4,.0,.2,1);
+  display:flex;flex-direction:column;
+}
+html[dir="rtl"] .side-toc{
+  inset-inline-start:auto;
+  inset-inline-end:0;
+  transform:translateX(108%);
+  box-shadow:-6px 0 26px rgba(15,42,74,.35);
+}
+.side-toc.open{transform:translateX(0) !important;}
+
+.side-toc-head{
+  padding:22px 24px 16px;
+  border-bottom:1px solid rgba(255,255,255,.14);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.side-toc-head h3{
+  margin:0;font-size:18px;font-weight:700;color:#fff;
+}
+.side-toc-head .close-x{
+  background:rgba(255,255,255,.12);
+  border:none;color:#fff;
+  width:32px;height:32px;border-radius:50%;
+  font-size:18px;cursor:pointer;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s ease;
+}
+.side-toc-head .close-x:hover{background:rgba(255,255,255,.24);}
+
+.side-toc-list{
+  list-style:none;
+  margin:0;padding:10px 0 24px;
+  overflow-y:auto;
+  flex:1;
+}
+.side-toc-list li{margin:0;}
+.side-toc-list a{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 24px;
+  color:#dce8ea;
+  text-decoration:none;
+  font-size:14.5px;
+  border-inline-start:3px solid transparent;
+  transition:background .18s ease, color .18s ease, border-color .18s ease;
+  cursor:pointer;
+}
+.side-toc-list a:hover{
+  background:rgba(255,255,255,.08);
+  color:#fff;
+}
+.side-toc-list a.active{
+  background:rgba(201,162,75,.16);
+  color:#fff;
+  border-inline-start-color:var(--gold);
+}
+.side-toc-list a .n{
+  flex-shrink:0;
+  width:28px;height:28px;border-radius:8px;
+  background:rgba(255,255,255,.12);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:var(--gold);
+}
+.side-toc-list a.active .n{background:var(--gold);color:var(--navy);}
+
+/* الطبقة المعتمة خلف اللوحة */
+.side-toc-backdrop{
+  position:fixed;inset:0;
+  background:rgba(15,42,74,.42);
+  z-index:1250;
+  opacity:0;visibility:hidden;
+  transition:opacity .3s ease, visibility .3s ease;
+}
+.side-toc-backdrop.open{opacity:1;visibility:visible;}
+
+@media (max-width:640px){
+  .side-toc-toggle{top:14px;inset-inline-start:14px;padding:9px 15px;font-size:13.5px;}
+}
+@media print{
+  .side-toc-toggle,.side-toc,.side-toc-backdrop{display:none !important;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== الفهرس الجانبي (تنقّل فقط) ===== -->
+<button class="side-toc-toggle" id="sideTocToggle" aria-expanded="false" aria-controls="sideToc">
+  <span class="ic">☰</span><span>الفهرس</span>
+</button>
+<div class="side-toc-backdrop" id="sideTocBackdrop"></div>
+<nav class="side-toc" id="sideToc" aria-label="فهرس الدليل">
+  <div class="side-toc-head">
+    <h3>محتويات الدليل</h3>
+    <button class="close-x" id="sideTocClose" aria-label="إغلاق الفهرس">×</button>
+  </div>
+  <ul class="side-toc-list" id="sideTocList">
+    <li><a data-target="0"><span class="n">١</span><span>الباب الأول — الهوية المؤسسية</span></a></li>
+    <li><a data-target="1"><span class="n">٢</span><span>الباب الثاني — نظام التشغيل المؤسسي</span></a></li>
+    <li><a data-target="2"><span class="n">٣</span><span>الباب الثالث — نموذج الدائرة التشغيلية</span></a></li>
+    <li><a data-target="3"><span class="n">٤</span><span>الباب الرابع — الحوكمة</span></a></li>
+    <li><a data-target="4"><span class="n">٥</span><span>الباب الخامس — إدارة الأداء</span></a></li>
+    <li><a data-target="5"><span class="n">٦</span><span>الباب السادس — إدارة المخاطر</span></a></li>
+    <li><a data-target="6"><span class="n">٧</span><span>الباب السابع — إدارة التحسين</span></a></li>
+    <li><a data-target="7"><span class="n">٨</span><span>الباب الثامن — التحول الرقمي</span></a></li>
+    <li><a data-target="8"><span class="n">٩</span><span>الباب التاسع — رحلة العميل</span></a></li>
+    <li><a data-target="9"><span class="n">١٠</span><span>الباب العاشر — رحلة الموظف</span></a></li>
+    <li><a data-target="10"><span class="n">١١</span><span>الباب الحادي عشر — مؤشرات صحة المؤسسة</span></a></li>
+    <li><a data-target="11"><span class="n">١٢</span><span>الباب الثاني عشر — مؤشرات نضج الدوائر</span></a></li>
+    <li><a data-target="12"><span class="n">١٣</span><span>الباب الثالث عشر — النماذج</span></a></li>
+    <li><a data-target="13"><span class="n">١٤</span><span>الباب الرابع عشر — الملاحق</span></a></li>
+  </ul>
+</nav>
+
+<div class="cover">
+  <div class="cover-inner">
+    <div class="badge">دليل تشغيل مؤسسي · الإصدار 1.0</div>
+    <h1>OCOS</h1>
+    <h2>Operational Circles Operating System</h2>
+    <div class="subtitle">نظام تشغيل الدوائر المؤسسي — منهجية إدارة موحّدة لقطاعي المجمعات الطبية والصيدليات</div>
+    <div class="cover-meta">
+      <span>المالك</span><b>الإدارة التنفيذية</b>
+      <span>جهة التطبيق</span><b>جميع قطاعات الشركة</b>
+      <span>نوع الوثيقة</span><b>دليل تشغيل مؤسسي (Enterprise Operating Manual)</b>
+      <span>القطاعات المشمولة</span><b>المجمعات الطبية · الصيدليات · الدوائر المشتركة</b>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+<div class="toc">
+  <h3>محتويات الدليل</h3>
+  <ol>
+    <li><b>الباب الأول</b> — الهوية المؤسسية</li>
+    <li><b>الباب الثاني</b> — نظام التشغيل المؤسسي</li>
+    <li><b>الباب الثالث</b> — نموذج الدائرة التشغيلية</li>
+    <li><b>الباب الرابع</b> — الحوكمة</li>
+    <li><b>الباب الخامس</b> — إدارة الأداء</li>
+    <li><b>الباب السادس</b> — إدارة المخاطر</li>
+    <li><b>الباب السابع</b> — إدارة التحسين</li>
+    <li><b>الباب الثامن</b> — التحول الرقمي</li>
+    <li><b>الباب التاسع</b> — رحلة العميل</li>
+    <li><b>الباب العاشر</b> — رحلة الموظف</li>
+    <li><b>الباب الحادي عشر</b> — مؤشرات صحة المؤسسة</li>
+    <li><b>الباب الثاني عشر</b> — مؤشرات نضج الدوائر</li>
+    <li><b>الباب الثالث عشر</b> — النماذج</li>
+    <li><b>الباب الرابع عشر</b> — الملاحق</li>
+  </ol>
+</div>
+
+<!-- ============ PART 1 ============ -->
+<div class="part-header">
+  <div class="part-no">الباب الأول</div>
+  <h2>الهوية المؤسسية</h2>
+</div>
+
+<div class="chapter">
+  <h3>الفصل الأول — المقدمة</h3>
+  <p>في المؤسسات الحديثة، لم يعد نجاح أي إدارة يعتمد على كفاءتها الفردية، وإنما على قدرتها على العمل ضمن منظومة مترابطة تحقق التكامل بين جميع الإدارات والقطاعات. من هذا المنطلق، تم تطوير <b>OCOS</b> ليكون نظام تشغيل مؤسسي موحّد يربط بين الإدارات المختلفة من خلال دوائر تشغيلية مترابطة، تعمل وفق أهداف مشتركة، ومدخلات ومخرجات واضحة، وآليات حوكمة تضمن سرعة اتخاذ القرار وتحقيق الاستدامة التشغيلية.</p>
+  <p>يغطي هذا الدليل قطاعي الشركة الرئيسيين — <b>قطاع المجمعات الطبية</b> و<b>قطاع الصيدليات</b> — كخطي عمل مستقلين لهما دوائرهما الخاصة، إلى جانب الدوائر المشتركة التي تخدم القطاعين معًا تحت مظلة حوكمة موحدة.</p>
+  <h4>أهداف المنهجية</h4>
+  <div class="badge-list">
+    <span class="pill navy">توحيد آلية إدارة القطاعات</span>
+    <span class="pill navy">ربط الإدارات بالأهداف الاستراتيجية</span>
+    <span class="pill navy">تسريع اتخاذ القرار</span>
+    <span class="pill navy">تحسين تجربة العميل</span>
+    <span class="pill navy">رفع كفاءة التشغيل</span>
+    <span class="pill navy">زيادة الإيرادات</span>
+    <span class="pill navy">تحسين التحصيل</span>
+    <span class="pill navy">تعزيز التكامل بين الإدارات</span>
+    <span class="pill navy">دعم التحول الرقمي</span>
+    <span class="pill navy">التحسين المستمر</span>
+    <span class="pill navy">تعزيز المساءلة والحوكمة</span>
+  </div>
+</div>
+
+<div class="chapter">
+  <h3>الفصل الثاني — الرؤية · الرسالة · القيم</h3>
+  <div class="grid3">
+    <div class="mini-card"><h5>الرؤية</h5><p>أن تكون المنظومة مرجعًا تشغيليًا موحدًا يحقق التكامل الكامل بين قطاعي المجمعات الطبية والصيدليات، ويرتقي بمستوى الأداء المؤسسي إلى مصاف الأنظمة الذكية القائمة على البيانات.</p></div>
+    <div class="mini-card"><h5>الرسالة</h5><p>إدارة العمليات عبر دوائر تشغيلية مترابطة، بمساءلة واضحة، وقرارات مبنية على بيانات، لتحقيق أعلى قيمة للعميل والمؤسسة معًا.</p></div>
+    <div class="mini-card"><h5>القيم</h5><p>الشفافية · العميل أولًا · الجودة أولًا · القرار المبني على البيانات · التحسين المستمر · الابتكار · المساءلة · السرعة · الاستدامة · روح الفريق.</p></div>
+  </div>
+</div>
+
+<div class="chapter">
+  <h3>الفصل الثالث — فلسفة المنهجية</h3>
+  <p>تعتمد المنهجية على اعتبار المؤسسة منظومة تشغيلية متكاملة تتكون من دوائر مترابطة، بحيث:</p>
+  <ul>
+    <li>كل دائرة تضيف قيمة حقيقية.</li>
+    <li>مخرجات كل دائرة تمثل مدخلات للدائرة التالية.</li>
+    <li>نجاح أي دائرة يعتمد على نجاح الدوائر المرتبطة بها.</li>
+    <li>الأداء المؤسسي يُقاس بمنظومة واحدة، لا بأداء إدارة منفردة.</li>
+  </ul>
+  <div class="callout">الدائرة التشغيلية هي مجموعة من الإدارات أو الفرق أو العمليات ذات الهدف المشترك، تجتمع بصورة دورية لمتابعة الأداء، واتخاذ القرارات، وإزالة المعوقات، وتحقيق مؤشرات الأداء المستهدفة.</div>
+</div>
+
+<div class="chapter">
+  <h3>الفصل الرابع — المبادئ العشرة للمنهجية</h3>
+  <table>
+    <tr><th>#</th><th>المبدأ</th><th>الوصف</th></tr>
+    <tr><td>1</td><td>التكامل المؤسسي</td><td>جميع الدوائر تعمل كوحدة واحدة</td></tr>
+    <tr><td>2</td><td>القيمة المضافة</td><td>كل دائرة تضيف قيمة حقيقية للدائرة التالية</td></tr>
+    <tr><td>3</td><td>القرار المبني على البيانات</td><td>لا اجتهاد شخصي، بل مؤشرات وبيانات معتمدة</td></tr>
+    <tr><td>4</td><td>المسؤولية والمساءلة</td><td>لكل دائرة مالك مسؤول عن نتائجها</td></tr>
+    <tr><td>5</td><td>الشفافية</td><td>جميع المؤشرات والقرارات وخطط التنفيذ معلنة للجهات المعنية</td></tr>
+    <tr><td>6</td><td>التحسين المستمر</td><td>مراجعة دورية للأداء والعمل على تحسينه باستمرار</td></tr>
+    <tr><td>7</td><td>سرعة الاستجابة</td><td>معالجة المعوقات وفق مستويات تصعيد واضحة</td></tr>
+    <tr><td>8</td><td>الحوكمة</td><td>آليات موحدة للاجتماعات والقرارات والمتابعة والتوثيق</td></tr>
+    <tr><td>9</td><td>التحول الرقمي</td><td>الاعتماد على الأنظمة الرقمية ولوحات المعلومات والتقارير الذكية</td></tr>
+    <tr><td>10</td><td>الترابط</td><td>لا دائرة تعمل بمعزل عن الأخرى، بل جميعها مترابطة لتحقيق الأهداف المؤسسية</td></tr>
+  </table>
+</div>
+
+<div class="chapter">
+  <h3>الفصل الخامس — التعريفات والمصطلحات</h3>
+  <table>
+    <tr><th>المصطلح</th><th>التعريف</th></tr>
+    <tr><td>الدائرة (Circle)</td><td>وحدة تشغيلية دورية تضم إدارات/فرق ذات هدف مشترك</td></tr>
+    <tr><td>المؤشر (KPI)</td><td>مقياس كمي لقياس الأداء مقابل هدف محدد</td></tr>
+    <tr><td>القرار</td><td>مخرج معتمد من اجتماع الدائرة يترتب عليه تكليف وتنفيذ</td></tr>
+    <tr><td>التصعيد (Escalation)</td><td>رفع قضية لمستوى إداري أعلى عند تجاوز حد أو صلاحية معينة</td></tr>
+    <tr><td>SLA</td><td>اتفاقية مستوى خدمة تحدد زمن وجودة الالتزام بين دائرتين أو أكثر</td></tr>
+    <tr><td>KPI / OKR</td><td>مؤشر أداء رئيسي / هدف وأداء رئيسي (تخطيط استراتيجي فصلي)</td></tr>
+    <tr><td>RACI</td><td>مصفوفة تحديد الأدوار: منفّذ / مسؤول / مستشار / يُبلَّغ</td></tr>
+    <tr><td>Dashboard</td><td>لوحة معلومات مرئية تعرض مؤشرات الدائرة لحظيًا</td></tr>
+    <tr><td>Risk</td><td>حدث محتمل قد يؤثر سلبًا على تحقيق أهداف الدائرة</td></tr>
+    <tr><td>Action Plan</td><td>خطة تنفيذية تربط المهام بالمسؤولين والمواعيد</td></tr>
+    <tr><td>Governance</td><td>مجموعة القواعد والصلاحيات التي تحكم عمل الدائرة</td></tr>
+  </table>
+</div>
+
+<!-- ============ PART 2 ============ -->
+<div class="part-header">
+  <div class="part-no">الباب الثاني</div>
+  <h2>نظام التشغيل المؤسسي</h2>
+</div>
+
+<div class="chapter">
+  <h3>الفصل السادس — الهيكل العام للمنهجية</h3>
+  <p>يتكون نظام OCOS من خمس طبقات متتابعة:</p>
+  <div class="flow">
+    <span class="step">الاستراتيجية</span><span class="arrow">←</span>
+    <span class="step">الحوكمة</span><span class="arrow">←</span>
+    <span class="step">الدوائر التشغيلية</span><span class="arrow">←</span>
+    <span class="step">العمليات</span><span class="arrow">←</span>
+    <span class="step">التحسين المستمر</span>
+  </div>
+  <p class="muted">هرم التشغيل المؤسسي المرجعي:</p>
+  <div class="flow" style="flex-direction:column;align-items:stretch;">
+    <span class="step" style="text-align:center;">الرؤية والرسالة</span>
+    <span class="step" style="text-align:center;">الاستراتيجية والأهداف</span>
+    <span class="step" style="text-align:center;">الدوائر الاستراتيجية</span>
+    <span class="step" style="text-align:center;">الدوائر التشغيلية المشتركة</span>
+    <span class="step" style="text-align:center;background:var(--navy);">دوائر المجمعات الطبية &nbsp;|&nbsp; دوائر الصيدليات</span>
+    <span class="step" style="text-align:center;">العمليات اليومية</span>
+    <span class="step" style="text-align:center;">البيانات والمؤشرات</span>
+    <span class="step" style="text-align:center;">التحليل واتخاذ القرار</span>
+    <span class="step" style="text-align:center;">التحسين المستمر والابتكار</span>
+  </div>
+</div>
+
+<div class="chapter">
+  <h3>الفصل السابع — هيكل الدوائر التشغيلية</h3>
+  <p>تنقسم الدوائر إلى أربع مجموعات، على أن يُلاحظ أن <b>القطاع الطبي ليس قطاعًا واحدًا بل قطاعين مستقلين</b>: قطاع المجمعات الطبية وقطاع الصيدليات، لكل منهما دوائره الخاصة.</p>
+
+  <h4>أولًا — الدوائر الاستراتيجية</h4>
+  <div class="badge-list">
+    <span class="pill gold">المجلس التنفيذي</span><span class="pill gold">الأداء المؤسسي</span><span class="pill gold">الاستراتيجية</span>
+  </div>
+
+  <h4>ثانيًا — الدوائر التشغيلية المشتركة (Corporate)</h4>
+  <div class="badge-list">
+    <span class="pill">التشغيل</span><span class="pill">الجودة</span><span class="pill">الموارد البشرية</span>
+    <span class="pill">تقنية المعلومات والتحول الرقمي</span><span class="pill">المالية والسيولة</span><span class="pill">المشاريع</span>
+    <span class="pill">التسويق</span><span class="pill">تطوير الأعمال</span><span class="pill">تجربة العميل</span>
+    <span class="pill">الكول سنتر</span><span class="pill">التطبيق الإلكتروني</span><span class="pill">التحصيل</span>
+    <span class="pill">B2B</span><span class="pill">الاستراتيجية والأداء</span>
+  </div>
+
+  <div class="grid2">
+    <div class="mini-card">
+      <h5>ثالثًا — قطاع المجمعات الطبية</h5>
+      <p>تشغيل المجمعات · الإدارة الطبية · التأمين · الموافقات الطبية · دورة الإيرادات · المطالبات · الترميز الطبي · المختبر · الأشعة · جراحات اليوم الواحد · المناظير · العلاج الطبيعي · تجربة المريض · التطبيق الإلكتروني · الكول سنتر · التحصيل · الشبكات الطبية</p>
+    </div>
+    <div class="mini-card">
+      <h5>رابعًا — قطاع الصيدليات</h5>
+      <p>تشغيل الصيدليات (المبيعات، الإنتاجية، الفروع) · تجربة العميل · البيع الإلكتروني · الكول سنتر · التطبيق الإلكتروني · المشتريات · إدارة الأصناف (راكدة، سريعة الحركة، نواقص، مخزون، توفر) · التسعير والعروض (أسعار، خصومات، عروض، منافسين) · الموردين (شركات، وكلاء، مصانع) · B2B · العقود · السداد · التحصيل · الامتثال الدوائي (هيئة الغذاء والدواء، التتبع الدوائي، الأدوية الخاضعة للرقابة) · المخزون (جرد، انتهاء، هالك، مرتجعات) · الخدمات الصيدلانية (تطعيمات، فيتامينات وريدية، رعاية دوائية، عيادات صيدلانية) · الربحية (هامش ربح، ربحية الفرع، ربحية الصنف)</p>
+    </div>
+  </div>
+
+  <div class="callout gold">لتفادي تعارض الصلاحيات: أي دائرة تظهر في <b>الدوائر المشتركة</b> (مثل التحصيل أو B2B أو تجربة العميل) تضع السياسة والمستهدفات الموحدة على مستوى الشركة، بينما نسختها داخل <b>قطاع المجمعات</b> أو <b>قطاع الصيدليات</b> تتولى التنفيذ التشغيلي اليومي الخاص بذلك القطاع.</div>
+</div>
+
+<!-- ============ PART 3 ============ -->
+<div class="part-header">
+  <div class="part-no">الباب الثالث</div>
+  <h2>نموذج الدائرة التشغيلية (Operational Circle Canvas)</h2>
+</div>
+
+<div class="chapter">
+  <h3>بطاقة الدائرة الموحدة — العناصر الأساسية</h3>
+  <table>
+    <tr><th>البند</th><th>الوصف</th></tr>
+    <tr><td>اسم الدائرة / القطاع</td><td>—</td></tr>
+    <tr><td>التصنيف</td><td>استراتيجية / تشغيلية / داعمة / رقابية</td></tr>
+    <tr><td>مالك الدائرة / مقرر الدائرة</td><td>—</td></tr>
+    <tr><td>دورية الاجتماع</td><td>يومي / أسبوعي / شهري / ربع سنوي</td></tr>
+    <tr><td>مدة ومكان الاجتماع</td><td>—</td></tr>
+    <tr><td>لوحة المؤشرات</td><td>رابط Dashboard</td></tr>
+  </table>
+
+  <div class="grid2" style="margin-top:18px;">
+    <div class="mini-card"><h5>رسالة الدائرة</h5><p>لماذا وجدت هذه الدائرة؟ — سطران فقط. مثال: «ضمان تحقيق أعلى كفاءة تشغيلية من خلال متابعة الأداء واتخاذ القرارات وإزالة المعوقات بما يحقق أهداف القطاع».</p></div>
+    <div class="mini-card"><h5>الهدف الاستراتيجي</h5><p>ترتبط الدائرة بأحد أهداف الشركة: رفع الإيرادات ✔ تحسين تجربة العميل ✔ التحول الرقمي ✔ رفع الكفاءة التشغيلية ✔ تحسين الربحية</p></div>
+  </div>
+
+  <h4 style="margin-top:22px;">العمليات داخل الاجتماع</h4>
+  <div class="flow">
+    <span class="step">مراجعة المؤشرات</span><span class="arrow">←</span>
+    <span class="step">تحليل الانحرافات</span><span class="arrow">←</span>
+    <span class="step">تحديد الأسباب</span><span class="arrow">←</span>
+    <span class="step">اتخاذ القرار</span><span class="arrow">←</span>
+    <span class="step">تعيين المسؤول</span><span class="arrow">←</span>
+    <span class="step">تحديد موعد التنفيذ</span><span class="arrow">←</span>
+    <span class="step">متابعة التنفيذ</span>
+  </div>
+
+  <div class="grid2">
+    <div class="mini-card"><h5>المدخلات</h5><p>تقارير الأداء · KPIs · شكاوى العملاء · التقارير المالية · تقارير الجودة · المخاطر · المشاريع · الطلبات · الملاحظات</p></div>
+    <div class="mini-card"><h5>المخرجات</h5><p>✅ قرارات ✅ مهام ✅ تصعيدات ✅ مشاريع ✅ تحديث سياسات ✅ تحسين إجراءات</p></div>
+  </div>
+
+  <h4 style="margin-top:22px;">أصحاب المصلحة (مثال)</h4>
+  <table>
+    <tr><th>الجهة</th><th>الدور</th></tr>
+    <tr><td>التشغيل</td><td>رئيسي</td></tr>
+    <tr><td>المالية</td><td>شريك</td></tr>
+    <tr><td>الجودة</td><td>داعم</td></tr>
+    <tr><td>تقنية المعلومات</td><td>داعم</td></tr>
+    <tr><td>الموارد البشرية</td><td>داعم</td></tr>
+  </table>
+
+  <h4 style="margin-top:22px;">دورة حياة الدائرة</h4>
+  <div class="flow">
+    <span class="step">جمع البيانات</span><span class="arrow">←</span><span class="step">تحليل الأداء</span><span class="arrow">←</span>
+    <span class="step">اجتماع الدائرة</span><span class="arrow">←</span><span class="step">اتخاذ القرار</span><span class="arrow">←</span>
+    <span class="step">تكليف المسؤولين</span><span class="arrow">←</span><span class="step">التنفيذ</span><span class="arrow">←</span>
+    <span class="step">قياس النتائج</span><span class="arrow">←</span><span class="step">التحسين المستمر</span>
+  </div>
+
+  <h4 style="margin-top:22px;">مؤشرات نجاح الدائرة</h4>
+  <div class="badge-list">
+    <span class="pill">نسبة تنفيذ القرارات</span><span class="pill">نسبة حضور الأعضاء</span>
+    <span class="pill">متوسط زمن إغلاق المهام</span><span class="pill">عدد القرارات المنجزة</span>
+    <span class="pill">نسبة تحقيق KPI</span><span class="pill">زمن اتخاذ القرار</span>
+    <span class="pill">نسبة التصعيدات المغلقة</span>
+  </div>
+</div>
+
+<div class="chapter">
+  <h3>خريطة ترابط الدائرة (Circle Integration Map)</h3>
+  <p class="muted">لكل دائرة صفحة توضح علاقتها بجميع الدوائر الأخرى — مثال:</p>
+  <table>
+    <tr><th>الدائرة المرتبطة</th><th>نوع العلاقة</th><th>ما تستلمه</th><th>ما تسلمه</th><th>SLA</th></tr>
+    <tr><td>التسويق</td><td>مدخلات</td><td>الحملات والعملاء المحتملون</td><td>معدل التحويل</td><td>أسبوعي</td></tr>
+    <tr><td>الكول سنتر</td><td>تبادل</td><td>المواعيد</td><td>نتائج التواصل</td><td>يومي</td></tr>
+    <tr><td>التشغيل</td><td>تصعيد</td><td>المعوقات</td><td>قرارات التشغيل</td><td>أسبوعي</td></tr>
+    <tr><td>المالية</td><td>تقارير</td><td>الإيرادات</td><td>التحصيل</td><td>شهري</td></tr>
+    <tr><td>الجودة</td><td>رقابة</td><td>نتائج التدقيق</td><td>خطط التحسين</td><td>شهري</td></tr>
+  </table>
+</div>
+
+<!-- ============ PART 4 ============ -->
+<div class="part-header">
+  <div class="part-no">الباب الرابع</div>
+  <h2>الحوكمة</h2>
+</div>
+
+<div class="chapter">
+  <h3>ميثاق الدائرة (Circle Charter)</h3>
+  <p>يصدر لكل دائرة ميثاق رسمي يوضح: الهدف من إنشائها، الصلاحيات الممنوحة، حدود اتخاذ القرار، الجهات التي تتبع لها، الجهات التي تؤثر فيها، مؤشرات نجاحها، ومعايير إنهائها أو إعادة هيكلتها.</p>
+</div>
+
+<div class="chapter">
+  <h3>مصفوفة القرار (Decision Matrix)</h3>
+  <table>
+    <tr><th>نوع القرار</th><th>مالك الدائرة</th><th>مدير القطاع</th><th>اللجنة التنفيذية</th><th>الرئيس التنفيذي</th></tr>
+    <tr><td>تشغيلي</td><td>✔</td><td></td><td></td><td></td></tr>
+    <tr><td>مالي</td><td>✔</td><td>✔</td><td></td><td></td></tr>
+    <tr><td>استثماري</td><td></td><td>✔</td><td>✔</td><td></td></tr>
+    <tr><td>استراتيجي</td><td></td><td></td><td>✔</td><td>✔</td></tr>
+  </table>
+</div>
+
+<div class="chapter">
+  <h3>مصفوفة المسؤوليات (RACI)</h3>
+  <table>
+    <tr><th>النشاط</th><th>Responsible</th><th>Accountable</th><th>Consulted</th><th>Informed</th></tr>
+    <tr><td>إعداد التقرير</td><td>التشغيل</td><td>مدير القطاع</td><td>المالية</td><td>الإدارة</td></tr>
+    <tr><td>اعتماد القرار</td><td>مدير الدائرة</td><td>المدير التنفيذي</td><td>الجودة</td><td>الجميع</td></tr>
+    <tr><td>تنفيذ القرار</td><td>الإدارة المختصة</td><td>مدير الإدارة</td><td>التشغيل</td><td>الدائرة</td></tr>
+  </table>
+</div>
+
+<div class="chapter">
+  <h3>اتفاقية مستوى الخدمة الداخلية (Internal SLA)</h3>
+  <table>
+    <tr><th>الخدمة</th><th>الزمن</th><th>الجودة</th><th>المسؤول</th></tr>
+    <tr><td>إرسال تقرير الأداء</td><td>قبل الاجتماع بـ24 ساعة</td><td>100%</td><td>مقرر الدائرة</td></tr>
+    <tr><td>تنفيذ القرار</td><td>خلال 5 أيام</td><td>95%</td><td>الإدارة المختصة</td></tr>
+    <tr><td>الرد على التصعيد</td><td>خلال 48 ساعة</td><td>100%</td><td>مالك الدائرة</td></tr>
+  </table>
+</div>
+
+<div class="chapter">
+  <h3>مصفوفة التصعيد</h3>
+  <table>
+    <tr><th>نوع المشكلة</th><th>المستوى الأول</th><th>المستوى الثاني</th><th>المستوى الثالث</th></tr>
+    <tr><td>تشغيلية</td><td>مدير الإدارة</td><td>مدير القطاع</td><td>الرئيس التنفيذي</td></tr>
+    <tr><td>مالية</td><td>المالية</td><td>المدير المالي</td><td>اللجنة التنفيذية</td></tr>
+    <tr><td>تقنية</td><td>تقنية المعلومات</td><td>مدير التقنية</td><td>اللجنة الرقمية</td></tr>
+  </table>
+  <div class="callout">يمثّل "مدير القطاع" المستوى الوسيط بين البورد التشغيلي والمجلس التنفيذي لكل من قطاع المجمعات الطبية وقطاع الصيدليات على حدة.</div>
+</div>
+
+<!-- ============ PART 5 ============ -->
+<div class="part-header">
+  <div class="part-no">الباب الخامس</div>
+  <h2>إدارة الأداء</h2>
+</div>
+
+<div class="chapter">
+  <h3>بطاقة مؤشر الأداء (KPI Card)</h3>
+  <p>كل مؤشر يجب أن يكون موثقًا بالعناصر التالية: اسم المؤشر · التعريف · طريقة الاحتساب · مصدر البيانات · مسؤول القياس · دورية القياس · المستهدف · الحد الأدنى المقبول · إجراءات التصحيح.</p>
+  <h4>الأدوات المرتبطة داخل لوحة قيادة واحدة</h4>
+  <div class="badge-list">
+    <span class="pill">KPIs</span><span class="pill">OKRs</span><span class="pill">SLAs</span>
+    <span class="pill">Risk Indicators</span><span class="pill">Quality Indicators</span><span class="pill">Financial Indicators</span>
+    <span class="pill">Balanced Scorecard</span>
+  </div>
+</div>
+
+<div class="chapter">
+  <h3>لوحة قيادة الدائرة (Circle Dashboard)</h3>
+  <div class="grid3">
+    <div class="mini-card"><h5>الأداء</h5><p>KPIs · OKRs · SLA · نسبة الإنجاز</p></div>
+    <div class="mini-card"><h5>القرارات</h5><p>المفتوحة · المغلقة · المتأخرة</p></div>
+    <div class="mini-card"><h5>المشاريع</h5><p>عدد المشاريع · نسبة الإنجاز</p></div>
+    <div class="mini-card"><h5>المخاطر</h5><p>عالية · متوسطة · منخفضة</p></div>
+    <div class="mini-card"><h5>رضا العميل</h5><p>مؤشر مباشر لكل دائرة تلامس العميل</p></div>
+    <div class="mini-card"><h5>التحسينات</h5><p>عدد المبادرات المنفذة وأثرها</p></div>
+  </div>
+</div>
+
+<div class="chapter">
+  <h3>نظام تقييم الدوائر الشهري</h3>
+  <div class="score-bar"><span class="label">تحقيق المؤشرات</span><div class="track"><div class="fill" style="width:30%"></div></div><span class="val">30%</span></div>
+  <div class="score-bar"><span class="label">تنفيذ القرارات</span><div class="track"><div class="fill" style="width:25%"></div></div><span class="val">25%</span></div>
+  <div class="score-bar"><span class="label">الالتزام بالمواعيد</span><div class="track"><div class="fill" style="width:15%"></div></div><span class="val">15%</span></div>
+  <div class="score-bar"><span class="label">جودة التقارير</span><div class="track"><div class="fill" style="width:10%"></div></div><span class="val">10%</span></div>
+  <div class="score-bar"><span class="label">التحسين المستمر</span><div class="track"><div class="fill" style="width:10%"></div></div><span class="val">10%</span></div>
+  <div class="score-bar"><span class="label">رضا الجهات الأخرى</span><div class="track"><div class="fill" style="width:10%"></div></div><span class="val">10%</span></div>
+
+  <h4 style="margin-top:20px;">شهادة الاعتماد السنوية</h4>
+  <p>مراجعة سنوية للحوكمة والأداء والتكامل وتنفيذ القرارات ونضج العمليات، تنتهي بتصنيف: 🥉 برونزي &nbsp;|&nbsp; 🥈 فضي &nbsp;|&nbsp; 🥇 ذهبي &nbsp;|&nbsp; 💎 بلاتيني</p>
+</div>
+
+<!-- ============ PART 6 ============ -->
+<div class="part-header">
+  <div class="part-no">الباب السادس</div>
+  <h2>إدارة المخاطر</h2>
+</div>
+
+<div class="chapter">
+  <h3>سجل المخاطر المؤسسي</h3>
+  <table>
+    <tr><th>الخطر</th><th>السبب</th><th>التأثير</th><th>الاحتمالية</th><th>خطة المعالجة</th><th>المالك</th></tr>
+    <tr><td colspan="6" class="muted">يُعبَّأ لكل دائرة عند التوثيق الفعلي</td></tr>
+  </table>
+  <h4>تصنيف خريطة المخاطر المؤسسية</h4>
+  <div class="badge-list">
+    <span class="pill">تشغيلية</span><span class="pill">مالية</span><span class="pill">قانونية</span>
+    <span class="pill">طبية</span><span class="pill">تقنية</span><span class="pill">سمعة</span>
+    <span class="pill">موارد بشرية</span><span class="pill">مشاريع</span>
+  </div>
+</div>
+
+<div class="chapter">
+  <h3>نظام الإنذار المبكر (Early Warning System)</h3>
+  <p>لكل دائرة حدود تنبيه؛ عند تجاوزها يتم التصعيد تلقائيًا. أمثلة:</p>
+  <ul>
+    <li>انخفاض الإيرادات أكثر من 5%</li>
+    <li>زيادة الرفض الطبي</li>
+    <li>زيادة الشكاوى</li>
+    <li>انخفاض رضا العملاء</li>
+    <li>انخفاض إشغال العيادات</li>
+  </ul>
+  <div class="callout gold">يرتبط هذا الفصل مباشرة بمصفوفة التصعيد في الباب الرابع، ويُغذّي مؤشر صحة المؤسسة في الباب الحادي عشر.</div>
+</div>
+
+<!-- ============ PART 7 ============ -->
+<div class="part-header">
+  <div class="part-no">الباب السابع</div>
+  <h2>إدارة التحسين</h2>
+</div>
+
+<div class="chapter">
+  <h3>نموذج التحسين المستمر (Continuous Improvement)</h3>
+  <div class="flow" style="flex-direction:column;align-items:stretch;">
+    <span class="step" style="text-align:center;">اكتشاف المشكلة</span>
+    <span class="step" style="text-align:center;">تحليل السبب الجذري</span>
+    <span class="step" style="text-align:center;">اقتراح الحل</span>
+    <span class="step" style="text-align:center;">اعتماد الحل</span>
+    <span class="step" style="text-align:center;">التنفيذ</span>
+    <span class="step" style="text-align:center;">قياس النتائج</span>
+    <span class="step" style="text-align:center;">توحيد الإجراء</span>
+  </div>
+  <p class="muted">تعتمد الدورة الكاملة أيضًا على أدوات: <b>Lean</b> · <b>Kaizen</b> · <b>PDCA</b> (Plan–Do–Check–Act)</p>
+</div>
+
+<div class="chapter">
+  <h3>سجل المعرفة المؤسسية (Knowledge Base)</h3>
+  <p>بعد انتهاء كل مشروع أو معالجة مشكلة، يُسجَّل: المشكلة · السبب الجذري · الحل · الدروس المستفادة · الإجراء الوقائي — حتى لا تتكرر الأخطاء.</p>
+  <h4>سجل الفرص</h4>
+  <p>ليست المخاطر فقط: فرص الإيرادات · فرص التوسع · فرص خفض التكاليف · فرص التحول الرقمي.</p>
+  <h4>بنك المبادرات (Initiative Portfolio)</h4>
+  <p>لكل دائرة مبادرات تشغيلية، مالية، جودة، رقمية، وتجربة عميل — تُقيَّم بأثرها وتُربط بالأهداف الاستراتيجية عبر مصفوفة الأولويات (الأثر × التكلفة × السرعة × المخاطر).</p>
+</div>
+
+<!-- ============ PART 8 ============ -->
+<div class="part-header">
+  <div class="part-no">الباب الثامن</div>
+  <h2>التحول الرقمي</h2>
+</div>
+
+<div class="chapter">
+  <h3>خارطة تدفق البيانات (Data Flow Map)</h3>
+  <div class="flow">
+    <span class="step">PANORAMA</span><span class="arrow">←</span><span class="step">NPHIES</span><span class="arrow">←</span>
+    <span class="step">ERP</span><span class="arrow">←</span><span class="step">CRM</span><span class="arrow">←</span>
+    <span class="step">Call Center</span><span class="arrow">←</span><span class="step">Website</span><span class="arrow">←</span>
+    <span class="step">Mobile App</span><span class="arrow">←</span><span class="step">Power BI</span><span class="arrow">←</span>
+    <span class="step" style="background:var(--navy);">الدائرة التشغيلية</span>
+  </div>
+  <h4 style="margin-top:20px;">سجل التحول الرقمي</h4>
+  <div class="badge-list">
+    <span class="pill">الأنظمة</span><span class="pill">الأتمتة</span><span class="pill">الذكاء الاصطناعي</span>
+    <span class="pill">التطبيقات</span><span class="pill">التكامل بين الأنظمة</span>
+  </div>
+  <h4 style="margin-top:20px;">بطاقة الدائرة الذكية</h4>
+  <p>كل دائرة رقمية بالكامل تحتوي على: Dashboard · AI Assistant · KPI · Risk · Projects · Decisions · Action Tracker · SLA Monitor.</p>
+</div>
+
+<!-- ============ PART 9 ============ -->
+<div class="part-header">
+  <div class="part-no">الباب التاسع</div>
+  <h2>رحلة العميل</h2>
+</div>
+<div class="chapter">
+  <p>ترسم رحلة العميل الكاملة، ويُحدَّد دور كل دائرة داخل كل محطة منها:</p>
+  <div class="flow">
+    <span class="step">التسويق</span><span class="arrow">←</span><span class="step">الكول سنتر</span><span class="arrow">←</span>
+    <span class="step">التطبيق</span><span class="arrow">←</span><span class="step">الحجز</span><span class="arrow">←</span>
+    <span class="step">الاستقبال</span><span class="arrow">←</span><span class="step">العيادة</span><span class="arrow">←</span>
+    <span class="step">المختبر</span><span class="arrow">←</span><span class="step">الأشعة</span><span class="arrow">←</span>
+    <span class="step">التأمين</span><span class="arrow">←</span><span class="step">الفاتورة</span><span class="arrow">←</span>
+    <span class="step">الصيدلية</span><span class="arrow">←</span><span class="step">التقييم</span>
+  </div>
+</div>
+
+<!-- ============ PART 10 ============ -->
+<div class="part-header">
+  <div class="part-no">الباب العاشر</div>
+  <h2>رحلة الموظف</h2>
+</div>
+<div class="chapter">
+  <div class="flow">
+    <span class="step">الاستقطاب</span><span class="arrow">←</span><span class="step">التعيين</span><span class="arrow">←</span>
+    <span class="step">التدريب</span><span class="arrow">←</span><span class="step">التقييم</span><span class="arrow">←</span>
+    <span class="step">الحوافز</span><span class="arrow">←</span><span class="step">التطوير</span><span class="arrow">←</span>
+    <span class="step">الترقية</span><span class="arrow">←</span><span class="step">الاحتفاظ</span>
+  </div>
+  <p class="muted">تحدد هذه الرحلة مسؤولية كل دائرة (الموارد البشرية بشكل رئيسي، وبالتشارك مع التشغيل والجودة) عند كل محطة.</p>
+</div>
+
+<!-- ============ PART 11 ============ -->
+<div class="part-header">
+  <div class="part-no">الباب الحادي عشر</div>
+  <h2>مؤشرات صحة المؤسسة (Enterprise Health Index)</h2>
+</div>
+<div class="chapter">
+  <p>لا تُقاس الإيرادات فقط، بل صحة المؤسسة ككل، وتظهر على لوحة واحدة:</p>
+  <div class="badge-list">
+    <span class="pill">الصحة المالية</span><span class="pill">الصحة التشغيلية</span>
+    <span class="pill">صحة تجربة العميل</span><span class="pill">صحة الموظفين</span>
+    <span class="pill">صحة الجودة</span><span class="pill">صحة المشاريع</span>
+    <span class="pill">صحة التحول الرقمي</span><span class="pill">صحة دورة الإيرادات</span>
+    <span class="pill">صحة الامتثال</span><span class="pill">صحة المخاطر</span>
+  </div>
+</div>
+
+<!-- ============ PART 12 ============ -->
+<div class="part-header">
+  <div class="part-no">الباب الثاني عشر</div>
+  <h2>مؤشرات نضج الدوائر</h2>
+</div>
+
+<div class="chapter">
+  <h3>نموذج نضج الدائرة (Circle Maturity Model)</h3>
+  <div class="maturity-level l1"><div class="num">1</div><div><b>تأسيس</b> — اجتماعات غير منتظمة وقرارات غير موثقة</div></div>
+  <div class="maturity-level l2"><div class="num">2</div><div><b>منظم</b> — اجتماعات منتظمة مع متابعة محدودة</div></div>
+  <div class="maturity-level l3"><div class="num">3</div><div><b>متكامل</b> — مؤشرات وقرارات موثقة، والتزام جيد بالتنفيذ</div></div>
+  <div class="maturity-level l4"><div class="num">4</div><div><b>مؤسسي</b> — تكامل كامل مع الدوائر الأخرى، واعتماد على البيانات في القرار</div></div>
+  <div class="maturity-level l5"><div class="num">5</div><div><b>ذكي (AI Driven)</b> — تحليلات تنبؤية وذكاء اصطناعي وتحسين مستمر</div></div>
+</div>
+
+<div class="chapter">
+  <h3>مؤشر صحة الدوائر التشغيلية (OCHI — Operational Circle Health Index)</h3>
+  <p>يقيس مدى "صحة" الدائرة ذاتها، لا نتائجها فقط — كل دائرة تحصل على درجة من 100 عبر خمسة محاور:</p>
+  <div class="score-bar"><span class="label">الأداء</span><div class="track"><div class="fill" style="width:20%"></div></div><span class="val">20</span></div>
+  <div class="score-bar"><span class="label">الالتزام</span><div class="track"><div class="fill" style="width:20%"></div></div><span class="val">20</span></div>
+  <div class="score-bar"><span class="label">التكامل</span><div class="track"><div class="fill" style="width:20%"></div></div><span class="val">20</span></div>
+  <div class="score-bar"><span class="label">التحسين</span><div class="track"><div class="fill" style="width:20%"></div></div><span class="val">20</span></div>
+  <div class="score-bar"><span class="label">الحوكمة</span><div class="track"><div class="fill" style="width:20%"></div></div><span class="val">20</span></div>
+  <p class="muted">التوزيع أعلاه مقترح بالتساوي (20 لكل محور) ويمكن تعديله بحسب أولويات الإدارة التنفيذية عند الاعتماد الرسمي.</p>
+</div>
+
+<div class="grid2">
+  <div class="chapter">
+    <h3>مؤشر ترابط الدوائر (Connectivity Index)</h3>
+    <p>يقيس: سرعة انتقال المعلومات · جودة المدخلات · الالتزام بالـ SLA · نسبة تأخر المخرجات · عدد نقاط التعطل بين الدوائر — يكشف الاختناقات التشغيلية بين الإدارات.</p>
+  </div>
+  <div class="chapter">
+    <h3>مؤشر سرعة القرار (Decision Velocity)</h3>
+    <p>يقيس: زمن اكتشاف المشكلة · زمن مناقشتها · زمن اعتماد القرار · زمن التنفيذ · زمن إغلاق المهمة.</p>
+  </div>
+</div>
+
+<div class="chapter">
+  <h3>مؤشر القيمة المضافة الشهري</h3>
+  <p>كل دائرة تجيب شهريًا على سؤال واحد: <b>ما القيمة التي أضفتها هذا الشهر؟</b> — وليس «ماذا فعلت؟» — عبر قياس: الإيراد المضاف · التكلفة المخفضة · الوقت الموفر · رضا العميل · جودة الخدمة.</p>
+</div>
+
+<!-- ============ PART 13 ============ -->
+<div class="part-header">
+  <div class="part-no">الباب الثالث عشر</div>
+  <h2>النماذج</h2>
+</div>
+
+<div class="chapter">
+  <h3>نموذج محضر الاجتماع الموحد</h3>
+  <ol>
+    <li>افتتاح الاجتماع</li>
+    <li>مراجعة محضر الاجتماع السابق</li>
+    <li>مراجعة مؤشرات الأداء</li>
+    <li>مراجعة خطة العمل</li>
+    <li>مراجعة المخاطر</li>
+    <li>مناقشة المعوقات</li>
+    <li>القرارات</li>
+    <li>المهام</li>
+    <li>التصعيدات</li>
+    <li>موعد الاجتماع القادم</li>
+  </ol>
+</div>
+
+<div class="chapter">
+  <h3>سجل النماذج الإضافية</h3>
+  <div class="badge-list">
+    <span class="pill">بطاقة KPI</span><span class="pill">بطاقة المخاطر</span><span class="pill">بطاقة المبادرة</span>
+    <span class="pill">خطة العمل</span><span class="pill">سجل القرارات المؤسسي</span><span class="pill">سجل الفرص</span>
+    <span class="pill">سجل الدروس المستفادة</span><span class="pill">نموذج التصعيد</span><span class="pill">تقييم الدائرة</span>
+  </div>
+  <table style="margin-top:14px;">
+    <tr><th>سجل القرارات المؤسسي</th></tr>
+    <tr><td>رقم القرار | الدائرة | القرار | المسؤول | الحالة | الأثر</td></tr>
+  </table>
+  <table>
+    <tr><th>سجل المخاطر المؤسسي</th></tr>
+    <tr><td>الخطر | السبب | التأثير | الاحتمالية | خطة المعالجة | المالك</td></tr>
+  </table>
+  <table>
+    <tr><th>خطة العمل</th></tr>
+    <tr><td>المهمة | المسؤول | البداية | النهاية | نسبة الإنجاز</td></tr>
+  </table>
+</div>
+
+<!-- ============ PART 14 ============ -->
+<div class="part-header">
+  <div class="part-no">الباب الرابع عشر</div>
+  <h2>الملاحق</h2>
+</div>
+
+<div class="chapter">
+  <h3>خارطة المنهجية الكاملة</h3>
+  <div class="flow" style="flex-direction:column;align-items:stretch;">
+    <span class="step" style="text-align:center;">الرؤية والاستراتيجية</span>
+    <span class="step" style="text-align:center;">المجلس التنفيذي</span>
+    <span class="step" style="text-align:center;">الدوائر الاستراتيجية</span>
+    <span class="step" style="text-align:center;">الدوائر المشتركة</span>
+    <span class="step" style="text-align:center;background:var(--navy);">دوائر المجمعات &nbsp;|&nbsp; دوائر الصيدليات</span>
+    <span class="step" style="text-align:center;">دورة الإيرادات والتحصيل</span>
+    <span class="step" style="text-align:center;">المالية والسيولة</span>
+    <span class="step" style="text-align:center;">الجودة والتحسين والتحول الرقمي</span>
+    <span class="step" style="text-align:center;">تحقيق أهداف المؤسسة</span>
+  </div>
+</div>
+
+<div class="chapter">
+  <h3>خارطة الاعتماد (Governance Map)</h3>
+  <p>توضح من يعتمد ماذا عبر مستويات: التشغيل ← المدير التنفيذي ← اللجنة التنفيذية ← مجلس الإدارة.</p>
+</div>
+
+<div class="chapter">
+  <h3>ميثاق الثقافة المؤسسية</h3>
+  <div class="badge-list">
+    <span class="pill navy">روح الفريق</span><span class="pill navy">الشفافية</span><span class="pill navy">القرار المبني على البيانات</span>
+    <span class="pill navy">العميل أولًا</span><span class="pill navy">الجودة أولًا</span><span class="pill navy">التحسين المستمر</span>
+    <span class="pill navy">الابتكار</span><span class="pill navy">المساءلة</span><span class="pill navy">السرعة</span>
+    <span class="pill navy">الاستدامة</span>
+  </div>
+</div>
+
+<div class="chapter">
+  <h3>نظام مراجعة المنهجية</h3>
+  <p>كل ستة أشهر تتم مراجعة: الهيكل · الدوائر · المؤشرات · الحوكمة · إضافة دوائر جديدة حسب الحاجة.</p>
+</div>
+
+<div class="section-divider">• • •</div>
+<footer>
+  OCOS — Operational Circles Operating System — دليل تشغيل مؤسسي، الإصدار 1.0 — مجمعات التعاون الطبية
+</footer>
+</div>
+
+<!-- ===== سكربت الفهرس الجانبي (تنقّل فقط، لا يغيّر المحتوى) ===== -->
+<script>
+(function(){
+  var toggle   = document.getElementById('sideTocToggle');
+  var panel    = document.getElementById('sideToc');
+  var backdrop = document.getElementById('sideTocBackdrop');
+  var closeBtn = document.getElementById('sideTocClose');
+  var links    = Array.prototype.slice.call(
+                   document.querySelectorAll('#sideTocList a[data-target]'));
+  var parts    = Array.prototype.slice.call(
+                   document.querySelectorAll('.part-header'));
+
+  function openPanel(){
+    panel.classList.add('open');
+    backdrop.classList.add('open');
+    toggle.setAttribute('aria-expanded','true');
+  }
+  function closePanel(){
+    panel.classList.remove('open');
+    backdrop.classList.remove('open');
+    toggle.setAttribute('aria-expanded','false');
+  }
+  function togglePanel(){
+    if(panel.classList.contains('open')){ closePanel(); } else { openPanel(); }
+  }
+
+  toggle.addEventListener('click', togglePanel);
+  closeBtn.addEventListener('click', closePanel);
+  backdrop.addEventListener('click', closePanel);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){ closePanel(); }
+  });
+
+  // الانتقال إلى الباب المطلوب عند الضغط على عنصر الفهرس
+  links.forEach(function(link){
+    link.addEventListener('click', function(e){
+      e.preventDefault();
+      var i = parseInt(link.getAttribute('data-target'), 10);
+      var target = parts[i];
+      if(target){
+        target.scrollIntoView({ behavior:'smooth', block:'start' });
+      }
+      // على الشاشات الصغيرة نُغلق اللوحة بعد الاختيار
+      if(window.matchMedia('(max-width:900px)').matches){
+        closePanel();
+      }
+      setActive(i);
+    });
+  });
+
+  function setActive(i){
+    links.forEach(function(l, idx){
+      if(idx === i){ l.classList.add('active'); }
+      else { l.classList.remove('active'); }
+    });
+  }
+
+  // تمييز الباب الظاهر حاليًا أثناء التمرير
+  if('IntersectionObserver' in window){
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var idx = parts.indexOf(entry.target);
+          if(idx > -1){ setActive(idx); }
+        }
+      });
+    }, { rootMargin:'-45% 0px -50% 0px', threshold:0 });
+    parts.forEach(function(p){ obs.observe(p); });
+  }
+})();
+</script>
+
+</body>
+</html>
