@@ -239,7 +239,7 @@ footer{
    (تنقّل فقط: يُبنى ديناميكيًا من عناوين المستند، دون أي تغيير للمحتوى)
    ============================================================ */
 .octoc-toggle{
-  position:fixed; top:18px; inset-inline-end:18px; z-index:1200;
+  position:fixed; top:18px; left:18px; z-index:1200;
   display:inline-flex; align-items:center; gap:9px;
   background:var(--navy); color:#fff; border:none;
   padding:11px 18px; border-radius:30px;
@@ -260,15 +260,14 @@ footer{
 .octoc-backdrop.open{ opacity:1; visibility:visible; }
 
 .octoc{
-  position:fixed; top:0; inset-inline-end:0; height:100vh;
+  position:fixed; top:0; left:0; height:100vh;
   width:344px; max-width:88vw; z-index:1300;
   background:linear-gradient(195deg,#0d2544 0%, var(--navy) 46%, #0b2039 100%);
   color:#fff; display:flex; flex-direction:column;
-  box-shadow:-16px 0 44px rgba(9,25,48,.42);
-  transform:translateX(105%);
+  box-shadow:16px 0 44px rgba(9,25,48,.42);
+  transform:translateX(-105%);
   transition:transform .34s cubic-bezier(.4,0,.2,1);
 }
-[dir="rtl"] .octoc{ transform:translateX(-105%); }
 .octoc.open{ transform:translateX(0) !important; }
 
 .octoc-head{
@@ -350,7 +349,7 @@ footer{
 .octoc-sub a.active::before{ background:var(--gold); transform:scale(1.4); }
 
 @media (max-width:640px){
-  .octoc-toggle{ top:12px; inset-inline-end:12px; padding:9px 15px; font-size:13.5px; }
+  .octoc-toggle{ top:12px; left:12px; padding:9px 15px; font-size:13.5px; }
   .octoc{ width:322px; }
 }
 @media print{
