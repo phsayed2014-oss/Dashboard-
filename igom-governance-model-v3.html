@@ -1024,6 +1024,7 @@
         </div>
         <div class="principle clickable">
           <strong>فصل المستويات</strong>
+          لعدم تداخل السلطات بين الإدارات.
         </div>
         <div class="principle clickable">
           <strong>المساءلة</strong>
@@ -1102,13 +1103,17 @@
         svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
         while(svg.firstChild) svg.removeChild(svg.firstChild);
 
-        // gradient + defs
+        // gradient + arrowhead marker
         var defs = document.createElementNS(SVGNS,'defs');
         defs.innerHTML =
           '<linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">' +
             '<stop offset="0" stop-color="#1e5f91"/>' +
             '<stop offset="1" stop-color="#29a3b8"/>' +
-          '</linearGradient>';
+          '</linearGradient>' +
+          '<marker id="arrow" viewBox="0 0 10 10" refX="7.5" refY="5" ' +
+            'markerWidth="7" markerHeight="7" orient="auto-start-reverse">' +
+            '<path d="M0 0 L10 5 L0 10 z" fill="#1e5f91"/>' +
+          '</marker>';
         svg.appendChild(defs);
 
         links.forEach(function(pair){
@@ -1119,7 +1124,7 @@
           var x1 = pr.left + pr.width/2 - box.left;
           var y1 = pr.bottom - box.top;
           var x2 = cr.left + cr.width/2 - box.left;
-          var y2 = cr.top - box.top;
+          var y2 = cr.top - box.top - 8; // leave room so the arrowhead points at the card
           var dy = (y2 - y1);
           var c1y = y1 + dy*0.45;
           var c2y = y2 - dy*0.45;
@@ -1131,7 +1136,8 @@
           path.setAttribute('stroke','url(#lg)');
           path.setAttribute('stroke-width','3');
           path.setAttribute('stroke-linecap','round');
-          path.setAttribute('opacity','0.9');
+          path.setAttribute('opacity','0.95');
+          path.setAttribute('marker-end','url(#arrow)');
           svg.appendChild(path);
         });
       }
