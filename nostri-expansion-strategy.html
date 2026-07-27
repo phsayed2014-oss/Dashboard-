@@ -53,7 +53,10 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:radial-gradient(el
 .panel-rail .p-node .pl{font-size:8.5px;font-weight:700;margin-top:4px;line-height:1.2;max-width:64px;color:#ccfbf1}
 .panel-main{grid-column:2;display:flex;flex-direction:column;min-height:0;min-width:0;background:#f4f8f7}
 .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 28px;background:linear-gradient(135deg,#0f766e,#0e4d8a);color:#fff;flex-shrink:0}
+.panel-head.head-strategic{align-items:flex-start;padding:22px 28px 20px}
 .panel-head h2{font-family:'Alexandria',sans-serif;font-size:1.45rem;font-weight:800}
+.panel-head.head-strategic h2{font-size:1.08rem;line-height:1.6;font-weight:700;max-width:54em}
+.panel-body > h2:first-child{font-family:'Alexandria',sans-serif;font-size:1.35rem;font-weight:800;color:var(--teal);margin:4px 0 14px}
 .panel-head .sub{font-size:12px;opacity:.92;margin-top:4px}
 .panel-close{width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;background:rgba(255,255,255,.15);color:#fff;font-size:20px;font-weight:700}
 .panel-body{padding:22px 28px 28px;overflow-y:auto;flex:1;background:#f4f8f7;font-size:14px}
@@ -218,9 +221,6 @@ tbody tr:hover td{background:rgba(15,118,110,.04)}
 
 <div id="content-store" aria-hidden="true">
   <section id="baseline">
-    <div class="strategy-cover" role="note">
-      <p>الهدف الاستراتيجي: الانفصال بشركة توزيع تحمل علامة <strong>Nostri</strong> بعد ثلاث سنوات.</p>
-    </div>
     <h2><span class="sec-num">1</span> أين نحن؟</h2>
     <p class="lead"><strong>9</strong> منتجات تحت علامة «نوستري» (Private Label)، تُباع عبر <strong>49</strong> صيدلية. أرقام النصف الأول من 2026 في الجدول أدناه.</p>
 
@@ -657,6 +657,8 @@ const batchAMoq = newProducts.filter(p => batchA.includes(p.name)).reduce((s,p) 
 const batchEl = document.getElementById('batchAMoq');
 if (batchEl) batchEl.textContent = '~' + fmt(batchAMoq);
 
+const STRATEGIC_GOAL = 'الهدف الاستراتيجي: الانفصال بشركة توزيع تحمل علامة Nostri بعد ثلاث سنوات.';
+
 const ORBIT_SECTIONS = [
   { id:'baseline', num:1, label:'الوضع الحالي', title:'أين نحن؟', sub:'نصف 2026 · Private Label' },
   { id:'complexes', num:2, label:'المجمعات', title:'ص1 · ص7 · ص18', sub:'Nostri في المجمعات' },
@@ -735,10 +737,21 @@ function openPanel(i) {
   const meta = ORBIT_SECTIONS[i];
   const src = document.getElementById(meta.id);
   const body = document.getElementById('panelBody');
+  const panelHead = document.querySelector('.panel-head');
+  const panelTitle = document.getElementById('panelTitle');
   body.innerHTML = src ? src.innerHTML : '';
-  body.querySelector('h2')?.remove();
+  body.querySelector('.strategy-cover')?.remove();
+
+  if (meta.id === 'baseline') {
+    panelHead.classList.add('head-strategic');
+    panelTitle.innerHTML = 'الهدف الاستراتيجي: الانفصال بشركة توزيع تحمل علامة <strong>Nostri</strong> بعد ثلاث سنوات.';
+  } else {
+    panelHead.classList.remove('head-strategic');
+    body.querySelector('h2')?.remove();
+    panelTitle.textContent = meta.title;
+  }
+
   document.getElementById('panelSub').textContent = `البند ${meta.num} من ${ORBIT_SECTIONS.length} · ${meta.sub}`;
-  document.getElementById('panelTitle').textContent = meta.title;
   body.scrollTop = 0;
   document.getElementById('overlay').classList.add('open');
   document.getElementById('panel').classList.add('open');
