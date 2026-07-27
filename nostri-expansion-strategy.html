@@ -55,7 +55,7 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:radial-gradient(el
 .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 28px;background:linear-gradient(135deg,#0f766e,#0e4d8a);color:#fff;flex-shrink:0}
 .panel-head.head-strategic{align-items:flex-start;padding:22px 28px 20px}
 .panel-head h2{font-family:'Alexandria',sans-serif;font-size:1.45rem;font-weight:800}
-.panel-head.head-strategic h2{font-size:1.08rem;line-height:1.6;font-weight:700;max-width:54em}
+.panel-head.head-strategic h2{font-size:1.2rem;line-height:1.55;font-weight:800;max-width:54em}
 .panel-body > h2:first-child{font-family:'Alexandria',sans-serif;font-size:1.35rem;font-weight:800;color:var(--teal);margin:4px 0 14px}
 .panel-head .sub{font-size:12px;opacity:.92;margin-top:4px}
 .panel-close{width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;background:rgba(255,255,255,.15);color:#fff;font-size:20px;font-weight:700}
@@ -656,8 +656,6 @@ const batchA = ['Baby Shampoo','Mouth Wash HA','Vitamin C','Strepsils Menthol','
 const batchAMoq = newProducts.filter(p => batchA.includes(p.name)).reduce((s,p) => s + p.moqCost, 0);
 const batchEl = document.getElementById('batchAMoq');
 if (batchEl) batchEl.textContent = '~' + fmt(batchAMoq);
-
-const STRATEGIC_GOAL = 'الهدف الاستراتيجي: الانفصال بشركة توزيع تحمل علامة Nostri بعد ثلاث سنوات.';
 
 const ORBIT_SECTIONS = [
   { id:'baseline', num:1, label:'الوضع الحالي', title:'أين نحن؟', sub:'نصف 2026 · Private Label' },
