@@ -45,21 +45,21 @@ th{color:var(--muted);font-size:.72rem;font-weight:600}
 <body>
 <div class="wrap">
   <h1>مركز البيانات — كتابات الأطباء والمبيعات</h1>
-  <p class="sub">ارفع تقرير الكتابات في خانة المجمع، وتقرير المبيعات في خانة الصيدلية. الأرقام تُجمع تلقائياً لـ 14 صنف.</p>
+  <p class="sub">التعاون الأول ↔ صيدلية 1 · التعاون الثاني ↔ صيدلية 18 · التعاون الثالث ↔ صيدلية 7 — ارفع تقرير الكتابات والمبيعات لكل زوج.</p>
   <div class="alert" id="libAlert"></div>
 
   <div class="hub">
     <div class="hub-col">
-      <h2>كتابات الأطباء — 3 مجمعات</h2>
-      <div class="slot" data-kind="rx" data-id="c1"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">مجمع 1</div><div class="slot-meta" id="meta-rx-c1">لم يُرفع تقرير</div></div>
-      <div class="slot" data-kind="rx" data-id="c2"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">مجمع 2</div><div class="slot-meta" id="meta-rx-c2">لم يُرفع تقرير</div></div>
-      <div class="slot" data-kind="rx" data-id="c3"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">مجمع 3</div><div class="slot-meta" id="meta-rx-c3">لم يُرفع تقرير</div></div>
+      <h2>كتابات الأطباء — مجمعات التعاون</h2>
+      <div class="slot" data-kind="rx" data-id="c1"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">التعاون الأول</div><div class="slot-meta" id="meta-rx-c1">لم يُرفع تقرير · مبيعات: صيدلية 1</div></div>
+      <div class="slot" data-kind="rx" data-id="c2"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">التعاون الثاني</div><div class="slot-meta" id="meta-rx-c2">لم يُرفع تقرير · مبيعات: صيدلية 18</div></div>
+      <div class="slot" data-kind="rx" data-id="c3"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">التعاون الثالث</div><div class="slot-meta" id="meta-rx-c3">لم يُرفع تقرير · مبيعات: صيدلية 7</div></div>
     </div>
     <div class="hub-col">
-      <h2>مبيعات الصيدليات — 3 فروع</h2>
-      <div class="slot" data-kind="sale" data-id="p1"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">صيدلية 1</div><div class="slot-meta" id="meta-sale-p1">لم يُرفع تقرير</div></div>
-      <div class="slot" data-kind="sale" data-id="p2"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">صيدلية 2</div><div class="slot-meta" id="meta-sale-p2">لم يُرفع تقرير</div></div>
-      <div class="slot" data-kind="sale" data-id="p3"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">صيدلية 3</div><div class="slot-meta" id="meta-sale-p3">لم يُرفع تقرير</div></div>
+      <h2>مبيعات الصيدليات</h2>
+      <div class="slot" data-kind="sale" data-id="p1"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">صيدلية 1</div><div class="slot-meta" id="meta-sale-p1">لم يُرفع تقرير · مع التعاون الأول</div></div>
+      <div class="slot" data-kind="sale" data-id="p2"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">صيدلية 18</div><div class="slot-meta" id="meta-sale-p2">لم يُرفع تقرير · مع التعاون الثاني</div></div>
+      <div class="slot" data-kind="sale" data-id="p3"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">صيدلية 7</div><div class="slot-meta" id="meta-sale-p3">لم يُرفع تقرير · مع التعاون الثالث</div></div>
     </div>
   </div>
 
@@ -119,6 +119,19 @@ const PRODUCTS = [
 ];
 
 const STORE_KEY = 'rx-sales-hub-v2';
+const SITES = {
+  c1: { complex: 'التعاون الأول', pharmacy: 'صيدلية 1', peer: 'p1' },
+  c2: { complex: 'التعاون الثاني', pharmacy: 'صيدلية 18', peer: 'p2' },
+  c3: { complex: 'التعاون الثالث', pharmacy: 'صيدلية 7', peer: 'p3' },
+  p1: { complex: 'التعاون الأول', pharmacy: 'صيدلية 1', peer: 'c1' },
+  p2: { complex: 'التعاون الثاني', pharmacy: 'صيدلية 18', peer: 'c2' },
+  p3: { complex: 'التعاون الثالث', pharmacy: 'صيدلية 7', peer: 'c3' }
+};
+function siteLabel(id) {
+  const s = SITES[id];
+  if (!s) return id;
+  return id.startsWith('c') ? s.complex : s.pharmacy;
+}
 const state = {
   rx: { c1: null, c2: null, c3: null },
   sale: { p1: null, p2: null, p3: null }
@@ -279,9 +292,9 @@ async function detectPdfKind(file, onProgress) {
   return { kind: 'unknown', pages };
 }
 
-function slotPeer(kind, id) {
-  const n = id.slice(1);
-  return (kind === 'rx' ? 'p' : 'c') + n;
+function slotPeer(expectedKind, id) {
+  const s = SITES[id];
+  return s ? s.peer : id;
 }
 
 function parseRxPages(pages) {
@@ -362,7 +375,7 @@ async function processFile(expectedKind, slotId, file) {
     let storeId = slotId;
     if (fileKind !== expectedKind) {
       storeId = slotPeer(expectedKind, slotId);
-      toast('تم توجيه الملف تلقائياً إلى ' + (fileKind === 'rx' ? 'المجمع' : 'الصيدلية') + ' المقابل', false);
+      toast('تم توجيه الملف إلى ' + siteLabel(storeId), false);
     }
     if (fileKind === 'rx') {
       if (!rxRows.length) throw new Error('لم تُستخرج كتابات من الملف');
