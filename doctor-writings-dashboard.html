@@ -6,21 +6,21 @@
 <title>مركز البيانات | كتابات ومبيعات</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0b1020;--card:#131b2e;--border:rgba(255,255,255,.1);--text:#eef2ff;--dim:#94a3b8;--muted:#64748b;--teal:#14b8a6;--amber:#fbbf24;--rose:#fb7185;--violet:#a78bfa;--r:12px;--side:320px;--side-collapsed:52px}
+:root{--bg:#f1f5f9;--card:#fff;--border:#e2e8f0;--text:#0f172a;--dim:#475569;--muted:#64748b;--teal:#0d9488;--amber:#d97706;--rose:#e11d48;--violet:#7c3aed;--input:#f8fafc;--r:12px;--side:320px;--side-collapsed:52px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'IBM Plex Sans Arabic','Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
 .app{display:flex;min-height:100vh;transition:all .25s}
-.sidebar{width:var(--side);flex-shrink:0;background:linear-gradient(180deg,#10182b 0%,#0c1222 100%);border-left:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;transition:width .25s ease}
+.sidebar{width:var(--side);flex-shrink:0;background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);border-left:1px solid var(--border);box-shadow:-2px 0 12px rgba(15,23,42,.04);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;transition:width .25s ease}
 .sidebar.collapsed{width:var(--side-collapsed)}
 .sidebar-head{padding:12px 12px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
 .sidebar-head .row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:10px}
 .sidebar-head h2{font-size:.88rem;color:var(--teal);font-weight:700}
-.btn-icon{border:none;background:rgba(255,255,255,.06);color:var(--dim);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:1rem;line-height:1}
-.btn-icon:hover{background:rgba(20,184,166,.15);color:var(--text)}
+.btn-icon{border:none;background:var(--input);color:var(--dim);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:1rem;line-height:1;border:1px solid var(--border)}
+.btn-icon:hover{background:rgba(13,148,136,.1);color:var(--teal)}
 .period-switch{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
-.period-switch button{padding:8px 6px;border-radius:8px;border:1px solid var(--border);background:rgba(0,0,0,.2);color:var(--dim);font:inherit;font-size:.75rem;font-weight:700;cursor:pointer}
-.period-switch button.active{background:rgba(20,184,166,.18);border-color:rgba(20,184,166,.45);color:var(--text)}
-.period-label{width:100%;padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:#1a2438;color:var(--text);font:inherit;font-size:.78rem}
+.period-switch button{padding:8px 6px;border-radius:8px;border:1px solid var(--border);background:var(--input);color:var(--dim);font:inherit;font-size:.75rem;font-weight:700;cursor:pointer}
+.period-switch button.active{background:rgba(13,148,136,.12);border-color:rgba(13,148,136,.45);color:var(--teal)}
+.period-label{width:100%;padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--input);color:var(--text);font:inherit;font-size:.78rem}
 .side-inner{flex:1;overflow-y:auto;padding:10px 12px 14px}
 .sidebar.collapsed .side-inner,.sidebar.collapsed .sidebar-head .period-switch,.sidebar.collapsed .sidebar-head .period-label,.sidebar.collapsed .sidebar-head h2,.sidebar.collapsed .sidebar-head .hint-upload{display:none}
 .sidebar.collapsed .sidebar-head{padding:10px 8px}
@@ -28,8 +28,10 @@ body{font-family:'IBM Plex Sans Arabic','Inter',system-ui,sans-serif;background:
 .sidebar.collapsed .sidebar-fab{display:grid;place-items:center;width:100%;padding:8px 0}
 .main{flex:1;min-width:0;padding:16px 18px 32px}
 .view-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:12px;padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);font-size:.82rem}
-.view-bar select,.view-bar input{background:#1a2438;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;font:inherit}
-.alert{display:none;margin-bottom:12px;padding:10px 12px;border-radius:var(--r);background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.35);color:#fecdd3;font-size:.84rem}
+.view-bar select,.view-bar input{background:var(--input);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;font:inherit}
+.btn-soft{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--input);color:var(--text);font:inherit;cursor:pointer}
+.btn-soft:hover{background:#e2e8f0}
+.alert{display:none;margin-bottom:12px;padding:10px 12px;border-radius:var(--r);background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-size:.84rem}
 .alert.show{display:block}
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
 @media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
@@ -37,11 +39,11 @@ body{font-family:'IBM Plex Sans Arabic','Inter',system-ui,sans-serif;background:
 .kpi .l{font-size:.68rem;color:var(--muted);font-weight:600}
 .kpi .v{font-size:1.25rem;font-weight:700;font-family:Inter,sans-serif;margin-top:2px}
 .kpi .cmp{font-size:.7rem;margin-top:4px;font-family:Inter,sans-serif}
-.cmp-up{color:#4ade80}.cmp-down{color:var(--rose)}.cmp-flat{color:var(--dim)}
+.cmp-up{color:#15803d}.cmp-down{color:var(--rose)}.cmp-flat{color:var(--dim)}
 .brand-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .brand-card{border-radius:var(--r);padding:14px;border:1px solid var(--border)}
-.brand-card.nostri{background:linear-gradient(135deg,rgba(20,184,166,.12),rgba(20,184,166,.04))}
-.brand-card.pure{background:linear-gradient(135deg,rgba(167,139,250,.14),rgba(167,139,250,.04))}
+.brand-card.nostri{background:linear-gradient(135deg,rgba(13,148,136,.1),#fff)}
+.brand-card.pure{background:linear-gradient(135deg,rgba(124,58,237,.08),#fff)}
 .brand-card .t{font-size:.85rem;font-weight:700;margin-bottom:6px}
 .brand-card .v{font-size:1.4rem;font-weight:800;font-family:Inter,sans-serif}
 .brand-card .sub{font-size:.72rem;color:var(--dim);margin-top:4px}
@@ -58,28 +60,34 @@ th{color:var(--muted);font-size:.7rem;font-weight:600}
 .num{font-family:Inter,sans-serif;direction:ltr;text-align:left;font-weight:600}
 .doc-list{font-size:.75rem;color:var(--dim);line-height:1.55;max-width:220px}
 .sec-title{font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
-.slot{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 10px 10px 12px;margin-bottom:8px;cursor:pointer;font-size:.8rem;background:rgba(0,0,0,.15);position:relative;transition:.15s}
-.slot::before{content:'';position:absolute;right:0;top:8px;bottom:8px;width:3px;border-radius:3px;background:rgba(20,184,166,.35)}
-.slot:hover{border-color:rgba(20,184,166,.4);background:rgba(20,184,166,.06)}
-.slot.done{border-color:rgba(74,222,128,.25)}.slot.done::before{background:#4ade80}
+.slot{border:1px solid var(--border);border-radius:10px;padding:10px 10px 10px 12px;margin-bottom:8px;cursor:pointer;font-size:.8rem;background:var(--input);position:relative;transition:.15s}
+.slot::before{content:'';position:absolute;right:0;top:8px;bottom:8px;width:3px;border-radius:3px;background:rgba(13,148,136,.35)}
+.slot:hover{border-color:rgba(13,148,136,.45);background:rgba(13,148,136,.06)}
+.slot.done{border-color:rgba(22,163,74,.35)}.slot.done::before{background:#16a34a}
 .slot input{display:none}
 .slot-title{font-weight:700;font-size:.82rem;display:flex;align-items:center;justify-content:space-between;gap:6px}
 .slot-meta{font-size:.72rem;color:var(--dim);margin-top:4px;line-height:1.45}
-.pharm-block{margin-bottom:12px;padding:10px;border:1px solid var(--border);border-radius:10px;background:rgba(0,0,0,.1)}
+.pharm-block{margin-bottom:12px;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--input)}
 .pharm-block>.slot-title{font-size:.8rem;margin-bottom:8px;color:var(--teal)}
 .slot-sm{padding:8px 10px;margin-bottom:6px}
 .slot-label{font-weight:600;font-size:.76rem;color:var(--dim)}
 .brand-tag{font-size:.65rem;padding:2px 6px;border-radius:4px;font-weight:700}
-.brand-tag.n{background:rgba(20,184,166,.2);color:#5eead4}.brand-tag.p{background:rgba(167,139,250,.2);color:#c4b5fd}
+.brand-tag.n{background:rgba(13,148,136,.15);color:#0f766e}.brand-tag.p{background:rgba(124,58,237,.12);color:#6d28d9}
 .doc-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center}
-.doc-toolbar input{flex:1;min-width:160px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:#1a2438;color:var(--text);font:inherit;font-size:.82rem}
-.doc-table thead th{position:sticky;top:0;background:#1a2438;z-index:1}
-.doc-table tbody tr:nth-child(even){background:rgba(255,255,255,.02)}
-.doc-table .product-tag{display:inline-block;padding:3px 8px;border-radius:6px;background:rgba(96,165,250,.12);color:#93c5fd;font-size:.72rem;font-weight:700;white-space:nowrap}
-.doc-table .doc-name{font-size:.82rem;line-height:1.45;max-width:280px}
-.doc-table .count-pill{display:inline-block;min-width:36px;text-align:center;padding:4px 10px;border-radius:999px;background:rgba(20,184,166,.15);color:#5eead4;font-weight:700;font-family:Inter,sans-serif}
-.doc-table .rank{color:var(--muted);font-size:.75rem;width:36px}
-.upload-progress{font-size:.7rem;color:var(--dim);margin-top:8px;padding:8px;border-radius:8px;background:rgba(20,184,166,.08);border:1px dashed rgba(20,184,166,.25)}
+.doc-toolbar input{flex:1;min-width:160px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--input);color:var(--text);font:inherit;font-size:.82rem}
+.doc-table{table-layout:fixed;width:100%}
+.doc-table th,.doc-table td{text-align:center;vertical-align:middle;padding:10px 8px}
+.doc-table thead th{position:sticky;top:0;background:#f1f5f9;z-index:1;box-shadow:0 1px 0 var(--border)}
+.doc-table tbody tr:nth-child(even){background:#f8fafc}
+.doc-table col.col-rank{width:48px}
+.doc-table col.col-product{width:22%}
+.doc-table col.col-count{width:110px}
+.doc-table .product-tag{display:inline-block;padding:4px 10px;border-radius:6px;background:#e0f2fe;color:#0369a1;font-size:.72rem;font-weight:700;white-space:nowrap}
+.doc-table .doc-name{font-size:.82rem;line-height:1.5;text-align:center;word-break:break-word}
+.doc-table td.cell-count{text-align:center}
+.doc-table .count-pill{display:inline-flex;align-items:center;justify-content:center;min-width:40px;text-align:center;padding:5px 12px;border-radius:999px;background:rgba(13,148,136,.12);color:#0f766e;font-weight:700;font-family:Inter,sans-serif;font-size:.85rem}
+.doc-table .rank{color:var(--muted);font-size:.8rem}
+.upload-progress{font-size:.7rem;color:var(--dim);margin-top:8px;padding:8px;border-radius:8px;background:#ecfdf5;border:1px dashed rgba(13,148,136,.35)}
 .upload-progress strong{color:var(--teal)}
 .sidebar.collapsed .upload-progress{display:none}
 .side-toggle{display:none}
@@ -89,11 +97,11 @@ th{color:var(--muted);font-size:.7rem;font-weight:600}
   .sidebar.collapsed .side-inner{display:none}
   .side-toggle{display:block;width:100%;margin-bottom:8px;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font:inherit;cursor:pointer}
 }
-.loader{position:fixed;inset:0;background:rgba(5,8,16,.75);display:none;place-items:center;z-index:50}
+.loader{position:fixed;inset:0;background:rgba(241,245,249,.85);display:none;place-items:center;z-index:50}
 .loader.show{display:grid}
-.loader-box{background:var(--card);border:1px solid var(--border);padding:18px 24px;border-radius:14px}
-.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid var(--border);padding:10px 16px;border-radius:10px;opacity:0;transition:.2s;z-index:60;font-size:.85rem}
-.toast.show{opacity:1}.toast.err{border-color:rgba(244,63,94,.45);color:#fecdd3}
+.loader-box{background:var(--card);border:1px solid var(--border);padding:18px 24px;border-radius:14px;box-shadow:0 8px 24px rgba(15,23,42,.08)}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);padding:10px 16px;border-radius:10px;opacity:0;transition:.2s;z-index:60;font-size:.85rem;box-shadow:0 4px 16px rgba(15,23,42,.1)}
+.toast.show{opacity:1}.toast.err{border-color:#fecaca;color:#b91c1c;background:#fef2f2}
 </style>
 </head>
 <body>
@@ -146,7 +154,7 @@ th{color:var(--muted);font-size:.7rem;font-weight:600}
       <select id="viewPeriod"><option value="p1">الفترة 1</option><option value="p2">الفترة 2</option></select>
       <span style="color:var(--muted)">مقارنة مع:</span>
       <select id="comparePeriod"><option value="p2">الفترة 2</option><option value="p1">الفترة 1</option></select>
-      <button type="button" id="btnOpenUpload" style="margin-right:auto;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:#1a2438;color:var(--text);font:inherit;cursor:pointer">فتح رفع البيانات</button>
+      <button type="button" class="btn-soft" id="btnOpenUpload" style="margin-right:auto">فتح رفع البيانات</button>
     </div>
 
     <div class="kpi-row">
@@ -198,7 +206,10 @@ th{color:var(--muted);font-size:.7rem;font-weight:600}
       </div>
       <div style="overflow-x:auto;max-height:400px">
         <table class="doc-table">
-          <thead><tr><th class="rank">#</th><th>الصنف</th><th>الطبيب</th><th class="num">عدد الكتابات</th></tr></thead>
+          <colgroup>
+            <col class="col-rank"><col class="col-product"><col><col class="col-count">
+          </colgroup>
+          <thead><tr><th class="rank">#</th><th>الصنف</th><th>الطبيب</th><th>عدد الكتابات</th></tr></thead>
           <tbody id="docTbl"></tbody>
         </table>
       </div>
@@ -482,7 +493,7 @@ function renderCharts(total){
   const labels=PRODUCTS.map(p=>p.name);
   const writes=PRODUCTS.map(p=>total[p.id].writes);
   const qty=PRODUCTS.map(p=>total[p.id].qty);
-  const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8'}}},scales:{x:{ticks:{color:'#64748b',maxRotation:50,font:{size:9}}},y:{ticks:{color:'#64748b'},beginAtZero:true}}};
+  const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#475569'}}},scales:{x:{ticks:{color:'#64748b',maxRotation:50,font:{size:9}}},y:{ticks:{color:'#64748b'},beginAtZero:true,grid:{color:'#e2e8f0'}}},x:{grid:{color:'#e2e8f0'}}}};
   if(chartMainInst) chartMainInst.destroy();
   chartMainInst=new Chart(document.getElementById('chartMain'),{type:'bar',data:{labels,datasets:[
     {label:'كتابات',data:writes,backgroundColor:'rgba(96,165,250,.55)',borderRadius:4},
@@ -543,7 +554,7 @@ function renderDocTable(doctors){
   const filtered=q?docRows.filter(r=>r.doc.toLowerCase().includes(q)||r.product.toLowerCase().includes(q)):docRows;
   document.getElementById('docCount').textContent=filtered.length+' سطر';
   document.getElementById('docTbl').innerHTML=filtered.length?filtered.map((r,i)=>
-    '<tr><td class="rank num">'+(i+1)+'</td><td><span class="product-tag">'+esc(r.product)+'</span></td><td class="doc-name">'+esc(r.doc)+'</td><td class="num"><span class="count-pill">'+fmt(r.c)+'</span></td></tr>'
+    '<tr><td class="rank">'+(i+1)+'</td><td><span class="product-tag">'+esc(r.product)+'</span></td><td class="doc-name">'+esc(r.doc)+'</td><td class="cell-count"><span class="count-pill">'+fmt(r.c)+'</span></td></tr>'
   ).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">لا توجد كتابات — ارفع تقارير الفترة المختارة</td></tr>';
 }
 
