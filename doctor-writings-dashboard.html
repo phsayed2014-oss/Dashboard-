@@ -28,6 +28,13 @@ h1{font-size:1.35rem;margin-bottom:4px}
 .slot input{display:none}
 .slot-title{font-weight:700;font-size:.85rem}
 .slot-meta{font-size:.75rem;color:var(--dim);margin-top:4px}
+.pharm-block{margin-bottom:12px;padding:10px;border:1px solid var(--border);border-radius:10px;background:rgba(0,0,0,.12)}
+.pharm-block .slot-title{margin-bottom:8px}
+.slot-sm{padding:10px;margin-bottom:6px;cursor:pointer}
+.slot-sm .slot-label{font-size:.8rem;font-weight:600}
+.slot-actions{margin-top:6px}
+.btn-clear{font-size:.72rem;padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--dim);cursor:pointer}
+.btn-clear:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px}
 table{width:100%;border-collapse:collapse;font-size:.82rem}
 th,td{padding:9px 6px;border-bottom:1px solid var(--border);text-align:right}
@@ -56,10 +63,22 @@ th{color:var(--muted);font-size:.72rem;font-weight:600}
       <div class="slot" data-kind="rx" data-id="c3"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">التعاون الثالث</div><div class="slot-meta" id="meta-rx-c3">لم يُرفع تقرير · مبيعات: صيدلية 7</div></div>
     </div>
     <div class="hub-col">
-      <h2>مبيعات الصيدليات</h2>
-      <div class="slot" data-kind="sale" data-id="p1"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">صيدلية 1</div><div class="slot-meta" id="meta-sale-p1">لم يُرفع تقرير · مع التعاون الأول</div></div>
-      <div class="slot" data-kind="sale" data-id="p2"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">صيدلية 18</div><div class="slot-meta" id="meta-sale-p2">لم يُرفع تقرير · مع التعاون الثاني</div></div>
-      <div class="slot" data-kind="sale" data-id="p3"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">صيدلية 7</div><div class="slot-meta" id="meta-sale-p3">لم يُرفع تقرير · مع التعاون الثالث</div></div>
+      <h2>مبيعات الصيدليات <span style="font-weight:400;color:var(--dim);font-size:.8rem">— ملفان لكل صيدلية (مورد/صنف)</span></h2>
+      <div class="pharm-block" data-pharm="p1">
+        <div class="slot-title">صيدلية 1 · التعاون الأول</div>
+        <div class="slot slot-sm" data-kind="sale" data-id="p1" data-part="0"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 1</div><div class="slot-meta" id="meta-sale-p1-0">لم يُرفع</div></div>
+        <div class="slot slot-sm" data-kind="sale" data-id="p1" data-part="1"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 2</div><div class="slot-meta" id="meta-sale-p1-1">لم يُرفع</div></div>
+      </div>
+      <div class="pharm-block" data-pharm="p2">
+        <div class="slot-title">صيدلية 18 · التعاون الثاني</div>
+        <div class="slot slot-sm" data-kind="sale" data-id="p2" data-part="0"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 1</div><div class="slot-meta" id="meta-sale-p2-0">لم يُرفع</div></div>
+        <div class="slot slot-sm" data-kind="sale" data-id="p2" data-part="1"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 2</div><div class="slot-meta" id="meta-sale-p2-1">لم يُرفع</div></div>
+      </div>
+      <div class="pharm-block" data-pharm="p3">
+        <div class="slot-title">صيدلية 7 · التعاون الثالث</div>
+        <div class="slot slot-sm" data-kind="sale" data-id="p3" data-part="0"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 1</div><div class="slot-meta" id="meta-sale-p3-0">لم يُرفع</div></div>
+        <div class="slot slot-sm" data-kind="sale" data-id="p3" data-part="1"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 2</div><div class="slot-meta" id="meta-sale-p3-1">لم يُرفع</div></div>
+      </div>
     </div>
   </div>
 
@@ -88,7 +107,7 @@ th{color:var(--muted);font-size:.72rem;font-weight:600}
         <tbody id="mainTbl"></tbody>
       </table>
     </div>
-    <p class="hint">التحويل = الكمية المباعة ÷ عدد الكتابات (لنفس الفترة). هامش الربح = (قيمة البيع − التكلفة) ÷ التكلفة.</p>
+    <p class="hint">التحويل = الكمية المباعة ÷ عدد الكتابات (لنفس الفترة). هامش الربح = (قيمة البيع − التكلفة) ÷ التكلفة. مبيعات كل صيدلية = مجموع الملفين معاً.</p>
   </div>
 </div>
 <div class="loader" id="loader"><div class="loader-box" id="loaderText">جاري القراءة…</div></div>
@@ -118,7 +137,8 @@ const PRODUCTS = [
   { id: 'intimo', name: 'Intimo', match: s => /\bintimo\b/i.test(s) }
 ];
 
-const STORE_KEY = 'rx-sales-hub-v2';
+const STORE_KEY = 'rx-sales-hub-v3';
+const SALE_PARTS = 2;
 const SITES = {
   c1: { complex: 'التعاون الأول', pharmacy: 'صيدلية 1', peer: 'p1' },
   c2: { complex: 'التعاون الثاني', pharmacy: 'صيدلية 18', peer: 'p2' },
@@ -134,8 +154,53 @@ function siteLabel(id) {
 }
 const state = {
   rx: { c1: null, c2: null, c3: null },
-  sale: { p1: null, p2: null, p3: null }
+  sale: { p1: emptySaleSlot(), p2: emptySaleSlot(), p3: emptySaleSlot() }
 };
+
+function emptySaleSlot() {
+  return { parts: Array.from({ length: SALE_PARTS }, () => null) };
+}
+
+function normalizeSaleSlot(raw) {
+  if (!raw) return emptySaleSlot();
+  if (raw.parts && Array.isArray(raw.parts)) {
+    const parts = raw.parts.slice(0, SALE_PARTS);
+    while (parts.length < SALE_PARTS) parts.push(null);
+    return { parts };
+  }
+  if (raw.agg) return { parts: [{ fileName: raw.fileName || 'ملف سابق', totalQty: raw.totalQty || 0, lines: raw.lines || 0, agg: raw.agg, at: raw.at || 0 }, null] };
+  return emptySaleSlot();
+}
+
+function salePartsAgg(slot) {
+  const merged = emptyAgg();
+  if (!slot || !slot.parts) return merged;
+  slot.parts.forEach(p => { if (p && p.agg) mergeAgg(merged, p.agg); });
+  return merged;
+}
+
+function saleTotalQty(slot) {
+  return Object.values(salePartsAgg(slot)).reduce((s, x) => s + x.qty, 0);
+}
+
+function updateSalePartMeta(pharmId, partIdx, part) {
+  const el = document.getElementById('meta-sale-' + pharmId + '-' + partIdx);
+  if (!el) return;
+  if (!part) { el.textContent = 'لم يُرفع'; return; }
+  el.textContent = '✓ ' + part.fileName + ' — ' + fmt(part.totalQty) + ' وحدة (أصنافك)';
+}
+
+function updateSaleBlockSummary(pharmId) {
+  const slot = state.sale[pharmId];
+  const qty = saleTotalQty(slot);
+  const n = (slot.parts || []).filter(Boolean).length;
+  const title = document.querySelector('[data-pharm="' + pharmId + '"] .slot-title');
+  if (title && n) title.dataset.base = title.dataset.base || title.textContent.split(' ·')[0];
+  if (title && n) {
+    const base = title.dataset.base || title.textContent.split(' —')[0];
+    title.textContent = base + ' — مجمّع: ' + fmt(qty) + ' وحدة (' + n + ' ملف)';
+  }
+}
 
 function loadScript(src) {
   return new Promise((res, rej) => {
@@ -221,7 +286,8 @@ function loadState() {
     ['rx', 'sale'].forEach(k => {
       if (!s[k]) return;
       Object.keys(state[k]).forEach(id => {
-        if (s[k][id]) state[k][id] = s[k][id];
+        if (k === 'sale' && s[k][id]) state[k][id] = normalizeSaleSlot(s[k][id]);
+        else if (s[k][id]) state[k][id] = s[k][id];
       });
     });
   } catch (_) {}
@@ -351,7 +417,7 @@ function parseSalePages(pages) {
   return rows;
 }
 
-async function processFile(expectedKind, slotId, file) {
+async function processFile(expectedKind, slotId, file, partIdx) {
   setLoad(true, 'جاري قراءة ' + file.name);
   try {
     const ext = (file.name.split('.').pop() || '').toLowerCase();
@@ -371,10 +437,10 @@ async function processFile(expectedKind, slotId, file) {
       rxRows = await parseExcel(file);
       fileKind = 'rx';
     }
-    let storeKind = fileKind;
     let storeId = slotId;
     if (fileKind !== expectedKind) {
       storeId = slotPeer(expectedKind, slotId);
+      if (fileKind === 'sale' && partIdx == null) partIdx = 0;
       toast('تم توجيه الملف إلى ' + siteLabel(storeId), false);
     }
     if (fileKind === 'rx') {
@@ -386,10 +452,13 @@ async function processFile(expectedKind, slotId, file) {
     } else {
       if (ext !== 'pdf') throw new Error('تقرير المبيعات: ارفع PDF مبيعات مورد');
       if (!saleRows.length) throw new Error('لم تُستخرج مبيعات من الملف');
+      const pi = partIdx != null ? partIdx : 0;
+      if (!state.sale[storeId]) state.sale[storeId] = emptySaleSlot();
       const agg = aggFromSaleRows(saleRows);
       const qty = Object.values(agg).reduce((s, x) => s + x.qty, 0);
-      state.sale[storeId] = { fileName: file.name, at: Date.now(), lines: saleRows.length, totalQty: qty, agg };
-      document.getElementById('meta-sale-' + storeId).textContent = '✓ ' + file.name + ' — ' + fmt(qty) + ' وحدة (أصنافك)';
+      state.sale[storeId].parts[pi] = { fileName: file.name, at: Date.now(), lines: saleRows.length, totalQty: qty, agg };
+      updateSalePartMeta(storeId, pi, state.sale[storeId].parts[pi]);
+      updateSaleBlockSummary(storeId);
     }
     saveState();
     renderSummary();
@@ -405,7 +474,7 @@ async function processFile(expectedKind, slotId, file) {
 function renderSummary() {
   const total = emptyAgg();
   Object.values(state.rx).forEach(slot => { if (slot && slot.agg) mergeAgg(total, slot.agg); });
-  Object.values(state.sale).forEach(slot => { if (slot && slot.agg) mergeAgg(total, slot.agg); });
+  Object.keys(state.sale).forEach(id => mergeAgg(total, salePartsAgg(state.sale[id])));
 
   let sumRx = 0, sumQty = 0, sumCost = 0, sumSale = 0;
   PRODUCTS.forEach(p => {
@@ -441,11 +510,24 @@ function wireSlots() {
     const input = slot.querySelector('input');
     const kind = slot.dataset.kind;
     const id = slot.dataset.id;
-    slot.addEventListener('click', () => input.click());
+    const part = slot.dataset.part;
+    slot.addEventListener('click', e => {
+      if (e.target.closest('.btn-clear')) return;
+      input.click();
+    });
     input.addEventListener('change', () => {
-      if (input.files[0]) processFile(kind, id, input.files[0]);
+      if (input.files[0]) processFile(kind, id, input.files[0], part != null ? Number(part) : null);
       input.value = '';
     });
+  });
+}
+
+function refreshSaleUi() {
+  ['p1', 'p2', 'p3'].forEach(id => {
+    const slot = normalizeSaleSlot(state.sale[id]);
+    state.sale[id] = slot;
+    slot.parts.forEach((p, i) => updateSalePartMeta(id, i, p));
+    updateSaleBlockSummary(id);
   });
 }
 
@@ -459,10 +541,7 @@ async function boot() {
       const s = state.rx[id];
       if (s) document.getElementById('meta-rx-' + id).textContent = '✓ ' + s.fileName + ' — ' + fmt(s.matched) + ' كتابة';
     });
-    ['p1', 'p2', 'p3'].forEach(id => {
-      const s = state.sale[id];
-      if (s) document.getElementById('meta-sale-' + id).textContent = '✓ ' + s.fileName + ' — ' + fmt(s.totalQty) + ' وحدة';
-    });
+    refreshSaleUi();
     wireSlots();
     renderSummary();
   } catch (e) {
