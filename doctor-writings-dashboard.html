@@ -6,9 +6,6 @@
 <title>متابعة كتابات الأطباء | 14 صنف</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 :root{
   --bg:#0c1222;--card:#141c2f;--border:rgba(255,255,255,.09);
@@ -58,8 +55,17 @@ th{color:var(--muted);font-weight:600;font-size:.75rem}
 .tab{padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--dim);cursor:pointer;font:inherit;font-size:.85rem}
 .tab.active{background:rgba(20,184,166,.12);border-color:rgba(20,184,166,.4);color:var(--text)}
 .panel{display:none}.panel.active{display:block}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid var(--border);padding:12px 20px;border-radius:12px;z-index:99;opacity:0;pointer-events:none;transition:.25s}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid var(--border);padding:12px 20px;border-radius:12px;z-index:99;opacity:0;pointer-events:none;transition:.25s;max-width:92vw;text-align:center}
 .toast.show{opacity:1}
+.toast.err{border-color:rgba(244,63,94,.5);color:#fecdd3}
+.alert-banner{display:none;margin-bottom:14px;padding:12px 14px;border-radius:var(--r);background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.35);color:#fecdd3;font-size:.85rem;line-height:1.65}
+.alert-banner.show{display:block}
+.loader{position:fixed;inset:0;background:rgba(7,10,18,.72);display:none;place-items:center;z-index:200}
+.loader.show{display:grid}
+.loader-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 28px;text-align:center;min-width:260px}
+.loader-box .spin{width:36px;height:36px;border:3px solid rgba(20,184,166,.25);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.upload.busy{opacity:.55;pointer-events:none}
 @media(max-width:640px){.hide-sm{display:none}}
 </style>
 </head>
@@ -68,6 +74,7 @@ th{color:var(--muted);font-weight:600;font-size:.75rem}
   <header>
     <h1>متابعة كتابات الأطباء → البيع الفعلي</h1>
     <p class="sub">تقرير Doctor's Medication Orders — أصنافك الـ 14 فقط · التحويل من الحالة (Closed = صرف/بيع داخل العيادة) + مبيعات الصيدلية اليدوية</p>
+    <div class="alert-banner" id="libAlert"></div>
   </header>
 
   <div class="card">
@@ -164,9 +171,46 @@ th{color:var(--muted);font-weight:600;font-size:.75rem}
     </div>
   </div>
 </div>
+<div class="loader" id="loader" aria-hidden="true"><div class="loader-box"><div class="spin"></div><div id="loaderText">جاري المعالجة…</div></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.async = false;
+    s.onload = () => resolve(src);
+    s.onerror = () => reject(new Error(src));
+    document.head.appendChild(s);
+  });
+}
+async function loadFirst(urls) {
+  let last;
+  for (const u of urls) {
+    try { return await loadScript(u); } catch (e) { last = e; }
+  }
+  throw last || new Error('load failed');
+}
+const VENDOR = 'vendor/';
+const CDN = {
+  chart: [
+    VENDOR + 'chart.umd.min.js',
+    'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js'
+  ],
+  xlsx: [
+    'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
+  ],
+  pdf: [
+    VENDOR + 'pdf.min.js',
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'
+  ]
+};
+let PDF_WORKER_URL = VENDOR + 'pdf.worker.min.js';
+
 const STORAGE_KEY = 'rx-dash-sales-v1';
 const PRODUCTS = [
   { id: 'centrozon-w', name: 'Centrozon women', match: s => /\bcentrozon\s*w/i.test(s) || /centrozon\s+women/i.test(s) },
@@ -214,11 +258,30 @@ function normStatus(st) {
 function fmt(n) { return Number(n || 0).toLocaleString('en-US'); }
 function pct(a, b) { return b ? (100 * a / b) : 0; }
 
-function toast(msg) {
+function toast(msg, isErr) {
   const el = document.getElementById('toast');
   el.textContent = msg;
+  el.classList.toggle('err', !!isErr);
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2800);
+  setTimeout(() => el.classList.remove('show'), isErr ? 4500 : 2800);
+}
+
+function setLoading(on, text) {
+  const l = document.getElementById('loader');
+  const z = document.getElementById('dropZone');
+  l.classList.toggle('show', on);
+  z.classList.toggle('busy', on);
+  if (text) document.getElementById('loaderText').textContent = text;
+}
+
+function getPdfJs() {
+  const lib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+  if (!lib) throw new Error('مكتبة PDF غير جاهزة. افتح الملف من مجلد المشروع (مع vendor) أو من رابط GitHub Pages — معاينة HTMLPreview لا تعمل.');
+  return lib;
+}
+
+function ensureXlsx() {
+  if (!window.XLSX) throw new Error('مكتبة Excel غير محمّلة — تحقق من الاتصال بالإنترنت أو جرّب PDF.');
 }
 
 function normalizeRow(r) {
@@ -246,6 +309,7 @@ function normalizeRow(r) {
 }
 
 async function parseExcel(file) {
+  ensureXlsx();
   const buf = await file.arrayBuffer();
   const wb = XLSX.read(buf, { type: 'array' });
   const sh = wb.Sheets[wb.SheetNames[0]];
@@ -253,17 +317,34 @@ async function parseExcel(file) {
 }
 
 async function parseCSV(file) {
+  ensureXlsx();
   const text = await file.text();
   const wb = XLSX.read(text, { type: 'string' });
   const sh = wb.Sheets[wb.SheetNames[0]];
   return XLSX.utils.sheet_to_json(sh, { defval: '' }).map(normalizeRow).filter(Boolean);
 }
 
-async function parsePDF(file) {
-  const pdfjsLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+async function parsePDF(file, onProgress) {
+  const pdfjsLib = getPdfJs();
+  const workerCandidates = [
+    PDF_WORKER_URL,
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
+  ];
+  for (const w of workerCandidates) {
+    try {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = w;
+      break;
+    } catch (_) { /* continue */ }
+  }
   const buf = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  let pdf;
+  try {
+    pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  } catch (e1) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = workerCandidates[1];
+    pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  }
   const SEC_WORDS = ['GASTROENTEROLOGY','ENDOCRINOLOGY','OPHTHALMOLOGY','OPTHALMOLOGY','RHEUMATOLOGY','PULMONOLOGY','PARACITIONER','DERMATOLOGY','ORTHOPAEDIC','PSYCHIATRY','OBSTETRICS','PAEDIATRIC','CARDIOLOGY','NEPHROLOGY','NEUROLOGY','ONCOLOGY','INTERNAL','UROLOGY','GENERAL','SURGERY','DENTAL','RADIOLOGY','GYNECOLOGY','MEDICINE','ENT'];
   const COL_P = [0, 75], COL_PN = [75, 243], COL_SVC = [243, 476], COL_ORD = [470, 535], COL_ST = [535, 585], COL_DS = [585, 1200];
   function g(ws, r) { return ws.filter(w => w.x >= r[0] && w.x < r[1]).map(w => w.s).join(' ').trim(); }
@@ -290,6 +371,7 @@ async function parsePDF(file) {
   }
   const rows = [];
   for (let p = 1; p <= pdf.numPages; p++) {
+    if (onProgress) onProgress(p, pdf.numPages);
     const page = await pdf.getPage(p);
     const c = await page.getTextContent();
     const lmap = {};
@@ -303,7 +385,8 @@ async function parsePDF(file) {
       if (!ws.length) return;
       const line = ws.map(w => w.s).join(' ');
       if (/Patient No|Medication Orders|From Date|To Date|Doctor Name|Printing Date/i.test(line)) return;
-      if (!/^\d{5,7}$/.test(ws[0].s)) return;
+      const patCell = ws.find(w => w.x >= COL_P[0] && w.x < COL_P[1] && /^\d{5,10}$/.test(w.s));
+      if (!patCell) return;
       const ds = splitDS(g(ws, COL_DS));
       const row = {
         patient: g(ws, COL_P), patientName: g(ws, COL_PN), service: g(ws, COL_SVC),
@@ -317,9 +400,14 @@ async function parsePDF(file) {
   return rows;
 }
 
+function rowMatchText(r) {
+  return [r.service, r.orderNo, r.patientName].filter(Boolean).join(' ');
+}
+
 function enrichRows(rows) {
   return rows.map(r => {
-    const prod = matchProduct(r.service);
+    const text = rowMatchText(r);
+    const prod = matchProduct(r.service) || matchProduct(text);
     return prod ? { ...r, productId: prod.id, productName: prod.name } : null;
   }).filter(Boolean);
 }
@@ -424,6 +512,7 @@ function renderRowsTable() {
 
 function renderChart(products) {
   const ctx = document.getElementById('chartProducts');
+  if (!window.Chart) return;
   const labels = products.map(p => p.name);
   const writes = products.map(p => p.total);
   const closed = products.map(p => p.closed);
@@ -461,23 +550,47 @@ function fillProductFilter() {
 }
 
 async function handleFile(file) {
-  const ext = (file.name.split('.').pop() || '').toLowerCase();
-  let rows;
-  if (ext === 'pdf') rows = await parsePDF(file);
-  else if (ext === 'csv') rows = await parseCSV(file);
-  else rows = await parseExcel(file);
-  allRows = rows;
-  matchedRows = enrichRows(rows);
-  document.getElementById('fileMeta').textContent =
-    '✓ ' + file.name + ' · ' + fmt(rows.length) + ' سطر · ' + fmt(matchedRows.length) + ' كتابة لأصنافك';
-  fillProductFilter();
-  render();
-  toast('تم التحميل: ' + fmt(matchedRows.length) + ' كتابة مطابقة');
+  if (!file) return;
+  setLoading(true, 'جاري قراءة الملف…');
+  try {
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    let rows;
+    if (ext === 'pdf') {
+      rows = await parsePDF(file, (p, total) => {
+        setLoading(true, `قراءة PDF: صفحة ${p} من ${total}`);
+        document.getElementById('fileMeta').textContent = `⏳ ${file.name} — صفحة ${p}/${total}`;
+      });
+    } else if (ext === 'csv') rows = await parseCSV(file);
+    else if (ext === 'xlsx' || ext === 'xls') rows = await parseExcel(file);
+    else throw new Error('صيغة غير مدعومة — استخدم PDF أو Excel أو CSV');
+    if (!rows || !rows.length) throw new Error('لم يُستخرج أي سطر من الملف — تأكد أنه تقرير Doctor\'s Medication Orders');
+    allRows = rows;
+    matchedRows = enrichRows(rows);
+    const meta = document.getElementById('fileMeta');
+    meta.style.color = '';
+    meta.textContent = '✓ ' + file.name + ' · ' + fmt(rows.length) + ' سطر في التقرير · ' + fmt(matchedRows.length) + ' كتابة لأصنافك';
+    if (!matchedRows.length) {
+      meta.textContent += ' — لم يُعثر على أسماء الأصناف في Service Name (تحقق من التقرير أو أسماء الأدوية)';
+      toast('تمت القراءة لكن لا توجد كتابات لأصنافك الـ14', true);
+    } else {
+      toast('تم التحميل: ' + fmt(matchedRows.length) + ' كتابة مطابقة');
+    }
+    fillProductFilter();
+    render();
+  } catch (e) {
+    console.error(e);
+    const meta = document.getElementById('fileMeta');
+    meta.style.color = '#f43f5e';
+    meta.textContent = '✗ فشل القراءة: ' + (e.message || 'خطأ غير معروف');
+    toast(e.message || 'فشل قراءة الملف', true);
+  } finally {
+    setLoading(false);
+    fin.value = '';
+  }
 }
 
 const drop = document.getElementById('dropZone');
 const fin = document.getElementById('fileInput');
-drop.onclick = () => fin.click();
 fin.onchange = () => { if (fin.files[0]) handleFile(fin.files[0]); };
 ['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
 ['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('drag'); }));
@@ -497,7 +610,8 @@ document.getElementById('filterProduct').onchange = renderRowsTable;
 document.getElementById('filterStatus').onchange = renderRowsTable;
 
 document.getElementById('btnExport').onclick = () => {
-  if (!matchedRows.length) { toast('لا بيانات للتصدير'); return; }
+  ensureXlsx();
+  if (!matchedRows.length) { toast('لا بيانات للتصدير', true); return; }
   const data = matchedRows.map(r => ({
     الصنف: r.productName,
     الدواء: r.service,
@@ -528,13 +642,39 @@ document.getElementById('btnSample').onclick = async () => {
     if (!res.ok) throw new Error('no sample');
     const blob = await res.blob();
     await handleFile(new File([blob], '27-07-2026_c41a.pdf', { type: 'application/pdf' }));
-  } catch {
-    toast('ضع نسخة PDF في مجلد samples/ أو ارفع الملف يدوياً');
+  } catch (e) {
+    toast('ضع نسخة PDF في مجلد samples/ أو ارفع الملف يدوياً', true);
   }
 };
 
-fillProductFilter();
-render();
+function wireUi() {
+  fillProductFilter();
+  render();
+}
+
+async function boot() {
+  const alert = document.getElementById('libAlert');
+  try {
+    await loadFirst(CDN.chart);
+    await loadFirst(CDN.pdf);
+    try { await loadFirst(CDN.xlsx); } catch { /* Excel optional until export/upload xlsx */ }
+    try {
+      await loadScript(PDF_WORKER_URL);
+    } catch {
+      PDF_WORKER_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+    }
+    if (!getPdfJs()) throw new Error('PDF');
+    wireUi();
+  } catch (e) {
+    console.error(e);
+    alert.classList.add('show');
+    alert.innerHTML = '<strong>تعذّر تحميل المكتبات.</strong> لا تستخدم رابط HTMLPreview — حمّل الملف من GitHub (مع مجلد <code>vendor</code>) وافتحه في Chrome، أو بعد تفعيل GitHub Pages افتح الرابط الرسمي للموقع.';
+    document.getElementById('fileMeta').textContent = 'اللوحة غير جاهزة — راجع التنبيه أعلاه';
+    toast('المكتبات لم تُحمَّل — افتح الملف محلياً', true);
+  }
+}
+
+boot();
 </script>
 </body>
 </html>
