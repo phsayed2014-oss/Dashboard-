@@ -102,6 +102,22 @@ th{color:var(--muted);font-size:.7rem;font-weight:600}
 .loader-box{background:var(--card);border:1px solid var(--border);padding:18px 24px;border-radius:14px;box-shadow:0 8px 24px rgba(15,23,42,.08)}
 .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);padding:10px 16px;border-radius:10px;opacity:0;transition:.2s;z-index:60;font-size:.85rem;box-shadow:0 4px 16px rgba(15,23,42,.1)}
 .toast.show{opacity:1}.toast.err{border-color:#fecaca;color:#b91c1c;background:#fef2f2}
+.nearexp-card{border:1px solid rgba(13,148,136,.25);background:linear-gradient(180deg,#ecfdf5 0%,#fff 42%)}
+.nearexp-hint{font-size:.78rem;color:var(--dim);margin-bottom:10px;line-height:1.55}
+.nearexp-upload{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:12px}
+.nearexp-drop{flex:1;min-width:200px;padding:12px 14px;border:2px dashed rgba(13,148,136,.35);border-radius:10px;background:#fff;cursor:pointer;text-align:center;font-size:.8rem;color:var(--dim)}
+.nearexp-drop:hover{border-color:var(--teal);color:var(--teal)}
+.nearexp-drop input{display:none}
+.nearexp-meta{font-size:.78rem;color:var(--muted)}
+.nearexp-kpi{margin-bottom:10px}
+.nearexp-kpi .kpi{padding:9px 10px}
+.status-pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:.72rem;font-weight:700}
+.status-pill.up{background:#dcfce7;color:#166534}
+.status-pill.down{background:#ffe4e6;color:#be123c}
+.status-pill.flat{background:#f1f5f9;color:#475569}
+.status-pill.none{background:#fff7ed;color:#c2410c}
+.nearexp-table tbody tr.row-up{background:rgba(22,163,74,.06)}
+.nearexp-table tbody tr.row-down{background:rgba(225,29,72,.05)}
 </style>
 </head>
 <body>
@@ -155,6 +171,31 @@ th{color:var(--muted);font-size:.7rem;font-weight:600}
       <span style="color:var(--muted)">مقارنة مع:</span>
       <select id="comparePeriod"><option value="p2">الفترة 2</option><option value="p1">الفترة 1</option></select>
       <button type="button" class="btn-soft" id="btnOpenUpload" style="margin-right:auto">فتح رفع البيانات</button>
+    </div>
+
+    <div class="card nearexp-card">
+      <h2>متابعة أصناف قريبة الانتهاء — كتابات الأطباء</h2>
+      <p class="nearexp-hint">ارفع ملف Excel أو CSV فيه أسماء الأصناف (أي عمود). نطابقها مع أصناف التقرير ونقارن <strong>عدد الكتابات</strong> من PDF الكتابات بين الفترة المعروضة والفترة المقارَنة (نفس اختيار «عرض / مقارنة مع» أعلاه).</p>
+      <div class="nearexp-upload">
+        <label class="nearexp-drop" id="nearExpiryDrop">📎 اضغط لرفع قائمة الأصناف (Excel / CSV)<input type="file" id="nearExpiryFile" accept=".xlsx,.xls,.csv"></label>
+        <button type="button" class="btn-soft" id="btnClearNearExpiry">مسح القائمة</button>
+        <span class="nearexp-meta" id="nearExpiryMeta">لم يُرفع قائمة</span>
+      </div>
+      <div class="kpi-row nearexp-kpi">
+        <div class="kpi"><div class="l">أصناف في القائمة</div><div class="v" id="ne-count">—</div></div>
+        <div class="kpi"><div class="l">تحسّن كتابات</div><div class="v" id="ne-improved" style="color:#15803d">—</div></div>
+        <div class="kpi"><div class="l">تراجع كتابات</div><div class="v" id="ne-declined" style="color:var(--rose)">—</div></div>
+        <div class="kpi"><div class="l">Δ إجمالي كتابات القائمة</div><div class="v" id="ne-delta">—</div></div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="nearexp-table">
+          <thead><tr>
+            <th>الصنف</th><th class="num" id="ne-th-prev">الفترة السابقة</th><th class="num" id="ne-th-cur">الفترة الحالية</th>
+            <th class="num">Δ كتابات</th><th class="num">نسبة التغيير</th><th>التقييم</th><th>أعلى أطباء (الفترة الحالية)</th>
+          </tr></thead>
+          <tbody id="nearExpiryTbl"></tbody>
+        </table>
+      </div>
     </div>
 
     <div class="kpi-row">
@@ -253,7 +294,8 @@ const state = {
   uploadPeriod:'p1',
   viewPeriod:'p1',
   comparePeriod:'p2',
-  periods:{ p1:emptyPeriodData(), p2:emptyPeriodData() }
+  periods:{ p1:emptyPeriodData(), p2:emptyPeriodData() },
+  nearExpiry:{ fileName:'', productIds:[], labels:{} }
 };
 function periodData(id){ return state.periods[id] || emptyPeriodData(); }
 function uploadData(){ return periodData(state.uploadPeriod); }
@@ -280,6 +322,25 @@ function toast(msg,err){ const t=document.getElementById('toast'); t.textContent
 function setLoad(on,txt){ document.getElementById('loader').classList.toggle('show',on); if(txt) document.getElementById('loaderText').textContent=txt; }
 function getPdf(){ const lib=window.pdfjsLib||window['pdfjs-dist/build/pdf']; if(!lib) throw new Error('مكتبة PDF غير محمّلة'); return lib; }
 function matchProduct(text){ const s=(text||'').trim(); if(!s) return null; for(const p of PRODUCTS) if(p.match(s)) return p; return null; }
+function matchProductFromList(text){
+  const p=matchProduct(text);
+  if(p) return p;
+  const t=String(text||'').trim().toLowerCase();
+  if(t.length<3) return null;
+  for(const pr of PRODUCTS){
+    const n=pr.name.toLowerCase();
+    if(t===n||t.includes(n)||n.includes(t)) return pr;
+  }
+  return null;
+}
+function computeRxWritesAgg(pd){
+  const total=emptyAgg();
+  Object.values(pd.rx).forEach(s=>{
+    if(!s?.agg) return;
+    PRODUCTS.forEach(p=>{ total[p.id].writes+=s.agg[p.id]?.writes||0; });
+  });
+  return total;
+}
 
 function extractPeriodFromText(t){
   const m=t.match(/(\d{2})-(\d{2})-(\d{4})/);
@@ -367,6 +428,7 @@ function loadState(){
           ['p1','p2','p3'].forEach(ph=>{ state.periods[id].sale[ph]=normalizeSaleSlot(state.periods[id].sale[ph]); });
         }
       });
+      if(s.nearExpiry?.productIds) state.nearExpiry=s.nearExpiry;
       return;
     }
     if(s.rx||s.sale){
@@ -397,6 +459,103 @@ function normalizeRow(r){
   return { doctor, service, orderNo:get('orderno','رقمالأمر') };
 }
 async function parseExcel(file){ if(!window.XLSX) throw new Error('Excel غير متوفر'); const wb=XLSX.read(await file.arrayBuffer(),{type:'array'}); return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}).map(normalizeRow).filter(Boolean); }
+
+async function parseNearExpiryFile(file){
+  const ext=(file.name.split('.').pop()||'').toLowerCase();
+  const productIds=new Set();
+  const labels={};
+  let rowCount=0;
+  const ingestCell=cell=>{
+    const p=matchProductFromList(cell);
+    if(!p) return;
+    productIds.add(p.id);
+    if(!labels[p.id]) labels[p.id]=String(cell).trim();
+  };
+  if(ext==='csv'){
+    const text=await file.text();
+    text.split(/\r?\n/).forEach(line=>{
+      if(!line.trim()) return;
+      rowCount++;
+      line.split(/[,;\t]/).forEach(ingestCell);
+    });
+  }else{
+    if(!window.XLSX) throw new Error('Excel غير متوفر — حمّل الصفحة مع اتصال أو vendor');
+    const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
+    wb.SheetNames.forEach(sn=>{
+      const grid=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:''});
+      grid.forEach(row=>{
+        rowCount++;
+        (Array.isArray(row)?row:[row]).forEach(c=>ingestCell(c));
+      });
+    });
+  }
+  return { fileName:file.name, productIds:[...productIds], labels, rowCount, matched:productIds.size };
+}
+
+async function processNearExpiryFile(file){
+  setLoad(true,'قراءة قائمة الأصناف…');
+  try{
+    const parsed=await parseNearExpiryFile(file);
+    state.nearExpiry={ fileName:parsed.fileName, productIds:parsed.productIds, labels:parsed.labels };
+    saveState();
+    if(!parsed.matched) toast('لم يُطابق أي صنف — استخدم أسماء مثل Reflex أو Nostriderm',true);
+    else toast('تمت مطابقة '+parsed.matched+' صنف من القائمة');
+    renderSummary();
+  }catch(e){ console.error(e); toast(e.message||'فشل قراءة الملف',true); }
+  finally{ setLoad(false); }
+}
+
+function nearExpiryStatus(prev,cur){
+  const d=cur-prev;
+  if(!prev&&!cur) return { key:'none', text:'لا بيانات كتابات', cls:'none' };
+  if(d>0) return { key:'up', text:'تحسّن', cls:'up' };
+  if(d<0) return { key:'down', text:'تراجع', cls:'down' };
+  return { key:'flat', text:'ثابت', cls:'flat' };
+}
+
+function renderNearExpiry(doctors){
+  const ne=state.nearExpiry||{ productIds:[] };
+  const meta=document.getElementById('nearExpiryMeta');
+  const tbody=document.getElementById('nearExpiryTbl');
+  if(!tbody) return;
+  if(!ne.productIds?.length){
+    if(meta) meta.textContent=ne.fileName?'لم يُطابق أي صنف في الملف':'لم يُرفع قائمة';
+    ['ne-count','ne-improved','ne-declined','ne-delta'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent='—'; });
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:16px">ارفع Excel فيه أسماء الأصناف، ثم ارفع PDF كتابات للفترتين للمقارنة</td></tr>';
+    return;
+  }
+  if(meta) meta.textContent='✓ '+ne.fileName+' · '+ne.productIds.length+' صنف مطابق';
+  const lblCur=periodLabel(state.viewPeriod), lblPrev=periodLabel(state.comparePeriod);
+  document.getElementById('ne-th-cur').textContent='كتابات · '+lblCur;
+  document.getElementById('ne-th-prev').textContent='كتابات · '+lblPrev;
+  const curRx=computeRxWritesAgg(periodData(state.viewPeriod));
+  const prevRx=computeRxWritesAgg(periodData(state.comparePeriod));
+  let improved=0, declined=0, sumDelta=0;
+  const rows=ne.productIds.map(id=>{
+    const prod=PRODUCTS.find(p=>p.id===id);
+    const name=prod?.name||id;
+    const prev=prevRx[id]?.writes||0, cur=curRx[id]?.writes||0;
+    const delta=cur-prev;
+    sumDelta+=delta;
+    const st=nearExpiryStatus(prev,cur);
+    if(st.key==='up') improved++;
+    if(st.key==='down') declined++;
+    const pctCh=prev>0?((delta/prev)*100): (cur>0?100:null);
+    return { id, name, prev, cur, delta, pctCh, st, doctors: doctors?.[id] };
+  }).sort((a,b)=>b.delta-a.delta);
+  document.getElementById('ne-count').textContent=fmt(ne.productIds.length);
+  document.getElementById('ne-improved').textContent=fmt(improved);
+  document.getElementById('ne-declined').textContent=fmt(declined);
+  const de=document.getElementById('ne-delta');
+  de.textContent=(sumDelta>0?'+':'')+fmt(sumDelta);
+  de.style.color=sumDelta>0?'#15803d':sumDelta<0?'var(--rose)':'var(--text)';
+  tbody.innerHTML=rows.map(r=>{
+    const rowCls=r.st.key==='up'?'row-up':r.st.key==='down'?'row-down':'';
+    const pctTxt=r.pctCh==null?'—':((r.pctCh>0?'+':'')+r.pctCh.toFixed(0)+'%');
+    const dTxt=(r.delta>0?'+':'')+fmt(r.delta);
+    return '<tr class="'+rowCls+'"><td><strong>'+esc(r.name)+'</strong></td><td class="num">'+fmt(r.prev)+'</td><td class="num">'+fmt(r.cur)+'</td><td class="num">'+dTxt+'</td><td class="num">'+pctTxt+'</td><td><span class="status-pill '+r.st.cls+'">'+r.st.text+'</span></td><td class="doc-list">'+topDoctorsText(r.doctors,3)+'</td></tr>';
+  }).join('');
+}
 
 async function pdfPages(file,onProgress){
   const pdfjsLib=getPdf(); pdfjsLib.GlobalWorkerOptions.workerSrc=PDF_WORKER;
@@ -493,7 +652,7 @@ function renderCharts(total){
   const labels=PRODUCTS.map(p=>p.name);
   const writes=PRODUCTS.map(p=>total[p.id].writes);
   const qty=PRODUCTS.map(p=>total[p.id].qty);
-  const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#475569'}}},scales:{x:{ticks:{color:'#64748b',maxRotation:50,font:{size:9}}},y:{ticks:{color:'#64748b'},beginAtZero:true,grid:{color:'#e2e8f0'}}},x:{grid:{color:'#e2e8f0'}}}};
+  const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#475569'}}},scales:{x:{ticks:{color:'#64748b',maxRotation:50,font:{size:9}},grid:{color:'#e2e8f0'}},y:{ticks:{color:'#64748b'},beginAtZero:true,grid:{color:'#e2e8f0'}}}};
   if(chartMainInst) chartMainInst.destroy();
   chartMainInst=new Chart(document.getElementById('chartMain'),{type:'bar',data:{labels,datasets:[
     {label:'كتابات',data:writes,backgroundColor:'rgba(96,165,250,.55)',borderRadius:4},
@@ -593,6 +752,7 @@ function renderSummary(){
   }).join('');
 
   renderDocTable(doctors);
+  renderNearExpiry(doctors);
   renderCharts(total);
   syncViewBar();
 }
@@ -652,6 +812,16 @@ function wireSlots(){
     const sb=document.getElementById('sidebar');
     sb.classList.toggle('collapsed');
     document.getElementById('sideToggle').textContent=sb.classList.contains('collapsed')?'رفع البيانات ▼':'إخفاء الرفع ▲';
+  });
+  const neInput=document.getElementById('nearExpiryFile');
+  const neDrop=document.getElementById('nearExpiryDrop');
+  if(neDrop&&neInput){
+    neDrop.addEventListener('click',e=>{ if(e.target!==neInput) neInput.click(); });
+    neInput.addEventListener('change',()=>{ if(neInput.files[0]) processNearExpiryFile(neInput.files[0]); neInput.value=''; });
+  }
+  document.getElementById('btnClearNearExpiry')?.addEventListener('click',()=>{
+    state.nearExpiry={ fileName:'', productIds:[], labels:{} };
+    saveState(); renderSummary(); toast('تم مسح قائمة الأصناف');
   });
 }
 
