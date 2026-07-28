@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>متابعة كتابات الأطباء | 14 صنف</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{
+  --bg:#0c1222;--card:#141c2f;--border:rgba(255,255,255,.09);
+  --text:#eef2ff;--dim:#94a3b8;--muted:#64748b;
+  --teal:#14b8a6;--teal-d:#0d9488;--blue:#3b82f6;--amber:#f59e0b;--rose:#f43f5e;--violet:#8b5cf6;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans Arabic','Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+.wrap{max-width:1200px;margin:0 auto;padding:20px 16px 48px}
+header{margin-bottom:22px}
+h1{font-size:1.45rem;font-weight:700;margin-bottom:6px}
+.sub{color:var(--dim);font-size:.9rem}
+.grid-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:18px 0}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
+.kpi .l{font-size:.72rem;color:var(--muted);font-weight:600;margin-bottom:4px}
+.kpi .v{font-size:1.55rem;font-weight:700;font-family:Inter,sans-serif}
+.kpi .f{font-size:.75rem;color:var(--dim);margin-top:4px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px}
+.card h2{font-size:1rem;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--teal)}
+.upload{border:2px dashed rgba(20,184,166,.45);border-radius:var(--r);padding:28px;text-align:center;cursor:pointer;transition:.2s}
+.upload:hover,.upload.drag{border-color:var(--teal);background:rgba(20,184,166,.06)}
+.upload input{display:none}
+.upload p{color:var(--dim);font-size:.88rem;margin-top:8px}
+.meta{font-size:.8rem;color:var(--teal);margin-top:10px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center}
+.btn,.input,select{background:#1a2438;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:8px 14px;font:inherit;font-size:.85rem;cursor:pointer}
+.btn:hover{border-color:rgba(255,255,255,.2)}
+.btn-primary{background:linear-gradient(135deg,var(--teal-d),var(--teal));border:none;font-weight:600}
+.btn-ghost{background:transparent}
+.input{cursor:text;min-width:160px}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th,td{padding:10px 8px;text-align:right;border-bottom:1px solid var(--border)}
+th{color:var(--muted);font-weight:600;font-size:.75rem}
+.num{font-family:Inter,sans-serif;font-weight:600;text-align:left;direction:ltr}
+.bar{height:6px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:4px}
+.bar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--teal-d),var(--blue))}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.7rem;font-weight:700}
+.badge-closed{background:rgba(20,184,166,.15);color:#5eead4}
+.badge-new{background:rgba(59,130,246,.15);color:#93c5fd}
+.badge-other{background:rgba(148,163,184,.12);color:var(--dim)}
+.sales-in{width:72px;padding:6px 8px;text-align:center}
+.hint{font-size:.78rem;color:var(--muted);line-height:1.6;margin-top:8px}
+.chart-wrap{height:260px;position:relative}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab{padding:8px 14px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--dim);cursor:pointer;font:inherit;font-size:.85rem}
+.tab.active{background:rgba(20,184,166,.12);border-color:rgba(20,184,166,.4);color:var(--text)}
+.panel{display:none}.panel.active{display:block}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid var(--border);padding:12px 20px;border-radius:12px;z-index:99;opacity:0;pointer-events:none;transition:.25s}
+.toast.show{opacity:1}
+@media(max-width:640px){.hide-sm{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>متابعة كتابات الأطباء → البيع الفعلي</h1>
+    <p class="sub">تقرير Doctor's Medication Orders — أصنافك الـ 14 فقط · التحويل من الحالة (Closed = صرف/بيع داخل العيادة) + مبيعات الصيدلية اليدوية</p>
+  </header>
+
+  <div class="card">
+    <h2><span class="dot"></span> رفع التقرير</h2>
+    <label class="upload" id="dropZone">
+      <input type="file" id="fileInput" accept=".pdf,.xlsx,.xls,.csv">
+      <div style="font-size:2rem">📄</div>
+      <strong>اسحب ملف PDF أو Excel هنا</strong>
+      <p>نفس نموذج Oracle: Patient · Service Name · Status · Doctor · Section</p>
+    </label>
+    <div class="meta" id="fileMeta">لم يُرفع ملف بعد</div>
+  </div>
+
+  <div class="grid-kpi" id="kpiRow">
+    <div class="kpi"><div class="l">كتابات أصنافك</div><div class="v" id="k-writes">—</div><div class="f" id="k-writes-f">من إجمالي التقرير</div></div>
+    <div class="kpi"><div class="l">Closed (بيع/صرف)</div><div class="v" id="k-closed" style="color:#5eead4">—</div><div class="f" id="k-closed-f">—</div></div>
+    <div class="kpi"><div class="l">New (مفتوحة)</div><div class="v" id="k-new" style="color:#93c5fd">—</div><div class="f">لم تُصرف بعد</div></div>
+    <div class="kpi"><div class="l">تحويل الحالة</div><div class="v" id="k-conv" style="color:var(--amber)">—</div><div class="f">Closed ÷ (Closed+New)</div></div>
+    <div class="kpi"><div class="l">مبيعات مسجّلة</div><div class="v" id="k-sales" style="color:var(--violet)">—</div><div class="f" id="k-sales-f">يدوي — وحدات/علب</div></div>
+    <div class="kpi"><div class="l">تحويل مبيعات</div><div class="v" id="k-sales-conv" style="color:var(--rose)">—</div><div class="f">مبيعات ÷ كتابات</div></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span> ملخص الأصناف</h2>
+    <p class="hint">أدخل <b>مبيعات الفترة</b> لكل صنف (من تقرير الصيدلية/المخزون) لمقارنتها بعدد الكتابات في نفس الفترة.</p>
+    <div class="table-wrap" style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>الصنف</th>
+            <th class="num">كتابات</th>
+            <th class="num">Closed</th>
+            <th class="num">New</th>
+            <th class="num">تحويل %</th>
+            <th class="num">مبيعات الفترة</th>
+            <th class="num">مبيعات ÷ كتابات</th>
+            <th style="min-width:120px">توزيع</th>
+          </tr>
+        </thead>
+        <tbody id="productTbl"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button type="button" class="tab active" data-panel="chart">رسم بياني</button>
+    <button type="button" class="tab" data-panel="doctors">أطباء</button>
+    <button type="button" class="tab" data-panel="rows">تفاصيل الكتابات</button>
+  </div>
+
+  <div class="panel active" id="panel-chart">
+    <div class="card">
+      <h2><span class="dot"></span> كتابات مقابل Closed لكل صنف</h2>
+      <div class="chart-wrap"><canvas id="chartProducts"></canvas></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-doctors">
+    <div class="card">
+      <div class="toolbar">
+        <h2 style="margin:0;flex:1"><span class="dot"></span> أعلى الأطباء (أصنافك)</h2>
+        <input class="input" id="docSearch" placeholder="بحث باسم الطبيب…">
+      </div>
+      <table>
+        <thead><tr><th>#</th><th>الطبيب</th><th>القسم</th><th class="num">كتابات</th><th class="num">Closed</th><th class="num">تحويل</th></tr></thead>
+        <tbody id="doctorTbl"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-rows">
+    <div class="card">
+      <div class="toolbar">
+        <h2 style="margin:0;flex:1"><span class="dot"></span> سجل الكتابات المطابقة</h2>
+        <select id="filterProduct"><option value="">كل الأصناف</option></select>
+        <select id="filterStatus"><option value="">كل الحالات</option><option>Closed</option><option>New</option></select>
+        <button type="button" class="btn" id="btnExport">تصدير Excel</button>
+      </div>
+      <div style="max-height:420px;overflow:auto">
+        <table>
+          <thead><tr><th>الصنف</th><th>الدواء (Service)</th><th>الحالة</th><th>الطبيب</th><th>القسم</th><th class="num hide-sm">مريض</th></tr></thead>
+          <tbody id="rowsTbl"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span> حفظ البيانات</h2>
+    <p class="hint">الكتابات تبقى في الذاكرة حتى تحدّث الصفحة. أرقام المبيعات تُحفظ تلقائياً في المتصفح (localStorage) لهذا الجهاز.</p>
+    <div class="toolbar">
+      <button type="button" class="btn btn-ghost" id="btnClearSales">مسح أرقام المبيعات المحفوظة</button>
+      <button type="button" class="btn btn-ghost" id="btnSample">تحميل عينة من الملف المرفق (تجريبي)</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'rx-dash-sales-v1';
+const PRODUCTS = [
+  { id: 'centrozon-w', name: 'Centrozon women', match: s => /\bcentrozon\s*w/i.test(s) || /centrozon\s+women/i.test(s) },
+  { id: 'centrozon', name: 'Centrozon', match: s => /\bcentrozon\b/i.test(s) && !/\bcentrozon\s*w/i.test(s) && !/women/i.test(s) },
+  { id: 'pure-omega', name: 'Pure omega', match: s => /pure\s*omega/i.test(s) },
+  { id: 'purefeel', name: 'Purefeel', match: s => /purefeel/i.test(s) },
+  { id: 'bonefriend', name: 'Bonefreind', match: s => /bone\s*fr/i.test(s) || /bonefriend/i.test(s) },
+  { id: 'argigrow', name: 'Argigrow', match: s => /argigrow/i.test(s) },
+  { id: 'zincolive', name: 'Zincolive', match: s => /zincolive/i.test(s) },
+  { id: 'nostricure', name: 'Nostricure', match: s => /nostricure/i.test(s) },
+  { id: 'nostriderm', name: 'Nostriderm', match: s => /nostriderm/i.test(s) },
+  { id: 'reflex', name: 'Reflex', match: s => /\breflex\b/i.test(s) },
+  { id: 'oracure', name: 'Oracure', match: s => /oracure/i.test(s) },
+  { id: 'rizer', name: 'Rizer', match: s => /\brizer\b/i.test(s) },
+  { id: 'intimo', name: 'Intimo', match: s => /\bintimo\b/i.test(s) }
+];
+
+let allRows = [];
+let matchedRows = [];
+let salesMap = loadSales();
+let chartInst = null;
+
+function loadSales() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+}
+function saveSales() { localStorage.setItem(STORAGE_KEY, JSON.stringify(salesMap)); }
+
+function matchProduct(service) {
+  const s = (service || '').trim();
+  if (!s) return null;
+  for (const p of PRODUCTS) if (p.match(s)) return p;
+  return null;
+}
+
+function normStatus(st) {
+  const u = (st || '').toUpperCase();
+  if (u.includes('CLOS')) return 'Closed';
+  if (u.includes('CANC')) return 'Canceled';
+  if (u.includes('NEW')) return 'New';
+  if (u.includes('OPEN')) return 'Opened';
+  if (u.includes('PEND')) return 'Pending';
+  return st || '—';
+}
+
+function fmt(n) { return Number(n || 0).toLocaleString('en-US'); }
+function pct(a, b) { return b ? (100 * a / b) : 0; }
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+function normalizeRow(r) {
+  const map = {};
+  Object.keys(r).forEach(k => { map[k.replace(/\s+/g, '').toLowerCase()] = k; });
+  const get = (...keys) => {
+    for (const k of keys) {
+      const key = map[k.toLowerCase()];
+      if (key !== undefined) {
+        const v = r[key];
+        if (v !== '' && v != null) return String(v).replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+      }
+    }
+    return '';
+  };
+  const doctor = get('doctorname', 'اسمالطبيب');
+  const service = get('servicename', 'اسمالخدمة');
+  const section = get('sectionname', 'اسمالقسم');
+  const patient = get('patientno', 'رقمالمريض');
+  const patientName = get('patientname', 'اسمالمريض');
+  const orderNo = get('orderno', 'رقمالأمر');
+  const status = normStatus(get('status', 'الحالة'));
+  if (!doctor && !service) return null;
+  return { doctor, service, section, patient, patientName, orderNo, status };
+}
+
+async function parseExcel(file) {
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, { type: 'array' });
+  const sh = wb.Sheets[wb.SheetNames[0]];
+  return XLSX.utils.sheet_to_json(sh, { defval: '', raw: true }).map(normalizeRow).filter(Boolean);
+}
+
+async function parseCSV(file) {
+  const text = await file.text();
+  const wb = XLSX.read(text, { type: 'string' });
+  const sh = wb.Sheets[wb.SheetNames[0]];
+  return XLSX.utils.sheet_to_json(sh, { defval: '' }).map(normalizeRow).filter(Boolean);
+}
+
+async function parsePDF(file) {
+  const pdfjsLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const SEC_WORDS = ['GASTROENTEROLOGY','ENDOCRINOLOGY','OPHTHALMOLOGY','OPTHALMOLOGY','RHEUMATOLOGY','PULMONOLOGY','PARACITIONER','DERMATOLOGY','ORTHOPAEDIC','PSYCHIATRY','OBSTETRICS','PAEDIATRIC','CARDIOLOGY','NEPHROLOGY','NEUROLOGY','ONCOLOGY','INTERNAL','UROLOGY','GENERAL','SURGERY','DENTAL','RADIOLOGY','GYNECOLOGY','MEDICINE','ENT'];
+  const COL_P = [0, 75], COL_PN = [75, 243], COL_SVC = [243, 476], COL_ORD = [470, 535], COL_ST = [535, 585], COL_DS = [585, 1200];
+  function g(ws, r) { return ws.filter(w => w.x >= r[0] && w.x < r[1]).map(w => w.s).join(' ').trim(); }
+  function splitDS(txt) {
+    const words = txt.split(/\s+/);
+    for (let i = 0; i < words.length; i++) {
+      const w = words[i], wu = w.toUpperCase();
+      if (SEC_WORDS.includes(wu)) continue;
+      for (const sec of SEC_WORDS) {
+        const idx = wu.indexOf(sec);
+        if (idx > 0) {
+          const d = words.slice(0, i).join(' ') + ' ' + w.slice(0, idx);
+          const s = w.slice(idx) + ' ' + words.slice(i + 1).join(' ');
+          return { doctor: d.trim(), section: s.trim() };
+        }
+      }
+    }
+    for (let i = 0; i < words.length; i++) {
+      if (SEC_WORDS.includes(words[i].toUpperCase())) {
+        return { doctor: words.slice(0, i).join(' '), section: words.slice(i).join(' ') };
+      }
+    }
+    return { doctor: txt.trim(), section: '' };
+  }
+  const rows = [];
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page = await pdf.getPage(p);
+    const c = await page.getTextContent();
+    const lmap = {};
+    c.items.forEach(it => {
+      const y = Math.round(it.transform[5] / 3) * 3;
+      if (!lmap[y]) lmap[y] = [];
+      lmap[y].push({ x: it.transform[4], s: it.str.trim() });
+    });
+    Object.keys(lmap).map(Number).sort((a, b) => b - a).forEach(y => {
+      const ws = lmap[y].filter(w => w.s).sort((a, b) => a.x - b.x);
+      if (!ws.length) return;
+      const line = ws.map(w => w.s).join(' ');
+      if (/Patient No|Medication Orders|From Date|To Date|Doctor Name|Printing Date/i.test(line)) return;
+      if (!/^\d{5,7}$/.test(ws[0].s)) return;
+      const ds = splitDS(g(ws, COL_DS));
+      const row = {
+        patient: g(ws, COL_P), patientName: g(ws, COL_PN), service: g(ws, COL_SVC),
+        orderNo: g(ws, COL_ORD), status: normStatus(g(ws, COL_ST)), doctor: ds.doctor, section: ds.section
+      };
+      if (row.section) row.section = row.section.toUpperCase().replace('OPTHALMOLOGY', 'OPHTHALMOLOGY');
+      if (row.service || row.doctor) rows.push(row);
+    });
+  }
+  if (!rows.length) throw new Error('تعذّر قراءة PDF — تأكد أنه تقرير Doctor\'s Medication Orders');
+  return rows;
+}
+
+function enrichRows(rows) {
+  return rows.map(r => {
+    const prod = matchProduct(r.service);
+    return prod ? { ...r, productId: prod.id, productName: prod.name } : null;
+  }).filter(Boolean);
+}
+
+function aggregate() {
+  const byProd = {};
+  PRODUCTS.forEach(p => { byProd[p.id] = { ...p, total: 0, closed: 0, new: 0, other: 0 }; });
+  const docMap = new Map();
+  matchedRows.forEach(r => {
+    const b = byProd[r.productId];
+    b.total++;
+    if (r.status === 'Closed') b.closed++;
+    else if (r.status === 'New') b.new++;
+    else b.other++;
+    const dk = r.doctor + '|' + (r.section || '');
+    if (!docMap.has(dk)) docMap.set(dk, { doctor: r.doctor, section: r.section, total: 0, closed: 0 });
+    const d = docMap.get(dk);
+    d.total++;
+    if (r.status === 'Closed') d.closed++;
+  });
+  return {
+    products: PRODUCTS.map(p => byProd[p.id]),
+    doctors: [...docMap.values()].sort((a, b) => b.total - a.total)
+  };
+}
+
+function render() {
+  const agg = aggregate();
+  const totalWrites = matchedRows.length;
+  const totalAll = allRows.length;
+  let closed = 0, neu = 0;
+  matchedRows.forEach(r => { if (r.status === 'Closed') closed++; else if (r.status === 'New') neu++; });
+  const convDenom = closed + neu;
+  const conv = pct(closed, convDenom);
+
+  let salesSum = 0;
+  agg.products.forEach(p => { salesSum += Number(salesMap[p.id] || 0); });
+
+  document.getElementById('k-writes').textContent = fmt(totalWrites);
+  document.getElementById('k-writes-f').textContent = totalAll ? fmt(totalWrites) + ' من ' + fmt(totalAll) + ' سطر في التقرير' : '—';
+  document.getElementById('k-closed').textContent = fmt(closed);
+  document.getElementById('k-closed-f').textContent = convDenom ? pct(closed, convDenom).toFixed(1) + '% من (Closed+New)' : '—';
+  document.getElementById('k-new').textContent = fmt(neu);
+  document.getElementById('k-conv').textContent = convDenom ? conv.toFixed(1) + '%' : '—';
+  document.getElementById('k-sales').textContent = fmt(salesSum);
+  document.getElementById('k-sales-conv').textContent = totalWrites ? pct(salesSum, totalWrites).toFixed(1) + '%' : '—';
+
+  const maxT = Math.max(1, ...agg.products.map(p => p.total));
+  document.getElementById('productTbl').innerHTML = agg.products.map(p => {
+    const sales = Number(salesMap[p.id] || 0);
+    const cRate = pct(p.closed, p.closed + p.new);
+    const sRate = pct(sales, p.total);
+    return `<tr>
+      <td><strong>${p.name}</strong></td>
+      <td class="num">${fmt(p.total)}</td>
+      <td class="num">${fmt(p.closed)}</td>
+      <td class="num">${fmt(p.new)}</td>
+      <td class="num">${p.closed + p.new ? cRate.toFixed(1) + '%' : '—'}</td>
+      <td class="num"><input type="number" min="0" class="input sales-in" data-pid="${p.id}" value="${sales || ''}" placeholder="0"></td>
+      <td class="num">${p.total ? sRate.toFixed(1) + '%' : '—'}</td>
+      <td><div class="bar"><i style="width:${(100 * p.total / maxT).toFixed(1)}%"></i></div></td>
+    </tr>`;
+  }).join('');
+
+  document.querySelectorAll('.sales-in').forEach(inp => {
+    inp.onchange = () => {
+      const id = inp.dataset.pid;
+      const v = parseInt(inp.value, 10);
+      salesMap[id] = isNaN(v) || v < 0 ? 0 : v;
+      saveSales();
+      render();
+    };
+  });
+
+  const q = (document.getElementById('docSearch').value || '').trim().toLowerCase();
+  const docs = agg.doctors.filter(d => !q || d.doctor.toLowerCase().includes(q));
+  document.getElementById('doctorTbl').innerHTML = docs.slice(0, 80).map((d, i) => {
+    const cr = pct(d.closed, d.total);
+    return `<tr><td>${i + 1}</td><td>${esc(d.doctor)}</td><td>${esc(d.section || '—')}</td><td class="num">${fmt(d.total)}</td><td class="num">${fmt(d.closed)}</td><td class="num">${cr.toFixed(1)}%</td></tr>`;
+  }).join('') || '<tr><td colspan="6" style="color:var(--muted)">لا بيانات — ارفع تقريراً</td></tr>';
+
+  renderRowsTable();
+  renderChart(agg.products);
+}
+
+function statusBadge(st) {
+  if (st === 'Closed') return '<span class="badge badge-closed">Closed</span>';
+  if (st === 'New') return '<span class="badge badge-new">New</span>';
+  return '<span class="badge badge-other">' + esc(st) + '</span>';
+}
+
+function renderRowsTable() {
+  const fp = document.getElementById('filterProduct').value;
+  const fs = document.getElementById('filterStatus').value;
+  let list = matchedRows;
+  if (fp) list = list.filter(r => r.productId === fp);
+  if (fs) list = list.filter(r => r.status === fs);
+  document.getElementById('rowsTbl').innerHTML = list.slice(0, 500).map(r =>
+    `<tr><td>${esc(r.productName)}</td><td>${esc(r.service)}</td><td>${statusBadge(r.status)}</td><td>${esc(r.doctor)}</td><td>${esc(r.section)}</td><td class="num hide-sm">${esc(r.patient)}</td></tr>`
+  ).join('') + (list.length > 500 ? `<tr><td colspan="6" style="color:var(--muted)">… و ${fmt(list.length - 500)} سطر إضافي (صُدّر عبر Excel)</td></tr>` : '');
+}
+
+function renderChart(products) {
+  const ctx = document.getElementById('chartProducts');
+  const labels = products.map(p => p.name);
+  const writes = products.map(p => p.total);
+  const closed = products.map(p => p.closed);
+  if (chartInst) chartInst.destroy();
+  chartInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'كتابات', data: writes, backgroundColor: 'rgba(59,130,246,.55)', borderRadius: 6 },
+        { label: 'Closed', data: closed, backgroundColor: 'rgba(20,184,166,.7)', borderRadius: 6 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'IBM Plex Sans Arabic' } } } },
+      scales: {
+        x: { ticks: { color: '#64748b', maxRotation: 45 }, grid: { color: 'rgba(255,255,255,.05)' } },
+        y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,.05)' }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function fillProductFilter() {
+  const sel = document.getElementById('filterProduct');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">كل الأصناف</option>' + PRODUCTS.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  sel.value = cur;
+}
+
+async function handleFile(file) {
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  let rows;
+  if (ext === 'pdf') rows = await parsePDF(file);
+  else if (ext === 'csv') rows = await parseCSV(file);
+  else rows = await parseExcel(file);
+  allRows = rows;
+  matchedRows = enrichRows(rows);
+  document.getElementById('fileMeta').textContent =
+    '✓ ' + file.name + ' · ' + fmt(rows.length) + ' سطر · ' + fmt(matchedRows.length) + ' كتابة لأصنافك';
+  fillProductFilter();
+  render();
+  toast('تم التحميل: ' + fmt(matchedRows.length) + ' كتابة مطابقة');
+}
+
+const drop = document.getElementById('dropZone');
+const fin = document.getElementById('fileInput');
+drop.onclick = () => fin.click();
+fin.onchange = () => { if (fin.files[0]) handleFile(fin.files[0]); };
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('drag'); }));
+drop.addEventListener('drop', e => { if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-' + t.dataset.panel).classList.add('active');
+  };
+});
+
+document.getElementById('docSearch').oninput = () => render();
+document.getElementById('filterProduct').onchange = renderRowsTable;
+document.getElementById('filterStatus').onchange = renderRowsTable;
+
+document.getElementById('btnExport').onclick = () => {
+  if (!matchedRows.length) { toast('لا بيانات للتصدير'); return; }
+  const data = matchedRows.map(r => ({
+    الصنف: r.productName,
+    الدواء: r.service,
+    الحالة: r.status,
+    الطبيب: r.doctor,
+    القسم: r.section,
+    'رقم المريض': r.patient,
+    'اسم المريض': r.patientName,
+    'رقم الأمر': r.orderNo
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'كتابات');
+  XLSX.writeFile(wb, 'كتابات-الاصناف.xlsx');
+};
+
+document.getElementById('btnClearSales').onclick = () => {
+  if (!confirm('مسح كل أرقام المبيعات المحفوظة؟')) return;
+  salesMap = {};
+  saveSales();
+  render();
+  toast('تم مسح المبيعات');
+};
+
+document.getElementById('btnSample').onclick = async () => {
+  try {
+    const res = await fetch('samples/27-07-2026_c41a.pdf');
+    if (!res.ok) throw new Error('no sample');
+    const blob = await res.blob();
+    await handleFile(new File([blob], '27-07-2026_c41a.pdf', { type: 'application/pdf' }));
+  } catch {
+    toast('ضع نسخة PDF في مجلد samples/ أو ارفع الملف يدوياً');
+  }
+};
+
+fillProductFilter();
+render();
+</script>
+</body>
+</html>
