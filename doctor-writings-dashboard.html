@@ -107,7 +107,7 @@ th{color:var(--muted);font-size:.72rem;font-weight:600}
         <tbody id="mainTbl"></tbody>
       </table>
     </div>
-    <p class="hint">التحويل = الكمية المباعة ÷ عدد الكتابات (لنفس الفترة). هامش الربح = (قيمة البيع − التكلفة) ÷ التكلفة. مبيعات كل صيدلية = مجموع الملفين معاً.</p>
+    <p class="hint">التحويل = الكمية المباعة ÷ عدد الكتابات. هامش الربح (Gross Margin) = (قيمة البيع − التكلفة) ÷ قيمة البيع. مبيعات كل صيدلية = مجموع الملفين.</p>
   </div>
 </div>
 <div class="loader" id="loader"><div class="loader-box" id="loaderText">جاري القراءة…</div></div>
@@ -217,6 +217,13 @@ function fmt(n, d = 0) {
   return Number(n).toLocaleString('en-US', { maximumFractionDigits: d, minimumFractionDigits: d });
 }
 function pct(a, b) { return b ? (100 * a / b) : null; }
+/** هامش الربح الإجمالي (Gross Margin) = (البيع − التكلفة) ÷ البيع */
+function grossMargin(saleVal, costVal) {
+  const sale = Number(saleVal) || 0;
+  const cost = Number(costVal) || 0;
+  if (sale <= 0) return null;
+  return pct(sale - cost, sale);
+}
 function toast(msg, err) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -485,14 +492,14 @@ function renderSummary() {
   document.getElementById('k-qty').textContent = fmt(sumQty);
   const conv = pct(sumQty, sumRx);
   document.getElementById('k-conv').textContent = conv != null ? conv.toFixed(1) + '%' : '—';
-  const margin = pct(sumSale - sumCost, sumCost);
+  const margin = grossMargin(sumSale, sumCost);
   document.getElementById('k-margin').textContent = margin != null ? margin.toFixed(1) + '%' : '—';
 
   const tbody = document.getElementById('mainTbl');
   tbody.innerHTML = PRODUCTS.map(p => {
     const r = total[p.id];
     const c = pct(r.qty, r.writes);
-    const m = pct(r.sale - r.cost, r.cost);
+    const m = grossMargin(r.sale, r.cost);
     if (!r.writes && !r.qty) {
       return '<tr><td>' + p.name + '</td><td class="num">0</td><td class="num">0</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>';
     }
