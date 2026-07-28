@@ -65,17 +65,17 @@ th{color:var(--muted);font-size:.72rem;font-weight:600}
     <div class="hub-col">
       <h2>مبيعات الصيدليات <span style="font-weight:400;color:var(--dim);font-size:.8rem">— ملفان لكل صيدلية (مورد/صنف)</span></h2>
       <div class="pharm-block" data-pharm="p1">
-        <div class="slot-title">صيدلية 1 · التعاون الأول</div>
+        <div class="slot-title" data-base="صيدلية 1 · التعاون الأول">صيدلية 1 · التعاون الأول</div>
         <div class="slot slot-sm" data-kind="sale" data-id="p1" data-part="0"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 1</div><div class="slot-meta" id="meta-sale-p1-0">لم يُرفع</div></div>
         <div class="slot slot-sm" data-kind="sale" data-id="p1" data-part="1"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 2</div><div class="slot-meta" id="meta-sale-p1-1">لم يُرفع</div></div>
       </div>
       <div class="pharm-block" data-pharm="p2">
-        <div class="slot-title">صيدلية 18 · التعاون الثاني</div>
+        <div class="slot-title" data-base="صيدلية 18 · التعاون الثاني">صيدلية 18 · التعاون الثاني</div>
         <div class="slot slot-sm" data-kind="sale" data-id="p2" data-part="0"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 1</div><div class="slot-meta" id="meta-sale-p2-0">لم يُرفع</div></div>
         <div class="slot slot-sm" data-kind="sale" data-id="p2" data-part="1"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 2</div><div class="slot-meta" id="meta-sale-p2-1">لم يُرفع</div></div>
       </div>
       <div class="pharm-block" data-pharm="p3">
-        <div class="slot-title">صيدلية 7 · التعاون الثالث</div>
+        <div class="slot-title" data-base="صيدلية 7 · التعاون الثالث">صيدلية 7 · التعاون الثالث</div>
         <div class="slot slot-sm" data-kind="sale" data-id="p3" data-part="0"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 1</div><div class="slot-meta" id="meta-sale-p3-0">لم يُرفع</div></div>
         <div class="slot slot-sm" data-kind="sale" data-id="p3" data-part="1"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 2</div><div class="slot-meta" id="meta-sale-p3-1">لم يُرفع</div></div>
       </div>
@@ -195,11 +195,9 @@ function updateSaleBlockSummary(pharmId) {
   const qty = saleTotalQty(slot);
   const n = (slot.parts || []).filter(Boolean).length;
   const title = document.querySelector('[data-pharm="' + pharmId + '"] .slot-title');
-  if (title && n) title.dataset.base = title.dataset.base || title.textContent.split(' ·')[0];
-  if (title && n) {
-    const base = title.dataset.base || title.textContent.split(' —')[0];
-    title.textContent = base + ' — مجمّع: ' + fmt(qty) + ' وحدة (' + n + ' ملف)';
-  }
+  if (!title) return;
+  const base = title.dataset.base || title.textContent.split(' —')[0];
+  title.textContent = n ? base + ' — مجمّع: ' + fmt(qty) + ' وحدة (' + n + ' ملف)' : base;
 }
 
 function loadScript(src) {
