@@ -60,11 +60,12 @@ th{color:var(--muted);font-size:.7rem;font-weight:600}
 .num{font-family:Inter,sans-serif;direction:ltr;text-align:left;font-weight:600}
 .doc-list{font-size:.75rem;color:var(--dim);line-height:1.55;max-width:220px}
 .sec-title{font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
-.slot{border:1px solid var(--border);border-radius:10px;padding:10px 10px 10px 12px;margin-bottom:8px;cursor:pointer;font-size:.8rem;background:var(--input);position:relative;transition:.15s}
-.slot::before{content:'';position:absolute;right:0;top:8px;bottom:8px;width:3px;border-radius:3px;background:rgba(13,148,136,.35)}
+.slot{border:1px solid var(--border);border-radius:10px;padding:10px 10px 10px 12px;margin-bottom:8px;cursor:pointer;font-size:.8rem;background:var(--input);position:relative;transition:.15s;overflow:hidden}
+.slot::before{content:'';position:absolute;right:0;top:8px;bottom:8px;width:3px;border-radius:3px;background:rgba(13,148,136,.35);z-index:1;pointer-events:none}
 .slot:hover{border-color:rgba(13,148,136,.45);background:rgba(13,148,136,.06)}
 .slot.done{border-color:rgba(22,163,74,.35)}.slot.done::before{background:#16a34a}
-.slot input{display:none}
+.slot input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2;font-size:0}
+.slot .slot-body{position:relative;z-index:0;pointer-events:none}
 .slot-title{font-weight:700;font-size:.82rem;display:flex;align-items:center;justify-content:space-between;gap:6px}
 .slot-meta{font-size:.72rem;color:var(--dim);margin-top:4px;line-height:1.45}
 .pharm-block{margin-bottom:12px;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--input)}
@@ -105,9 +106,10 @@ th{color:var(--muted);font-size:.7rem;font-weight:600}
 .nearexp-card{border:1px solid rgba(13,148,136,.25);background:linear-gradient(180deg,#ecfdf5 0%,#fff 42%)}
 .nearexp-hint{font-size:.78rem;color:var(--dim);margin-bottom:10px;line-height:1.55}
 .nearexp-upload{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:12px}
-.nearexp-drop{flex:1;min-width:200px;padding:12px 14px;border:2px dashed rgba(13,148,136,.35);border-radius:10px;background:#fff;cursor:pointer;text-align:center;font-size:.8rem;color:var(--dim)}
+.nearexp-drop{flex:1;min-width:200px;padding:12px 14px;border:2px dashed rgba(13,148,136,.35);border-radius:10px;background:#fff;cursor:pointer;text-align:center;font-size:.8rem;color:var(--dim);position:relative;overflow:hidden;display:block}
 .nearexp-drop:hover{border-color:var(--teal);color:var(--teal)}
-.nearexp-drop input{display:none}
+.nearexp-drop input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2;font-size:0}
+.nearexp-drop .nearexp-drop-text{pointer-events:none;position:relative;z-index:0}
 .nearexp-meta{font-size:.78rem;color:var(--muted)}
 .nearexp-kpi{margin-bottom:10px}
 .nearexp-kpi .kpi{padding:9px 10px}
@@ -140,24 +142,24 @@ th{color:var(--muted);font-size:.7rem;font-weight:600}
     <button type="button" class="side-toggle" id="sideToggle">رفع البيانات ▼</button>
     <div class="side-inner" id="sideInner">
       <div class="sec-title">كتابات الأطباء</div>
-      <div class="slot" data-kind="rx" data-id="c1"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">التعاون الأول</div><div class="slot-meta" id="meta-rx-c1">لم يُرفع</div></div>
-      <div class="slot" data-kind="rx" data-id="c2"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">التعاون الثاني</div><div class="slot-meta" id="meta-rx-c2">لم يُرفع</div></div>
-      <div class="slot" data-kind="rx" data-id="c3"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">التعاون الثالث</div><div class="slot-meta" id="meta-rx-c3">لم يُرفع</div></div>
+      <div class="slot" data-kind="rx" data-id="c1"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-body"><div class="slot-title">التعاون الأول</div><div class="slot-meta" id="meta-rx-c1">لم يُرفع</div></div></div>
+      <div class="slot" data-kind="rx" data-id="c2"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-body"><div class="slot-title">التعاون الثاني</div><div class="slot-meta" id="meta-rx-c2">لم يُرفع</div></div></div>
+      <div class="slot" data-kind="rx" data-id="c3"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-body"><div class="slot-title">التعاون الثالث</div><div class="slot-meta" id="meta-rx-c3">لم يُرفع</div></div></div>
       <div class="sec-title">مبيعات الصيدليات</div>
         <div class="pharm-block" data-pharm="p1">
           <div class="slot-title" data-base="صيدلية 1">صيدلية 1</div>
-          <div class="slot slot-sm" data-kind="sale" data-id="p1" data-part="0"><input type="file" accept=".pdf"><div class="slot-label"><span class="brand-tag n">Nostri</span></div><div class="slot-meta" id="meta-sale-p1-0">لم يُرفع</div></div>
-          <div class="slot slot-sm" data-kind="sale" data-id="p1" data-part="1"><input type="file" accept=".pdf"><div class="slot-label"><span class="brand-tag p">Pureherb</span></div><div class="slot-meta" id="meta-sale-p1-1">لم يُرفع</div></div>
+          <div class="slot slot-sm" data-kind="sale" data-id="p1" data-part="0"><input type="file" accept=".pdf"><div class="slot-body"><div class="slot-label"><span class="brand-tag n">Nostri</span></div><div class="slot-meta" id="meta-sale-p1-0">لم يُرفع</div></div></div>
+          <div class="slot slot-sm" data-kind="sale" data-id="p1" data-part="1"><input type="file" accept=".pdf"><div class="slot-body"><div class="slot-label"><span class="brand-tag p">Pureherb</span></div><div class="slot-meta" id="meta-sale-p1-1">لم يُرفع</div></div></div>
         </div>
         <div class="pharm-block" data-pharm="p2">
           <div class="slot-title" data-base="صيدلية 18">صيدلية 18</div>
-          <div class="slot slot-sm" data-kind="sale" data-id="p2" data-part="0"><input type="file" accept=".pdf"><div class="slot-label"><span class="brand-tag n">Nostri</span></div><div class="slot-meta" id="meta-sale-p2-0">لم يُرفع</div></div>
-          <div class="slot slot-sm" data-kind="sale" data-id="p2" data-part="1"><input type="file" accept=".pdf"><div class="slot-label"><span class="brand-tag p">Pureherb</span></div><div class="slot-meta" id="meta-sale-p2-1">لم يُرفع</div></div>
+          <div class="slot slot-sm" data-kind="sale" data-id="p2" data-part="0"><input type="file" accept=".pdf"><div class="slot-body"><div class="slot-label"><span class="brand-tag n">Nostri</span></div><div class="slot-meta" id="meta-sale-p2-0">لم يُرفع</div></div></div>
+          <div class="slot slot-sm" data-kind="sale" data-id="p2" data-part="1"><input type="file" accept=".pdf"><div class="slot-body"><div class="slot-label"><span class="brand-tag p">Pureherb</span></div><div class="slot-meta" id="meta-sale-p2-1">لم يُرفع</div></div></div>
         </div>
         <div class="pharm-block" data-pharm="p3">
           <div class="slot-title" data-base="صيدلية 7">صيدلية 7</div>
-          <div class="slot slot-sm" data-kind="sale" data-id="p3" data-part="0"><input type="file" accept=".pdf"><div class="slot-label"><span class="brand-tag n">Nostri</span></div><div class="slot-meta" id="meta-sale-p3-0">لم يُرفع</div></div>
-          <div class="slot slot-sm" data-kind="sale" data-id="p3" data-part="1"><input type="file" accept=".pdf"><div class="slot-label"><span class="brand-tag p">Pureherb</span></div><div class="slot-meta" id="meta-sale-p3-1">لم يُرفع</div></div>
+          <div class="slot slot-sm" data-kind="sale" data-id="p3" data-part="0"><input type="file" accept=".pdf"><div class="slot-body"><div class="slot-label"><span class="brand-tag n">Nostri</span></div><div class="slot-meta" id="meta-sale-p3-0">لم يُرفع</div></div></div>
+          <div class="slot slot-sm" data-kind="sale" data-id="p3" data-part="1"><input type="file" accept=".pdf"><div class="slot-body"><div class="slot-label"><span class="brand-tag p">Pureherb</span></div><div class="slot-meta" id="meta-sale-p3-1">لم يُرفع</div></div></div>
         </div>
     </div>
   </aside>
@@ -177,7 +179,7 @@ th{color:var(--muted);font-size:.7rem;font-weight:600}
       <h2>متابعة أصناف قريبة الانتهاء — كتابات الأطباء</h2>
       <p class="nearexp-hint">ارفع ملف Excel أو CSV فيه أسماء الأصناف (أي عمود). نطابقها مع أصناف التقرير ونقارن <strong>عدد الكتابات</strong> من PDF الكتابات بين الفترة المعروضة والفترة المقارَنة (نفس اختيار «عرض / مقارنة مع» أعلاه).</p>
       <div class="nearexp-upload">
-        <label class="nearexp-drop" id="nearExpiryDrop">📎 اضغط لرفع قائمة الأصناف (Excel / CSV)<input type="file" id="nearExpiryFile" accept=".xlsx,.xls,.csv"></label>
+        <label class="nearexp-drop" id="nearExpiryDrop"><span class="nearexp-drop-text">📎 اضغط لرفع قائمة الأصناف (Excel / CSV)</span><input type="file" id="nearExpiryFile" accept=".xlsx,.xls,.csv"></label>
         <button type="button" class="btn-soft" id="btnClearNearExpiry">مسح القائمة</button>
         <span class="nearexp-meta" id="nearExpiryMeta">لم يُرفع قائمة</span>
       </div>
@@ -778,10 +780,13 @@ function setUploadPeriod(id){
   syncViewBar();
 }
 function wireSlots(){
-  document.querySelectorAll('.slot').forEach(slot=>{
-    const input=slot.querySelector('input');
-    slot.addEventListener('click',e=>{ if(e.target===input) return; input.click(); });
-    input.addEventListener('change',()=>{ if(input.files[0]) processFile(slot.dataset.kind,slot.dataset.id,input.files[0],slot.dataset.part!=null?+slot.dataset.part:null); input.value=''; });
+  document.querySelectorAll('.slot input[type=file]').forEach(input=>{
+    input.addEventListener('change',()=>{
+      const slot=input.closest('.slot');
+      if(!slot||!input.files?.[0]) return;
+      processFile(slot.dataset.kind,slot.dataset.id,input.files[0],slot.dataset.part!=null?+slot.dataset.part:null);
+      input.value='';
+    });
   });
   document.querySelectorAll('.period-switch button').forEach(btn=>{
     btn.addEventListener('click',()=>setUploadPeriod(btn.dataset.period));
@@ -802,8 +807,8 @@ function wireSlots(){
     saveState(); renderSummary();
   });
   document.getElementById('btnCollapseSide').addEventListener('click',()=>collapseSidebar(false));
-  document.getElementById('btnExpandSide').addEventListener('click',()=>expandSidebar());
   document.getElementById('btnOpenUpload').addEventListener('click',()=>expandSidebar());
+  document.getElementById('btnExpandSide').addEventListener('click',()=>expandSidebar());
   document.getElementById('docSearch').addEventListener('input',e=>{
     docFilter=e.target.value;
     renderDocTable(collectAllDoctors(periodData(state.viewPeriod)));
@@ -814,10 +819,8 @@ function wireSlots(){
     document.getElementById('sideToggle').textContent=sb.classList.contains('collapsed')?'رفع البيانات ▼':'إخفاء الرفع ▲';
   });
   const neInput=document.getElementById('nearExpiryFile');
-  const neDrop=document.getElementById('nearExpiryDrop');
-  if(neDrop&&neInput){
-    neDrop.addEventListener('click',e=>{ if(e.target!==neInput) neInput.click(); });
-    neInput.addEventListener('change',()=>{ if(neInput.files[0]) processNearExpiryFile(neInput.files[0]); neInput.value=''; });
+  if(neInput){
+    neInput.addEventListener('change',()=>{ if(neInput.files?.[0]) processNearExpiryFile(neInput.files[0]); neInput.value=''; });
   }
   document.getElementById('btnClearNearExpiry')?.addEventListener('click',()=>{
     state.nearExpiry={ fileName:'', productIds:[], labels:{} };
@@ -826,18 +829,21 @@ function wireSlots(){
 }
 
 async function boot(){
+  let pdfOk=false;
   try{
     await loadFirst(CDN.pdf);
+    pdfOk=true;
     try{ await loadScript(PDF_WORKER); }catch{ PDF_WORKER='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'; }
-    try{ await loadFirst(CDN.chart); }catch(_){}
-    try{ await loadFirst(CDN.xlsx); }catch(_){}
-    loadState();
-    refreshUploadMeta();
-    wireSlots();
-    renderSummary();
-  }catch(e){
+  }catch(e){ console.warn('PDF lib',e); }
+  try{ await loadFirst(CDN.chart); }catch(_){}
+  try{ await loadFirst(CDN.xlsx); }catch(_){}
+  loadState();
+  refreshUploadMeta();
+  wireSlots();
+  try{ renderSummary(); }catch(e){ console.error(e); }
+  if(!pdfOk){
     document.getElementById('libAlert').classList.add('show');
-    document.getElementById('libAlert').textContent='افتح الملف من مجلد المشروع مع vendor و Chart.';
+    document.getElementById('libAlert').textContent='تعذر تحميل مكتبة PDF — افتح الصفحة من مجلد المشروع مع vendor أو من الإنترنت. الرفع يعمل بعد التحميل.';
   }
 }
 boot();
