@@ -41,6 +41,12 @@ th,td{padding:9px 6px;border-bottom:1px solid var(--border);text-align:right}
 th{color:var(--muted);font-size:.72rem;font-weight:600}
 .num{font-family:Inter,sans-serif;direction:ltr;text-align:left;font-weight:600}
 .hint{font-size:.76rem;color:var(--muted);margin-top:8px}
+.upload-section{margin-top:22px;padding:16px;border:1px solid var(--border);border-radius:var(--r);background:rgba(0,0,0,.15)}
+.upload-section > h2{font-size:1rem;margin-bottom:12px;color:var(--teal);font-weight:700}
+.upload-toggle{width:100%;margin-top:18px;padding:12px 14px;border-radius:var(--r);border:1px solid var(--border);background:var(--card);color:var(--text);font:inherit;font-size:.9rem;font-weight:600;cursor:pointer;text-align:center}
+.upload-toggle:hover{border-color:rgba(20,184,166,.4)}
+.upload-panel{display:none;margin-top:12px}
+.upload-panel.open{display:block}
 .loader{position:fixed;inset:0;background:rgba(5,8,16,.75);display:none;place-items:center;z-index:50}
 .loader.show{display:grid}
 .loader-box{background:var(--card);border:1px solid var(--border);padding:18px 24px;border-radius:14px;text-align:center}
@@ -52,35 +58,8 @@ th{color:var(--muted);font-size:.72rem;font-weight:600}
 <body>
 <div class="wrap">
   <h1>مركز البيانات — كتابات الأطباء والمبيعات</h1>
-  <p class="sub">التعاون الأول ↔ صيدلية 1 · التعاون الثاني ↔ صيدلية 18 · التعاون الثالث ↔ صيدلية 7 — ارفع تقرير الكتابات والمبيعات لكل زوج.</p>
+  <p class="sub">التعاون الأول ↔ صيدلية 1 · الثاني ↔ 18 · الثالث ↔ 7</p>
   <div class="alert" id="libAlert"></div>
-
-  <div class="hub">
-    <div class="hub-col">
-      <h2>كتابات الأطباء — مجمعات التعاون</h2>
-      <div class="slot" data-kind="rx" data-id="c1"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">التعاون الأول</div><div class="slot-meta" id="meta-rx-c1">لم يُرفع تقرير · مبيعات: صيدلية 1</div></div>
-      <div class="slot" data-kind="rx" data-id="c2"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">التعاون الثاني</div><div class="slot-meta" id="meta-rx-c2">لم يُرفع تقرير · مبيعات: صيدلية 18</div></div>
-      <div class="slot" data-kind="rx" data-id="c3"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">التعاون الثالث</div><div class="slot-meta" id="meta-rx-c3">لم يُرفع تقرير · مبيعات: صيدلية 7</div></div>
-    </div>
-    <div class="hub-col">
-      <h2>مبيعات الصيدليات <span style="font-weight:400;color:var(--dim);font-size:.8rem">— ملفان لكل صيدلية (مورد/صنف)</span></h2>
-      <div class="pharm-block" data-pharm="p1">
-        <div class="slot-title" data-base="صيدلية 1 · التعاون الأول">صيدلية 1 · التعاون الأول</div>
-        <div class="slot slot-sm" data-kind="sale" data-id="p1" data-part="0"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 1</div><div class="slot-meta" id="meta-sale-p1-0">لم يُرفع</div></div>
-        <div class="slot slot-sm" data-kind="sale" data-id="p1" data-part="1"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 2</div><div class="slot-meta" id="meta-sale-p1-1">لم يُرفع</div></div>
-      </div>
-      <div class="pharm-block" data-pharm="p2">
-        <div class="slot-title" data-base="صيدلية 18 · التعاون الثاني">صيدلية 18 · التعاون الثاني</div>
-        <div class="slot slot-sm" data-kind="sale" data-id="p2" data-part="0"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 1</div><div class="slot-meta" id="meta-sale-p2-0">لم يُرفع</div></div>
-        <div class="slot slot-sm" data-kind="sale" data-id="p2" data-part="1"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 2</div><div class="slot-meta" id="meta-sale-p2-1">لم يُرفع</div></div>
-      </div>
-      <div class="pharm-block" data-pharm="p3">
-        <div class="slot-title" data-base="صيدلية 7 · التعاون الثالث">صيدلية 7 · التعاون الثالث</div>
-        <div class="slot slot-sm" data-kind="sale" data-id="p3" data-part="0"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 1</div><div class="slot-meta" id="meta-sale-p3-0">لم يُرفع</div></div>
-        <div class="slot slot-sm" data-kind="sale" data-id="p3" data-part="1"><input type="file" accept=".pdf"><div class="slot-label">ملف مبيعات 2</div><div class="slot-meta" id="meta-sale-p3-1">لم يُرفع</div></div>
-      </div>
-    </div>
-  </div>
 
   <div class="kpi-row">
     <div class="kpi"><div class="l">إجمالي الكتابات</div><div class="v" id="k-rx">—</div></div>
@@ -107,7 +86,39 @@ th{color:var(--muted);font-size:.72rem;font-weight:600}
         <tbody id="mainTbl"></tbody>
       </table>
     </div>
-    <p class="hint">التحويل = الكمية المباعة ÷ عدد الكتابات. هامش الربح (Gross Margin) = (قيمة البيع − التكلفة) ÷ قيمة البيع. مبيعات كل صيدلية = مجموع الملفين.</p>
+  </div>
+
+  <button type="button" class="upload-toggle" id="uploadToggle" aria-expanded="false">رفع البيانات ▼</button>
+  <div class="upload-panel" id="uploadPanel">
+    <div class="upload-section">
+      <h2>رفع التقارير</h2>
+      <div class="hub">
+        <div class="hub-col">
+          <h2>كتابات الأطباء</h2>
+          <div class="slot" data-kind="rx" data-id="c1"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">التعاون الأول</div><div class="slot-meta" id="meta-rx-c1">لم يُرفع تقرير</div></div>
+          <div class="slot" data-kind="rx" data-id="c2"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">التعاون الثاني</div><div class="slot-meta" id="meta-rx-c2">لم يُرفع تقرير</div></div>
+          <div class="slot" data-kind="rx" data-id="c3"><input type="file" accept=".pdf,.xlsx,.xls,.csv"><div class="slot-title">التعاون الثالث</div><div class="slot-meta" id="meta-rx-c3">لم يُرفع تقرير</div></div>
+        </div>
+        <div class="hub-col">
+          <h2>مبيعات الصيدليات <span style="font-weight:400;color:var(--dim);font-size:.78rem">— Nostri + Pureherb</span></h2>
+          <div class="pharm-block" data-pharm="p1">
+            <div class="slot-title" data-base="صيدلية 1 · التعاون الأول">صيدلية 1 · التعاون الأول</div>
+            <div class="slot slot-sm" data-kind="sale" data-id="p1" data-part="0"><input type="file" accept=".pdf"><div class="slot-label">Nostri</div><div class="slot-meta" id="meta-sale-p1-0">لم يُرفع</div></div>
+            <div class="slot slot-sm" data-kind="sale" data-id="p1" data-part="1"><input type="file" accept=".pdf"><div class="slot-label">Pureherb</div><div class="slot-meta" id="meta-sale-p1-1">لم يُرفع</div></div>
+          </div>
+          <div class="pharm-block" data-pharm="p2">
+            <div class="slot-title" data-base="صيدلية 18 · التعاون الثاني">صيدلية 18 · التعاون الثاني</div>
+            <div class="slot slot-sm" data-kind="sale" data-id="p2" data-part="0"><input type="file" accept=".pdf"><div class="slot-label">Nostri</div><div class="slot-meta" id="meta-sale-p2-0">لم يُرفع</div></div>
+            <div class="slot slot-sm" data-kind="sale" data-id="p2" data-part="1"><input type="file" accept=".pdf"><div class="slot-label">Pureherb</div><div class="slot-meta" id="meta-sale-p2-1">لم يُرفع</div></div>
+          </div>
+          <div class="pharm-block" data-pharm="p3">
+            <div class="slot-title" data-base="صيدلية 7 · التعاون الثالث">صيدلية 7 · التعاون الثالث</div>
+            <div class="slot slot-sm" data-kind="sale" data-id="p3" data-part="0"><input type="file" accept=".pdf"><div class="slot-label">Nostri</div><div class="slot-meta" id="meta-sale-p3-0">لم يُرفع</div></div>
+            <div class="slot slot-sm" data-kind="sale" data-id="p3" data-part="1"><input type="file" accept=".pdf"><div class="slot-label">Pureherb</div><div class="slot-meta" id="meta-sale-p3-1">لم يُرفع</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 <div class="loader" id="loader"><div class="loader-box" id="loaderText">جاري القراءة…</div></div>
@@ -139,6 +150,7 @@ const PRODUCTS = [
 
 const STORE_KEY = 'rx-sales-hub-v3';
 const SALE_PARTS = 2;
+const SALE_PART_NAMES = ['Nostri', 'Pureherb'];
 const SITES = {
   c1: { complex: 'التعاون الأول', pharmacy: 'صيدلية 1', peer: 'p1' },
   c2: { complex: 'التعاون الثاني', pharmacy: 'صيدلية 18', peer: 'p2' },
@@ -197,7 +209,7 @@ function updateSaleBlockSummary(pharmId) {
   const title = document.querySelector('[data-pharm="' + pharmId + '"] .slot-title');
   if (!title) return;
   const base = title.dataset.base || title.textContent.split(' —')[0];
-  title.textContent = n ? base + ' — مجمّع: ' + fmt(qty) + ' وحدة (' + n + ' ملف)' : base;
+  title.textContent = n ? base + ' — مجمّع: ' + fmt(qty) + ' وحدة' : base;
 }
 
 function loadScript(src) {
@@ -524,6 +536,13 @@ function wireSlots() {
       if (input.files[0]) processFile(kind, id, input.files[0], part != null ? Number(part) : null);
       input.value = '';
     });
+  });
+  const toggle = document.getElementById('uploadToggle');
+  const panel = document.getElementById('uploadPanel');
+  toggle.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.textContent = open ? 'إخفاء رفع البيانات ▲' : 'رفع البيانات ▼';
   });
 }
 
