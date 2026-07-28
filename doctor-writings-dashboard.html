@@ -4,11 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>مركز البيانات | كتابات ومبيعات</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f1f5f9;--card:#fff;--border:#e2e8f0;--text:#0f172a;--dim:#475569;--muted:#64748b;--teal:#0d9488;--amber:#d97706;--rose:#e11d48;--violet:#7c3aed;--input:#f8fafc;--r:12px;--side:320px;--side-collapsed:52px}
+:root{
+  --bg:#eef2f7;--bg-accent:#e8f4f2;--card:#fff;--border:#dbe3ee;--text:#0f172a;--dim:#475569;--muted:#64748b;
+  --teal:#0f766e;--teal-soft:#ccfbf1;--blue:#1d4ed8;--blue-soft:#dbeafe;--amber:#b45309;--amber-soft:#fef3c7;
+  --rose:#be123c;--violet:#6d28d9;--input:#f8fafc;--r:14px;--side:320px;--side-collapsed:52px;
+  --shadow:0 1px 2px rgba(15,23,42,.04),0 6px 18px rgba(15,23,42,.06);
+  --font-ar:'IBM Plex Sans Arabic',system-ui,sans-serif;--font-num:'Inter',system-ui,sans-serif;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'IBM Plex Sans Arabic','Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+body{font-family:var(--font-ar);background:linear-gradient(165deg,var(--bg-accent) 0%,var(--bg) 38%,#f1f5f9 100%);color:var(--text);line-height:1.55;font-size:15px;-webkit-font-smoothing:antialiased}
 .app{display:flex;min-height:100vh;transition:all .25s}
 .sidebar{width:var(--side);flex-shrink:0;background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);border-left:1px solid var(--border);box-shadow:-2px 0 12px rgba(15,23,42,.04);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;transition:width .25s ease}
 .sidebar.collapsed{width:var(--side-collapsed)}
@@ -26,8 +32,10 @@ body{font-family:'IBM Plex Sans Arabic','Inter',system-ui,sans-serif;background:
 .sidebar.collapsed .sidebar-head{padding:10px 8px}
 .sidebar-fab{display:none}
 .sidebar.collapsed .sidebar-fab{display:grid;place-items:center;width:100%;padding:8px 0}
-.main{flex:1;min-width:0;padding:16px 18px 32px}
-.view-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:12px;padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);font-size:.82rem}
+.main{flex:1;min-width:0;padding:20px 22px 36px}
+.page-title{font-size:1.45rem;font-weight:700;letter-spacing:-.02em;margin-bottom:4px;color:#0c4a6e}
+.page-sub{font-size:.82rem;color:var(--muted);margin-bottom:14px}
+.view-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px;padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);font-size:.84rem;box-shadow:var(--shadow)}
 .view-bar select,.view-bar input{background:var(--input);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;font:inherit}
 .btn-soft{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--input);color:var(--text);font:inherit;cursor:pointer}
 .btn-soft:hover{background:#e2e8f0}
@@ -35,32 +43,41 @@ body{font-family:'IBM Plex Sans Arabic','Inter',system-ui,sans-serif;background:
 .btn-danger:hover{background:#fee2e2}
 .alert{display:none;margin-bottom:12px;padding:10px 12px;border-radius:var(--r);background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-size:.84rem}
 .alert.show{display:block}
-.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 @media(max-width:900px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
-.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px 12px}
-.kpi .l{font-size:.68rem;color:var(--muted);font-weight:600}
-.kpi .v{font-size:1.25rem;font-weight:700;font-family:Inter,sans-serif;margin-top:2px}
-.kpi .cmp{font-size:.7rem;margin-top:4px;font-family:Inter,sans-serif}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:13px 14px;box-shadow:var(--shadow)}
+.kpi .l{font-size:.72rem;color:var(--muted);font-weight:600;letter-spacing:.01em}
+.kpi .v{font-size:1.35rem;font-weight:700;font-family:var(--font-num);margin-top:3px;color:#0f172a}
+.kpi .cmp{font-size:.72rem;margin-top:5px;font-family:var(--font-num)}
+.kpi.clickable{cursor:pointer;transition:transform .16s ease,box-shadow .16s ease,border-color .16s}
+.kpi.clickable:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(15,23,42,.1);border-color:#99d5cf}
+.kpi.clickable:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.kpi-hint{display:block;font-size:.64rem;color:var(--muted);margin-top:6px}
+.kpi.theme-rx{border-top:3px solid var(--blue)}.kpi.theme-qty{border-top:3px solid var(--teal)}
+.kpi.theme-conv{border-top:3px solid var(--amber)}.kpi.theme-margin{border-top:3px solid #7c3aed}
 .cmp-up{color:#15803d}.cmp-down{color:var(--rose)}.cmp-flat{color:var(--dim)}
-.brand-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.brand-card{border-radius:var(--r);padding:14px;border:1px solid var(--border)}
-.brand-card.nostri{background:linear-gradient(135deg,rgba(13,148,136,.1),#fff)}
-.brand-card.pure{background:linear-gradient(135deg,rgba(124,58,237,.08),#fff)}
-.brand-card .t{font-size:.85rem;font-weight:700;margin-bottom:6px}
-.brand-card .v{font-size:1.4rem;font-weight:800;font-family:Inter,sans-serif}
-.brand-card .sub{font-size:.72rem;color:var(--dim);margin-top:4px}
-.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.brand-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.brand-card{border-radius:var(--r);padding:16px;border:1px solid var(--border);box-shadow:var(--shadow);cursor:pointer;transition:transform .16s,box-shadow .16s}
+.brand-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(15,23,42,.1)}
+.brand-card.nostri{background:linear-gradient(145deg,#ecfdf5 0%,#fff 55%);border-color:#99f6e4}
+.brand-card.pure{background:linear-gradient(145deg,#f5f3ff 0%,#fff 55%);border-color:#ddd6fe}
+.brand-card .t{font-size:.88rem;font-weight:700;margin-bottom:6px}
+.brand-card .v{font-size:1.45rem;font-weight:800;font-family:var(--font-num)}
+.brand-card .sub{font-size:.74rem;color:var(--dim);margin-top:4px}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
 @media(max-width:900px){.charts-row{grid-template-columns:1fr}}
-.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px}
-.chart-card h3{font-size:.85rem;margin-bottom:8px;color:var(--dim)}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);cursor:pointer;transition:transform .16s,box-shadow .16s}
+.chart-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(15,23,42,.1)}
+.chart-card h3{font-size:.88rem;margin-bottom:8px;color:var(--dim);font-weight:600}
 .chart-wrap{height:240px;position:relative}
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:12px}
-.card h2{font-size:.92rem;margin-bottom:10px}
-table{width:100%;border-collapse:collapse;font-size:.8rem}
-th,td{padding:8px 6px;border-bottom:1px solid var(--border);text-align:right;vertical-align:top}
-th{color:var(--muted);font-size:.7rem;font-weight:600}
-.num{font-family:Inter,sans-serif;direction:ltr;text-align:left;font-weight:600}
-.doc-list{font-size:.75rem;color:var(--dim);line-height:1.55;max-width:220px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card h2{font-size:.98rem;margin-bottom:10px;font-weight:700;color:#134e4a}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th,td{padding:9px 7px;border-bottom:1px solid var(--border);text-align:right;vertical-align:top}
+th{color:var(--muted);font-size:.72rem;font-weight:600}
+.num{font-family:var(--font-num);direction:ltr;text-align:left;font-weight:600}
+.doc-list{font-size:.76rem;color:var(--dim);line-height:1.55;max-width:220px}
+tr.click-row{cursor:pointer}tr.click-row:hover{background:#f0fdfa!important}
 .sec-title{font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
 .slot{border:1px solid var(--border);border-radius:10px;padding:10px 10px 10px 12px;margin-bottom:8px;cursor:pointer;font-size:.8rem;background:var(--input);position:relative;transition:.15s;overflow:hidden}
 .slot::before{content:'';position:absolute;right:0;top:8px;bottom:8px;width:3px;border-radius:3px;background:rgba(13,148,136,.35);z-index:1;pointer-events:none}
@@ -122,6 +139,19 @@ th{color:var(--muted);font-size:.7rem;font-weight:600}
 .status-pill.none{background:#fff7ed;color:#c2410c}
 .nearexp-table tbody tr.row-up{background:rgba(22,163,74,.06)}
 .nearexp-table tbody tr.row-down{background:rgba(225,29,72,.05)}
+.drill-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:80;display:none;place-items:center;padding:16px}
+.drill-backdrop.show{display:grid}
+.drill-panel{background:#fff;border-radius:16px;max-width:720px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 48px rgba(15,23,42,.2);border:1px solid var(--border)}
+.drill-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border)}
+.drill-head h3{font-size:1.05rem;font-weight:700;color:#0f766e}
+.drill-head p{font-size:.78rem;color:var(--muted);margin-top:4px}
+.drill-close{border:none;background:var(--input);width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:1.1rem;color:var(--dim)}
+.drill-body{padding:14px 18px 18px;overflow:auto;font-size:.84rem}
+.drill-section{margin-bottom:14px}
+.drill-section h4{font-size:.8rem;color:var(--muted);margin-bottom:8px;font-weight:700}
+.drill-table{width:100%;font-size:.8rem}
+.drill-table td,.drill-table th{padding:8px 6px}
+.drill-pill{display:inline-block;padding:3px 9px;border-radius:999px;background:var(--teal-soft);color:var(--teal);font-weight:700;font-family:var(--font-num);font-size:.78rem}
 </style>
 </head>
 <body>
@@ -167,7 +197,8 @@ th{color:var(--muted);font-size:.7rem;font-weight:600}
   </aside>
 
   <main class="main">
-    <h1 style="font-size:1.3rem;margin-bottom:12px">مركز البيانات — كتابات ومبيعات</h1>
+    <h1 class="page-title">مركز البيانات — كتابات ومبيعات</h1>
+    <p class="page-sub">اضغط على الكروت والرسوم لعرض التفاصيل · الفترة: <strong id="pagePeriodLabel">—</strong></p>
     <div class="alert" id="libAlert"></div>
     <div class="view-bar">
       <label>عرض:</label>
@@ -204,20 +235,28 @@ th{color:var(--muted);font-size:.7rem;font-weight:600}
     </div>
 
     <div class="kpi-row">
-      <div class="kpi"><div class="l">إجمالي الكتابات</div><div class="v" id="k-rx">—</div><div class="cmp" id="cmp-rx"></div></div>
-      <div class="kpi"><div class="l">الكمية المباعة</div><div class="v" id="k-qty">—</div><div class="cmp" id="cmp-qty"></div></div>
-      <div class="kpi"><div class="l">تحويل (بيع ÷ كتابة)</div><div class="v" id="k-conv" style="color:var(--amber)">—</div><div class="cmp" id="cmp-conv"></div></div>
-      <div class="kpi"><div class="l">هامش الربح (Gross)</div><div class="v" id="k-margin" style="color:var(--teal)">—</div><div class="cmp" id="cmp-margin"></div></div>
+      <div class="kpi clickable theme-rx" data-drill="rx" tabindex="0" role="button" aria-label="تفاصيل الكتابات">
+        <div class="l">إجمالي الكتابات</div><div class="v" id="k-rx">—</div><div class="cmp" id="cmp-rx"></div><span class="kpi-hint">من كتب؟ حسب مجمع وصنف</span>
+      </div>
+      <div class="kpi clickable theme-qty" data-drill="qty" tabindex="0" role="button">
+        <div class="l">الكمية المباعة</div><div class="v" id="k-qty">—</div><div class="cmp" id="cmp-qty"></div><span class="kpi-hint">تفصيل حسب الصيدلية والصنف</span>
+      </div>
+      <div class="kpi clickable theme-conv" data-drill="conv" tabindex="0" role="button">
+        <div class="l">تحويل (بيع ÷ كتابة)</div><div class="v" id="k-conv" style="color:var(--amber)">—</div><div class="cmp" id="cmp-conv"></div><span class="kpi-hint">أصناف أعلى/أقل تحويلاً</span>
+      </div>
+      <div class="kpi clickable theme-margin" data-drill="margin" tabindex="0" role="button">
+        <div class="l">هامش الربح (Gross)</div><div class="v" id="k-margin" style="color:var(--teal)">—</div><div class="cmp" id="cmp-margin"></div><span class="kpi-hint">هامش كل صنف</span>
+      </div>
     </div>
 
     <div class="brand-row">
-      <div class="brand-card nostri">
+      <div class="brand-card nostri clickable" data-drill="brand-nostri" tabindex="0" role="button">
         <div class="t">إجمالي مبيعات Nostri</div>
         <div class="v" id="brand-nostri-qty">—</div>
         <div class="sub" id="brand-nostri-sub">وحدات · قيمة بيع · هامش</div>
         <div class="cmp" id="cmp-nostri"></div>
       </div>
-      <div class="brand-card pure">
+      <div class="brand-card pure clickable" data-drill="brand-pure" tabindex="0" role="button">
         <div class="t">إجمالي مبيعات Pureherb</div>
         <div class="v" id="brand-pure-qty">—</div>
         <div class="sub" id="brand-pure-sub">وحدات · قيمة بيع · هامش</div>
@@ -226,8 +265,8 @@ th{color:var(--muted);font-size:.7rem;font-weight:600}
     </div>
 
     <div class="charts-row">
-      <div class="chart-card"><h3>كتابات مقابل مبيعات (حبات)</h3><div class="chart-wrap"><canvas id="chartMain"></canvas></div></div>
-      <div class="chart-card"><h3>أعلى 8 أصناف — كتابة vs بيع</h3><div class="chart-wrap"><canvas id="chartTop"></canvas></div></div>
+      <div class="chart-card" data-drill="chart-writes" tabindex="0" role="button"><h3>كتابات مقابل مبيعات (حبات) — اضغط للتفاصيل</h3><div class="chart-wrap"><canvas id="chartMain"></canvas></div></div>
+      <div class="chart-card" data-drill="chart-top" tabindex="0" role="button"><h3>أعلى 8 أصناف — اضغط للتفاصيل</h3><div class="chart-wrap"><canvas id="chartTop"></canvas></div></div>
     </div>
 
     <div class="card">
@@ -262,6 +301,15 @@ th{color:var(--muted);font-size:.7rem;font-weight:600}
     </div>
   </main>
 </div>
+<div class="drill-backdrop" id="drillModal" aria-hidden="true">
+  <div class="drill-panel" role="dialog" aria-modal="true" aria-labelledby="drillTitle">
+    <div class="drill-head">
+      <div><h3 id="drillTitle">تفاصيل</h3><p id="drillSub"></p></div>
+      <button type="button" class="drill-close" id="drillClose" title="إغلاق">✕</button>
+    </div>
+    <div class="drill-body" id="drillBody"></div>
+  </div>
+</div>
 <div class="loader" id="loader"><div class="loader-box" id="loaderText">جاري القراءة…</div></div>
 <div class="toast" id="toast"></div>
 
@@ -291,7 +339,7 @@ const PRODUCTS = [
   { id: 'rizer', name: 'Rizer', match: s => /\brizer\b/i.test(s) },
   { id: 'intimo', name: 'Intimo', match: s => /\bintimo\b/i.test(s) }
 ];
-const SITES = { c1:{peer:'p1'},c2:{peer:'p2'},c3:{peer:'p3'},p1:{peer:'c1'},p2:{peer:'c2'},p3:{peer:'c3'} };
+const SITES = { c1:{peer:'p1',label:'التعاون الأول'},c2:{peer:'p2',label:'التعاون الثاني'},c3:{peer:'p3',label:'التعاون الثالث'},p1:{peer:'c1',label:'صيدلية 1'},p2:{peer:'c2',label:'صيدلية 18'},p3:{peer:'c3',label:'صيدلية 7'} };
 
 function emptyPeriodData(){
   return { label:'', month:'', rx:{c1:null,c2:null,c3:null}, sale:{p1:emptySaleSlot(),p2:emptySaleSlot(),p3:emptySaleSlot()} };
@@ -706,6 +754,129 @@ function topDoctorsText(doctorsMap,limit=3){
   return entries.slice(0,limit).map(([n,c])=>n+' ('+c+')').join(' · ');
 }
 
+function allDoctorsRanked(doctors){
+  const map={};
+  PRODUCTS.forEach(p=>{ Object.entries(doctors[p.id]||{}).forEach(([d,c])=>{ map[d]=(map[d]||0)+c; }); });
+  return Object.entries(map).sort((a,b)=>b[1]-a[1]);
+}
+function rxByComplex(pd){
+  return ['c1','c2','c3'].map(id=>({ id, name:SITES[id].label, writes:pd.rx[id]?.matched||0, file:pd.rx[id]?.fileName||'—' }));
+}
+function qtyByPharmacy(pd){
+  return ['p1','p2','p3'].map(id=>{
+    let qty=0;
+    pd.sale[id].parts.forEach(part=>{ if(part?.agg) PRODUCTS.forEach(p=>{ qty+=part.agg[p.id].qty||0; }); });
+    return { name:SITES[id].label, qty };
+  });
+}
+function drillTable(headers,rows){
+  if(!rows.length) return '<p style="color:var(--muted)">لا توجد بيانات للفترة المعروضة.</p>';
+  return '<table class="drill-table"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
+    rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
+}
+function openDrill(title,sub,html){
+  document.getElementById('drillTitle').textContent=title;
+  document.getElementById('drillSub').textContent=sub||'';
+  document.getElementById('drillBody').innerHTML=html;
+  document.getElementById('drillModal').classList.add('show');
+  document.getElementById('drillModal').setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+}
+function closeDrill(){
+  document.getElementById('drillModal').classList.remove('show');
+  document.getElementById('drillModal').setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+}
+function openProductDrill(productId){
+  const pd=periodData(state.viewPeriod);
+  const doctors=collectAllDoctors(pd);
+  const total=computeTotalAgg(pd);
+  const p=PRODUCTS.find(x=>x.id===productId);
+  if(!p) return;
+  const r=total[p.id];
+  const docRows=Object.entries(doctors[p.id]||{}).sort((a,b)=>b[1]-a[1]).map(([d,c],i)=>[
+    String(i+1), esc(d), '<span class="drill-pill">'+fmt(c)+'</span>'
+  ]);
+  const html='<div class="drill-section"><h4>ملخص الصنف</h4>'+drillTable(['','',''],
+    [['كتابات',fmt(r.writes),''],['مباع',fmt(r.qty),''],['تحويل',r.writes?pct(r.qty,r.writes).toFixed(1)+'%':'—','']])+'</div>'+
+    '<div class="drill-section"><h4>الأطباء — '+esc(p.name)+'</h4>'+drillTable(['#','الطبيب','كتابات'],docRows)+'</div>';
+  openDrill(p.name,'فترة: '+periodLabel(state.viewPeriod),html);
+}
+function handleDrill(type){
+  const pd=periodData(state.viewPeriod);
+  const snap=buildSnapshot(pd);
+  const sub='فترة: '+periodLabel(state.viewPeriod);
+  if(type==='rx'){
+    const doctors=snap.doctors;
+    const complexes=rxByComplex(pd);
+    const top=allDoctorsRanked(doctors).slice(0,25).map(([d,c],i)=>[String(i+1),esc(d),'<span class="drill-pill">'+fmt(c)+'</span>']);
+    const byProd=PRODUCTS.map(p=>({p, w:snap.total[p.id].writes})).filter(x=>x.w>0).sort((a,b)=>b.w-a.w)
+      .map((x,i)=>[String(i+1),'<strong>'+esc(x.p.name)+'</strong>','<span class="drill-pill">'+fmt(x.w)+'</span>',topDoctorsText(doctors[x.p.id],2)]);
+    openDrill('تفاصيل الكتابات',sub,
+      '<div class="drill-section"><h4>حسب المجمع الطبي</h4>'+drillTable(['المجمع','كتابات','الملف'],
+        complexes.map(c=>[esc(c.name),'<span class="drill-pill">'+fmt(c.writes)+'</span>',esc(c.file)]))+'</div>'+
+      '<div class="drill-section"><h4>أعلى الأطباء (إجمالي)</h4>'+drillTable(['#','الطبيب','كتابات'],top)+'</div>'+
+      '<div class="drill-section"><h4>حسب الصنف</h4>'+drillTable(['#','الصنف','كتابات','أطباء'],byProd)+'</div>');
+    return;
+  }
+  if(type==='qty'){
+    const ph=qtyByPharmacy(pd);
+    const rows=PRODUCTS.map(p=>({name:p.name,q:snap.total[p.id].qty})).filter(x=>x.q>0).sort((a,b)=>b.q-a.q)
+      .map((x,i)=>[String(i+1),esc(x.name),'<span class="drill-pill">'+fmt(x.q)+'</span>']);
+    openDrill('تفاصيل المبيعات',sub,
+      '<div class="drill-section"><h4>حسب الصيدلية</h4>'+drillTable(['الصيدلية','وحدات مباعة'],
+        ph.map(x=>[esc(x.name),'<span class="drill-pill">'+fmt(x.qty)+'</span>']))+'</div>'+
+      '<div class="drill-section"><h4>حسب الصنف</h4>'+drillTable(['#','الصنف','مباع'],rows)+'</div>');
+    return;
+  }
+  if(type==='conv'){
+    const rows=PRODUCTS.map(p=>{
+      const w=snap.total[p.id].writes,q=snap.total[p.id].qty,cv=pct(q,w);
+      return {name:p.name,w,q,cv};
+    }).filter(x=>x.w>0||x.q>0).sort((a,b)=>(b.cv||0)-(a.cv||0))
+      .map((x,i)=>[String(i+1),esc(x.name),fmt(x.w),fmt(x.q),x.cv!=null?x.cv.toFixed(1)+'%':'—']);
+    openDrill('تحويل البيع من الكتابة',sub,
+      '<div class="drill-section"><h4>الأصناف مرتبة حسب التحويل</h4>'+drillTable(['#','الصنف','كتابات','مباع','تحويل'],rows)+'</div>');
+    return;
+  }
+  if(type==='margin'){
+    const rows=PRODUCTS.map(p=>{
+      const r=snap.total[p.id], m=grossMargin(r.sale,r.cost);
+      return {name:p.name,sale:r.sale,cost:r.cost,m};
+    }).filter(x=>x.sale>0).sort((a,b)=>(b.m||0)-(a.m||0))
+      .map((x,i)=>[String(i+1),esc(x.name),fmt(x.sale,2),fmt(x.cost,2),x.m!=null?x.m.toFixed(1)+'%':'—']);
+    openDrill('هامش الربح حسب الصنف',sub,
+      drillTable(['#','الصنف','بيع','تكلفة','هامش %'],rows));
+    return;
+  }
+  if(type==='brand-nostri'||type==='brand-pure'){
+    const part=type==='brand-nostri'?0:1;
+    const label=type==='brand-nostri'?'Nostri':'Pureherb';
+    const agg=brandAgg(part,pd);
+    const rows=PRODUCTS.map(p=>({name:p.name,q:agg[p.id].qty,s:agg[p.id].sale})).filter(x=>x.q>0).sort((a,b)=>b.q-a.q)
+      .map((x,i)=>[String(i+1),esc(x.name),'<span class="drill-pill">'+fmt(x.q)+'</span>',fmt(x.s,2)]);
+    openDrill('مبيعات '+label,sub,drillTable(['#','الصنف','وحدات','قيمة بيع'],rows));
+    return;
+  }
+  if(type==='chart-writes'||type==='chart-top'){
+    const rows=PRODUCTS.map(p=>({name:p.name,w:snap.total[p.id].writes,q:snap.total[p.id].qty}))
+      .filter(x=>x.w>0||x.q>0).sort((a,b)=>(b.w+b.q)-(a.w+a.q))
+      .slice(0,type==='chart-top'?8:PRODUCTS.length)
+      .map((x,i)=>[String(i+1),esc(x.name),fmt(x.w),fmt(x.q)]);
+    openDrill('كتابات ومبيعات — الأصناف',sub,drillTable(['#','الصنف','كتابات','مباع'],rows));
+  }
+}
+function wireDrillCards(){
+  document.querySelectorAll('[data-drill]').forEach(el=>{
+    const fire=()=>handleDrill(el.dataset.drill);
+    el.addEventListener('click',fire);
+    el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' ') { e.preventDefault(); fire(); } });
+  });
+  document.getElementById('drillClose').addEventListener('click',closeDrill);
+  document.getElementById('drillModal').addEventListener('click',e=>{ if(e.target.id==='drillModal') closeDrill(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeDrill(); });
+}
+
 function renderCharts(total){
   if(!window.Chart) return;
   const labels=PRODUCTS.map(p=>p.name);
@@ -804,11 +975,17 @@ function renderSummary(){
   document.getElementById('mainTbl').innerHTML=PRODUCTS.map(p=>{
     const r=total[p.id], pr=prevTotal?.[p.id];
     const dw=pr!=null?r.writes-(pr.writes||0):null, dq=pr!=null?r.qty-(pr.qty||0):null;
-    return '<tr><td><strong>'+p.name+'</strong></td><td class="num">'+fmt(r.writes)+'</td><td class="num">'+fmt(r.qty)+'</td><td class="num">'+
+    return '<tr class="click-row" data-product="'+p.id+'" title="اضغط لعرض الأطباء"><td><strong>'+p.name+'</strong></td><td class="num">'+fmt(r.writes)+'</td><td class="num">'+fmt(r.qty)+'</td><td class="num">'+
       (pct(r.qty,r.writes)!=null?pct(r.qty,r.writes).toFixed(1)+'%':'—')+'</td><td class="num">'+fmt(r.cost,2)+'</td><td class="num">'+fmt(r.sale,2)+'</td><td class="num">'+
       (grossMargin(r.sale,r.cost)!=null?grossMargin(r.sale,r.cost).toFixed(1)+'%':'—')+'</td><td class="doc-list">'+topDoctorsText(doctors[p.id],4)+'</td><td class="num">'+
       (dw!=null?(dw>0?'+':'')+dw:'—')+'</td><td class="num">'+(dq!=null?(dq>0?'+':'')+dq:'—')+'</td></tr>';
   }).join('');
+  document.querySelectorAll('#mainTbl tr.click-row').forEach(tr=>{
+    tr.addEventListener('click',()=>openProductDrill(tr.dataset.product));
+  });
+
+  const pl=document.getElementById('pagePeriodLabel');
+  if(pl) pl.textContent=periodLabel(state.viewPeriod);
 
   renderDocTable(doctors);
   renderNearExpiry(doctors);
@@ -898,6 +1075,7 @@ async function boot(){
   loadState();
   refreshUploadMeta();
   wireSlots();
+  wireDrillCards();
   try{ renderSummary(); }catch(e){ console.error(e); }
   if(!pdfOk){
     document.getElementById('libAlert').classList.add('show');
