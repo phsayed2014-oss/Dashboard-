@@ -31,6 +31,8 @@ body{font-family:'IBM Plex Sans Arabic','Inter',system-ui,sans-serif;background:
 .view-bar select,.view-bar input{background:var(--input);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;font:inherit}
 .btn-soft{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--input);color:var(--text);font:inherit;cursor:pointer}
 .btn-soft:hover{background:#e2e8f0}
+.btn-danger{padding:6px 12px;border-radius:8px;border:1px solid #fecaca;background:#fef2f2;color:#b91c1c;font:inherit;cursor:pointer;font-size:.82rem}
+.btn-danger:hover{background:#fee2e2}
 .alert{display:none;margin-bottom:12px;padding:10px 12px;border-radius:var(--r);background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-size:.84rem}
 .alert.show{display:block}
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
@@ -173,6 +175,7 @@ th{color:var(--muted);font-size:.7rem;font-weight:600}
       <span style="color:var(--muted)">مقارنة مع:</span>
       <select id="comparePeriod"><option value="p2">الفترة 2</option><option value="p1">الفترة 1</option></select>
       <button type="button" class="btn-soft" id="btnOpenUpload" style="margin-right:auto">فتح رفع البيانات</button>
+      <button type="button" class="btn-danger" id="btnClearAllData" title="يمسح الفترتين والقائمة المحفوظة">مسح كل البيانات</button>
     </div>
 
     <div class="card nearexp-card">
@@ -267,8 +270,9 @@ const VENDOR = 'vendor/';
 const CDN = {
   pdf: [VENDOR + 'pdf.min.js', 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js'],
   chart: [VENDOR + 'chart.umd.min.js', 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js'],
-  xlsx: ['https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js']
+  xlsx: [VENDOR + 'xlsx.full.min.js', 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js']
 };
+let xlsxReady=false;
 let PDF_WORKER = VENDOR + 'pdf.worker.min.js';
 const STORE_KEY = 'rx-sales-hub-v5';
 const SALE_PARTS = 2;
@@ -416,7 +420,51 @@ function aggFromSaleRows(rows){
 
 function salePartsAgg(slot){ const m=emptyAgg(); if(!slot?.parts) return m; slot.parts.forEach(p=>{ if(p?.agg) mergeAgg(m,p.agg); }); return m; }
 
+async function ensureXlsx(){
+  if(window.XLSX) return true;
+  if(xlsxReady) return !!window.XLSX;
+  xlsxReady=true;
+  try{ await loadFirst(CDN.xlsx); return !!window.XLSX; }
+  catch(e){ console.warn('XLSX',e); return false; }
+}
+function cellToText(cell){
+  if(cell==null||cell==='') return '';
+  if(cell instanceof Date) return '';
+  if(typeof cell==='object'){
+    if(cell.w!=null) return String(cell.w).trim();
+    if(cell.v!=null) return String(cell.v).trim();
+    return '';
+  }
+  return String(cell).trim();
+}
+function isHeaderishText(t){
+  return /^(صنف|اسم|الصنف|اسم\s*الصنف|product|item|name|sku|كود|#)$/i.test(t.replace(/\s+/g,' '));
+}
 function saveState(){ try{ localStorage.setItem(STORE_KEY,JSON.stringify(state)); }catch(_){} }
+function resetAppState(){
+  state.uploadPeriod='p1';
+  state.viewPeriod='p1';
+  state.comparePeriod='p2';
+  state.periods={ p1:emptyPeriodData(), p2:emptyPeriodData() };
+  state.nearExpiry={ fileName:'', productIds:[], labels:{} };
+}
+function clearAllData(){
+  if(!confirm('مسح كل البيانات المحفوظة؟\n\n• الفترة 1 والفترة 2 (كتابات ومبيعات)\n• قائمة أصناف قريبة الانتهاء\n\nلا يمكن التراجع.')) return;
+  resetAppState();
+  try{ localStorage.removeItem(STORE_KEY); }catch(_){}
+  saveState();
+  docFilter='';
+  const ds=document.getElementById('docSearch');
+  if(ds) ds.value='';
+  const pl=document.getElementById('periodLabel');
+  if(pl) pl.value='';
+  expandSidebar();
+  refreshUploadMeta();
+  if(chartMainInst){ chartMainInst.destroy(); chartMainInst=null; }
+  if(chartTopInst){ chartTopInst.destroy(); chartTopInst=null; }
+  renderSummary();
+  toast('تم مسح جميع البيانات');
+}
 function loadState(){
   try{
     const s=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');
@@ -456,22 +504,29 @@ function loadState(){
 function normalizeRow(r){
   const map={}; Object.keys(r).forEach(k=>{ map[k.replace(/\s+/g,'').toLowerCase()]=k; });
   const get=(...keys)=>{ for(const k of keys){ const key=map[k.toLowerCase()]; if(key!==undefined&&r[key]!=='') return String(r[key]).trim(); } return ''; };
-  const doctor=get('doctorname','اسمالطبيب'); const service=get('servicename','اسمالخدمة');
+  const doctor=get('doctorname','اسمالطبيب','الطبيب','اسم الطبيب');
+  const service=get('servicename','اسمالخدمة','الخدمة','اسم الخدمة','صنف','الصنف','منتج','product','item','itemname');
   if(!doctor&&!service) return null;
   return { doctor, service, orderNo:get('orderno','رقمالأمر') };
 }
-async function parseExcel(file){ if(!window.XLSX) throw new Error('Excel غير متوفر'); const wb=XLSX.read(await file.arrayBuffer(),{type:'array'}); return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}).map(normalizeRow).filter(Boolean); }
+async function parseExcel(file){
+  if(!(await ensureXlsx())) throw new Error('مكتبة Excel غير محمّلة — تأكد من وجود vendor/xlsx.full.min.js');
+  const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
+  return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}).map(normalizeRow).filter(Boolean);
+}
 
 async function parseNearExpiryFile(file){
   const ext=(file.name.split('.').pop()||'').toLowerCase();
   const productIds=new Set();
   const labels={};
   let rowCount=0;
-  const ingestCell=cell=>{
-    const p=matchProductFromList(cell);
+  const ingestCell=raw=>{
+    const t=cellToText(raw);
+    if(!t||t.length<2||isHeaderishText(t)) return;
+    const p=matchProductFromList(t);
     if(!p) return;
     productIds.add(p.id);
-    if(!labels[p.id]) labels[p.id]=String(cell).trim();
+    if(!labels[p.id]) labels[p.id]=t;
   };
   if(ext==='csv'){
     const text=await file.text();
@@ -481,13 +536,15 @@ async function parseNearExpiryFile(file){
       line.split(/[,;\t]/).forEach(ingestCell);
     });
   }else{
-    if(!window.XLSX) throw new Error('Excel غير متوفر — حمّل الصفحة مع اتصال أو vendor');
-    const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
+    if(!(await ensureXlsx())) throw new Error('مكتبة Excel غير محمّلة — تأكد من وجود vendor/xlsx.full.min.js');
+    const buf=await file.arrayBuffer();
+    const wb=XLSX.read(buf,{type:'array',cellDates:false});
     wb.SheetNames.forEach(sn=>{
-      const grid=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:''});
+      const grid=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:'',raw:false});
       grid.forEach(row=>{
+        if(!row||!row.length) return;
         rowCount++;
-        (Array.isArray(row)?row:[row]).forEach(c=>ingestCell(c));
+        (Array.isArray(row)?row:[row]).forEach(ingestCell);
       });
     });
   }
@@ -500,7 +557,7 @@ async function processNearExpiryFile(file){
     const parsed=await parseNearExpiryFile(file);
     state.nearExpiry={ fileName:parsed.fileName, productIds:parsed.productIds, labels:parsed.labels };
     saveState();
-    if(!parsed.matched) toast('لم يُطابق أي صنف — استخدم أسماء مثل Reflex أو Nostriderm',true);
+    if(!parsed.matched) toast('لم يُطابق أي صنف ('+parsed.rowCount+' صف) — استخدم أسماء مثل Reflex أو Nostriderm',true);
     else toast('تمت مطابقة '+parsed.matched+' صنف من القائمة');
     renderSummary();
   }catch(e){ console.error(e); toast(e.message||'فشل قراءة الملف',true); }
@@ -808,6 +865,7 @@ function wireSlots(){
   });
   document.getElementById('btnCollapseSide').addEventListener('click',()=>collapseSidebar(false));
   document.getElementById('btnOpenUpload').addEventListener('click',()=>expandSidebar());
+  document.getElementById('btnClearAllData').addEventListener('click',()=>clearAllData());
   document.getElementById('btnExpandSide').addEventListener('click',()=>expandSidebar());
   document.getElementById('docSearch').addEventListener('input',e=>{
     docFilter=e.target.value;
@@ -836,7 +894,7 @@ async function boot(){
     try{ await loadScript(PDF_WORKER); }catch{ PDF_WORKER='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'; }
   }catch(e){ console.warn('PDF lib',e); }
   try{ await loadFirst(CDN.chart); }catch(_){}
-  try{ await loadFirst(CDN.xlsx); }catch(_){}
+  await ensureXlsx();
   loadState();
   refreshUploadMeta();
   wireSlots();
