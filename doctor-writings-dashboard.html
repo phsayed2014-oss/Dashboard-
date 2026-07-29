@@ -187,7 +187,10 @@ tr.click-row{cursor:pointer;transition:background .12s}
 .doc-table .rank{color:var(--muted);font-size:.8rem;font-family:var(--font-num)}
 .upload-progress{font-size:.72rem;color:var(--dim);margin-top:10px;padding:10px;border-radius:10px;background:var(--teal-soft);border:1px dashed #5eead4}
 .upload-progress strong{color:var(--teal-deep)}
-.sidebar.collapsed .upload-progress{display:none}
+.sidebar.collapsed .side-nav{display:none}
+.sidebar.collapsed .side-upload-wrap{display:none}
+.sidebar.collapsed .sidebar-fab{display:grid;place-items:center;width:100%;padding:8px 0}
+.sidebar.collapsed .sidebar-fab-nav{display:flex}
 .side-toggle{display:none}
 @media(max-width:960px){
   .app{flex-direction:column}.main{max-width:none;padding:16px}
@@ -236,25 +239,64 @@ tr.click-row{cursor:pointer;transition:background .12s}
 .drill-pill{display:inline-block;padding:4px 10px;border-radius:999px;background:var(--teal-soft);color:var(--teal-deep);font-weight:700;font-family:var(--font-num);font-size:.78rem}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
 @media(max-width:900px){.grid-2,.brand-row{grid-template-columns:1fr}}
+.side-nav{display:flex;flex-direction:column;gap:6px;padding:12px 14px 8px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:right;padding:11px 12px;border-radius:12px;
+  border:1px solid transparent;background:#fff;font:inherit;font-size:.86rem;font-weight:700;color:var(--dim);cursor:pointer;transition:.15s;
+}
+.nav-item:hover{background:#f0fdfa;border-color:#ccfbf1;color:var(--teal-deep)}
+.nav-item.active{background:linear-gradient(90deg,#ecfdf5,#fff);border-color:#5eead4;color:var(--teal-deep);box-shadow:0 2px 10px rgba(13,148,136,.12)}
+.nav-item .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.nav-item .dot.n{background:#14b8a6}.nav-item .dot.p{background:#8b5cf6}.nav-item .dot.e{background:#f59e0b}
+.side-spacer{flex:1;min-height:8px}
+.side-upload-wrap{border-top:1px solid var(--border-soft);background:#f8fafc;margin-top:auto}
+.side-upload-head{
+  width:100%;padding:12px 14px;border:none;background:transparent;font:inherit;font-size:.82rem;font-weight:700;
+  color:var(--teal-deep);cursor:pointer;text-align:right;display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.side-upload-head:hover{background:#ecfdf5}
+.side-upload-body{max-height:min(62vh,520px);overflow-y:auto;padding:0 12px 14px}
+.side-upload-body.is-closed{display:none}
+.sidebar-head.compact{padding-bottom:10px}
+.sidebar.collapsed .nav-item span.label,.sidebar.collapsed .side-upload-head .upload-label{display:none}
+.sidebar.collapsed .nav-item{justify-content:center;padding:10px}
+.sidebar.collapsed .side-upload-head{justify-content:center}
+.view-panel{display:none}
+.view-panel.active{display:block}
+.sidebar-fab-nav{display:none}
+.sidebar.collapsed .sidebar-fab-nav{display:flex;flex-direction:column;gap:6px;padding:8px 6px}
 </style>
 </head>
 <body>
 <div class="app">
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-head">
+    <div class="sidebar-head compact">
       <div class="row">
-        <h2>رفع التقارير</h2>
+        <h2>القائمة</h2>
         <button type="button" class="btn-icon" id="btnCollapseSide" title="إخفاء">✕</button>
       </div>
-      <p class="hint-upload">اختر الفترة ثم ارفع ملفاتها — للمقارنة بين شهرين.</p>
+    </div>
+    <nav class="side-nav" aria-label="أقسام التقرير">
+      <button type="button" class="nav-item active" data-view="nostri"><span class="dot n"></span><span class="label">Nostri</span></button>
+      <button type="button" class="nav-item" data-view="pureherb"><span class="dot p"></span><span class="label">Pureherb</span></button>
+      <button type="button" class="nav-item" data-view="nearexp"><span class="dot e"></span><span class="label">Near Expire</span></button>
+    </nav>
+    <div class="sidebar-fab-nav">
+      <button type="button" class="btn-icon nav-item" data-view="nostri" title="Nostri">N</button>
+      <button type="button" class="btn-icon nav-item" data-view="pureherb" title="Pureherb">P</button>
+      <button type="button" class="btn-icon nav-item" data-view="nearexp" title="Near Expire">⏳</button>
+    </div>
+    <div class="side-spacer"></div>
+    <div class="side-upload-wrap">
+      <button type="button" class="side-upload-head" id="sideUploadToggle"><span class="upload-label">رفع البيانات</span><span id="sideUploadChevron">▼</span></button>
+      <div class="side-upload-body" id="sideUploadBody">
+      <p class="hint-upload" style="margin:8px 0">اختر الفترة ثم ارفع ملفاتها.</p>
       <div class="period-switch">
         <button type="button" data-period="p1" class="active">الفترة 1</button>
         <button type="button" data-period="p2">الفترة 2</button>
       </div>
       <input class="period-label" id="periodLabel" placeholder="اسم الفترة (مثال: يوليو 2026)">
       <div class="upload-progress" id="uploadProgress">—</div>
-      <div class="sidebar-fab"><button type="button" class="btn-icon" id="btnExpandSide" title="فتح الرفع">📁</button></div>
-    </div>
     <button type="button" class="side-toggle" id="sideToggle">رفع البيانات ▼</button>
     <div class="side-inner" id="sideInner">
       <div class="sec-title">كتابات الأطباء</div>
@@ -278,12 +320,15 @@ tr.click-row{cursor:pointer;transition:background .12s}
           <div class="slot slot-sm" data-kind="sale" data-id="p3" data-part="1"><input type="file" accept=".pdf"><div class="slot-body"><div class="slot-label"><span class="brand-tag p">Pureherb</span></div><div class="slot-meta" id="meta-sale-p3-1">لم يُرفع</div></div></div>
         </div>
     </div>
+      </div>
+    </div>
+    <div class="sidebar-fab"><button type="button" class="btn-icon" id="btnExpandSide" title="فتح القائمة">☰</button></div>
   </aside>
 
   <main class="main">
     <header class="page-hero">
-      <h1 class="page-title">مركز البيانات — كتابات ومبيعات</h1>
-      <p class="page-sub">لوحة تفاعلية · اضغط الكروت والرسوم للتفاصيل · الفترة: <strong id="pagePeriodLabel">—</strong></p>
+      <h1 class="page-title" id="pageTitle">مركز البيانات — Nostri</h1>
+      <p class="page-sub">اختر قسماً من القائمة · الفترة: <strong id="pagePeriodLabel">—</strong></p>
     </header>
     <div class="alert" id="libAlert"></div>
     <div class="view-bar">
@@ -295,6 +340,45 @@ tr.click-row{cursor:pointer;transition:background .12s}
       <button type="button" class="btn-danger" id="btnClearAllData" title="يمسح الفترتين والقائمة المحفوظة">مسح كل البيانات</button>
     </div>
 
+    <div id="panelNostri" class="view-panel active" data-view="nostri">
+    <section class="dash-section">
+      <div class="brand-card nostri clickable" data-drill="brand-nostri" tabindex="0" role="button" style="margin-bottom:14px">
+        <div class="t">إجمالي مبيعات Nostri</div>
+        <div class="v" id="brand-nostri-qty">—</div>
+        <div class="sub" id="brand-nostri-sub">وحدات · قيمة بيع · هامش</div>
+        <div class="cmp" id="cmp-nostri"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-icon teal">🏥</div><div><h2>مبيعات Nostri حسب الصيدلية</h2></div></div>
+        <div class="card-inner"><div class="table-shell"><table><thead><tr><th>الصيدلية</th><th class="num">وحدات</th><th>الملف</th></tr></thead><tbody id="nostriPharmTbl"></tbody></table></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-icon blue">📦</div><div><h2>أصناف Nostri</h2></div></div>
+        <div class="card-inner"><div class="table-shell"><table><thead><tr><th>الصنف</th><th class="num">مباع</th><th class="num">بيع</th><th class="num">كتابات (عام)</th></tr></thead><tbody id="nostriProdTbl"></tbody></table></div></div>
+      </div>
+    </section>
+    </div>
+
+    <div id="panelPureherb" class="view-panel" data-view="pureherb">
+    <section class="dash-section">
+      <div class="brand-card pure clickable" data-drill="brand-pure" tabindex="0" role="button" style="margin-bottom:14px">
+        <div class="t">إجمالي مبيعات Pureherb</div>
+        <div class="v" id="brand-pure-qty">—</div>
+        <div class="sub" id="brand-pure-sub">وحدات · قيمة بيع · هامش</div>
+        <div class="cmp" id="cmp-pure"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-icon violet">🏥</div><div><h2>مبيعات Pureherb حسب الصيدلية</h2></div></div>
+        <div class="card-inner"><div class="table-shell"><table><thead><tr><th>الصيدلية</th><th class="num">وحدات</th><th>الملف</th></tr></thead><tbody id="purePharmTbl"></tbody></table></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-icon violet">📦</div><div><h2>أصناف Pureherb</h2></div></div>
+        <div class="card-inner"><div class="table-shell"><table><thead><tr><th>الصنف</th><th class="num">مباع</th><th class="num">بيع</th><th class="num">كتابات (عام)</th></tr></thead><tbody id="pureProdTbl"></tbody></table></div></div>
+      </div>
+    </section>
+    </div>
+
+    <div id="panelNearexp" class="view-panel" data-view="nearexp">
     <section class="card nearexp-card dash-section">
       <div class="card-head">
         <div class="card-icon teal">⏳</div>
@@ -327,7 +411,9 @@ tr.click-row{cursor:pointer;transition:background .12s}
       </div>
       </div>
     </section>
+    </div>
 
+    <div id="panelShared" class="view-panel active" data-view="shared">
     <section class="dash-section">
     <div class="kpi-row">
       <div class="kpi clickable theme-rx" data-drill="rx" tabindex="0" role="button" aria-label="تفاصيل الكتابات">
@@ -343,22 +429,6 @@ tr.click-row{cursor:pointer;transition:background .12s}
         <div class="l">هامش الربح (Gross)</div><div class="v" id="k-margin" style="color:var(--teal)">—</div><div class="cmp" id="cmp-margin"></div><span class="kpi-hint">هامش كل صنف</span>
       </div>
     </div>
-
-    <div class="brand-row" style="margin-top:14px">
-      <div class="brand-card nostri clickable" data-drill="brand-nostri" tabindex="0" role="button">
-        <div class="t">إجمالي مبيعات Nostri</div>
-        <div class="v" id="brand-nostri-qty">—</div>
-        <div class="sub" id="brand-nostri-sub">وحدات · قيمة بيع · هامش</div>
-        <div class="cmp" id="cmp-nostri"></div>
-      </div>
-      <div class="brand-card pure clickable" data-drill="brand-pure" tabindex="0" role="button">
-        <div class="t">إجمالي مبيعات Pureherb</div>
-        <div class="v" id="brand-pure-qty">—</div>
-        <div class="sub" id="brand-pure-sub">وحدات · قيمة بيع · هامش</div>
-        <div class="cmp" id="cmp-pure"></div>
-      </div>
-    </div>
-    </section>
 
     <section class="dash-section charts-row">
       <div class="chart-card" data-drill="chart-writes" tabindex="0" role="button"><h3>كتابات مقابل مبيعات (حبات) — اضغط للتفاصيل</h3><div class="chart-wrap"><canvas id="chartMain"></canvas></div></div>
@@ -405,6 +475,8 @@ tr.click-row{cursor:pointer;transition:background .12s}
       </div>
       </div>
     </section>
+    </section>
+    </div>
   </main>
 </div>
 <div class="drill-backdrop" id="drillModal" aria-hidden="true">
@@ -455,7 +527,8 @@ const state = {
   viewPeriod:'p1',
   comparePeriod:'p2',
   periods:{ p1:emptyPeriodData(), p2:emptyPeriodData() },
-  nearExpiry:{ fileName:'', productIds:[], labels:{} }
+  nearExpiry:{ fileName:'', productIds:[], labels:{} },
+  mainView:'nostri'
 };
 function periodData(id){ return state.periods[id] || emptyPeriodData(); }
 function uploadData(){ return periodData(state.uploadPeriod); }
@@ -633,6 +706,7 @@ function loadState(){
         }
       });
       if(s.nearExpiry?.productIds) state.nearExpiry=s.nearExpiry;
+      if(s.mainView) state.mainView=s.mainView;
       return;
     }
     if(s.rx||s.sale){
@@ -880,6 +954,69 @@ function drillTable(headers,rows){
   return '<table class="drill-table"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
     rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
 }
+function openUploadSection(){
+  expandSidebar();
+  const body=document.getElementById('sideUploadBody');
+  body?.classList.remove('is-closed');
+  const ch=document.getElementById('sideUploadChevron');
+  if(ch) ch.textContent='▲';
+}
+function setMainView(v){
+  state.mainView=v;
+  const titles={nostri:'Nostri',pureherb:'Pureherb',nearexp:'Near Expire'};
+  document.getElementById('pageTitle').textContent='مركز البيانات — '+(titles[v]||'');
+  document.querySelectorAll('.side-nav .nav-item[data-view], .sidebar-fab-nav .nav-item[data-view]').forEach(b=>{
+    b.classList.toggle('active',b.dataset.view===v);
+  });
+  document.querySelectorAll('.view-panel').forEach(p=>{
+    const id=p.dataset.view;
+    const show=id===v||(id==='shared'&&(v==='nostri'||v==='pureherb'));
+    p.classList.toggle('active',show);
+  });
+  saveState();
+  setTimeout(()=>{ try{ chartMainInst?.resize(); chartTopInst?.resize(); }catch(_){} },100);
+}
+function renderBrandPanel(part,pharmTblId,prodTblId){
+  const pd=periodData(state.viewPeriod);
+  const snap=buildSnapshot(pd);
+  const prevPd=periodData(state.comparePeriod);
+  const bt=brandTotals(part,pd);
+  const prevBt=brandTotals(part,prevPd);
+  const isN=part===0;
+  document.getElementById(isN?'brand-nostri-qty':'brand-pure-qty').textContent=fmt(bt.qty)+' وحدة';
+  document.getElementById(isN?'brand-nostri-sub':'brand-pure-sub').textContent='بيع '+fmt(bt.sale,2)+' · هامش '+(bt.margin!=null?bt.margin.toFixed(1)+'%':'—');
+  document.getElementById(isN?'cmp-nostri':'cmp-pure').innerHTML=cmpHtml(bt.qty,prevBt.qty);
+  const agg=brandAgg(part,pd);
+  const total=snap.total;
+  const prodEl=document.getElementById(prodTblId);
+  if(prodEl){
+    const rows=PRODUCTS.map(p=>{
+      const q=agg[p.id].qty,s=agg[p.id].sale,w=total[p.id].writes;
+      if(!q&&!w) return '';
+      return '<tr><td><span class="product-chip">'+p.name+'</span></td><td class="num">'+fmt(q)+'</td><td class="num">'+fmt(s,2)+'</td><td class="num">'+fmt(w)+'</td></tr>';
+    }).filter(Boolean);
+    prodEl.innerHTML=rows.length?rows.join(''):'<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:14px">لا بيانات — ارفع تقرير المبيعات</td></tr>';
+  }
+  const phEl=document.getElementById(pharmTblId);
+  if(phEl){
+    phEl.innerHTML=['p1','p2','p3'].map(ph=>{
+      const partData=pd.sale[ph].parts[part];
+      const qty=partData?.totalQty||0;
+      return '<tr><td>'+esc(SITES[ph].label)+'</td><td class="num">'+fmt(qty)+'</td><td style="font-size:.72rem;color:var(--muted)">'+esc(partData?.fileName||'—')+'</td></tr>';
+    }).join('');
+  }
+}
+function wireMainNav(){
+  document.querySelectorAll('.side-nav .nav-item[data-view], .sidebar-fab-nav .nav-item[data-view]').forEach(btn=>{
+    btn.addEventListener('click',()=>setMainView(btn.dataset.view));
+  });
+  document.getElementById('sideUploadToggle')?.addEventListener('click',()=>{
+    const body=document.getElementById('sideUploadBody');
+    const ch=document.getElementById('sideUploadChevron');
+    body.classList.toggle('is-closed');
+    ch.textContent=body.classList.contains('is-closed')?'▼':'▲';
+  });
+}
 function openDrill(title,sub,html){
   document.getElementById('drillTitle').textContent=title;
   document.getElementById('drillSub').textContent=sub||'';
@@ -1107,6 +1244,8 @@ function renderSummary(){
   const pl=document.getElementById('pagePeriodLabel');
   if(pl) pl.textContent=periodLabel(state.viewPeriod);
 
+  renderBrandPanel(0,'nostriPharmTbl','nostriProdTbl');
+  renderBrandPanel(1,'purePharmTbl','pureProdTbl');
   renderDocTable(doctors);
   renderNearExpiry(doctors);
   renderCharts(total);
@@ -1161,7 +1300,7 @@ function wireSlots(){
     saveState(); renderSummary();
   });
   document.getElementById('btnCollapseSide').addEventListener('click',()=>collapseSidebar(false));
-  document.getElementById('btnOpenUpload').addEventListener('click',()=>expandSidebar());
+  document.getElementById('btnOpenUpload').addEventListener('click',()=>openUploadSection());
   document.getElementById('btnClearAllData').addEventListener('click',()=>clearAllData());
   document.getElementById('btnExpandSide').addEventListener('click',()=>expandSidebar());
   document.getElementById('docSearch').addEventListener('input',e=>{
@@ -1195,7 +1334,9 @@ async function boot(){
   loadState();
   refreshUploadMeta();
   wireSlots();
+  wireMainNav();
   wireDrillCards();
+  setMainView(state.mainView||'nostri');
   try{ renderSummary(); }catch(e){ console.error(e); }
   if(!pdfOk){
     document.getElementById('libAlert').classList.add('show');
