@@ -1,12 +1,12 @@
 /* Client-side PDF intake parser — Stores Issuing And Receiving Query */
 (function (global) {
   const SUP_RE = /Source\s*:\s*\[SUPPLIERS\]\s*(\d{5,6})-(.+?)\s*,\s*Dest/;
+  const SUP_ALT_RE = /Dest\s*:\s*\[STORES\][^,]+,\s*(.+?)\s*-Source\s*:\s*\[SUPPLIERS\]\s*(\d{5,6})\s+\d+\s*$/;
   const CORE_RE = /(\d{4})\s+(\d{2}-\d{2}-\d{4})\s+([\d.]+)\s+(\S+)\s+/;
+  const CODE_RE = /(\d{1,2}-\d{2}-\d{3}-\d{3}|\d{10,11})\s+/;
 
   function fixSupplierName(name) {
-    name = (name || '').trim();
-    if (/[\u0600-\u06FF]/.test(name)) return name.split('').reverse().join('');
-    return name;
+    return (name || '').trim();
   }
 
   function fixSupplier(code, name) {
@@ -16,57 +16,58 @@
 
   function preprocessLine(line) {
     return line
+      .replace(/\s+/g, ' ')
       .replace(/(\d),(\d{3})\s+(\d{2}-\d{2}-\d{4})/g, '$1$2 $3')
       .replace(/([A-Za-z/])(\d{4})\s+(\d{2}-\d{2}-\d{4})/g, '$1 $2 $3');
   }
 
-  function groupTextLines(items) {
+  function groupRows(items, yTol = 4) {
     if (!items.length) return [];
     const sorted = [...items].sort((a, b) => b.transform[5] - a.transform[5] || a.transform[4] - b.transform[4]);
-    const lines = [];
-    let current = { y: sorted[0].transform[5], parts: [] };
+    const rows = [];
     for (const item of sorted) {
       const y = item.transform[5];
-      if (Math.abs(y - current.y) > 6) {
-        if (current.parts.length) lines.push(current.parts.join(' ').trim());
-        current = { y, parts: [item.str] };
-      } else {
-        current.parts.push(item.str);
+      let row = rows.find((r) => Math.abs(r.y - y) <= yTol);
+      if (!row) {
+        row = { y, parts: [] };
+        rows.push(row);
       }
+      row.parts.push({ x: item.transform[4], str: item.str });
     }
-    if (current.parts.length) lines.push(current.parts.join(' ').trim());
-    return lines;
-  }
-
-  function mergeBrokenLines(lines) {
-    const merged = [];
-    for (const line of lines) {
-      const trimmed = (line || '').trim();
-      if (!trimmed) continue;
-      if (merged.length && !merged[merged.length - 1].includes('[SUPPLIERS]')) {
-        merged[merged.length - 1] += ' ' + trimmed;
-      } else {
-        merged.push(trimmed);
-      }
-    }
-    return merged;
+    return rows.map((r) => r.parts.sort((a, b) => a.x - b.x).map((p) => p.str).join(' ').trim());
   }
 
   function parseTextLine(line) {
     line = preprocessLine((line || '').trim());
     if (!line || !line.includes('[SUPPLIERS]')) return null;
 
-    const sm = line.match(SUP_RE);
-    if (!sm) return null;
+    let supplierCode;
+    let supplierName;
+    let itemPart;
 
-    const supplierCode = sm[1];
-    const supplier = fixSupplier(supplierCode, sm[2]);
-    const before = line.slice(0, sm.index);
-    const tm = before.match(CORE_RE);
+    const sm = line.match(SUP_RE);
+    if (sm) {
+      supplierCode = sm[1];
+      supplierName = sm[2].trim();
+      itemPart = line.slice(0, sm.index);
+    } else {
+      const am = line.match(SUP_ALT_RE);
+      if (!am) return null;
+      supplierName = am[1].trim();
+      supplierCode = am[2];
+      const destIdx = line.indexOf('Dest :');
+      itemPart = destIdx >= 0 ? line.slice(0, destIdx) : line;
+    }
+
+    const supplier = fixSupplier(supplierCode, supplierName);
+    const tm = itemPart.match(CORE_RE);
     if (!tm) return null;
 
-    const head = before.slice(0, tm.index).trim();
-    const cm = head.match(/^([\d-]+)\s+(.+)$/);
+    const head = itemPart.slice(0, tm.index);
+    const codeIdx = head.search(CODE_RE);
+    if (codeIdx < 0) return null;
+
+    const cm = head.slice(codeIdx).match(/^(\d{1,2}-\d{2}-\d{3}-\d{3}|\d{10,11})\s+(.+)$/);
     if (!cm) return null;
 
     return {
@@ -102,7 +103,7 @@
 
   function buildDataFromLines(lines) {
     const items = [];
-    for (const line of mergeBrokenLines(lines)) {
+    for (const line of lines) {
       const parsed = parseTextLine(line);
       if (parsed) items.push(parsed);
     }
@@ -125,7 +126,7 @@
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
-      allLines.push(...groupTextLines(content.items));
+      allLines.push(...groupRows(content.items));
       if (onProgress) onProgress(i, pdf.numPages);
     }
     const data = buildDataFromLines(allLines);
