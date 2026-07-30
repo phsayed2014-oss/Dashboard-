@@ -38,6 +38,20 @@ body { font-family: 'IBM Plex Sans Arabic', sans-serif; background: var(--bg); c
 }
 .nav-parent .ico { font-size: 18px; }
 .nav-parent.intake { background: rgba(37,99,235,0.1); border-color: rgba(37,99,235,0.25); color: #60a5fa; }
+.nav-parent.compare { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.25); color: var(--amber); }
+.btn-export { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+.report-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.report-head h3 { font-size: 16px; font-weight: 700; }
+.report-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.report-tab {
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04); color: var(--text-dim); font-family: inherit;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.report-tab.active { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.35); color: var(--amber); }
+.status-more { color: #4ade80; font-weight: 700; }
+.status-less { color: #f87171; font-weight: 700; }
+.status-missing { color: var(--amber); font-weight: 700; }
 .nav-children { margin-top: 6px; padding-right: 8px; }
 .nav-item {
   width: 100%; text-align: right; padding: 10px 14px 10px 32px; margin-bottom: 2px;
@@ -103,6 +117,7 @@ body { font-family: 'IBM Plex Sans Arabic', sans-serif; background: var(--bg); c
 .kpi-value { font-family: 'Alexandria', sans-serif; font-size: 24px; font-weight: 800; }
 .kpi-value.teal { color: var(--accent-light); } .kpi-value.blue { color: #60a5fa; }
 .kpi-value.amber { color: var(--amber); } .kpi-value.green { color: #4ade80; }
+.kpi-value.rose { color: #f87171; }
 .content { flex: 1; overflow-y: auto; padding: 0 28px 28px; }
 .content::-webkit-scrollbar { width: 6px; }
 .content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 6px; }
@@ -210,6 +225,11 @@ tbody tr:hover { background: rgba(255,255,255,0.02); }
       <div class="nav-children">
         <button class="nav-item" data-section="intake" data-view="intake-suppliers">الموردين</button>
         <button class="nav-item" data-section="intake" data-view="intake-upload">رفع ملف</button>
+      </div>
+      <div class="nav-parent compare" style="margin-top:14px"><span class="ico">📊</span> المقارنة</div>
+      <div class="nav-children">
+        <button class="nav-item" data-section="compare" data-view="missing">أصناف لم تصل</button>
+        <button class="nav-item" data-section="compare" data-view="variance">فرق الكميات</button>
       </div>
     </div>
     <div class="nav-footer">
@@ -445,6 +465,270 @@ function deleteAllData() {
   showView('upload', 'orders');
 }
 
+function canCompare() { return hasData() && hasIntakeData(); }
+
+function aggregateOrdersByItem() {
+  const map = {};
+  Object.values(DATA.orders).forEach((order) => {
+    const supplierCode = order.supplier_code || (order.supplier || '').split(' - ')[0];
+    const supplier = cleanName(order.supplier);
+    order.items.forEach((item) => {
+      const key = `${supplierCode}|${item.item_code}`;
+      if (!map[key]) {
+        map[key] = {
+          supplier_code: supplierCode,
+          supplier,
+          item_code: item.item_code,
+          item_name: item.item_name,
+          ordered_qty: 0,
+        };
+      }
+      map[key].ordered_qty += toNum(item.total_qty || item.qty);
+      if (item.item_name) map[key].item_name = item.item_name;
+      map[key].supplier = supplier;
+    });
+  });
+  return map;
+}
+
+function aggregateIntakeByItem() {
+  const map = {};
+  INTAKE_DATA.items.forEach((item) => {
+    const key = `${item.supplier_code}|${item.item_code}`;
+    if (!map[key]) {
+      map[key] = {
+        supplier_code: item.supplier_code,
+        supplier: cleanName(item.supplier),
+        item_code: item.item_code,
+        item_name: item.item_name,
+        received_qty: 0,
+      };
+    }
+    map[key].received_qty += toNum(item.qty);
+    if (item.item_name) map[key].item_name = item.item_name;
+    map[key].supplier = cleanName(item.supplier);
+  });
+  return map;
+}
+
+function buildCompareReports() {
+  const ordered = aggregateOrdersByItem();
+  const received = aggregateIntakeByItem();
+  const missing = [];
+  const variance = [];
+
+  Object.values(ordered).forEach((row) => {
+    const key = `${row.supplier_code}|${row.item_code}`;
+    const intake = received[key];
+    const receivedQty = intake ? intake.received_qty : 0;
+    const diff = receivedQty - row.ordered_qty;
+    const entry = {
+      supplier_code: row.supplier_code,
+      supplier: row.supplier,
+      item_code: row.item_code,
+      item_name: row.item_name,
+      ordered_qty: row.ordered_qty,
+      received_qty: receivedQty,
+      diff,
+    };
+    if (receivedQty === 0) missing.push(entry);
+    else if (Math.abs(diff) > 0.001) {
+      entry.status = diff > 0 ? 'أكثر من المطلوب' : 'أقل من المطلوب';
+      variance.push(entry);
+    }
+  });
+
+  missing.sort((a, b) => a.supplier.localeCompare(b.supplier, 'ar') || a.item_name.localeCompare(b.item_name, 'ar'));
+  variance.sort((a, b) => a.supplier.localeCompare(b.supplier, 'ar') || Math.abs(b.diff) - Math.abs(a.diff));
+
+  const supplierMissing = {};
+  missing.forEach((row) => {
+    if (!supplierMissing[row.supplier_code]) {
+      supplierMissing[row.supplier_code] = { supplier: row.supplier, supplier_code: row.supplier_code, items: 0 };
+    }
+    supplierMissing[row.supplier_code].items += 1;
+  });
+
+  return {
+    missing,
+    variance,
+    more: variance.filter((r) => r.diff > 0),
+    less: variance.filter((r) => r.diff < 0),
+    supplierMissing: Object.values(supplierMissing).sort((a, b) => b.items - a.items),
+  };
+}
+
+function exportRowsToExcel(rows, columns, filename) {
+  const BOM = '\uFEFF';
+  const esc = (v) => {
+    let s = String(v ?? '');
+    s = s.replace(/"/g, '""');
+    return /[",\n\r]/.test(s) ? `"${s}"` : s;
+  };
+  const header = columns.map((c) => esc(c.label)).join(',');
+  const body = rows.map((row) => columns.map((c) => esc(typeof c.value === 'function' ? c.value(row) : row[c.key])).join(',')).join('\n');
+  const blob = new Blob([BOM + header + '\n' + body], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+function compareTableHtml(rows, columns, emptyMsg) {
+  if (!rows.length) return `<div class="empty-state" style="min-height:180px"><h3>${emptyMsg}</h3></div>`;
+  const head = columns.map((c) => `<th>${c.label}</th>`).join('');
+  const body = rows.map((row, i) => `<tr>${columns.map((c) => {
+    const val = typeof c.render === 'function' ? c.render(row, i) : (row[c.key] ?? '—');
+    return `<td class="${c.class || ''}">${val}</td>`;
+  }).join('')}</tr>`).join('');
+  return `<div class="table-wrap"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+function renderMissingView() {
+  document.getElementById('pageTitle').textContent = 'أصناف لم تصل';
+  document.getElementById('pageSubtitle').textContent = 'أصناف طُلبت من المورد ولم تظهر في الإدخال';
+
+  if (!canCompare()) {
+    document.getElementById('kpiRow').style.display = 'none';
+    document.getElementById('content').innerHTML = emptyStateHtml(
+      'يلزم رفع ملفي الطلبيات والإدخال',
+      'ارفع ملف الطلبيات وملف الإدخال أولًا لتفعيل المقارنة',
+      false
+    );
+    return;
+  }
+
+  const reports = buildCompareReports();
+  document.getElementById('kpiRow').style.display = 'flex';
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi"><div class="kpi-label">أصناف لم تصل</div><div class="kpi-value amber">${num(reports.missing.length)}</div></div>
+    <div class="kpi"><div class="kpi-label">موردين متأثرين</div><div class="kpi-value blue">${num(reports.supplierMissing.length)}</div></div>
+    <div class="kpi"><div class="kpi-label">إجمالي الكمية الناقصة</div><div class="kpi-value rose">${num(reports.missing.reduce((s, r) => s + r.ordered_qty, 0))}</div></div>`;
+
+  const itemCols = [
+    { key: 'n', label: '#', render: (_, i) => num(i + 1), class: 'td-num' },
+    { key: 'supplier', label: 'المورد' },
+    { key: 'item_code', label: 'كود الصنف', class: 'td-code' },
+    { key: 'item_name', label: 'الصنف', class: 'td-name' },
+    { key: 'ordered_qty', label: 'الكمية المطلوبة', class: 'td-qty', render: (r) => num(r.ordered_qty) },
+    { key: 'received_qty', label: 'الكمية الواردة', class: 'td-qty', render: () => '0' },
+    { key: 'status', label: 'الحالة', render: () => '<span class="status-missing">لم يصل</span>' },
+  ];
+
+  const supplierCols = [
+    { key: 'n', label: '#', render: (_, i) => num(i + 1), class: 'td-num' },
+    { key: 'supplier', label: 'المورد' },
+    { key: 'supplier_code', label: 'كود المورد', class: 'td-code' },
+    { key: 'items', label: 'عدد الأصناف الناقصة', class: 'td-qty', render: (r) => num(r.items) },
+  ];
+
+  document.getElementById('content').innerHTML = `
+    <div class="report-head">
+      <h3>الموردين الذين طُلب منهم ولم يصل الصنف</h3>
+      <button class="btn btn-export" id="exportMissingSuppliers">⬇️ تصدير Excel</button>
+    </div>
+    ${compareTableHtml(reports.supplierMissing, supplierCols, 'لا يوجد موردين بأصناف ناقصة')}
+    <div class="report-head" style="margin-top:24px">
+      <h3>تفاصيل الأصناف التي لم تصل</h3>
+      <button class="btn btn-export" id="exportMissingItems">⬇️ تصدير Excel</button>
+    </div>
+    ${compareTableHtml(reports.missing, itemCols, 'كل الأصناف المطلوبة وصلت للمستودع')}`;
+
+  document.getElementById('exportMissingSuppliers').onclick = () => exportRowsToExcel(
+    reports.supplierMissing,
+    [{ key: 'supplier', label: 'المورد' }, { key: 'supplier_code', label: 'كود المورد' }, { key: 'items', label: 'عدد الأصناف الناقصة' }],
+    'موردين-اصناف-لم-تصل.csv'
+  );
+  document.getElementById('exportMissingItems').onclick = () => exportRowsToExcel(
+    reports.missing,
+    [
+      { key: 'supplier', label: 'المورد' }, { key: 'supplier_code', label: 'كود المورد' },
+      { key: 'item_code', label: 'كود الصنف' }, { key: 'item_name', label: 'الصنف' },
+      { key: 'ordered_qty', label: 'الكمية المطلوبة' }, { key: 'received_qty', label: 'الكمية الواردة' },
+      { key: 'status', label: 'الحالة', value: () => 'لم يصل' },
+    ],
+    'اصناف-لم-تصل.csv'
+  );
+}
+
+function renderVarianceView() {
+  document.getElementById('pageTitle').textContent = 'فرق الكميات';
+  document.getElementById('pageSubtitle').textContent = 'مقارنة الكمية المطلوبة بالكمية الواردة لكل صنف';
+
+  if (!canCompare()) {
+    document.getElementById('kpiRow').style.display = 'none';
+    document.getElementById('content').innerHTML = emptyStateHtml(
+      'يلزم رفع ملفي الطلبيات والإدخال',
+      'ارفع ملف الطلبيات وملف الإدخال أولًا لتفعيل المقارنة',
+      false
+    );
+    return;
+  }
+
+  const reports = buildCompareReports();
+  document.getElementById('kpiRow').style.display = 'flex';
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi"><div class="kpi-label">أصناف بفرق</div><div class="kpi-value amber">${num(reports.variance.length)}</div></div>
+    <div class="kpi"><div class="kpi-label">وصل أكثر</div><div class="kpi-value green">${num(reports.more.length)}</div></div>
+    <div class="kpi"><div class="kpi-label">وصل أقل</div><div class="kpi-value rose">${num(reports.less.length)}</div></div>`;
+
+  const itemCols = [
+    { key: 'n', label: '#', render: (_, i) => num(i + 1), class: 'td-num' },
+    { key: 'supplier', label: 'المورد' },
+    { key: 'item_code', label: 'كود الصنف', class: 'td-code' },
+    { key: 'item_name', label: 'الصنف', class: 'td-name' },
+    { key: 'ordered_qty', label: 'المطلوب', class: 'td-qty', render: (r) => num(r.ordered_qty) },
+    { key: 'received_qty', label: 'الوارد', class: 'td-qty', render: (r) => num(r.received_qty) },
+    { key: 'diff', label: 'الفرق', class: 'td-qty', render: (r) => {
+      const cls = r.diff > 0 ? 'status-more' : 'status-less';
+      const sign = r.diff > 0 ? '+' : '';
+      return `<span class="${cls}">${sign}${num(r.diff)}</span>`;
+    }},
+    { key: 'status', label: 'الحالة', render: (r) => {
+      const cls = r.diff > 0 ? 'status-more' : 'status-less';
+      return `<span class="${cls}">${r.status}</span>`;
+    }},
+  ];
+
+  document.getElementById('content').innerHTML = `
+    <div class="report-tabs">
+      <button class="report-tab active" data-variance="all">الكل (${num(reports.variance.length)})</button>
+      <button class="report-tab" data-variance="more">أكثر من المطلوب (${num(reports.more.length)})</button>
+      <button class="report-tab" data-variance="less">أقل من المطلوب (${num(reports.less.length)})</button>
+      <button class="btn btn-export" id="exportVariance" style="margin-right:auto">⬇️ تصدير Excel</button>
+    </div>
+    <div id="varianceTable"></div>`;
+
+  let activeRows = reports.variance;
+  const renderTable = () => {
+    document.getElementById('varianceTable').innerHTML = compareTableHtml(activeRows, itemCols, 'لا يوجد فروقات في الكميات');
+  };
+  renderTable();
+
+  document.querySelectorAll('[data-variance]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-variance]').forEach((el) => el.classList.toggle('active', el === btn));
+      const type = btn.dataset.variance;
+      activeRows = type === 'more' ? reports.more : type === 'less' ? reports.less : reports.variance;
+      renderTable();
+    });
+  });
+
+  document.getElementById('exportVariance').onclick = () => exportRowsToExcel(
+    activeRows,
+    [
+      { key: 'supplier', label: 'المورد' }, { key: 'supplier_code', label: 'كود المورد' },
+      { key: 'item_code', label: 'كود الصنف' }, { key: 'item_name', label: 'الصنف' },
+      { key: 'ordered_qty', label: 'الكمية المطلوبة' }, { key: 'received_qty', label: 'الكمية الواردة' },
+      { key: 'diff', label: 'الفرق' }, { key: 'status', label: 'الحالة' },
+    ],
+    'فرق-الكميات.csv'
+  );
+}
+
 function showView(view, section = currentSection) {
   currentView = view;
   currentSection = section;
@@ -458,6 +742,12 @@ function showView(view, section = currentSection) {
   const showIntakePanel = section === 'intake' && view === 'intake-suppliers' && hasIntakeData();
   panel.classList.toggle('hidden', !showOrdersPanel && !showIntakePanel);
   kpi.style.display = 'none';
+
+  if (section === 'compare') {
+    if (view === 'missing') renderMissingView();
+    else if (view === 'variance') renderVarianceView();
+    return;
+  }
 
   if (section === 'intake') {
     document.getElementById('panelTitle').textContent = 'موردي الإدخال';
@@ -872,7 +1162,7 @@ function deleteUpload(id) {
   selectedSupplier = null;
   updateMeta();
   if (hasData()) renderSupplierList(DATA.suppliers);
-  showView(currentView);
+  showView(currentView, currentSection);
 }
 
 async function handleFileUpload(file) {
