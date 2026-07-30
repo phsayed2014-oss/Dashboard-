@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>المدير التجاري | لوحة المتابعة</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Alexandria:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#041512;--bg1:#06332e;--bg2:#0a4a52;
+  --teal:#14b8a6;--teal-d:#0f766e;--teal-l:#5eead4;
+  --blue:#3b82f6;--gold:#f59e0b;--red:#ef4444;--green:#22c55e;
+  --text:#f0fdfa;--muted:#94b8b0;--card:#ffffff;--ink:#0c1929;--dim:#64748b;
+  --line:#e2e8f0;--soft:#f1f5f9;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --sidebar-w:250px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'IBM Plex Sans Arabic','Alexandria',sans-serif;
+  background:#f4f7f8;color:var(--ink);line-height:1.6;
+  display:flex;min-height:100vh;
+}
+
+/* ───── Sidebar ───── */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  background:radial-gradient(ellipse at 30% 10%,#0a4a52 0%,#06332e 45%,#041512 100%);
+  color:var(--text);display:flex;flex-direction:column;
+  position:fixed;inset-block:0;inset-inline-start:0;z-index:50;
+  transition:transform .35s var(--ease);
+}
+.brand{
+  padding:26px 22px 22px;border-bottom:1px solid rgba(94,234,212,.14);
+}
+.brand-logo{
+  width:46px;height:46px;border-radius:13px;display:grid;place-items:center;
+  background:linear-gradient(135deg,#5eead4,#14b8a6);color:#041512;
+  font-family:'Alexandria';font-weight:900;font-size:22px;margin-bottom:12px;
+  box-shadow:0 8px 22px rgba(20,184,166,.35);
+}
+.brand h1{font-family:'Alexandria';font-size:20px;font-weight:800;letter-spacing:.5px}
+.brand p{font-size:12.5px;color:var(--teal-l);opacity:.8;margin-top:2px}
+
+.nav{padding:16px 12px;flex:1;overflow-y:auto}
+.nav-label{font-size:11px;color:var(--muted);padding:8px 12px 6px;letter-spacing:1px}
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;
+  color:#cdeee8;cursor:pointer;font-weight:600;font-size:15px;margin-bottom:4px;
+  transition:background .2s,color .2s,transform .2s;border:1px solid transparent;
+}
+.nav-item svg{width:20px;height:20px;flex-shrink:0}
+.nav-item:hover{background:rgba(94,234,212,.1);color:#fff}
+.nav-item.active{
+  background:linear-gradient(135deg,rgba(20,184,166,.28),rgba(20,184,166,.12));
+  color:#fff;border-color:rgba(94,234,212,.3);
+}
+.nav-item .badge{
+  margin-inline-start:auto;background:rgba(94,234,212,.2);color:var(--teal-l);
+  font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;min-width:24px;text-align:center;
+}
+.sidebar-foot{padding:16px 20px;font-size:12px;color:var(--muted);border-top:1px solid rgba(94,234,212,.12)}
+
+/* ───── Main ───── */
+.main{margin-inline-start:var(--sidebar-w);flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{
+  background:#fff;border-bottom:1px solid var(--line);padding:16px 28px;
+  display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:40;
+}
+.menu-btn{display:none;background:none;border:none;cursor:pointer;color:var(--ink)}
+.topbar h2{font-family:'Alexandria';font-size:22px;font-weight:800}
+.topbar .sub{color:var(--dim);font-size:13px}
+.top-actions{margin-inline-start:auto;display:flex;gap:10px;align-items:center}
+.today{font-size:13px;color:var(--dim);background:var(--soft);padding:8px 14px;border-radius:10px}
+
+.content{padding:28px;flex:1}
+.page{display:none;animation:fade .4s var(--ease)}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ───── Cards / KPIs ───── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:26px}
+.kpi{
+  background:#fff;border-radius:16px;padding:20px;border:1px solid var(--line);
+  position:relative;overflow:hidden;transition:transform .25s var(--ease),box-shadow .25s;
+}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(6,51,46,.1)}
+.kpi::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:5px;background:var(--teal)}
+.kpi.b::before{background:var(--blue)}.kpi.g::before{background:var(--gold)}.kpi.r::before{background:var(--red)}
+.kpi .ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--soft);margin-bottom:14px}
+.kpi .ic svg{width:22px;height:22px;color:var(--teal-d)}
+.kpi.b .ic svg{color:var(--blue)}.kpi.g .ic svg{color:var(--gold)}.kpi.r .ic svg{color:var(--red)}
+.kpi .val{font-family:'Alexandria';font-size:30px;font-weight:800;line-height:1}
+.kpi .lbl{color:var(--dim);font-size:13.5px;margin-top:6px}
+
+/* ───── Panel ───── */
+.panel{background:#fff;border-radius:16px;border:1px solid var(--line);overflow:hidden;margin-bottom:24px}
+.panel-head{
+  padding:18px 22px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);
+  flex-wrap:wrap;
+}
+.panel-head h3{font-family:'Alexandria';font-size:18px;font-weight:800}
+.panel-head .tools{margin-inline-start:auto;display:flex;gap:10px;flex-wrap:wrap}
+.search{
+  border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-family:inherit;
+  font-size:14px;width:210px;outline:none;transition:border .2s;background:var(--soft);
+}
+.search:focus{border-color:var(--teal);background:#fff}
+
+.btn{
+  border:none;border-radius:10px;padding:10px 18px;font-family:inherit;font-weight:700;
+  font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:transform .2s,filter .2s;
+}
+.btn svg{width:17px;height:17px}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.05)}
+.btn-primary{background:linear-gradient(135deg,#14b8a6,#0f766e);color:#fff;box-shadow:0 6px 18px rgba(20,184,166,.3)}
+.btn-ghost{background:var(--soft);color:var(--ink)}
+.btn-sm{padding:7px 12px;font-size:13px}
+
+/* ───── Table ───── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{padding:14px 18px;text-align:right;white-space:nowrap}
+thead th{background:var(--soft);color:var(--dim);font-weight:700;font-size:13px;position:sticky;top:0}
+tbody tr{border-top:1px solid var(--line);transition:background .15s}
+tbody tr:hover{background:#f8fdfc}
+td .name{font-weight:700}
+td .muted{color:var(--dim);font-size:13px}
+.tag{padding:4px 12px;border-radius:999px;font-size:12.5px;font-weight:700;display:inline-block}
+.tag.green{background:#dcfce7;color:#15803d}
+.tag.gold{background:#fef3c7;color:#b45309}
+.tag.blue{background:#dbeafe;color:#1d4ed8}
+.tag.red{background:#fee2e2;color:#b91c1c}
+.tag.gray{background:#e2e8f0;color:#475569}
+.row-actions{display:flex;gap:6px}
+.icon-btn{
+  border:1px solid var(--line);background:#fff;width:34px;height:34px;border-radius:9px;
+  cursor:pointer;display:grid;place-items:center;color:var(--dim);transition:.2s;
+}
+.icon-btn svg{width:16px;height:16px}
+.icon-btn:hover{color:var(--teal-d);border-color:var(--teal)}
+.icon-btn.del:hover{color:var(--red);border-color:var(--red)}
+.empty{padding:50px 20px;text-align:center;color:var(--dim)}
+.empty svg{width:54px;height:54px;opacity:.3;margin-bottom:12px}
+
+/* ───── Modal ───── */
+.overlay{
+  position:fixed;inset:0;background:rgba(4,21,18,.55);backdrop-filter:blur(3px);
+  z-index:100;display:none;place-items:center;padding:20px;
+}
+.overlay.show{display:grid;animation:fade .25s}
+.modal{
+  background:#fff;border-radius:18px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;
+  box-shadow:0 30px 70px rgba(0,0,0,.35);animation:pop .3s var(--ease);
+}
+@keyframes pop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-head{padding:22px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center}
+.modal-head h3{font-family:'Alexandria';font-size:19px;font-weight:800}
+.modal-head .x{margin-inline-start:auto;background:var(--soft);border:none;width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:18px;color:var(--dim)}
+.modal-body{padding:24px;display:grid;gap:16px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13.5px;font-weight:700;color:var(--ink)}
+.field input,.field select,.field textarea{
+  border:1px solid var(--line);border-radius:11px;padding:11px 14px;font-family:inherit;
+  font-size:14.5px;outline:none;transition:border .2s;width:100%;background:var(--soft);
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal);background:#fff}
+.field.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.modal-foot{padding:18px 24px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-start}
+
+.scrim{display:none}
+@media(max-width:860px){
+  .sidebar{transform:translateX(100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-inline-start:0}
+  .menu-btn{display:grid}
+  .scrim.show{display:block;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:45}
+  .field.two{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════ Sidebar ═══════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-logo">م</div>
+    <h1>المدير التجاري</h1>
+    <p>لوحة متابعة الأعمال</p>
+  </div>
+  <nav class="nav">
+    <div class="nav-label">القائمة الرئيسية</div>
+    <div class="nav-item active" data-page="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+      نظرة عامة
+    </div>
+    <div class="nav-item" data-page="offers">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      العروض
+      <span class="badge" id="badge-offers">0</span>
+    </div>
+    <div class="nav-item" data-page="suppliers">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      الموردين
+      <span class="badge" id="badge-suppliers">0</span>
+    </div>
+    <div class="nav-label" style="margin-top:14px">أخرى</div>
+    <div class="nav-item" data-page="settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      البيانات والنسخ
+    </div>
+  </nav>
+  <div class="sidebar-foot">© <span id="year"></span> — كل الحقوق محفوظة</div>
+</aside>
+<div class="scrim" id="scrim"></div>
+
+<!-- ═══════ Main ═══════ -->
+<div class="main">
+  <header class="topbar">
+    <button class="menu-btn" id="menuBtn"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+    <div>
+      <h2 id="pageTitle">نظرة عامة</h2>
+      <div class="sub" id="pageSub">ملخص متابعة العروض والموردين</div>
+    </div>
+    <div class="top-actions">
+      <span class="today" id="today"></span>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ── Dashboard ── -->
+    <section class="page active" id="page-dashboard">
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
+          <div class="val" id="k-offers">0</div><div class="lbl">إجمالي العروض</div>
+        </div>
+        <div class="kpi b">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+          <div class="val" id="k-suppliers">0</div><div class="lbl">عدد الموردين</div>
+        </div>
+        <div class="kpi g">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="val" id="k-pending">0</div><div class="lbl">عروض قيد المتابعة</div>
+        </div>
+        <div class="kpi r">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div class="val" id="k-value">0</div><div class="lbl">إجمالي قيمة العروض (ج.م)</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>أحدث العروض</h3>
+          <div class="tools"><button class="btn btn-ghost btn-sm" onclick="go('offers')">عرض الكل</button></div>
+        </div>
+        <div class="tbl-wrap"><table id="recentOffers"></table></div>
+      </div>
+    </section>
+
+    <!-- ── Offers ── -->
+    <section class="page" id="page-offers">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>العروض</h3>
+          <div class="tools">
+            <input class="search" id="searchOffers" placeholder="بحث في العروض…">
+            <button class="btn btn-primary" onclick="openOffer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>عرض جديد</button>
+          </div>
+        </div>
+        <div class="tbl-wrap"><table id="offersTable"></table></div>
+      </div>
+    </section>
+
+    <!-- ── Suppliers ── -->
+    <section class="page" id="page-suppliers">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>الموردين</h3>
+          <div class="tools">
+            <input class="search" id="searchSuppliers" placeholder="بحث في الموردين…">
+            <button class="btn btn-primary" onclick="openSupplier()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>مورد جديد</button>
+          </div>
+        </div>
+        <div class="tbl-wrap"><table id="suppliersTable"></table></div>
+      </div>
+    </section>
+
+    <!-- ── Settings / Data ── -->
+    <section class="page" id="page-settings">
+      <div class="panel">
+        <div class="panel-head"><h3>البيانات والنسخ الاحتياطية</h3></div>
+        <div style="padding:24px;display:grid;gap:18px;max-width:560px">
+          <p style="color:var(--dim);font-size:14.5px">تُحفظ جميع بياناتك محلياً داخل متصفحك. يمكنك تصدير نسخة احتياطية بصيغة JSON أو استيرادها لاحقاً.</p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="exportData()">تصدير نسخة احتياطية</button>
+            <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">استيراد نسخة</button>
+            <input type="file" id="importFile" accept="application/json" hidden onchange="importData(event)">
+          </div>
+          <hr style="border:none;border-top:1px solid var(--line)">
+          <button class="btn btn-ghost" style="color:var(--red);width:fit-content" onclick="resetAll()">حذف كل البيانات</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- ═══════ Offer Modal ═══════ -->
+<div class="overlay" id="offerModal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="offerModalTitle">عرض جديد</h3><button class="x" onclick="closeModal('offerModal')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="offerId">
+      <div class="field"><label>اسم العرض / الصنف</label><input id="of-name" placeholder="مثال: عرض أدوية القلب"></div>
+      <div class="field"><label>المورد</label><select id="of-supplier"></select></div>
+      <div class="field two">
+        <div class="field"><label>القيمة (ج.م)</label><input id="of-value" type="number" min="0" placeholder="0"></div>
+        <div class="field"><label>تاريخ العرض</label><input id="of-date" type="date"></div>
+      </div>
+      <div class="field"><label>الحالة</label>
+        <select id="of-status">
+          <option value="new">جديد</option>
+          <option value="pending">قيد المتابعة</option>
+          <option value="approved">مقبول</option>
+          <option value="rejected">مرفوض</option>
+        </select>
+      </div>
+      <div class="field"><label>ملاحظات</label><textarea id="of-notes" rows="2" placeholder="اختياري"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" onclick="saveOffer()">حفظ</button>
+      <button class="btn btn-ghost" onclick="closeModal('offerModal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ Supplier Modal ═══════ -->
+<div class="overlay" id="supplierModal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="supplierModalTitle">مورد جديد</h3><button class="x" onclick="closeModal('supplierModal')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="supplierId">
+      <div class="field"><label>اسم المورد / الشركة</label><input id="sp-name" placeholder="مثال: شركة النور للأدوية"></div>
+      <div class="field two">
+        <div class="field"><label>الشخص المسؤول</label><input id="sp-contact" placeholder="اسم المسؤول"></div>
+        <div class="field"><label>رقم الهاتف</label><input id="sp-phone" placeholder="01xxxxxxxxx"></div>
+      </div>
+      <div class="field"><label>التصنيف</label><input id="sp-category" placeholder="مثال: أدوية / مستلزمات"></div>
+      <div class="field"><label>الحالة</label>
+        <select id="sp-status">
+          <option value="active">نشط</option>
+          <option value="paused">متوقف مؤقتاً</option>
+          <option value="inactive">غير نشط</option>
+        </select>
+      </div>
+      <div class="field"><label>ملاحظات</label><textarea id="sp-notes" rows="2" placeholder="اختياري"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" onclick="saveSupplier()">حفظ</button>
+      <button class="btn btn-ghost" onclick="closeModal('supplierModal')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ───────── State ───────── */
+const DB_KEY='commercial_manager_db_v1';
+let db={offers:[],suppliers:[]};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const save=()=>localStorage.setItem(DB_KEY,JSON.stringify(db));
+function load(){
+  try{const d=JSON.parse(localStorage.getItem(DB_KEY));if(d&&d.offers)db=d;}catch(e){}
+  if(!db.suppliers.length&&!db.offers.length)seed();
+}
+function seed(){
+  const s1=uid(),s2=uid(),s3=uid();
+  db.suppliers=[
+    {id:s1,name:'شركة النور للأدوية',contact:'أحمد سمير',phone:'01001234567',category:'أدوية',status:'active',notes:''},
+    {id:s2,name:'الشرق الأوسط للمستلزمات',contact:'منى فؤاد',phone:'01112345678',category:'مستلزمات طبية',status:'active',notes:''},
+    {id:s3,name:'دلتا فارما',contact:'خالد حسن',phone:'01223456789',category:'أدوية',status:'paused',notes:''},
+  ];
+  db.offers=[
+    {id:uid(),name:'عرض أدوية القلب',supplier:s1,value:45000,date:'2026-07-20',status:'pending',notes:'خصم 12%'},
+    {id:uid(),name:'مستلزمات جراحية',supplier:s2,value:28000,date:'2026-07-25',status:'approved',notes:''},
+    {id:uid(),name:'مضادات حيوية',supplier:s3,value:19500,date:'2026-07-28',status:'new',notes:'بانتظار الرد'},
+  ];
+  save();
+}
+
+/* ───────── Labels ───────── */
+const offerStatus={new:{t:'جديد',c:'blue'},pending:{t:'قيد المتابعة',c:'gold'},approved:{t:'مقبول',c:'green'},rejected:{t:'مرفوض',c:'red'}};
+const supStatus={active:{t:'نشط',c:'green'},paused:{t:'متوقف مؤقتاً',c:'gold'},inactive:{t:'غير نشط',c:'gray'}};
+const supName=id=>{const s=db.suppliers.find(x=>x.id===id);return s?s.name:'—';};
+const money=n=>Number(n||0).toLocaleString('ar-EG');
+const fmtDate=d=>d?new Date(d).toLocaleDateString('ar-EG',{year:'numeric',month:'short',day:'numeric'}):'—';
+
+/* ───────── Render ───────── */
+function renderAll(){renderKPIs();renderOffers();renderSuppliers();renderRecent();fillSupplierSelect();}
+
+function renderKPIs(){
+  document.getElementById('k-offers').textContent=db.offers.length;
+  document.getElementById('k-suppliers').textContent=db.suppliers.length;
+  document.getElementById('k-pending').textContent=db.offers.filter(o=>o.status==='pending'||o.status==='new').length;
+  document.getElementById('k-value').textContent=money(db.offers.reduce((s,o)=>s+Number(o.value||0),0));
+  document.getElementById('badge-offers').textContent=db.offers.length;
+  document.getElementById('badge-suppliers').textContent=db.suppliers.length;
+}
+
+function offerRow(o){
+  const st=offerStatus[o.status]||offerStatus.new;
+  return `<tr>
+    <td><span class="name">${esc(o.name)}</span>${o.notes?`<div class="muted">${esc(o.notes)}</div>`:''}</td>
+    <td>${esc(supName(o.supplier))}</td>
+    <td>${money(o.value)} ج.م</td>
+    <td>${fmtDate(o.date)}</td>
+    <td><span class="tag ${st.c}">${st.t}</span></td>
+    <td><div class="row-actions">
+      <button class="icon-btn" onclick="openOffer('${o.id}')" title="تعديل"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      <button class="icon-btn del" onclick="delOffer('${o.id}')" title="حذف"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+    </div></td>
+  </tr>`;
+}
+const offersHead=`<thead><tr><th>اسم العرض</th><th>المورد</th><th>القيمة</th><th>التاريخ</th><th>الحالة</th><th>إجراءات</th></tr></thead>`;
+
+function renderOffers(filter=''){
+  const t=document.getElementById('offersTable');
+  const rows=db.offers.filter(o=>match(o.name+supName(o.supplier)+(o.notes||''),filter));
+  t.innerHTML=offersHead+(rows.length?`<tbody>${rows.map(offerRow).join('')}</tbody>`:emptyRow(6,'لا توجد عروض'));
+}
+function renderRecent(){
+  const t=document.getElementById('recentOffers');
+  const rows=[...db.offers].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
+  t.innerHTML=offersHead+(rows.length?`<tbody>${rows.map(offerRow).join('')}</tbody>`:emptyRow(6,'لا توجد عروض بعد'));
+}
+
+function supplierRow(s){
+  const st=supStatus[s.status]||supStatus.active;
+  const cnt=db.offers.filter(o=>o.supplier===s.id).length;
+  return `<tr>
+    <td><span class="name">${esc(s.name)}</span>${s.category?`<div class="muted">${esc(s.category)}</div>`:''}</td>
+    <td>${esc(s.contact||'—')}</td>
+    <td>${esc(s.phone||'—')}</td>
+    <td>${cnt} عرض</td>
+    <td><span class="tag ${st.c}">${st.t}</span></td>
+    <td><div class="row-actions">
+      <button class="icon-btn" onclick="openSupplier('${s.id}')" title="تعديل"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      <button class="icon-btn del" onclick="delSupplier('${s.id}')" title="حذف"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+    </div></td>
+  </tr>`;
+}
+const supHead=`<thead><tr><th>المورد</th><th>المسؤول</th><th>الهاتف</th><th>العروض</th><th>الحالة</th><th>إجراءات</th></tr></thead>`;
+function renderSuppliers(filter=''){
+  const t=document.getElementById('suppliersTable');
+  const rows=db.suppliers.filter(s=>match(s.name+(s.contact||'')+(s.phone||'')+(s.category||''),filter));
+  t.innerHTML=supHead+(rows.length?`<tbody>${rows.map(supplierRow).join('')}</tbody>`:emptyRow(6,'لا يوجد موردون'));
+}
+function fillSupplierSelect(){
+  const sel=document.getElementById('of-supplier');
+  sel.innerHTML=db.suppliers.length?db.suppliers.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join(''):'<option value="">أضف مورداً أولاً</option>';
+}
+const emptyRow=(cols,msg)=>`<tbody><tr><td colspan="${cols}"><div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><div>${msg}</div></div></td></tr></tbody>`;
+
+/* ───────── CRUD: Offers ───────── */
+function openOffer(id){
+  fillSupplierSelect();
+  const o=id?db.offers.find(x=>x.id===id):null;
+  document.getElementById('offerModalTitle').textContent=o?'تعديل عرض':'عرض جديد';
+  document.getElementById('offerId').value=o?o.id:'';
+  document.getElementById('of-name').value=o?o.name:'';
+  document.getElementById('of-supplier').value=o?o.supplier:(db.suppliers[0]?.id||'');
+  document.getElementById('of-value').value=o?o.value:'';
+  document.getElementById('of-date').value=o?o.date:new Date().toISOString().slice(0,10);
+  document.getElementById('of-status').value=o?o.status:'new';
+  document.getElementById('of-notes').value=o?o.notes:'';
+  showModal('offerModal');
+}
+function saveOffer(){
+  const name=document.getElementById('of-name').value.trim();
+  if(!name){alert('من فضلك أدخل اسم العرض');return;}
+  const id=document.getElementById('offerId').value;
+  const obj={
+    id:id||uid(),name,
+    supplier:document.getElementById('of-supplier').value,
+    value:Number(document.getElementById('of-value').value)||0,
+    date:document.getElementById('of-date').value,
+    status:document.getElementById('of-status').value,
+    notes:document.getElementById('of-notes').value.trim(),
+  };
+  if(id){const i=db.offers.findIndex(x=>x.id===id);db.offers[i]=obj;}else db.offers.unshift(obj);
+  save();renderAll();closeModal('offerModal');
+}
+function delOffer(id){if(confirm('حذف هذا العرض؟')){db.offers=db.offers.filter(x=>x.id!==id);save();renderAll();}}
+
+/* ───────── CRUD: Suppliers ───────── */
+function openSupplier(id){
+  const s=id?db.suppliers.find(x=>x.id===id):null;
+  document.getElementById('supplierModalTitle').textContent=s?'تعديل مورد':'مورد جديد';
+  document.getElementById('supplierId').value=s?s.id:'';
+  document.getElementById('sp-name').value=s?s.name:'';
+  document.getElementById('sp-contact').value=s?s.contact:'';
+  document.getElementById('sp-phone').value=s?s.phone:'';
+  document.getElementById('sp-category').value=s?s.category:'';
+  document.getElementById('sp-status').value=s?s.status:'active';
+  document.getElementById('sp-notes').value=s?s.notes:'';
+  showModal('supplierModal');
+}
+function saveSupplier(){
+  const name=document.getElementById('sp-name').value.trim();
+  if(!name){alert('من فضلك أدخل اسم المورد');return;}
+  const id=document.getElementById('supplierId').value;
+  const obj={
+    id:id||uid(),name,
+    contact:document.getElementById('sp-contact').value.trim(),
+    phone:document.getElementById('sp-phone').value.trim(),
+    category:document.getElementById('sp-category').value.trim(),
+    status:document.getElementById('sp-status').value,
+    notes:document.getElementById('sp-notes').value.trim(),
+  };
+  if(id){const i=db.suppliers.findIndex(x=>x.id===id);db.suppliers[i]=obj;}else db.suppliers.unshift(obj);
+  save();renderAll();closeModal('supplierModal');
+}
+function delSupplier(id){
+  if(db.offers.some(o=>o.supplier===id)){if(!confirm('هذا المورد مرتبط بعروض. هل تريد حذفه على أي حال؟'))return;}
+  else if(!confirm('حذف هذا المورد؟'))return;
+  db.suppliers=db.suppliers.filter(x=>x.id!==id);save();renderAll();
+}
+
+/* ───────── Data mgmt ───────── */
+function exportData(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='commercial-manager-backup.json';a.click();
+}
+function importData(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(d.offers&&d.suppliers){db=d;save();renderAll();alert('تم الاستيراد بنجاح');}else alert('ملف غير صالح');}catch(err){alert('تعذّر قراءة الملف');}};
+  r.readAsText(f);e.target.value='';
+}
+function resetAll(){if(confirm('سيتم حذف جميع البيانات نهائياً. متابعة؟')){localStorage.removeItem(DB_KEY);db={offers:[],suppliers:[]};save();renderAll();}}
+
+/* ───────── Helpers / Nav ───────── */
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function match(text,q){return !q||text.toLowerCase().includes(q.toLowerCase());}
+function showModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+const titles={dashboard:['نظرة عامة','ملخص متابعة العروض والموردين'],offers:['العروض','إدارة ومتابعة العروض'],suppliers:['الموردين','قاعدة بيانات الموردين'],settings:['البيانات والنسخ','النسخ الاحتياطي والاستيراد']};
+function go(page){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===page));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('pageTitle').textContent=titles[page][0];
+  document.getElementById('pageSub').textContent=titles[page][1];
+  closeSidebar();
+}
+document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>go(n.dataset.page)));
+
+/* mobile sidebar */
+const sb=document.getElementById('sidebar'),scrim=document.getElementById('scrim');
+document.getElementById('menuBtn').onclick=()=>{sb.classList.add('open');scrim.classList.add('show');};
+function closeSidebar(){sb.classList.remove('open');scrim.classList.remove('show');}
+scrim.onclick=closeSidebar;
+
+/* search */
+document.getElementById('searchOffers').oninput=e=>renderOffers(e.target.value);
+document.getElementById('searchSuppliers').oninput=e=>renderSuppliers(e.target.value);
+
+/* overlay click to close */
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show');}));
+
+/* init */
+document.getElementById('year').textContent=new Date().getFullYear();
+document.getElementById('today').textContent=new Date().toLocaleDateString('ar-EG',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+load();renderAll();
+</script>
+</body>
+</html>
