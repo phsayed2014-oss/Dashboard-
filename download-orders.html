@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تحميل لوحة الطلبيات</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+    background: linear-gradient(135deg, #0a0e18, #10162a); color: #f0f4ff;
+    padding: 24px;
+  }
+  .card {
+    max-width: 520px; width: 100%; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 32px;
+    text-align: center;
+  }
+  h1 { font-size: 24px; margin: 0 0 8px; }
+  p { color: #9aa7c4; line-height: 1.7; margin: 0 0 24px; }
+  .btn {
+    display: block; width: 100%; padding: 16px; margin-bottom: 12px;
+    border-radius: 12px; font-size: 16px; font-weight: 700; text-decoration: none;
+    font-family: inherit; cursor: pointer; border: none;
+  }
+  .btn-main { background: linear-gradient(135deg, #0d9488, #2563eb); color: white; }
+  .btn-alt { background: rgba(255,255,255,0.06); color: #f0f4ff; border: 1px solid rgba(255,255,255,0.12); }
+  .steps { text-align: right; margin-top: 24px; font-size: 14px; color: #9aa7c4; }
+  .steps li { margin-bottom: 8px; }
+  .note { margin-top: 20px; padding: 14px; border-radius: 10px; background: rgba(13,148,136,0.12); color: #14b8a6; font-size: 13px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>📦 لوحة متابعة الطلبيات</h1>
+    <p>ملف واحد فقط — حمّله وافتحه بالنقر المزدوج. لا يحتاج إنترنت ولا إعدادات.</p>
+
+    <a class="btn btn-main" href="app/طلبيات-الموردين.html" download="طلبيات-الموردين.html">
+      ⬇️ تحميل ملف الداشبورد
+    </a>
+
+    <a class="btn btn-alt" href="app/طلبيات-الموردين.html" target="_blank">
+      🖥️ فتح الداشبورد الآن
+    </a>
+
+    <ol class="steps">
+      <li>اضغط <b>تحميل ملف الداشبورد</b></li>
+      <li>روح لمجلد التحميلات (Downloads)</li>
+      <li>اضغط مرتين على الملف <b>طلبيات-الموردين.html</b></li>
+      <li>اختار مورد من القائمة على اليمين</li>
+    </ol>
+
+    <div class="note">
+      الملف فيه كل البيانات جواه — مش محتاج ملفات تانية
+    </div>
+  </div>
+</body>
+</html>
