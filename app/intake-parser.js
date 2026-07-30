@@ -1,7 +1,7 @@
 /* Client-side PDF intake parser — Stores Issuing And Receiving Query */
 (function (global) {
   const SUP_RE = /Source\s*:\s*\[SUPPLIERS\]\s*(\d{5,6})-(.+?)\s*,\s*Dest/;
-  const TAIL_RE = /\s+(\d{4})\s+(\d{2}-\d{2}-\d{4})\s+([\d.]+)\s+(\S+)\s+/;
+  const CORE_RE = /(\d{4})\s+(\d{2}-\d{2}-\d{4})\s+([\d.]+)\s+(\S+)\s+/;
 
   function fixSupplierName(name) {
     name = (name || '').trim();
@@ -12,6 +12,12 @@
   function fixSupplier(code, name) {
     const fixed = fixSupplierName(name);
     return `${code} - ${fixed}`.replace(/\s*-\s*-\s*/g, ' - ');
+  }
+
+  function preprocessLine(line) {
+    return line
+      .replace(/(\d),(\d{3})\s+(\d{2}-\d{2}-\d{4})/g, '$1$2 $3')
+      .replace(/([A-Za-z/])(\d{4})\s+(\d{2}-\d{2}-\d{4})/g, '$1 $2 $3');
   }
 
   function groupTextLines(items) {
@@ -32,8 +38,22 @@
     return lines;
   }
 
+  function mergeBrokenLines(lines) {
+    const merged = [];
+    for (const line of lines) {
+      const trimmed = (line || '').trim();
+      if (!trimmed) continue;
+      if (merged.length && !merged[merged.length - 1].includes('[SUPPLIERS]')) {
+        merged[merged.length - 1] += ' ' + trimmed;
+      } else {
+        merged.push(trimmed);
+      }
+    }
+    return merged;
+  }
+
   function parseTextLine(line) {
-    line = (line || '').trim();
+    line = preprocessLine((line || '').trim());
     if (!line || !line.includes('[SUPPLIERS]')) return null;
 
     const sm = line.match(SUP_RE);
@@ -42,7 +62,7 @@
     const supplierCode = sm[1];
     const supplier = fixSupplier(supplierCode, sm[2]);
     const before = line.slice(0, sm.index);
-    const tm = before.match(TAIL_RE);
+    const tm = before.match(CORE_RE);
     if (!tm) return null;
 
     const head = before.slice(0, tm.index).trim();
@@ -82,7 +102,7 @@
 
   function buildDataFromLines(lines) {
     const items = [];
-    for (const line of lines) {
+    for (const line of mergeBrokenLines(lines)) {
       const parsed = parseTextLine(line);
       if (parsed) items.push(parsed);
     }
