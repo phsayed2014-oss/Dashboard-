@@ -25,7 +25,7 @@
     if (m) {
       let name = m[2].split('').reverse().join('').trim();
       name = name.replace(/\s*-\s*-\s*/g, ' - ');
-      return `${m[1]} - ${name}`;
+      return `${m[1]} - ${name}`.replace(/\s*-\s*-\s*/g, ' - ');
     }
     if (/[\u0600-\u06FF]/.test(text)) return text.split('').reverse().join('');
     return text;
@@ -123,6 +123,28 @@
     return lines;
   }
 
+  function buildSupplierList(orders) {
+    const byCode = {};
+    Object.entries(orders).forEach(([orderNo, order]) => {
+      const code = order.supplier_code || (order.supplier || '').split(' - ')[0];
+      if (!byCode[code]) byCode[code] = { names: new Set(), orders: [] };
+      byCode[code].names.add(fixSupplier(order.supplier));
+      if (!byCode[code].orders.includes(orderNo)) byCode[code].orders.push(orderNo);
+    });
+    return Object.entries(byCode).map(([code, info]) => {
+      const name = [...info.names].sort((a, b) => b.length - a.length)[0];
+      info.orders.forEach((orderNo) => {
+        orders[orderNo].supplier = name;
+        orders[orderNo].supplier_code = code;
+      });
+      return {
+        name, code, orders: info.orders,
+        order_count: info.orders.length,
+        item_count: info.orders.reduce((s, o) => s + (orders[o]?.items.length || 0), 0),
+      };
+    }).sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+  }
+
   function buildDataFromLines(lines) {
     const textLookup = {};
     for (const line of lines) {
@@ -158,13 +180,7 @@
       });
     }
 
-    const supplierList = Object.entries(suppliers).map(([name, orderNos]) => ({
-      name,
-      code: name.split(' - ')[0] || '',
-      order_count: orderNos.length,
-      item_count: orderNos.reduce((s, o) => s + (orders[o]?.items.length || 0), 0),
-      orders: orderNos,
-    })).sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+    const supplierList = buildSupplierList(orders);
 
     return {
       meta: {
@@ -190,5 +206,5 @@
     return buildDataFromLines(allLines);
   }
 
-  global.OrdersParser = { parsePdfBuffer, parseTextLine, cleanOrderNo, fixSupplier };
+  global.OrdersParser = { parsePdfBuffer, parseTextLine, cleanOrderNo, fixSupplier, buildSupplierList };
 })(window);

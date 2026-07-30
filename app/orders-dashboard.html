@@ -279,17 +279,7 @@ function getUploads() {
 function saveUploads(uploads) { localStorage.setItem(UPLOADS_KEY, JSON.stringify(uploads)); }
 
 function rebuildSuppliers() {
-  const suppliers = {};
-  Object.values(DATA.orders).forEach(order => {
-    const name = order.supplier;
-    if (!suppliers[name]) suppliers[name] = { name, code: name.split(' - ')[0] || '', orders: [] };
-    if (!suppliers[name].orders.includes(order.order_no)) suppliers[name].orders.push(order.order_no);
-  });
-  DATA.suppliers = Object.values(suppliers).map(s => ({
-    ...s,
-    order_count: s.orders.length,
-    item_count: s.orders.reduce((sum, o) => sum + (DATA.orders[o]?.items.length || 0), 0),
-  })).sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+  DATA.suppliers = OrdersParser.buildSupplierList(DATA.orders);
   DATA.meta = {
     total_orders: Object.keys(DATA.orders).length,
     total_suppliers: DATA.suppliers.length,

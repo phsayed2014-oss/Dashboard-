@@ -21,11 +21,49 @@ def fix_supplier(text):
     if m:
         code, name = m.groups()
         name = name[::-1].strip()
-        name = re.sub(r"\s*-\s*-\s*", " - ", name)
-        return f"{code} - {name}"
+        return re.sub(r"\s*-\s*-\s*", " - ", f"{code} - {name}")
     if re.search(r"[\u0600-\u06FF]", text):
         return text[::-1]
     return text
+
+
+def supplier_code(name):
+    name = fix_supplier(name)
+    return name.split(" - ")[0] if " - " in name else ""
+
+
+def build_supplier_list(orders):
+    by_code = defaultdict(lambda: {"names": set(), "orders": []})
+    for order_no, order in orders.items():
+        code = order.get("supplier_code") or supplier_code(order.get("supplier", ""))
+        canonical = fix_supplier(order.get("supplier", ""))
+        by_code[code]["names"].add(canonical)
+        if order_no not in by_code[code]["orders"]:
+            by_code[code]["orders"].append(order_no)
+
+    supplier_list = []
+    for code, info in by_code.items():
+        name = max(info["names"], key=len)
+        for order_no in info["orders"]:
+            orders[order_no]["supplier"] = name
+            orders[order_no]["supplier_code"] = code
+        supplier_list.append(
+            {
+                "name": name,
+                "code": code,
+                "order_count": len(info["orders"]),
+                "item_count": sum(len(orders[o]["items"]) for o in info["orders"]),
+                "total_price": round(
+                    sum(
+                        sum(to_num(i["total_price"]) for i in orders[o]["items"])
+                        for o in info["orders"]
+                    ),
+                    2,
+                ),
+                "orders": info["orders"],
+            }
+        )
+    return sorted(supplier_list, key=lambda x: x["name"])
 
 
 def clean_order_no(order_no):
@@ -229,26 +267,7 @@ def extract():
                         suppliers[supplier_name].append(order_no)
                     orders[order_no]["items"].append(item)
 
-    supplier_list = sorted(
-        [
-            {
-                "name": n,
-                "code": n.split(" - ")[0] if " - " in n else "",
-                "order_count": len(order_nos),
-                "item_count": sum(len(orders[o]["items"]) for o in order_nos),
-                "total_price": round(
-                    sum(
-                        sum(to_num(i["total_price"]) for i in orders[o]["items"])
-                        for o in order_nos
-                    ),
-                    2,
-                ),
-                "orders": order_nos,
-            }
-            for n, order_nos in suppliers.items()
-        ],
-        key=lambda x: x["name"],
-    )
+    supplier_list = build_supplier_list(orders)
 
     return {
         "meta": {
