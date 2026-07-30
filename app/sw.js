@@ -6,6 +6,7 @@ const CORE = [
   'orders-dashboard.html',
   'orders-data.json',
   'orders-data.js',
+  'orders-parser.js',
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png',

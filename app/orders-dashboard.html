@@ -3,341 +3,207 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>متابعة الطلبيات | PharmaDash</title>
+<title>الطلبيات | PharmaDash</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Alexandria:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 :root {
-  --bg: #0a0e18;
-  --bg-card: #10162a;
-  --bg-sidebar: #060a14;
-  --border: rgba(255,255,255,0.08);
-  --text: #f0f4ff;
-  --text-dim: #9aa7c4;
-  --text-muted: #6b7795;
-  --accent: #0d9488;
-  --accent-light: #14b8a6;
-  --violet: #2563eb;
-  --amber: #f59e0b;
-  --rose: #ef4444;
-  --radius: 12px;
-  --sidebar-w: 320px;
+  --bg: #0a0e18; --bg-card: #10162a; --bg-sidebar: #060a14; --bg-nav: #040810;
+  --border: rgba(255,255,255,0.08); --text: #f0f4ff; --text-dim: #9aa7c4; --text-muted: #6b7795;
+  --accent: #0d9488; --accent-light: #14b8a6; --violet: #2563eb; --amber: #f59e0b; --rose: #ef4444;
+  --radius: 12px; --nav-w: 240px; --panel-w: 300px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'IBM Plex Sans Arabic', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  display: flex;
-  overflow: hidden;
-}
+body { font-family: 'IBM Plex Sans Arabic', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; overflow: hidden; }
 
-/* ── Sidebar ── */
-.sidebar {
-  width: var(--sidebar-w);
-  min-width: var(--sidebar-w);
-  background: var(--bg-sidebar);
-  border-left: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+/* ── Main Nav ── */
+.nav-sidebar {
+  width: var(--nav-w); min-width: var(--nav-w); background: var(--bg-nav);
+  border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh;
 }
-.sidebar-header {
-  padding: 20px 18px 14px;
-  border-bottom: 1px solid var(--border);
-}
-.sidebar-header h1 {
-  font-family: 'Alexandria', sans-serif;
-  font-size: 18px;
-  font-weight: 800;
+.brand { padding: 22px 18px 16px; border-bottom: 1px solid var(--border); }
+.brand h1 {
+  font-family: 'Alexandria', sans-serif; font-size: 17px; font-weight: 800;
   background: linear-gradient(135deg, var(--accent-light), var(--violet));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 4px;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-.sidebar-header p {
-  font-size: 12px;
-  color: var(--text-muted);
+.brand p { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.nav-section { padding: 12px 10px; flex: 1; overflow-y: auto; }
+.nav-parent {
+  width: 100%; display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  background: rgba(13,148,136,0.1); border: 1px solid rgba(13,148,136,0.25); border-radius: 10px;
+  color: var(--accent-light); font-family: inherit; font-size: 14px; font-weight: 700; cursor: default;
 }
-.search-box {
-  margin: 14px 18px 10px;
+.nav-parent .ico { font-size: 18px; }
+.nav-children { margin-top: 6px; padding-right: 8px; }
+.nav-item {
+  width: 100%; text-align: right; padding: 10px 14px 10px 32px; margin-bottom: 2px;
+  background: none; border: none; border-radius: 8px; color: var(--text-dim);
+  font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s;
   position: relative;
 }
+.nav-item::before { content: ''; position: absolute; right: 14px; top: 50%; width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); transform: translateY(-50%); opacity: .4; }
+.nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+.nav-item.active { background: rgba(37,99,235,0.12); color: #60a5fa; }
+.nav-item.active::before { background: #60a5fa; opacity: 1; }
+.nav-badge {
+  float: left; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
+  background: rgba(245,158,11,0.15); color: var(--amber);
+}
+
+/* ── Suppliers Panel ── */
+.suppliers-panel {
+  width: var(--panel-w); min-width: var(--panel-w); background: var(--bg-sidebar);
+  border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh;
+}
+.suppliers-panel.hidden { display: none; }
+.panel-head { padding: 16px 16px 10px; border-bottom: 1px solid var(--border); }
+.panel-head h2 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.panel-head p { font-size: 11px; color: var(--text-muted); }
+.search-box { margin: 12px 16px 8px; position: relative; }
 .search-box input {
-  width: 100%;
-  padding: 10px 14px 10px 36px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text);
-  font-family: inherit;
-  font-size: 13px;
-  outline: none;
-  transition: border-color .2s;
+  width: 100%; padding: 10px 14px 10px 36px; background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); border-radius: 10px; color: var(--text);
+  font-family: inherit; font-size: 13px; outline: none;
 }
 .search-box input:focus { border-color: var(--accent); }
-.search-box svg {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-}
-.supplier-count {
-  padding: 0 18px 8px;
-  font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-.supplier-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 4px 10px 16px;
-}
+.search-box svg { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+.supplier-count { padding: 0 16px 6px; font-size: 11px; color: var(--text-muted); font-weight: 600; }
+.supplier-list { flex: 1; overflow-y: auto; padding: 4px 10px 16px; }
 .supplier-list::-webkit-scrollbar { width: 4px; }
 .supplier-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 .supplier-item {
-  padding: 12px 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  margin-bottom: 4px;
-  border: 1px solid transparent;
-  transition: all .15s;
+  padding: 11px 12px; border-radius: 10px; cursor: pointer; margin-bottom: 4px;
+  border: 1px solid transparent; transition: all .15s;
 }
-.supplier-item:hover {
-  background: rgba(255,255,255,0.04);
-  border-color: var(--border);
-}
-.supplier-item.active {
-  background: rgba(13,148,136,0.12);
-  border-color: rgba(13,148,136,0.35);
-}
-.supplier-item .name {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.5;
-  margin-bottom: 6px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.supplier-item .meta {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.badge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 20px;
-  background: rgba(255,255,255,0.06);
-  color: var(--text-dim);
-}
+.supplier-item:hover { background: rgba(255,255,255,0.04); border-color: var(--border); }
+.supplier-item.active { background: rgba(13,148,136,0.12); border-color: rgba(13,148,136,0.35); }
+.supplier-item .name { font-size: 12.5px; font-weight: 600; line-height: 1.45; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.supplier-item .meta { display: flex; gap: 6px; flex-wrap: wrap; }
+.badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: rgba(255,255,255,0.06); color: var(--text-dim); }
 .badge.orders { background: rgba(37,99,235,0.15); color: #60a5fa; }
 .badge.items { background: rgba(13,148,136,0.15); color: var(--accent-light); }
+.badge.done { background: rgba(34,197,94,0.15); color: #4ade80; }
+.badge.pending { background: rgba(245,158,11,0.15); color: var(--amber); }
 
 /* ── Main ── */
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
-}
+.main { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; min-width: 0; }
 .topbar {
-  padding: 18px 28px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0;
-  background: rgba(10,14,24,0.8);
-  backdrop-filter: blur(12px);
+  padding: 18px 28px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  background: rgba(10,14,24,0.8); backdrop-filter: blur(12px);
 }
-.topbar h2 {
-  font-family: 'Alexandria', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-}
+.topbar h2 { font-family: 'Alexandria', sans-serif; font-size: 20px; font-weight: 700; }
 .topbar .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-.kpi-row {
-  display: flex;
-  gap: 14px;
-  padding: 18px 28px;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-}
-.kpi {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 20px;
-  min-width: 140px;
-  flex: 1;
-}
+.kpi-row { display: flex; gap: 14px; padding: 18px 28px; flex-shrink: 0; flex-wrap: wrap; }
+.kpi { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; min-width: 130px; flex: 1; }
 .kpi-label { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
 .kpi-value { font-family: 'Alexandria', sans-serif; font-size: 24px; font-weight: 800; }
-.kpi-value.teal { color: var(--accent-light); }
-.kpi-value.blue { color: #60a5fa; }
-.kpi-value.amber { color: var(--amber); }
-
-.content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 28px 28px;
-}
+.kpi-value.teal { color: var(--accent-light); } .kpi-value.blue { color: #60a5fa; }
+.kpi-value.amber { color: var(--amber); } .kpi-value.green { color: #4ade80; }
+.content { flex: 1; overflow-y: auto; padding: 0 28px 28px; }
 .content::-webkit-scrollbar { width: 6px; }
 .content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 6px; }
 
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--text-muted);
-  text-align: center;
-  padding: 40px;
-}
-.empty-state svg { margin-bottom: 16px; opacity: 0.3; }
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; color: var(--text-muted); text-align: center; padding: 40px; }
 .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--text-dim); }
 
-.order-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  margin-bottom: 20px;
-  overflow: hidden;
-}
-.order-head {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-  background: rgba(255,255,255,0.02);
-}
-.order-head .order-no {
-  font-family: 'Alexandria', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--accent-light);
-}
-.order-head .order-date {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-.order-head .order-stats {
-  display: flex;
-  gap: 12px;
-  font-size: 12px;
-  color: var(--text-dim);
-}
-
+.order-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
+.order-card.completed { border-color: rgba(34,197,94,0.25); }
+.order-head { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: rgba(255,255,255,0.02); }
+.order-no { font-family: 'Alexandria', sans-serif; font-size: 14px; font-weight: 700; color: var(--accent-light); }
+.order-date { font-size: 12px; color: var(--text-muted); }
+.order-stats { display: flex; gap: 10px; font-size: 12px; color: var(--text-dim); align-items: center; flex-wrap: wrap; }
 .table-wrap { overflow-x: auto; }
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12.5px;
-}
-thead th {
-  padding: 10px 14px;
-  text-align: right;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-muted);
-  background: rgba(255,255,255,0.02);
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-  position: sticky;
-  top: 0;
-}
-tbody td {
-  padding: 10px 14px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-  vertical-align: middle;
-}
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+thead th { padding: 10px 14px; text-align: right; font-size: 11px; font-weight: 700; color: var(--text-muted); background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); white-space: nowrap; }
+tbody td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
 tbody tr:hover { background: rgba(255,255,255,0.02); }
-tbody tr:last-child td { border-bottom: none; }
-.td-num { text-align: center; color: var(--text-muted); font-weight: 600; width: 40px; }
-.td-name { max-width: 280px; line-height: 1.4; }
+.td-num, .td-qty, .td-bonus, .td-disc, .td-price, .td-total, .kpi-value, .badge, .order-stats, .supplier-count, .nav-badge {
+  font-variant-numeric: lining-nums; font-feature-settings: "lnum"; unicode-bidi: plaintext;
+}
+.td-name { max-width: 260px; line-height: 1.4; }
 .td-code { font-family: monospace; font-size: 11px; color: var(--text-dim); }
 .td-qty { text-align: center; font-weight: 700; }
-.td-bonus { text-align: center; }
-.td-bonus.has-bonus { color: var(--amber); font-weight: 700; }
-.td-disc { text-align: center; }
-.td-disc.has-disc { color: var(--rose); font-weight: 600; }
-.td-price { text-align: left; direction: ltr; font-variant-numeric: tabular-nums; }
-.td-total { text-align: left; direction: ltr; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent-light); }
-.td-qty, .td-bonus, .td-disc, .td-price, .td-total, .kpi-value, .badge, .order-stats, .supplier-count {
-  font-variant-numeric: lining-nums;
-  font-feature-settings: "lnum";
-  unicode-bidi: plaintext;
-}
+.td-bonus.has-bonus { color: var(--amber); font-weight: 700; text-align: center; }
+.td-disc.has-disc { color: var(--rose); font-weight: 600; text-align: center; }
+.td-price, .td-total { text-align: left; direction: ltr; }
+.td-total { font-weight: 700; color: var(--accent-light); }
 
-.loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  flex-direction: column;
-  gap: 16px;
-  color: var(--text-muted);
+/* Upload */
+.upload-zone {
+  border: 2px dashed var(--border); border-radius: 16px; padding: 48px 24px; text-align: center;
+  background: rgba(255,255,255,0.02); cursor: pointer; transition: all .2s; margin-bottom: 20px;
 }
-.spinner {
-  width: 36px; height: 36px;
-  border: 3px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(13,148,136,0.06); }
+.upload-zone .icon { font-size: 48px; margin-bottom: 12px; opacity: .5; }
+.upload-zone h3 { font-size: 16px; margin-bottom: 6px; }
+.upload-zone p { font-size: 13px; color: var(--text-muted); }
+.upload-form { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; align-items: end; }
+.field label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+.field input, .field select {
+  padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); font-family: inherit; font-size: 13px;
 }
+.btn {
+  padding: 10px 20px; border-radius: 10px; border: none; font-family: inherit;
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s;
+}
+.btn-primary { background: linear-gradient(135deg, var(--accent), var(--violet)); color: #fff; }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+.btn-ghost { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border); }
+.upload-history { margin-top: 8px; }
+.history-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 16px; background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 8px; flex-wrap: wrap;
+}
+.history-item .info h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.history-item .info p { font-size: 11px; color: var(--text-muted); }
+.month-group { margin-bottom: 24px; }
+.month-group h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--accent-light); padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+.loading { display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column; gap: 16px; color: var(--text-muted); }
+.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+.progress-bar { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 12px; }
+.progress-bar .fill { height: 100%; background: var(--accent); transition: width .3s; width: 0; }
+.mobile-toggle { display: none; background: none; border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-family: inherit; margin-bottom: 8px; }
 
-.mobile-toggle {
-  display: none;
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    position: fixed;
-    right: -100%;
-    top: 0;
-    z-index: 100;
-    transition: right .3s;
-  }
-  .sidebar.open { right: 0; }
-  .mobile-toggle { display: block; }
-  .kpi-row { padding: 12px 16px; }
-  .content { padding: 0 16px 16px; }
-  .topbar { padding: 14px 16px; }
+@media (max-width: 900px) {
+  .nav-sidebar, .suppliers-panel { position: fixed; right: -100%; top: 0; z-index: 100; transition: right .3s; }
+  .nav-sidebar.open, .suppliers-panel.open { right: 0; }
+  .mobile-toggle { display: inline-block; }
+  .kpi-row { padding: 12px 16px; } .content { padding: 0 16px 16px; } .topbar { padding: 14px 16px; }
 }
 </style>
 </head>
 <body>
 
-<div class="loading" id="loading">
-  <div class="spinner"></div>
-  <span>جاري تحميل بيانات الطلبيات...</span>
-</div>
+<div class="loading" id="loading"><div class="spinner"></div><span>جاري تحميل بيانات الطلبيات...</span></div>
 
-<div id="app" style="display:none;width:100%;height:100vh;display:none;">
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <h1>متابعة الطلبيات</h1>
+<div id="app" style="display:none;width:100%;height:100vh;">
+  <aside class="nav-sidebar" id="navSidebar">
+    <div class="brand">
+      <h1>PharmaDash</h1>
       <p id="metaInfo">—</p>
+    </div>
+    <div class="nav-section">
+      <div class="nav-parent"><span class="ico">📦</span> الطلبيات</div>
+      <div class="nav-children">
+        <button class="nav-item active" data-view="suppliers">الموردين</button>
+        <button class="nav-item" data-view="completed">الطلبيات المكتملة <span class="nav-badge" id="completedBadge">0</span></button>
+        <button class="nav-item" data-view="upload">رفع ملف شهري</button>
+      </div>
+    </div>
+  </aside>
+
+  <aside class="suppliers-panel" id="suppliersPanel">
+    <div class="panel-head">
+      <button class="mobile-toggle" id="menuToggle">☰ القائمة</button>
+      <h2>الموردين</h2>
+      <p>اختر موردًا لعرض طلبياته</p>
     </div>
     <div class="search-box">
       <input type="text" id="searchInput" placeholder="بحث عن مورد...">
@@ -349,196 +215,319 @@ tbody tr:last-child td { border-bottom: none; }
 
   <main class="main">
     <div class="topbar">
-      <div>
-        <button class="mobile-toggle" id="menuToggle">☰ الموردين</button>
-        <h2 id="selectedTitle">اختر مورّدًا</h2>
-        <div class="subtitle" id="selectedSubtitle">اضغط على اسم المورد من القائمة الجانبية لعرض طلبياته</div>
-      </div>
+      <h2 id="pageTitle">اختر مورّدًا</h2>
+      <div class="subtitle" id="pageSubtitle">من قائمة الموردين على اليمين</div>
     </div>
-    <div class="kpi-row" id="kpiRow" style="display:none">
-      <div class="kpi"><div class="kpi-label">عدد الطلبيات</div><div class="kpi-value blue" id="kpiOrders">0</div></div>
-      <div class="kpi"><div class="kpi-label">عدد الأصناف</div><div class="kpi-value teal" id="kpiItems">0</div></div>
-      <div class="kpi"><div class="kpi-label">إجمالي القيمة</div><div class="kpi-value amber" id="kpiTotal">0</div></div>
-      <div class="kpi"><div class="kpi-label">أصناف ببونص</div><div class="kpi-value teal" id="kpiBonus">0</div></div>
-    </div>
-    <div class="content" id="content">
-      <div class="empty-state">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 16v-4a4 4 0 0 0-8 0v4"/><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>
-        <h3>مرحبًا بك في لوحة متابعة الطلبيات</h3>
-        <p>اختر مورّدًا من القائمة الجانبية لعرض طلبياته وتفاصيل الأصناف</p>
-      </div>
-    </div>
+    <div class="kpi-row" id="kpiRow" style="display:none"></div>
+    <div class="content" id="content"></div>
   </main>
 </div>
 
+<input type="file" id="fileInput" accept=".pdf" hidden>
+
 <script src="orders-data.js"></script>
+<script src="orders-parser.js"></script>
 <script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const UPLOADS_KEY = 'pharmadash_monthly_uploads';
 let DATA = null;
 let selectedSupplier = null;
+let currentView = 'suppliers';
+let completedSet = new Set();
 
 function fmt(n) {
   const v = parseFloat(n);
-  if (isNaN(v)) return '—';
-  return v.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  return isNaN(v) ? '—' : v.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 }
-
 function num(n) {
   const v = parseFloat(n);
-  if (isNaN(v)) return String(n ?? '—');
-  return v.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  return isNaN(v) ? String(n ?? '—') : v.toLocaleString('en-US', { maximumFractionDigits: 2 });
+}
+function cleanName(n) { return (n || '').replace(/\s*-\s*-\s*/g, ' - ').trim(); }
+function toNum(v) { const n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? 0 : n; }
+
+function getUploads() {
+  try { return JSON.parse(localStorage.getItem(UPLOADS_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveUploads(uploads) { localStorage.setItem(UPLOADS_KEY, JSON.stringify(uploads)); }
+
+function rebuildCompletedSet() {
+  completedSet = new Set();
+  getUploads().forEach(u => (u.orderNumbers || []).forEach(o => completedSet.add(o)));
+  document.getElementById('completedBadge').textContent = num(completedSet.size);
 }
 
-function cleanName(name) {
-  return (name || '').replace(/\s*-\s*-\s*/g, ' - ').trim();
-}
-
-function toNum(v) {
-  const n = parseFloat(String(v).replace(/,/g, ''));
-  return isNaN(n) ? 0 : n;
-}
+function isCompleted(orderNo) { return completedSet.has(orderNo); }
 
 function initApp() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
+  rebuildCompletedSet();
   document.getElementById('metaInfo').textContent =
-    `${num(DATA.meta.total_suppliers)} مورد · ${num(DATA.meta.total_orders)} طلبية · ${num(DATA.meta.total_items)} صنف`;
+    `${num(DATA.meta.total_suppliers)} مورد · ${num(DATA.meta.total_orders)} طلبية`;
   renderSupplierList(DATA.suppliers);
+  showView('suppliers');
 }
 
 function loadData() {
-  if (window.ORDERS_DATA) {
-    DATA = window.ORDERS_DATA;
-    initApp();
-    return Promise.resolve();
+  if (window.ORDERS_DATA) { DATA = window.ORDERS_DATA; initApp(); return Promise.resolve(); }
+  return fetch('orders-data.json').then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(d => { DATA = d; initApp(); });
+}
+
+function showView(view) {
+  currentView = view;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.view === view));
+  const panel = document.getElementById('suppliersPanel');
+  const kpi = document.getElementById('kpiRow');
+  panel.classList.toggle('hidden', view !== 'suppliers');
+  kpi.style.display = 'none';
+
+  if (view === 'suppliers') {
+    document.getElementById('pageTitle').textContent = selectedSupplier ? cleanName(selectedSupplier.name) : 'اختر مورّدًا';
+    document.getElementById('pageSubtitle').textContent = selectedSupplier ? `كود: ${selectedSupplier.code || '—'}` : 'من قائمة الموردين';
+    if (selectedSupplier) selectSupplier(selectedSupplier, false);
+    else document.getElementById('content').innerHTML = `<div class="empty-state"><div style="font-size:48px;opacity:.3">📋</div><h3>مرحبًا بك</h3><p>اختر مورّدًا من القائمة لعرض طلبياته</p></div>`;
+  } else if (view === 'completed') {
+    renderCompletedView();
+  } else if (view === 'upload') {
+    renderUploadView();
   }
-  return fetch('orders-data.json')
-    .then(res => {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    })
-    .then(data => {
-      DATA = data;
-      initApp();
-    });
 }
 
 function renderSupplierList(suppliers) {
   const list = document.getElementById('supplierList');
-  const count = document.getElementById('supplierCount');
-  count.textContent = `عرض ${num(suppliers.length)} مورد`;
-  list.innerHTML = suppliers.map((s, i) => `
-    <div class="supplier-item" data-idx="${DATA.suppliers.indexOf(s)}" data-name="${cleanName(s.name)}">
+  document.getElementById('supplierCount').textContent = `عرض ${num(suppliers.length)} مورد`;
+  list.innerHTML = suppliers.map(s => {
+    const done = s.orders.filter(o => isCompleted(o)).length;
+    return `<div class="supplier-item" data-name="${cleanName(s.name)}">
       <div class="name">${cleanName(s.name)}</div>
       <div class="meta">
         <span class="badge orders">${num(s.order_count)} طلبية</span>
         <span class="badge items">${num(s.item_count)} صنف</span>
+        ${done ? `<span class="badge done">${num(done)} مكتملة</span>` : ''}
       </div>
-    </div>
-  `).join('');
-
+    </div>`;
+  }).join('');
   list.querySelectorAll('.supplier-item').forEach(el => {
     el.addEventListener('click', () => {
-      const idx = parseInt(el.dataset.idx);
-      selectSupplier(DATA.suppliers[idx]);
-      document.getElementById('sidebar').classList.remove('open');
+      const s = DATA.suppliers.find(x => cleanName(x.name) === el.dataset.name);
+      if (s) selectSupplier(s);
     });
   });
 }
 
-function selectSupplier(supplier) {
+function orderTableRows(items) {
+  return items.map(item => {
+    const bonus = toNum(item.bonus), dis1 = toNum(item.dis1), dis2 = toNum(item.dis2);
+    return `<tr>
+      <td class="td-num">${num(item.num)}</td>
+      <td class="td-code">${item.item_code || ''}</td>
+      <td class="td-name">${item.item_name}</td>
+      <td class="td-qty">${num(item.qty)}</td>
+      <td class="td-bonus ${bonus > 0 ? 'has-bonus' : ''}">${bonus > 0 ? '+' + num(item.bonus) : '—'}</td>
+      <td class="td-qty">${num(item.total_qty)}</td>
+      <td class="td-disc ${dis1 > 0 ? 'has-disc' : ''}">${dis1 > 0 ? num(item.dis1) + '%' : '—'}</td>
+      <td class="td-disc ${dis2 > 0 ? 'has-disc' : ''}">${dis2 > 0 ? num(item.dis2) + '%' : '—'}</td>
+      <td class="td-price">${fmt(item.sell_price)}</td>
+      <td class="td-total">${fmt(item.total_price)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function orderCard(order, orderNo) {
+  let total = 0;
+  order.items.forEach(i => total += toNum(i.total_price));
+  const done = isCompleted(orderNo);
+  return `<div class="order-card ${done ? 'completed' : ''}">
+    <div class="order-head">
+      <div>
+        <div class="order-no">${order.order_no}</div>
+        <div class="order-date">تاريخ: ${order.po_date || '—'} · ${cleanName(order.supplier)}</div>
+      </div>
+      <div class="order-stats">
+        ${done ? '<span class="badge done">مكتملة</span>' : '<span class="badge pending">قيد التنفيذ</span>'}
+        <span>${num(order.items.length)} صنف</span>
+        <span>الإجمالي: ${fmt(total)} ر.س</span>
+      </div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>كود</th><th>الصنف</th><th>كمية</th><th>بونص</th><th>إجمالي</th><th>خصم1</th><th>خصم2</th><th>سعر</th><th>كلي</th></tr></thead>
+      <tbody>${orderTableRows(order.items)}</tbody>
+    </table></div>
+  </div>`;
+}
+
+function selectSupplier(supplier, updateView = true) {
   selectedSupplier = supplier;
-  document.querySelectorAll('.supplier-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.name === cleanName(supplier.name));
-  });
+  document.querySelectorAll('.supplier-item').forEach(el =>
+    el.classList.toggle('active', el.dataset.name === cleanName(supplier.name)));
+  document.getElementById('pageTitle').textContent = cleanName(supplier.name);
+  document.getElementById('pageSubtitle').textContent = `كود المورد: ${supplier.code || '—'}`;
 
-  document.getElementById('selectedTitle').textContent = cleanName(supplier.name);
-  document.getElementById('selectedSubtitle').textContent =
-    `كود المورد: ${supplier.code || '—'}`;
-
-  let totalItems = 0, totalPrice = 0, bonusItems = 0;
-  const orderCards = supplier.orders.map(orderNo => {
-    const order = DATA.orders[orderNo];
-    if (!order) return '';
-    totalItems += order.items.length;
-    let orderTotal = 0;
-    const rows = order.items.map(item => {
-      const bonus = toNum(item.bonus);
-      const dis1 = toNum(item.dis1);
-      const dis2 = toNum(item.dis2);
-      const price = toNum(item.total_price);
-      orderTotal += price;
-      if (bonus > 0) bonusItems++;
-      return `<tr>
-        <td class="td-num">${num(item.num)}</td>
-        <td class="td-code">${item.item_code || ''}</td>
-        <td class="td-name">${item.item_name}</td>
-        <td class="td-qty">${num(item.qty)}</td>
-        <td class="td-bonus ${bonus > 0 ? 'has-bonus' : ''}">${bonus > 0 ? '+' + num(item.bonus) : '—'}</td>
-        <td class="td-qty">${num(item.total_qty)}</td>
-        <td class="td-disc ${dis1 > 0 ? 'has-disc' : ''}">${dis1 > 0 ? num(item.dis1) + '%' : '—'}</td>
-        <td class="td-disc ${dis2 > 0 ? 'has-disc' : ''}">${dis2 > 0 ? num(item.dis2) + '%' : '—'}</td>
-        <td class="td-price">${fmt(item.sell_price)}</td>
-        <td class="td-total">${fmt(item.total_price)}</td>
-      </tr>`;
-    }).join('');
-    totalPrice += orderTotal;
-    return `<div class="order-card">
-      <div class="order-head">
-        <div>
-          <div class="order-no">${order.order_no}</div>
-          <div class="order-date">تاريخ الطلب: ${order.po_date || '—'}</div>
-        </div>
-        <div class="order-stats">
-          <span>${num(order.items.length)} صنف</span>
-          <span>الإجمالي: ${fmt(orderTotal)} ر.س</span>
-        </div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>كود الصنف</th>
-              <th>اسم الصنف</th>
-              <th>الكمية</th>
-              <th>بونص</th>
-              <th>الإجمالي</th>
-              <th>خصم 1</th>
-              <th>خصم 2</th>
-              <th>سعر الوحدة</th>
-              <th>السعر الكلي</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
-    </div>`;
+  let totalItems = 0, totalPrice = 0, bonusItems = 0, doneCount = 0;
+  const cards = supplier.orders.map(no => {
+    const o = DATA.orders[no]; if (!o) return '';
+    totalItems += o.items.length;
+    if (isCompleted(no)) doneCount++;
+    o.items.forEach(i => { totalPrice += toNum(i.total_price); if (toNum(i.bonus) > 0) bonusItems++; });
+    return orderCard(o, no);
   }).join('');
 
   document.getElementById('kpiRow').style.display = 'flex';
-  document.getElementById('kpiOrders').textContent = num(supplier.order_count);
-  document.getElementById('kpiItems').textContent = num(totalItems);
-  document.getElementById('kpiTotal').textContent = fmt(totalPrice);
-  document.getElementById('kpiBonus').textContent = num(bonusItems);
-
-  document.getElementById('content').innerHTML = orderCards || '<div class="empty-state"><h3>لا توجد طلبيات</h3></div>';
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi"><div class="kpi-label">طلبيات</div><div class="kpi-value blue">${num(supplier.order_count)}</div></div>
+    <div class="kpi"><div class="kpi-label">أصناف</div><div class="kpi-value teal">${num(totalItems)}</div></div>
+    <div class="kpi"><div class="kpi-label">مكتملة</div><div class="kpi-value green">${num(doneCount)}</div></div>
+    <div class="kpi"><div class="kpi-label">القيمة</div><div class="kpi-value amber">${fmt(totalPrice)}</div></div>`;
+  document.getElementById('content').innerHTML = cards || '<div class="empty-state"><h3>لا توجد طلبيات</h3></div>';
+  if (updateView) showView('suppliers');
 }
 
+function renderCompletedView() {
+  const allOrders = Object.keys(DATA.orders);
+  const completed = allOrders.filter(o => isCompleted(o));
+  const pending = allOrders.filter(o => !isCompleted(o));
+  const uploads = getUploads();
+
+  document.getElementById('pageTitle').textContent = 'الطلبيات المكتملة';
+  document.getElementById('pageSubtitle').textContent = 'الطلبيات اللي ظهرت في الملفات المرفوعة';
+  document.getElementById('kpiRow').style.display = 'flex';
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi"><div class="kpi-label">مكتملة</div><div class="kpi-value green">${num(completed.length)}</div></div>
+    <div class="kpi"><div class="kpi-label">قيد التنفيذ</div><div class="kpi-value amber">${num(pending.length)}</div></div>
+    <div class="kpi"><div class="kpi-label">ملفات مرفوعة</div><div class="kpi-value blue">${num(uploads.length)}</div></div>
+    <div class="kpi"><div class="kpi-label">إجمالي</div><div class="kpi-value teal">${num(allOrders.length)}</div></div>`;
+
+  let html = '';
+  if (!uploads.length) {
+    html += `<div class="empty-state"><div style="font-size:48px;opacity:.3">📤</div><h3>لم ترفع أي ملف بعد</h3><p>اذهب لـ «رفع ملف شهري» وارفع ملف PDF الطلبيات</p></div>`;
+  } else {
+    uploads.sort((a, b) => b.month.localeCompare(a.month)).forEach(u => {
+      html += `<div class="month-group"><h3>📅 ${u.monthLabel || u.month} — ${num(u.orderNumbers.length)} طلبية</h3>`;
+      u.orderNumbers.forEach(no => {
+        const o = DATA.orders[no];
+        if (o) html += orderCard(o, no);
+        else html += `<div class="order-card completed"><div class="order-head"><div><div class="order-no">${no}</div><div class="order-date">طلبية من الملف المرفوع</div></div><span class="badge done">مكتملة</span></div></div>`;
+      });
+      html += '</div>';
+    });
+  }
+  if (pending.length) {
+    html += `<div class="month-group"><h3>⏳ قيد التنفيذ — ${num(pending.length)} طلبية</h3>`;
+    pending.slice(0, 20).forEach(no => { if (DATA.orders[no]) html += orderCard(DATA.orders[no], no); });
+    if (pending.length > 20) html += `<p style="color:var(--text-muted);font-size:13px;padding:12px">و ${num(pending.length - 20)} طلبية أخرى...</p>`;
+    html += '</div>';
+  }
+  document.getElementById('content').innerHTML = html;
+}
+
+function renderUploadView() {
+  const uploads = getUploads();
+  const now = new Date();
+  const monthDefault = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  document.getElementById('pageTitle').textContent = 'رفع ملف شهري';
+  document.getElementById('pageSubtitle').textContent = 'ارفع ملف PDF الطلبيات كل شهر لمتابعة اللي تم';
+  document.getElementById('kpiRow').style.display = 'none';
+
+  document.getElementById('content').innerHTML = `
+    <div class="upload-form">
+      <div class="field"><label>الشهر</label><input type="month" id="uploadMonth" value="${monthDefault}"></div>
+      <button class="btn btn-primary" id="selectFileBtn">اختيار ملف PDF</button>
+    </div>
+    <div class="upload-zone" id="uploadZone">
+      <div class="icon">📄</div>
+      <h3>اسحب ملف PDF هنا</h3>
+      <p>أو اضغط «اختيار ملف PDF» — نفس صيغة ملف الطلبيات</p>
+      <div class="progress-bar" id="progressBar" style="display:none"><div class="fill" id="progressFill"></div></div>
+      <p id="uploadStatus" style="margin-top:12px;font-size:13px;color:var(--text-muted)"></p>
+    </div>
+    <h3 style="font-size:15px;margin-bottom:12px">الملفات المرفوعة سابقًا</h3>
+    <div class="upload-history" id="uploadHistory">${renderUploadHistory(uploads)}</div>`;
+
+  const zone = document.getElementById('uploadZone');
+  const fileInput = document.getElementById('fileInput');
+  document.getElementById('selectFileBtn').onclick = () => fileInput.click();
+  fileInput.onchange = e => { if (e.target.files[0]) handleFileUpload(e.target.files[0]); e.target.value = ''; };
+  zone.onclick = () => fileInput.click();
+  zone.ondragover = e => { e.preventDefault(); zone.classList.add('dragover'); };
+  zone.ondragleave = () => zone.classList.remove('dragover');
+  zone.ondrop = e => { e.preventDefault(); zone.classList.remove('dragover'); if (e.dataTransfer.files[0]) handleFileUpload(e.dataTransfer.files[0]); };
+  document.getElementById('uploadHistory').addEventListener('click', e => {
+    const btn = e.target.closest('[data-delete]');
+    if (btn) { deleteUpload(btn.dataset.delete); renderUploadView(); rebuildCompletedSet(); renderSupplierList(DATA.suppliers); }
+  });
+}
+
+function renderUploadHistory(uploads) {
+  if (!uploads.length) return '<p style="color:var(--text-muted);font-size:13px">لا توجد ملفات مرفوعة</p>';
+  return uploads.sort((a, b) => b.month.localeCompare(a.month)).map(u => `
+    <div class="history-item">
+      <div class="info">
+        <h4>📅 ${u.monthLabel || u.month} — ${u.fileName}</h4>
+        <p>${num(u.orderNumbers.length)} طلبية · ${num(u.meta?.total_items || 0)} صنف · ${new Date(u.uploadedAt).toLocaleDateString('en-GB')}</p>
+      </div>
+      <button class="btn btn-ghost" data-delete="${u.id}">حذف</button>
+    </div>`).join('');
+}
+
+function deleteUpload(id) {
+  saveUploads(getUploads().filter(u => u.id !== id));
+  rebuildCompletedSet();
+}
+
+async function handleFileUpload(file) {
+  if (!file.name.toLowerCase().endsWith('.pdf')) { alert('يرجى اختيار ملف PDF'); return; }
+  const month = document.getElementById('uploadMonth').value;
+  const status = document.getElementById('uploadStatus');
+  const bar = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  status.textContent = 'جاري قراءة الملف...';
+  bar.style.display = 'block'; fill.style.width = '0%';
+
+  try {
+    const buf = await file.arrayBuffer();
+    const parsed = await OrdersParser.parsePdfBuffer(buf, (cur, total) => {
+      fill.style.width = `${Math.round(cur / total * 100)}%`;
+      status.textContent = `جاري التحليل... صفحة ${num(cur)} من ${num(total)}`;
+    });
+    const orderNumbers = Object.keys(parsed.orders);
+    const monthLabel = new Date(month + '-01').toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+    const upload = {
+      id: String(Date.now()), month, monthLabel, fileName: file.name,
+      uploadedAt: new Date().toISOString(), orderNumbers, meta: parsed.meta,
+    };
+    const uploads = getUploads().filter(u => u.month !== month);
+    uploads.push(upload);
+    saveUploads(uploads);
+    rebuildCompletedSet();
+    renderSupplierList(DATA.suppliers);
+
+    const matched = orderNumbers.filter(o => DATA.orders[o]).length;
+    const newOrders = orderNumbers.filter(o => !DATA.orders[o]).length;
+    status.innerHTML = `✅ تم! <b>${num(orderNumbers.length)}</b> طلبية · <b>${num(matched)}</b> مطابقة · <b>${num(newOrders)}</b> جديدة`;
+    fill.style.width = '100%';
+    document.getElementById('uploadHistory').innerHTML = renderUploadHistory(getUploads());
+  } catch (err) {
+    status.textContent = '❌ خطأ: ' + err.message;
+    bar.style.display = 'none';
+  }
+}
+
+document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => showView(el.dataset.view)));
 document.getElementById('searchInput').addEventListener('input', e => {
   const q = e.target.value.trim().toLowerCase();
-  const filtered = q
-    ? DATA.suppliers.filter(s => cleanName(s.name).toLowerCase().includes(q) || (s.code || '').includes(q))
-    : DATA.suppliers;
-  renderSupplierList(filtered);
+  renderSupplierList(q ? DATA.suppliers.filter(s => cleanName(s.name).toLowerCase().includes(q) || (s.code || '').includes(q)) : DATA.suppliers);
 });
-
 document.getElementById('menuToggle').addEventListener('click', () => {
-  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('navSidebar').classList.toggle('open');
+  document.getElementById('suppliersPanel').classList.toggle('open');
 });
 
 loadData().catch(err => {
-  document.getElementById('loading').innerHTML =
-    `<span style="color:#ef4444">خطأ في تحميل البيانات: ${err.message}</span>`;
+  document.getElementById('loading').innerHTML = `<span style="color:#ef4444">خطأ: ${err.message}</span>`;
 });
 </script>
 </body>
