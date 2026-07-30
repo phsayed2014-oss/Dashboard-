@@ -268,8 +268,13 @@ function loadStoredData() {
 }
 
 function saveData() {
-  if (DATA) localStorage.setItem(DATA_KEY, JSON.stringify(DATA));
-  else localStorage.removeItem(DATA_KEY);
+  try {
+    if (DATA) localStorage.setItem(DATA_KEY, JSON.stringify(DATA));
+    else localStorage.removeItem(DATA_KEY);
+  } catch (err) {
+    alert('تعذر حفظ البيانات في المتصفح (السعة ممتلئة). جرّب حذف البيانات القديمة أو متصفحًا آخر.');
+    throw err;
+  }
 }
 
 function getUploads() {
@@ -590,6 +595,10 @@ async function handleFileUpload(file) {
     const uploads = getUploads().filter(u => u.month !== month);
     uploads.push(upload);
     saveUploads(uploads);
+
+    if (!parsed.meta.total_suppliers) {
+      throw new Error('لم يتم استخراج موردين من الملف');
+    }
 
     DATA = mergeOrderData(parsed);
     saveData();
