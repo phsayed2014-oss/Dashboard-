@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Nostri | ورقة تشغيلية</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Alexandria:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f7f6; --ink:#0c1929; --dim:#4a5d73; --line:#d7e5e1;
+  --teal:#0f766e; --teal-l:#14b8a6; --teal-soft:#ecfdf5;
+  --blue:#1d4ed8; --blue-soft:#eff6ff; --amber:#b45309; --amber-soft:#fff7ed;
+  --rose:#be123c; --rose-soft:#fff1f2; --violet:#6d28d9; --card:#fff;
+  --shadow:0 10px 30px rgba(15,118,110,.08);
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'IBM Plex Sans Arabic',sans-serif;background:radial-gradient(ellipse at 30% 15%,#0a4a52 0%,#06332e 42%,#041512 100%);color:#f0fdfa;line-height:1.7;overflow:hidden}
+#content-store{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+#content-store section{background:transparent;border:none;box-shadow:none;padding:0;margin:0}
+.stage{position:relative;width:100%;height:100%;overflow:hidden}
+.stage-bg{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 70% 75%,rgba(59,130,246,.1),transparent 42%),radial-gradient(circle at 25% 25%,rgba(20,184,166,.14),transparent 38%)}
+.orbit-ring{position:absolute;left:50%;top:50%;border-radius:50%;border:1px solid rgba(94,234,212,.14);transform:translate(-50%,-50%);pointer-events:none;z-index:2}
+.orbit-ring.r1{width:min(76vw,600px);height:min(76vw,600px);animation:ringSpinOrbit 90s linear infinite}
+.orbit-ring.r2{width:min(90vw,720px);height:min(90vw,720px);opacity:.35;animation:ringSpinOrbitRev 120s linear infinite reverse}
+@keyframes ringSpinOrbit{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes ringSpinOrbitRev{to{transform:translate(-50%,-50%) rotate(-360deg)}}
+@keyframes ringSpinHub{to{transform:rotate(360deg)}}
+@keyframes orbitDash{to{stroke-dashoffset:-32}}
+@keyframes orbitDashRev{to{stroke-dashoffset:32}}
+.orbit-links{position:absolute;inset:0;width:100%;height:100%;z-index:6;pointer-events:none;overflow:visible}
+.orbit-links .orbit-path{fill:none;stroke:rgba(167,243,208,.28);stroke-width:.22;vector-effect:non-scaling-stroke}
+.orbit-links .spoke-glow{fill:none;stroke:rgba(45,212,191,.18);stroke-width:.55;stroke-dasharray:4 7;stroke-linecap:round;vector-effect:non-scaling-stroke;animation:orbitDash 4.5s linear infinite}
+.orbit-links .spoke{fill:none;stroke:rgba(148,184,176,.62);stroke-width:.2;stroke-dasharray:4 7;stroke-linecap:round;vector-effect:non-scaling-stroke;animation:orbitDash 4.5s linear infinite}
+.orbit-links .spoke-glow:nth-child(4n+3),.orbit-links .spoke:nth-child(4n+4){animation-name:orbitDashRev;animation-duration:5.2s}
+.orbit-links .spoke.active,.orbit-links .spoke-glow.active{stroke:rgba(94,234,212,.95);animation-duration:2.2s}
+.orbit-links .spoke-glow.active{stroke:rgba(45,212,191,.45);stroke-width:.7}
+.hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(240px,38vw);height:min(240px,38vw);border-radius:50%;background:radial-gradient(circle at 38% 32%,#14b8a6 0%,#0f766e 42%,#0c4a6e 88%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:12;box-shadow:0 0 0 12px rgba(20,184,166,.08),0 0 60px rgba(20,184,166,.32),0 20px 50px rgba(0,0,0,.4),inset 0 2px 12px rgba(255,255,255,.12)}
+.hub::before{content:'';position:absolute;inset:-16px;border-radius:50%;border:1px dashed rgba(94,234,212,.32);animation:ringSpinHub 55s linear infinite}
+.hub::after{content:'';position:absolute;inset:8px;border-radius:50%;border:1px solid rgba(255,255,255,.08);pointer-events:none}
+.hub-logo{font-family:'Alexandria',sans-serif;font-size:clamp(2.25rem,6vw,3.25rem);font-weight:900;letter-spacing:5px;position:relative;z-index:1;line-height:1;text-shadow:0 2px 16px rgba(0,0,0,.25)}
+.hub-q{font-size:12px;font-weight:700;margin-top:8px;line-height:1.45;color:#ccfbf1;position:relative;z-index:1;max-width:11em}
+.nodes{position:absolute;inset:0;z-index:20}
+.node{position:absolute;width:96px;height:96px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 38% 28%,rgba(45,212,191,.42),rgba(6,36,34,.94) 68%);border:2px solid rgba(94,234,212,.52);backdrop-filter:blur(12px);cursor:pointer;text-align:center;padding:8px;transition:transform .35s var(--ease),box-shadow .35s,border-color .35s,filter .35s;box-shadow:0 0 28px rgba(20,184,166,.22),0 12px 32px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.14)}
+.node::after{content:'';position:absolute;inset:6px;border-radius:50%;border:1px solid rgba(167,243,208,.14);pointer-events:none}
+.node:hover,.node.active{transform:scale(1.1);border-color:#a7f3d0;background:radial-gradient(circle at 32% 22%,rgba(94,234,212,.5),#0d5c56 72%);box-shadow:0 0 0 7px rgba(20,184,166,.18),0 0 36px rgba(94,234,212,.35),0 16px 40px rgba(0,0,0,.35);filter:brightness(1.06)}
+.node .n-num{font-family:'Alexandria',sans-serif;font-size:.95rem;font-weight:900;color:#ecfdf5;line-height:1;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,rgba(15,118,110,.95),rgba(8,70,88,.9));border:1.5px solid rgba(167,243,208,.6);box-shadow:0 2px 10px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.15);position:relative;z-index:1}
+.node .n-label{font-size:10px;font-weight:700;margin-top:6px;line-height:1.2;color:#e0f2f1;position:relative;z-index:1;max-width:72px}
+.kpi-strip{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:15;flex-wrap:wrap;justify-content:center;max-width:96vw}
+.kpi-chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px);border-radius:12px;padding:8px 14px;text-align:center;min-width:88px}
+.kpi-chip .v{font-family:'Alexandria',sans-serif;font-size:1.05rem;font-weight:800;color:#5eead4}
+.kpi-chip .l{font-size:9px;color:#94b8b0;margin-top:2px}
+.overlay{position:fixed;inset:0;z-index:200;background:rgba(2,12,10,.55);backdrop-filter:blur(5px);opacity:0;visibility:hidden;transition:opacity .35s var(--ease),visibility .35s}
+.overlay.open{opacity:1;visibility:visible}
+.panel{position:fixed;z-index:210;inset:0;width:100vw;height:100vh;max-height:100vh;transform:none;opacity:0;background:var(--card);color:var(--ink);border-radius:0;box-shadow:none;display:grid;grid-template-columns:120px 1fr;overflow:hidden;transition:opacity .4s var(--ease);pointer-events:none}
+.panel.open{opacity:1;pointer-events:auto}
+.panel-rail{grid-row:1 / -1;grid-column:1;background:linear-gradient(180deg,#0a3532,#061f1d);padding:20px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;overflow-y:auto;border-inline-start:1px solid rgba(94,234,212,.18)}
+.panel-rail .p-node{width:84px;height:84px;flex-shrink:0;border-radius:50%;border:2px solid rgba(94,234,212,.38);background:rgba(6,32,30,.75);color:#e0f2f1;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6px;font-family:inherit;transition:transform .25s var(--ease),border-color .25s,box-shadow .25s,background .25s}
+.panel-rail .p-node:hover,.panel-rail .p-node.active{border-color:#a7f3d0;background:linear-gradient(145deg,#0f766e,#0e5a6a);transform:scale(1.05);box-shadow:0 0 0 4px rgba(20,184,166,.22)}
+.panel-rail .p-node .pn{font-family:'Alexandria',sans-serif;font-size:.9rem;font-weight:900;line-height:1;color:#ecfdf5}
+.panel-rail .p-node .pl{font-size:8.5px;font-weight:700;margin-top:4px;line-height:1.2;max-width:64px;color:#ccfbf1}
+.panel-main{grid-column:2;display:flex;flex-direction:column;min-height:0;min-width:0;background:#f4f8f7}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 28px;background:linear-gradient(135deg,#0f766e,#0e4d8a);color:#fff;flex-shrink:0}
+.panel-head.head-strategic{align-items:flex-start;padding:22px 28px 20px}
+.panel-head h2{font-family:'Alexandria',sans-serif;font-size:1.45rem;font-weight:800}
+.panel-head.head-strategic h2{font-size:1.2rem;line-height:1.65;font-weight:700;max-width:54em}
+.panel-head .goal-tag{display:inline-block;background:rgba(255,255,255,.14);border:1.5px solid rgba(167,243,208,.65);border-radius:10px;padding:5px 14px;margin-inline-end:10px;color:#ecfdf5;font-family:'Alexandria',sans-serif;font-size:1.05rem;font-weight:900;letter-spacing:.2px;box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 4px 14px rgba(0,0,0,.15);vertical-align:middle}
+.panel-body > h2:first-child{font-family:'Alexandria',sans-serif;font-size:1.35rem;font-weight:800;color:var(--teal);margin:4px 0 14px}
+.panel-head .sub{font-size:12px;opacity:.92;margin-top:4px}
+.panel-close{width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;background:rgba(255,255,255,.15);color:#fff;font-size:20px;font-weight:700}
+.panel-body{padding:22px 28px 28px;overflow-y:auto;flex:1;background:#f4f8f7;font-size:14px}
+.panel-nav{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:14px 22px;border-top:1px solid var(--line);background:#fff;flex-shrink:0}
+.panel-steps{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap}
+.panel-steps button,.panel-steps .step-dot{width:9px;height:9px;border-radius:50%;border:none;padding:0;background:#cbd5e1;cursor:pointer;transition:transform .2s,background .2s}
+.panel-steps button.on,.panel-steps .step-dot.on{background:var(--teal);transform:scale(1.15);box-shadow:0 0 0 3px rgba(15,118,110,.18)}
+.panel-nav button{border:none;background:var(--teal);color:#fff;padding:10px 20px;border-radius:10px;font-family:inherit;font-weight:700;font-size:13px;cursor:pointer;min-width:108px}
+.panel-nav button.ghost{background:#e8efed;color:#334155}
+.panel-body .sub{color:var(--dim);font-size:14px;margin-bottom:14px}
+.panel-body table{font-size:14px}
+.panel-body .box h3{font-size:15px}
+.panel-body .box p,.panel-body .box li{font-size:14px;color:var(--ink);line-height:1.6}
+.panel-body .box ul{list-style:none;padding:0;margin:8px 0 0}
+.panel-body .box ul li{position:relative;padding:11px 0 11px 4px;margin-bottom:6px;border-bottom:1px solid rgba(215,229,225,.7)}
+.panel-body .box ul li:last-child{border-bottom:none;margin-bottom:0}
+.panel-body .box ul li::before{
+  content:'';position:absolute;right:0;top:1.05em;transform:translateY(-50%);
+  width:11px;height:11px;border-radius:50%;
+  background:linear-gradient(145deg,#5eead4,#0f766e);
+  box-shadow:0 0 0 3px rgba(15,118,110,.12),0 2px 6px rgba(15,118,110,.25);
+}
+.panel-body .box ul li{padding-right:22px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.box{background:#f8fbfa;border:1px solid var(--line);border-radius:16px;padding:16px}
+.box h3{font-size:14px;font-weight:800;color:var(--teal);margin-bottom:8px}
+.box p,.box li{font-size:13px;color:var(--dim)}
+.box ul{padding-right:18px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--teal-soft);color:var(--teal);text-align:right;padding:10px 12px;border-bottom:2px solid #99f6e4;font-weight:700}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle;transition:background .2s}
+.table-scroll{overflow-x:auto;margin-top:14px;-webkit-overflow-scrolling:touch;border-radius:14px;border:1px solid var(--line);background:#fff}
+table.data-table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;margin:0;table-layout:fixed}
+table.data-table thead th{background:#ecfdf5;color:#0f766e;font-weight:800;font-size:12px;line-height:1.35;text-align:center;vertical-align:middle;padding:14px 8px;border:1px solid #a7f3d0;border-bottom:2px solid #5eead4;white-space:normal;word-break:break-word}
+table.data-table tbody td{padding:11px 8px;border:1px solid #e8efed;vertical-align:middle;text-align:center;background:#fff;word-break:break-word}
+table.data-table tbody tr:nth-child(even) td{background:#fafcfb}
+table.data-table tbody tr:hover td{background:rgba(15,118,110,.05)}
+table.data-table tbody tr.row-t td{background:var(--teal-soft)!important;font-weight:800}
+table.data-table .cell-text{text-align:right}
+table.data-table .cell-idx{font-weight:800;color:var(--teal);text-align:center}
+table.data-table .num{direction:ltr;font-variant-numeric:tabular-nums;text-align:center!important}
+table.data-table-pricing{min-width:1060px}
+table.data-table-products{min-width:820px}
+table.data-table-wide{min-width:720px}
+table.data-table-kpi{min-width:640px}
+table.data-table-kpi .cell-text{min-width:11rem}
+.panel-body table.data-table{font-size:13px}
+.panel-body .table-scroll{box-shadow:0 2px 12px rgba(15,118,110,.06)}
+tbody tr:hover td{background:rgba(15,118,110,.04)}
+.num{direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
+.row-t{background:var(--teal-soft)!important;font-weight:800}
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700}
+.tag-g{background:#d1fae5;color:#065f46}.tag-b{background:#dbeafe;color:#1e40af}
+.tag-a{background:#ffedd5;color:#9a3412}.tag-r{background:#ffe4e6;color:#9f1239}
+.tag-p{background:#ede9fe;color:#5b21b6}
+.note{background:var(--amber-soft);border:1px solid #fdba74;border-radius:14px;padding:12px 14px;font-size:13px;color:#9a3412;margin:12px 0}
+.info{background:var(--blue-soft);border:1px solid #93c5fd;border-radius:14px;padding:12px 14px;font-size:13px;color:#1e3a8a;margin:12px 0}
+.ok{background:var(--teal-soft);border:1px solid #99f6e4;border-radius:14px;padding:12px 14px;font-size:13px;color:#065f46;margin:12px 0}
+.chart-box{height:auto;position:relative}
+.bar-list{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.bar-row{display:flex;flex-direction:column;gap:5px;font-size:12px;margin-bottom:4px}
+.bar-row .lbl{font-weight:700;color:var(--ink);font-size:12px;line-height:1.2}
+.bar-line{display:flex;align-items:center;gap:10px}
+.bar-row .pct{text-align:left;direction:ltr;color:var(--dim);font-variant-numeric:tabular-nums;flex-shrink:0;min-width:42px;font-size:11px;font-weight:700}
+.bar-track{flex:1;height:10px;background:#e8efed;border-radius:6px;overflow:hidden;min-width:0}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-l));border-radius:6px;width:0;transition:width 1s var(--ease)}
+.split-bar{display:flex;height:14px;border-radius:8px;overflow:hidden;margin:14px 0 8px;direction:ltr}
+.split-bar span{display:block;height:100%}
+.split-profit{flex:80;background:var(--teal)}
+.split-cost{flex:20;background:#cbd5e1}
+.split-legend{display:flex;gap:16px;font-size:12px;color:var(--dim)}
+.split-legend b{color:var(--ink)}
+.mo-table{width:100%;font-size:13px;margin-top:4px}
+.mo-table th,.mo-table td{padding:8px 10px}
+.tl-i{transition:transform .3s var(--ease),box-shadow .3s}
+.tl-i:hover{transform:translateX(-4px);box-shadow:0 8px 24px rgba(15,118,110,.08)}
+.tl{display:grid;gap:10px}
+.tl-i{display:grid;grid-template-columns:110px 1fr;gap:12px;padding:12px;border-radius:14px;background:#fff;border:1px solid var(--line)}
+.tl-p{font-weight:800;color:var(--teal);font-size:13px}
+.tl-t{font-weight:800;font-size:14px}
+.tl-d{font-size:12.5px;color:var(--dim);margin-top:2px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}
+.stat-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 14px;text-align:center;box-shadow:0 4px 14px rgba(15,118,110,.06)}
+.stat-card .sv{font-family:'Alexandria',sans-serif;font-size:1.65rem;font-weight:900;color:var(--teal);line-height:1.1}
+.stat-card .sv.amber{color:var(--amber)}
+.stat-card .sl{font-size:12px;font-weight:700;color:var(--ink);margin-top:8px;line-height:1.35}
+.stat-card .ss{font-size:11px;color:var(--dim);margin-top:4px;line-height:1.4}
+.scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+.scenario-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;text-align:center}
+.scenario-card.featured{border:2px solid var(--teal);background:var(--teal-soft);box-shadow:0 8px 24px rgba(15,118,110,.12)}
+.scenario-card .sc-tag{font-size:11px;font-weight:800;color:var(--dim);margin-bottom:6px}
+.scenario-card .sc-val{font-family:'Alexandria',sans-serif;font-size:1.35rem;font-weight:900;color:var(--teal)}
+.scenario-card .sc-meta{font-size:11px;color:var(--dim);margin-top:6px;line-height:1.45}
+.finance-donut-row{display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap;padding:8px 4px}
+.finance-donut-wrap{position:relative;width:min(200px,42vw);aspect-ratio:1;flex-shrink:0}
+.finance-donut{width:100%;height:100%;display:block}
+.finance-donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none}
+.finance-donut-center .fd-pct{font-family:'Alexandria',sans-serif;font-size:2rem;font-weight:900;color:var(--teal);line-height:1}
+.finance-donut-center .fd-lbl{font-size:12px;font-weight:700;color:var(--teal);margin-top:4px}
+.finance-legend{list-style:none;padding:0;margin:0;min-width:200px}
+.finance-legend li{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:12px}
+.finance-legend li:last-child{margin-bottom:0}
+.finance-legend .swatch{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.finance-legend .swatch.profit{background:var(--teal)}
+.finance-legend .swatch.cost{background:#cbd5e1}
+.finance-legend .num{margin-right:auto;font-variant-numeric:tabular-nums}
+.finance-widgets{align-items:stretch}
+.finance-widgets .box{display:flex;flex-direction:column}
+.finance-op-table td:last-child{text-align:left}
+.channel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+.channel-card{display:flex;gap:12px;align-items:flex-start;padding:14px;background:#fff;border:1px solid var(--line);border-radius:14px}
+.channel-card .ch-ico{flex-shrink:0;width:36px;height:36px;border-radius:10px;background:var(--teal-soft);color:var(--teal);font-weight:900;font-size:18px;display:flex;align-items:center;justify-content:center}
+.channel-card h4{font-size:13px;font-weight:800;color:var(--ink);margin-bottom:4px}
+.channel-card > div{flex:1;min-width:0}
+.channel-card p{font-size:12px;color:var(--dim);margin:0;line-height:1.5}
+.panel-body .channel-card .ch-note{display:block;font-size:11.5px;color:#3d5168;margin-top:10px;padding-top:10px;border-top:1px dashed #d7e5e1;line-height:1.55;font-weight:600}
+.lead{font-size:15px;color:var(--ink);line-height:1.65;margin-bottom:12px}
+.strategy-cover{background:#f8fbfa;border:1px solid var(--line);border-radius:16px;padding:20px 24px;margin-bottom:20px;box-shadow:0 4px 18px rgba(15,118,110,.06)}
+.strategy-cover p{margin:0;font-size:16px;font-weight:700;color:var(--ink);line-height:1.7;position:relative;padding-right:24px}
+.strategy-cover p::before{content:'';position:absolute;right:0;top:0.65em;transform:translateY(-50%);width:12px;height:12px;border-radius:50%;background:linear-gradient(145deg,#5eead4,#0f766e);box-shadow:0 0 0 4px rgba(15,118,110,.12),0 2px 6px rgba(15,118,110,.2)}
+@media (max-width:860px){
+  .stat-grid,.scenario-grid{grid-template-columns:1fr 1fr}
+  .channel-grid{grid-template-columns:1fr}
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .tl-i{grid-template-columns:1fr}
+  .hub{width:150px;height:150px}
+  .hub-logo{font-size:1.75rem}
+  .node{width:68px;height:68px}
+  .node .n-label{font-size:8px}
+  .orbit-ring{display:none}
+  .orbit-links{display:none}
+  .panel{top:0;left:0;width:100vw;height:100vh;max-height:100vh;border-radius:0;transform:none}
+  .panel.open{transform:none}
+  .panel-rail{grid-row:auto;grid-column:1 / -1;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;padding:10px 12px;justify-content:flex-start;border-inline-start:none;border-bottom:1px solid rgba(94,234,212,.15)}
+  .panel-main{grid-column:1}
+  .panel-rail .p-node{width:58px;height:58px;flex-shrink:0}
+  .panel-rail .p-node .pl{font-size:7px}
+}
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+  <div class="stage-bg"></div>
+  <div class="orbit-ring r1"></div>
+  <div class="orbit-ring r2"></div>
+  <svg class="orbit-links" id="orbitLinks" aria-hidden="true"></svg>
+  <div class="hub">
+    <div class="hub-logo">NOSTRI</div>
+    <div class="hub-q">الوصول لمليون ريال شهرياً</div>
+  </div>
+  <div class="nodes" id="nodes"></div>
+  <div class="kpi-strip">
+    <div class="kpi-chip"><div class="v">340,645</div><div class="l">Private Label · نصف 2026</div></div>
+    <div class="kpi-chip"><div class="v">126,435</div><div class="l">مجمعات 37.1%</div></div>
+    <div class="kpi-chip"><div class="v">1,000,000</div><div class="l">هدف / شهر</div></div>
+    <div class="kpi-chip"><div class="v">9+23</div><div class="l">منتج</div></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="panel" id="panel" role="dialog" aria-modal="true">
+  <nav class="panel-rail" id="panelRail" aria-label="التنقل بين البنود"></nav>
+  <div class="panel-main">
+    <div class="panel-head">
+      <div>
+        <div class="sub" id="panelSub"></div>
+        <h2 id="panelTitle"></h2>
+      </div>
+      <button class="panel-close" id="closeBtn" type="button" aria-label="إغلاق">×</button>
+    </div>
+    <div class="panel-body" id="panelBody"></div>
+    <div class="panel-nav">
+      <button type="button" class="ghost" id="prevBtn">→ السابق</button>
+      <div class="panel-steps" id="panelSteps" aria-label="البنود"></div>
+      <button type="button" id="nextBtn">التالي ←</button>
+    </div>
+  </div>
+</div>
+
+<div id="content-store" aria-hidden="true">
+  <section id="baseline">
+    <h2><span class="sec-num">1</span> أين نحن؟</h2>
+    <p class="lead"><strong>9</strong> منتجات تحت علامة «نوستري» (Private Label)، تُباع عبر <strong>49</strong> صيدلية. أرقام النصف الأول من 2026 في الجدول أدناه.</p>
+
+    <div class="stat-grid">
+      <div class="stat-card"><div class="sv">9</div><div class="sl">منتجات نشطة تحت العلامة</div></div>
+      <div class="stat-card"><div class="sv">340,645</div><div class="sl">إجمالي المبيعات — النصف الأول 2026</div><div class="ss">Private Label</div></div>
+      <div class="stat-card"><div class="sv amber">88%</div><div class="sl">الهامش الإجمالي</div></div>
+      <div class="stat-card"><div class="sv">+53%</div><div class="sl">نمو سنوي في الكميات</div><div class="ss">مقارنة بنفس الفترة العام الماضي</div></div>
+    </div>
+
+    <p class="sub">تفصيل المحفظة · إجمالي النصف الأول 2026: <span class="num">340,645</span> ر.س.</p>
+
+    <div class="grid-2">
+      <div class="box">
+        <h3>ملخص محفظة Private Label</h3>
+        <table>
+          <tbody>
+            <tr><td>إجمالي المبيعات (بسعر البيع)</td><td class="num">340,645</td></tr>
+            <tr><td>التكلفة</td><td class="num">40,344</td></tr>
+            <tr><td>هامش إجمالي تقريبي</td><td class="num">88.2%</td></tr>
+            <tr><td>الكمية المباعة</td><td class="num">6,466</td></tr>
+            <tr><td>متوسط شهري</td><td class="num">56,774</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="box">
+        <h3>حصة الإيراد حسب الصنف</h3>
+        <div class="bar-list" id="shareBars"></div>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <table class="data-table data-table-products">
+        <colgroup>
+          <col style="width:3%">
+          <col style="width:22%">
+          <col style="width:14%">
+          <col span="5" style="width:10%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="cell-idx">#</th>
+            <th class="cell-text">الصنف</th>
+            <th class="cell-text">الكود</th>
+            <th>مباع</th>
+            <th>مخزون</th>
+            <th>إيراد نصف 2026</th>
+            <th>%</th>
+            <th>سعر وحدة</th>
+          </tr>
+        </thead>
+        <tbody id="prodRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="complexes">
+    <h2><span class="sec-num">2</span> المجمعات — ص1 · ص7 · ص18</h2>
+    <p class="sub">مبيعات النصف الأول لعام 2026 (ر.س بسعر البيع).</p>
+
+    <div class="box" style="margin-bottom:16px;background:var(--teal-soft);border-color:#99f6e4">
+      <h3>Nostri في المجمعات</h3>
+      <p style="font-size:14px;color:var(--ink);margin:0;line-height:1.65">حدثت زيادة في مبيعات المجمعات (ص1 · ص7 · ص18) بسبب دعم الإدارة ووجود قناة تواصل مع الأطباء، مما ساهم في زيادة كتابة الأصناف.</p>
+    </div>
+
+    <div class="box" style="margin-bottom:16px">
+      <h3>توزيع المبيعات (خارجية مقابل مجمعات)</h3>
+      <p style="font-size:13px;color:var(--dim);margin-bottom:12px">نصف 2026: نحو ثلثي المبيعات من 46 صيدلية خارجية، والباقي من 3 صيدليات في مجمعات (ص1 · ص7 · ص18).</p>
+      <div class="bar-list" style="margin-bottom:12px">
+        <div class="bar-row">
+          <div class="lbl">الصيدليات الخارجية — <span class="num">46</span> فرع</div>
+          <div class="bar-line"><div class="bar-track"><div class="bar-fill" style="width:63%"></div></div><span class="pct">63%</span></div>
+        </div>
+        <div class="bar-row">
+          <div class="lbl">صيدليات المجمعات — <span class="num">3</span> فروع</div>
+          <div class="bar-line"><div class="bar-track"><div class="bar-fill" style="width:37%;opacity:.85"></div></div><span class="pct">37%</span></div>
+        </div>
+      </div>
+      <ul>
+        <li>المجمعات: <strong>37.1%</strong> من مبيعات PL رغم أنها 3 فروع فقط.</li>
+        <li>الصيدليات الخارجية: لإطلاق أصناف جديدة من علامتنا التجارية.</li>
+      </ul>
+    </div>
+
+    <div class="table-scroll" style="margin-bottom:16px;max-width:100%">
+      <table class="data-table data-table-kpi" style="max-width:640px">
+        <colgroup>
+          <col style="width:28%">
+          <col span="3" style="width:18%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="cell-text">المجمع</th>
+            <th>إيراد نصف 2026</th>
+            <th>وحدات</th>
+            <th>% من محفظة PL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="cell-text">ص1</td><td class="num">68,805</td><td class="num">1,224</td><td class="num">20.2%</td></tr>
+          <tr><td class="cell-text">ص7</td><td class="num">16,610</td><td class="num">287</td><td class="num">4.9%</td></tr>
+          <tr><td class="cell-text">ص18</td><td class="num">41,020</td><td class="num">663</td><td class="num">12.0%</td></tr>
+          <tr class="row-t"><td class="cell-text">المجموع</td><td class="num">126,435</td><td class="num">2,174</td><td class="num">37.1%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-scroll">
+      <table class="data-table data-table-wide">
+        <colgroup>
+          <col style="width:16%">
+          <col span="4" style="width:14%">
+          <col style="width:18%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="cell-text">الصنف</th>
+            <th>ص1</th>
+            <th>ص7</th>
+            <th>ص18</th>
+            <th>مجموع المجمعات</th>
+            <th>% من صنف المحفظة</th>
+          </tr>
+        </thead>
+        <tbody id="cxRows"></tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <section id="expansion">
+    <h2><span class="sec-num">3</span> لماذا نوسّع المحفظة؟</h2>
+
+    <div class="grid-2" style="margin-bottom:14px">
+      <div class="box">
+        <h3>هامش ومحفظة حالية</h3>
+        <p>مبيعات نصف 2026 وهامش إجمالي ~88% على المنتجات الحالية.</p>
+      </div>
+      <div class="box">
+        <h3>شبكة التوزيع</h3>
+        <p><strong>49</strong> صيدلية وبرنامج أطباء في المجمعات (ص1 · ص7 · ص18).</p>
+      </div>
+      <div class="box">
+        <h3>الهدف الشهري</h3>
+        <p>مستهدف <strong>1,000,000</strong> ر.س/شهر مبيعات لعلامة <strong>نوستري</strong> (السيناريوهات في الإطار المالي: 600 / 800 / 1,000 ألف).</p>
+      </div>
+      <div class="box">
+        <h3>التصنيع</h3>
+        <p>مسار التصنيع مع Astrix بعد الترخيص واعتماد MOQ.</p>
+      </div>
+    </div>
+
+    <p style="font-size:14px;margin-bottom:8px">
+      نختار <strong>23 منتجاً سريع البيع</strong> — فيتامينات ومكملات، فم وحلق، أطفال وحمل — متوافقة مع حركة الصيدلية والوصفات في شبكتنا.
+    </p>
+    <p style="font-size:13px;margin-bottom:0;color:var(--dim)">
+      التنفيذ خلال شهر إلى شهرين بعد الترخيص والتصنيع — إطلاق الـ 23 معاً. الهوية التسويقية وعرض السعر ضمن خارطة الطريق (الشهر 1).
+    </p>
+  </section>
+
+  <section id="pricing">
+    <h2><span class="sec-num">4</span> التسعير والتصنيع — المحفظة الجديدة (تقريبي)</h2>
+    <p class="sub">سعر البيع محسوب على <strong>هامش إجمالي ربح 80%</strong> من سعر البيع (التكلفة = 20% من السعر). المعادلة: <strong>سعر البيع = تكلفة الحبة ÷ 0.2</strong>.</p>
+
+    <div class="ok">مثال: تكلفة 10 ر.س → بيع <strong>50 ر.س</strong> (ربح 40 ر.س · 80%) · تكلفة 15 ر.س → بيع <strong>75 ر.س</strong> (ربح 60 ر.س · 80%).</div>
+
+    <div class="table-scroll">
+      <table class="data-table data-table-pricing">
+        <colgroup>
+          <col style="width:3.5%">
+          <col style="width:13%">
+          <col span="8" style="width:10.4%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="cell-idx">#</th>
+            <th class="cell-text">المنتج</th>
+            <th>تكلفة/حبة</th>
+            <th>MOQ</th>
+            <th>سعر البيع</th>
+            <th>ربح/حبة</th>
+            <th>هامش %</th>
+            <th>تكلفة أول دفعة MOQ</th>
+            <th>إيراد إذا بيعت الدفعة كاملة</th>
+            <th>ربح الدفعة</th>
+          </tr>
+        </thead>
+        <tbody id="costRows"></tbody>
+      </table>
+    </div>
+
+    <div class="box" style="margin-top:14px;max-width:520px">
+      <h3>ملخص الاستثمار الأولي (لو طُلبت كل MOQ مرة واحدة)</h3>
+      <table>
+        <tbody>
+          <tr><td>تصنيع أول دفعة (مجموع MOQ)</td><td class="num" id="sumMoqCost">—</td></tr>
+          <tr><td>ترخيص (One Time Payement) — <span id="licenseSkuCount">23</span> صنف</td><td class="num" id="licenseTotalCell">138,000</td></tr>
+          <tr class="row-t"><td>إجمالي</td><td class="num" id="sumTotalCash">—</td></tr>
+          <tr><td>إيراد محتمل لبيع كل MOQ</td><td class="num" id="sumMoqRev">—</td></tr>
+          <tr><td>ربح إجمالي محتمل</td><td class="num" id="sumMoqProfit">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="finance">
+    <h2><span class="sec-num">5</span> الإطار المالي</h2>
+
+    <div class="scenario-grid">
+      <div class="scenario-card">
+        <div class="sc-tag">مرحلة أولى</div>
+        <div class="sc-val"><span class="num">600,000</span> ر.س/شهر</div>
+      </div>
+      <div class="scenario-card">
+        <div class="sc-tag">نمو متوسط</div>
+        <div class="sc-val"><span class="num">800,000</span> ر.س/شهر</div>
+      </div>
+      <div class="scenario-card featured">
+        <div class="sc-tag">المستهدف</div>
+        <div class="sc-val"><span class="num">1,000,000</span> ر.س/شهر</div>
+      </div>
+    </div>
+
+    <p class="sub" style="margin-top:4px">عند المستهدف 1,000,000 ر.س/شهر: تكلفة تصنيع 20% = 200,000 · ربح إجمالي 80% = 800,000.</p>
+
+    <div class="grid-2 finance-widgets" style="margin-top:14px">
+      <div class="box">
+        <div class="finance-donut-row">
+          <ul class="finance-legend" aria-label="توزيع المستهدف">
+            <li><span class="swatch profit" aria-hidden="true"></span><span>ربح إجمالي (80%)</span><span class="num">800,000</span></li>
+            <li><span class="swatch cost" aria-hidden="true"></span><span>تكلفة تصنيع (20%)</span><span class="num">200,000</span></li>
+          </ul>
+          <div class="finance-donut-wrap" role="img" aria-label="ربح إجمالي 80% وتكلفة تصنيع 20%">
+            <svg class="finance-donut" viewBox="0 0 120 120" aria-hidden="true">
+              <circle cx="60" cy="60" r="46" fill="none" stroke="#e2e8f0" stroke-width="14"/>
+              <circle cx="60" cy="60" r="46" fill="none" stroke="#0f766e" stroke-width="14" stroke-linecap="butt"
+                stroke-dasharray="231.2 289" transform="rotate(-90 60 60)"/>
+            </svg>
+            <div class="finance-donut-center">
+              <div class="fd-pct">80%</div>
+              <div class="fd-lbl">ربح إجمالي</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="box">
+        <h3>مستهدف التشغيل الشهري (عند الاكتمال)</h3>
+        <table class="finance-op-table">
+          <tbody>
+            <tr class="row-t"><td>مبيعات العلامة (نوستري)</td><td class="num">1,000,000</td></tr>
+            <tr><td>تكلفة تصنيع (20%)</td><td class="num">200,000</td></tr>
+            <tr class="row-t"><td>ربح إجمالي (80%)</td><td class="num">800,000</td></tr>
+            <tr><td>استرداد الترخيص (84K)</td><td class="num">≈ 3.2 أيام ربح</td></tr>
+          </tbody>
+        </table>
+        <div class="split-bar" aria-hidden="true"><span class="split-cost" style="flex:20"></span><span class="split-profit" style="flex:80"></span></div>
+        <div class="split-legend"><span><b>200,000</b> تكلفة (20%)</span><span><b>800,000</b> ربح (80%)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="operations">
+    <h2><span class="sec-num">6</span> التشغيل</h2>
+    <p class="sub">خطة تنفيذية بعد الإطلاق — فريق الإدارة التجارية والشركاء الداخليين.</p>
+    <div class="box">
+      <ul>
+        <li>رفع مبيعات الأصناف الحالية لتصل إلى <span class="num">100,000</span> ر.س/شهر.</li>
+        <li>زيادة مندوب مبيعات وتحصيل عند الوصول لمبيعات <span class="num">500,000</span> ر.س/شهر.</li>
+        <li>وضع لسته تحفيزية للصيادلة، مع مسابقات واستهدافات وتدريب وتسويق.</li>
+        <li><strong>صيدليات المجمعات (ص1 · ص7 · ص18):</strong>
+          <ul style="margin-top:8px">
+            <li>زيارات ومتابعة للأطباء.</li>
+            <li><span class="num">5%</span> مبلغ تحفيزي للأطباء — يُصرف لمدير المشروع ويُسوَّى شهرياً مع المدير التنفيذي لقطاع الصيدليات والرئيس التنفيذي للشركة.</li>
+          </ul>
+        </li>
+        <li>التعاون مع مدير المتجر الإلكتروني: عروض على المنتجات في المتجر الإلكتروني، ومتابعة بيع الأصناف في نون مينتس وترينديول وأي نقطة بيع أونلاين ممكنة.</li>
+        <li><strong>مبيعات B2B:</strong> بيع مباشر لصيدليات، وعقد شراكات تجارية مع صب إيجنت.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="decisions">
+    <h2><span class="sec-num">7</span> قرارات المجلس</h2>
+    <div class="grid-2">
+      <div class="box" style="background:var(--teal-soft);border-color:#99f6e4">
+        <h3>يُطلب اعتماده الآن</h3>
+        <ul>
+          <li>اعتماد توسيع المحفظة: 9 + 23 = 32 منتجاً</li>
+          <li>اعتماد مستهدف 1,000,000 ر.س/شهر للعلامة التجارية بتوزيع 500-300-100-100 (مجمعات · صيدليات خارجية · أونلاين · B2B)</li>
+          <li>اعتماد ميزانية ترخيص (One Time Payement) الأصناف: <strong id="decisionLicenseAmt">138,000 ر.س</strong> (6,000 × <span id="decisionLicenseSku">23</span>)</li>
+          <li>اعتماد مبلغ تصنيع الأصناف (MOQ أول دفعة): <strong id="decisionMoqCost">—</strong> ر.س — تقريبي حتى توقيع عقد Astrix</li>
+          <li>دعم رئيس مجلس الإدارة للتواصل مع الأطباء وجعل علامتنا <strong>Nostri</strong> من أساسيات البروتوكول العلاجي</li>
+        </ul>
+      </div>
+      <div class="box" style="background:var(--blue-soft);border-color:#93c5fd">
+        <h3>اعتماد التسعير والتصنيع</h3>
+        <ul>
+          <li>تثبيت الأسعار النهائية عند توقيع العقد</li>
+          <li>اعتماد جدول MOQ وتكلفة/حبة لكل صنف</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="roadmap">
+    <h2><span class="sec-num">8</span> خارطة الطريق</h2>
+    <p class="sub">إطار زمني: شهر إلى شهرين — إطلاق <strong>كل الـ 23 منتج</strong> مع الإدارة التجارية.</p>
+    <div class="tl">
+        <div class="tl-i"><div class="tl-p">الشهر 1</div><div><div class="tl-t">تحضير وإنتاج المحفظة كاملة (23/23)</div><div class="tl-d">عقد Astrix · SFDA وترخيص الأصناف (<span class="roadmap-license-amt">138,000</span> ر.س) · تصنيع MOQ للـ 23 · تجهيز القنوات · زيارات ص1/ص7/ص18 وعينات أطباء · <strong>بالتعاون مع التسويق:</strong> هوية المنتجات (تغليف، أسماء، دليل العلامة) · اعتماد عرض السعر لكل صنف وقناة · مواد دعم للمنصات والصيدليات.</div></div></div>
+        <div class="tl-i"><div class="tl-p">الشهر 2</div><div><div class="tl-t">إطلاق كل المنتجات في السوق</div><div class="tl-d">توفر الـ 23 صنف في المجمعات والصيدليات والأونلاين ومبيعات B2B · تفعيل برنامج الأطباء · العمل نحو مستهدف <strong>1,000,000</strong> ر.س/شهر للعلامة التجارية.</div></div></div>
+      </div>
+
+    <div class="box" style="margin-top:14px">
+      <h3>ملخص الإطار الزمني</h3>
+      <table class="mo-table">
+        <thead><tr><th>المرحلة</th><th>المحتوى</th></tr></thead>
+        <tbody>
+          <tr><td>الشهر 1</td><td>ترخيص + تصنيع + تجهيز + <strong>هوية تسويقية وأسعار</strong> — 23 منتج</td></tr>
+          <tr class="row-t"><td>الشهر 2</td><td>إطلاق كامل للمحفظة الجديدة + مستهدف تشغيل <span class="num">1,000,000</span> ر.س/شهر</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="box" style="margin-top:14px">
+      <h3>توزيع المستهدف الشهري (1,000,000 ر.س)</h3>
+      <div class="channel-grid">
+        <div class="channel-card"><div class="ch-ico">+</div><div><h4>مجمعات (ص1 · ص7 · ص18)</h4><p><span class="num">500,000</span> ر.س/شهر</p><p class="ch-note">( اذا متوسط سعر الصنف 35 ريال تقريبا .. نحتاج يوميا من الطبيب كتابه 8 حبات ميكس من منتجات نوستري للوصول للهدف)</p></div></div>
+        <div class="channel-card"><div class="ch-ico">◆</div><div><h4>صيدليات خارجية</h4><p><span class="num">300,000</span> ر.س/شهر</p></div></div>
+        <div class="channel-card"><div class="ch-ico">≡</div><div><h4>أونلاين (نون مينتس · ترينديول)</h4><p><span class="num">100,000</span> ر.س/شهر</p></div></div>
+        <div class="channel-card"><div class="ch-ico">⇄</div><div><h4>مبيعات B2B</h4><p><span class="num">100,000</span> ر.س/شهر</p></div></div>
+      </div>
+    </div>
+
+    <div class="table-scroll" style="margin-top:14px">
+      <table class="data-table data-table-kpi">
+        <colgroup>
+          <col style="width:38%">
+          <col style="width:22%">
+          <col style="width:14%">
+          <col style="width:26%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="cell-text">KPI</th>
+            <th>المستهدف</th>
+            <th>التكرار</th>
+            <th>المسؤول</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="cell-text">مبيعات المجمعات (ص1+ص7+ص18)</td><td class="num">500,000 / شهر</td><td>شهري</td><td class="cell-text">الإدارة التجارية</td></tr>
+          <tr><td class="cell-text">صيدليات خارجية</td><td class="num">300,000 / شهر</td><td>شهري</td><td class="cell-text">الإدارة التجارية</td></tr>
+          <tr><td class="cell-text">أونلاين — نون مينتس وترينديول</td><td class="num">100,000 / شهر</td><td>شهري</td><td class="cell-text">الإدارة التجارية</td></tr>
+          <tr><td class="cell-text">مبيعات B2B</td><td class="num">100,000 / شهر</td><td>شهري</td><td class="cell-text">الإدارة التجارية</td></tr>
+          <tr class="row-t"><td class="cell-text">إجمالي مستهدف العلامة (نوستري)</td><td class="num">1,000,000 / شهر</td><td>شهري</td><td class="cell-text">الإدارة التجارية</td></tr>
+          <tr><td class="cell-text">هامش الربح</td><td class="num">≥ 80%</td><td>شهري</td><td class="cell-text">الإدارة التجارية</td></tr>
+          <tr><td class="cell-text">ترخيص SFDA / تسجيل</td><td class="num" id="kpiSfdaCount">23/23</td><td>عند الإنجاز</td><td class="cell-text">الإدارة التجارية</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+const fmt = n => Math.round(n).toLocaleString('en-US');
+const productsH1 = [
+  {name:'REFLEX MASSAGE Emulgel 100ml', code:'1-02-066-034', sold:1722, stock:974, revenue:111930, unit:65},
+  {name:'ORACURE Mouth Wash 300ml', code:'1-12-109-038', sold:1797, stock:5091, revenue:62895, unit:35},
+  {name:'NOSTRICURE Oral Gel 30ml', code:'1-09-066-046', sold:1157, stock:815, revenue:46280, unit:40},
+  {name:'INTIMO Vaginal Wash 250ml', code:'1-14-166-032', sold:612, stock:3602, revenue:45900, unit:75},
+  {name:'NOSTRIDERM Ointment 50ml', code:'1-09-118-050', sold:592, stock:1487, revenue:38480, unit:65},
+  {name:'RIZER Apply Cream 75ml', code:'2-09-031-483', sold:586, stock:2940, revenue:35160, unit:60}
+];
+const totalRev = 340645;
+const prodRows = document.getElementById('prodRows');
+productsH1.forEach((p,i)=>{
+  const pct = totalRev ? (p.revenue/totalRev*100) : 0;
+  prodRows.innerHTML += `<tr>
+    <td class="cell-idx">${i+1}</td>
+    <td class="cell-text">${p.name}</td>
+    <td class="cell-text" style="direction:ltr;font-variant-numeric:tabular-nums">${p.code}</td>
+    <td class="num">${fmt(p.sold)}</td>
+    <td class="num">${fmt(p.stock)}</td>
+    <td class="num">${fmt(p.revenue)}</td>
+    <td class="num">${pct.toFixed(1)}%</td>
+    <td class="num">${p.unit}</td>
+  </tr>`;
+});
+prodRows.innerHTML += `<tr class="row-t"><td colspan="3" class="cell-text">الإجمالي (نصف 2026)</td><td class="num">6,466</td><td class="num">14,909</td><td class="num">340,645</td><td class="num">100%</td><td></td></tr>`;
+
+const barColors = ['#0f766e','#1d4ed8','#b45309','#7c3aed','#be123c','#0284c7'];
+const shareBars = document.getElementById('shareBars');
+const maxRev = Math.max(...productsH1.map(p => p.revenue));
+productsH1.forEach((p, i) => {
+  const pct = totalRev ? (p.revenue / totalRev * 100) : 0;
+  const w = maxRev ? (p.revenue / maxRev * 100) : 0;
+  const short = p.name.split(' ')[0];
+  shareBars.innerHTML += `<div class="bar-row">
+    <span class="lbl">${short}</span>
+    <div class="bar-line">
+      <div class="bar-track"><div class="bar-fill" style="background:${barColors[i % barColors.length]}" data-w="${w}"></div></div>
+      <span class="pct">${pct.toFixed(1)}%</span>
+    </div>
+  </div>`;
+});
+requestAnimationFrame(() => {
+  document.querySelectorAll('.bar-fill').forEach(el => { el.style.width = el.dataset.w + '%'; });
+});
+
+const cx = {
+  reflex:{p1:29575,p7:7020,p18:5135,all:111930},
+  oracure:{p1:9380,p7:2065,p18:2870,all:62895},
+  nostricure:{p1:4880,p7:1120,p18:2800,all:46280},
+  intimo:{p1:6750,p7:4200,p18:16800,all:45900},
+  nostriderm:{p1:11440,p7:585,p18:12155,all:38480},
+  rizer:{p1:6780,p7:1620,p18:1260,all:35160}
+};
+const labels = {reflex:'REFLEX',oracure:'ORACURE',nostricure:'NOSTRICURE',intimo:'INTIMO',nostriderm:'NOSTRIDERM',rizer:'RIZER'};
+const cxRows = document.getElementById('cxRows');
+let s1=0,s7=0,s18=0,st=0;
+Object.keys(cx).forEach(k=>{
+  const r=cx[k]; const t=r.p1+r.p7+r.p18; s1+=r.p1;s7+=r.p7;s18+=r.p18;st+=t;
+  cxRows.innerHTML += `<tr>
+    <td class="cell-text">${labels[k]}</td>
+    <td class="num">${fmt(r.p1)}</td>
+    <td class="num">${fmt(r.p7)}</td>
+    <td class="num">${fmt(r.p18)}</td>
+    <td class="num">${fmt(t)}</td>
+    <td class="num">${(t/r.all*100).toFixed(1)}%</td>
+  </tr>`;
+});
+cxRows.innerHTML += `<tr class="row-t"><td class="cell-text">الإجمالي</td><td class="num">${fmt(s1)}</td><td class="num">${fmt(s7)}</td><td class="num">${fmt(s18)}</td><td class="num">${fmt(st)}</td><td class="num">37.1% من المحفظة</td></tr>`;
+
+const MARGIN_GROSS = 0.80;
+const sellFromCost = c => c / (1 - MARGIN_GROSS);
+
+const newProducts = [
+  {name:'Baby Shampoo', brand:'نوستري بيبي جينتل', cat:'عناية أطفال', monthly:65000, channel:'صيدليات + أونلاين', why:'فجوة أطفال غير مغطاة حالياً', cost:10, moq:3000},
+  {name:'Gel for Edema', brand:'نوستري ديفلا جل', cat:'جلدية / وذمة', monthly:70000, channel:'مجمعات (ص1 أولاً)', why:'امتداد لنجاح REFLEX الموضعي', cost:10, moq:5000},
+  {name:'Multivitamin', brand:'نوستري فايتال ماكس', cat:'فيتامينات', monthly:85000, channel:'مجمعات + صيدليات', why:'فجوة وصفات عالية في المجمعات', cost:10, moq:3000},
+  {name:'Natal — Prenatal', brand:'نوستري ناتال', cat:'فيتامينات الحمل', monthly:90000, channel:'مجمعات (ص18/ص1)', why:'وصفات نساء — ص18 قوية في Intimo', cost:10, moq:3000},
+  {name:'Omega Cap', brand:'نوستري أوميغا', cat:'مكملات', monthly:70000, channel:'مجمعات + صيدليات', why:'أوميغا — طلب مرتفع في المجمعات', cost:10, moq:3000},
+  {name:'Melatonin Syp', brand:'نوستري ميلاتونين', cat:'نوم / مكملات', monthly:65000, channel:'صيدليات + أونلاين', why:'مكمل نوم سريع الدوران', cost:10, moq:3000},
+  {name:'Normal saline spray', brand:'نوستري سالاين', cat:'أنف / عناية', monthly:60000, channel:'صيدليات + أونلاين', why:'صنف أساسي للعناية اليومية', cost:10, moq:3000},
+  {name:'Mouth Wash H₂O₂', brand:'نوستري أورو بيور', cat:'صحة الفم', monthly:65000, channel:'صيدليات + أونلاين', why:'تنويع خط الفم', cost:10, moq:3000},
+  {name:'Whitening Cream', brand:'نوستري لومينا', cat:'تجميل علاجي', monthly:80000, channel:'صيدليات + أونلاين', why:'امتداد جلدي بعد Nostriderm/Rizer', cost:10, moq:3000},
+  {name:'Vitamin C', brand:'نوستري سي أكتيف', cat:'فيتامينات', monthly:60000, channel:'مجمعات + صيدليات', why:'مكمل سريع الدوران', cost:10, moq:5000},
+  {name:'Vitamin C + Zn', brand:'نوستري سي زدن شيلد', cat:'مناعة', monthly:70000, channel:'مجمعات طبية', why:'وصفات مناعة في ص1', cost:10, moq:5000},
+  {name:'Strepsils Menthol', brand:'نوستري ثروت كول', cat:'الحلق', monthly:75000, channel:'صيدليات + صب إيجنت', why:'قرب وظيفي من Nostricure/Oro', cost:10, moq:5000},
+  {name:'Strepsils Honey & Lemon', brand:'نوستري ثروت سوث', cat:'الحلق', monthly:70000, channel:'صيدليات + صب إيجنت', why:'تنويع نكهات لزيادة التكرار', cost:10, moq:5000},
+  {name:'Strepsils Orange', brand:'نوستري ثروت أورانج', cat:'الحلق', monthly:70000, channel:'صيدليات + صب إيجنت', why:'تنويع نكهات Strepsils', cost:10, moq:5000},
+  {name:'Strepsils Sugar free', brand:'نوستري ثروت خالي السكر', cat:'الحلق', monthly:68000, channel:'صيدليات + صب إيجنت', why:'خيار خالي السكر', cost:10, moq:5000},
+  {name:'Zn Syrup', brand:'نوستري زنك بلس', cat:'مكملات أطفال', monthly:65000, channel:'مجمعات + صيدليات', why:'أطفال + مجمعات', cost:10, moq:3000},
+  {name:'Eye drop', brand:'نوستري آي دروب', cat:'عيون', monthly:62000, channel:'صيدليات + مجمعات', why:'عناية العين اليومية', cost:10, moq:3000},
+  {name:'MG tab', brand:'نوستري إم جي', cat:'مكملات', monthly:60000, channel:'مجمعات + صيدليات', why:'مغنيسيوم — وصفات شائعة', cost:10, moq:3000},
+  {name:'Vitamin gummy', brand:'نوستري جامي فيت', cat:'فيتامينات', monthly:72000, channel:'صيدليات + أونلاين', why:'شكل جامي للالتزام', cost:10, moq:3000},
+  {name:'Face wash Foam', brand:'نوستري فوم فيس', cat:'عناية البشرة', monthly:68000, channel:'صيدليات + أونلاين', why:'عناية يومية للبشرة', cost:10, moq:3000},
+  {name:'Baby shield cr', brand:'نوستري بيبي شيلد', cat:'عناية أطفال', monthly:64000, channel:'صيدليات + مجمعات', why:'حماية بشرة الأطفال', cost:10, moq:3000},
+  {name:'Royal Honey sach', brand:'نوستري رويال هني', cat:'مكملات', monthly:66000, channel:'صيدليات + أونلاين', why:'عسل ملكي — طلب موسمي', cost:10, moq:3000},
+  {name:'Alpha amylase syp', brand:'نوستري ألفا أميلاز', cat:'هضم / أطفال', monthly:60000, channel:'مجمعات + صيدليات', why:'مشاكل هضمية شائعة', cost:10, moq:3000}
+];
+newProducts.forEach(p => {
+  p.sell = p.sell != null ? p.sell : sellFromCost(p.cost);
+  p.profit = p.sell - p.cost;
+  p.marginPct = p.sell ? ((p.profit / p.sell) * 100) : 0;
+  p.moqCost = p.cost * p.moq;
+  p.moqRevenue = p.sell * p.moq;
+  p.unitsMonthly = p.monthly / p.sell;
+});
+
+const costRows = document.getElementById('costRows');
+let tMoqCost=0, tMoqRev=0;
+newProducts.forEach((p,i)=>{
+  tMoqCost += p.moqCost;
+  tMoqRev += p.moqRevenue;
+  costRows.innerHTML += `<tr>
+    <td class="cell-idx">${i+1}</td>
+    <td class="cell-text">${p.name}</td>
+    <td class="num">${p.cost}</td>
+    <td class="num">${fmt(p.moq)}</td>
+    <td class="num">${fmt(p.sell)}</td>
+    <td class="num">${fmt(p.profit)}</td>
+    <td class="num">${p.marginPct >= 79.5 ? '80%' : p.marginPct.toFixed(0) + '%'}</td>
+    <td class="num">${fmt(p.moqCost)}</td>
+    <td class="num">${fmt(p.moqRevenue)}</td>
+    <td class="num">${fmt(p.moqRevenue - p.moqCost)}</td>
+  </tr>`;
+});
+costRows.innerHTML += `<tr class="row-t">
+  <td colspan="7" class="cell-text">الإجمالي (${newProducts.length} صنف)</td>
+  <td class="num">${fmt(tMoqCost)}</td>
+  <td class="num">${fmt(tMoqRev)}</td>
+  <td class="num">${fmt(tMoqRev - tMoqCost)}</td>
+</tr>`;
+
+const LICENSE_PER_SKU = 6000;
+const LICENSE_TOTAL = newProducts.length * LICENSE_PER_SKU;
+const launchCash = tMoqCost + LICENSE_TOTAL;
+document.getElementById('sumMoqCost').textContent = fmt(tMoqCost);
+document.getElementById('sumMoqRev').textContent = fmt(tMoqRev);
+document.getElementById('sumMoqProfit').textContent = fmt(tMoqRev - tMoqCost);
+document.getElementById('sumTotalCash').textContent = fmt(launchCash);
+const licenseSkuCount = document.getElementById('licenseSkuCount');
+const licenseTotalCell = document.getElementById('licenseTotalCell');
+if (licenseSkuCount) licenseSkuCount.textContent = String(newProducts.length);
+if (licenseTotalCell) licenseTotalCell.textContent = fmt(LICENSE_TOTAL);
+const decisionLicenseAmt = document.getElementById('decisionLicenseAmt');
+const decisionLicenseSku = document.getElementById('decisionLicenseSku');
+if (decisionLicenseAmt) decisionLicenseAmt.textContent = fmt(LICENSE_TOTAL) + ' ر.س';
+if (decisionLicenseSku) decisionLicenseSku.textContent = String(newProducts.length);
+const kpiSfda = document.getElementById('kpiSfdaCount');
+if (kpiSfda) kpiSfda.textContent = `${newProducts.length}/${newProducts.length}`;
+document.querySelectorAll('.roadmap-license-amt').forEach(el => { el.textContent = fmt(LICENSE_TOTAL); });
+const decisionMoq = document.getElementById('decisionMoqCost');
+if (decisionMoq) decisionMoq.textContent = fmt(tMoqCost);
+
+const batchA = ['Baby Shampoo','Omega Cap','Vitamin C','Strepsils Menthol','Melatonin Syp'];
+const batchAMoq = newProducts.filter(p => batchA.includes(p.name)).reduce((s,p) => s + p.moqCost, 0);
+const batchEl = document.getElementById('batchAMoq');
+if (batchEl) batchEl.textContent = '~' + fmt(batchAMoq);
+
+const ORBIT_SECTIONS = [
+  { id:'baseline', num:1, label:'الوضع الحالي', title:'أين نحن؟', sub:'نصف 2026 · Private Label' },
+  { id:'complexes', num:2, label:'المجمعات', title:'ص1 · ص7 · ص18', sub:'Nostri في المجمعات' },
+  { id:'expansion', num:3, label:'التوسع', title:'لماذا نوسّع؟', sub:'23 منتج جديد' },
+  { id:'pricing', num:4, label:'التسعير', title:'التسعير والتصنيع', sub:'23 منتج · MOQ' },
+  { id:'finance', num:5, label:'الإطار المالي', title:'الإطار المالي', sub:'سيناريوهات شهرية' },
+  { id:'operations', num:6, label:'التشغيل', title:'التشغيل', sub:'خطة ما بعد الإطلاق' },
+  { id:'decisions', num:7, label:'القرارات', title:'قرارات المجلس', sub:'اعتمادات مطلوبة' },
+  { id:'roadmap', num:8, label:'خارطة الطريق', title:'خارطة الطريق', sub:'شهر–شهرين · إطلاق الـ 23' }
+];
+let panelIndex = -1;
+
+function buildPanelRail() {
+  const rail = document.getElementById('panelRail');
+  const steps = document.getElementById('panelSteps');
+  rail.innerHTML = '';
+  steps.innerHTML = '';
+  ORBIT_SECTIONS.forEach((s, i) => {
+    const pbtn = document.createElement('button');
+    pbtn.type = 'button';
+    pbtn.className = 'p-node';
+    pbtn.innerHTML = `<span class="pn">${s.num}</span><span class="pl">${s.label}</span>`;
+    pbtn.onclick = () => openPanel(i);
+    rail.appendChild(pbtn);
+
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'step-dot';
+    dot.title = s.label;
+    dot.setAttribute('aria-label', `البند ${s.num}: ${s.label}`);
+    dot.onclick = () => openPanel(i);
+    steps.appendChild(dot);
+  });
+}
+
+const ORBIT_CENTER = { x: 50, y: 47 };
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function orbitMetrics() {
+  const isMobile = window.innerWidth < 700;
+  const rx = isMobile ? window.innerWidth * 0.34 : Math.min(320, window.innerWidth * 0.36);
+  const ry = isMobile ? window.innerHeight * 0.3 : Math.min(260, window.innerHeight * 0.34);
+  return {
+    rx,
+    ry,
+    rxPct: (rx / window.innerWidth) * 100,
+    ryPct: (ry / window.innerHeight) * 100
+  };
+}
+
+function nodePosition(i, n, m) {
+  const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+  return {
+    x: ORBIT_CENTER.x + m.rxPct * Math.cos(angle),
+    y: ORBIT_CENTER.y + m.ryPct * Math.sin(angle),
+    angle
+  };
+}
+
+function drawOrbitLinks(points, m) {
+  const svg = document.getElementById('orbitLinks');
+  if (!svg) return;
+  svg.setAttribute('viewBox', '0 0 100 100');
+  svg.setAttribute('preserveAspectRatio', 'none');
+  svg.innerHTML = '';
+
+  const orbit = document.createElementNS(SVG_NS, 'ellipse');
+  orbit.setAttribute('cx', String(ORBIT_CENTER.x));
+  orbit.setAttribute('cy', String(ORBIT_CENTER.y));
+  orbit.setAttribute('rx', String(m.rxPct));
+  orbit.setAttribute('ry', String(m.ryPct));
+  orbit.setAttribute('class', 'orbit-path');
+  svg.appendChild(orbit);
+
+  points.forEach((p, i) => {
+    const glow = document.createElementNS(SVG_NS, 'line');
+    glow.setAttribute('x1', String(ORBIT_CENTER.x));
+    glow.setAttribute('y1', String(ORBIT_CENTER.y));
+    glow.setAttribute('x2', String(p.x));
+    glow.setAttribute('y2', String(p.y));
+    glow.setAttribute('class', 'spoke-glow');
+    glow.dataset.idx = String(i);
+    glow.style.animationDelay = `${i * 0.22}s`;
+
+    const line = document.createElementNS(SVG_NS, 'line');
+    line.setAttribute('x1', String(ORBIT_CENTER.x));
+    line.setAttribute('y1', String(ORBIT_CENTER.y));
+    line.setAttribute('x2', String(p.x));
+    line.setAttribute('y2', String(p.y));
+    line.setAttribute('class', 'spoke');
+    line.dataset.idx = String(i);
+    line.style.animationDelay = `${i * 0.22}s`;
+
+    svg.appendChild(glow);
+    svg.appendChild(line);
+  });
+}
+
+function placeNodes() {
+  const el = document.getElementById('nodes');
+  el.innerHTML = '';
+  const n = ORBIT_SECTIONS.length;
+  const m = orbitMetrics();
+  const nodeHalf = window.innerWidth < 700 ? 34 : 48;
+  const points = [];
+
+  ORBIT_SECTIONS.forEach((s, i) => {
+    const p = nodePosition(i, n, m);
+    points.push(p);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'node';
+    btn.style.left = `calc(${p.x}% - ${nodeHalf}px)`;
+    btn.style.top = `calc(${p.y}% - ${nodeHalf}px)`;
+    btn.innerHTML = `<span class="n-num">${s.num}</span><span class="n-label">${s.label}</span>`;
+    btn.onclick = () => openPanel(i);
+    el.appendChild(btn);
+  });
+
+  drawOrbitLinks(points, m);
+  if (panelIndex >= 0) setActiveNav(panelIndex);
+}
+
+function setActiveNav(i) {
+  document.querySelectorAll('.node').forEach((n, idx) => n.classList.toggle('active', idx === i));
+  document.querySelectorAll('.panel-rail .p-node').forEach((n, idx) => n.classList.toggle('active', idx === i));
+  document.querySelectorAll('.panel-steps .step-dot').forEach((n, idx) => n.classList.toggle('on', idx === i));
+  document.querySelectorAll('.orbit-links .spoke, .orbit-links .spoke-glow').forEach(el => {
+    const idx = Number(el.dataset.idx);
+    el.classList.toggle('active', i >= 0 && idx === i);
+  });
+}
+
+function animateBarsIn(root) {
+  if (!root) return;
+  root.querySelectorAll('.bar-fill').forEach(el => {
+    const w = el.dataset.w || '0';
+    el.style.width = '0';
+    requestAnimationFrame(() => { el.style.width = w + '%'; });
+  });
+}
+
+function openPanel(i) {
+  panelIndex = i;
+  const meta = ORBIT_SECTIONS[i];
+  const src = document.getElementById(meta.id);
+  const body = document.getElementById('panelBody');
+  const panelHead = document.querySelector('.panel-head');
+  const panelTitle = document.getElementById('panelTitle');
+  body.innerHTML = src ? src.innerHTML : '';
+  body.querySelector('.strategy-cover')?.remove();
+
+  if (meta.id === 'baseline') {
+    panelHead.classList.add('head-strategic');
+    panelTitle.innerHTML = '<span class="goal-tag">الهدف الاستراتيجي</span>: الانفصال بشركة توزيع تحمل علامة <strong>Nostri</strong> بعد ثلاث سنوات.';
+  } else {
+    panelHead.classList.remove('head-strategic');
+    body.querySelector('h2')?.remove();
+    panelTitle.textContent = meta.title;
+  }
+
+  document.getElementById('panelSub').textContent = `البند ${meta.num} من ${ORBIT_SECTIONS.length} · ${meta.sub}`;
+  body.scrollTop = 0;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('panel').classList.add('open');
+  setActiveNav(i);
+  animateBarsIn(body);
+}
+
+function closePanel() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('panel').classList.remove('open');
+  setActiveNav(-1);
+  panelIndex = -1;
+}
+
+document.getElementById('closeBtn').onclick = closePanel;
+document.getElementById('overlay').onclick = closePanel;
+document.getElementById('prevBtn').onclick = () => openPanel((panelIndex - 1 + ORBIT_SECTIONS.length) % ORBIT_SECTIONS.length);
+document.getElementById('nextBtn').onclick = () => openPanel((panelIndex + 1) % ORBIT_SECTIONS.length);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closePanel();
+  if (panelIndex < 0) return;
+  if (e.key === 'ArrowLeft') openPanel((panelIndex + 1) % ORBIT_SECTIONS.length);
+  if (e.key === 'ArrowRight') openPanel((panelIndex - 1 + ORBIT_SECTIONS.length) % ORBIT_SECTIONS.length);
+});
+
+buildPanelRail();
+placeNodes();
+window.addEventListener('resize', placeNodes);
+requestAnimationFrame(() => animateBarsIn(document.getElementById('content-store')));
+</script>
+</body>
+</html>
