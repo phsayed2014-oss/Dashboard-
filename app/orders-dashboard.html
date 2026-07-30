@@ -417,6 +417,7 @@ function initApp() {
   }
   if (hasIntakeData() && currentSection === 'intake') renderIntakeSupplierList(INTAKE_DATA.suppliers);
   if (!hasData() && !hasIntakeData()) showView('upload', 'orders');
+  else if (!hasData() && hasIntakeData() && currentSection === 'orders') showView('intake-suppliers', 'intake');
   else showView(currentView, currentSection);
 }
 
