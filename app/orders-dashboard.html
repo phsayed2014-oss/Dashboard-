@@ -366,6 +366,7 @@ tbody tr:last-child td { border-bottom: none; }
   </main>
 </div>
 
+<script src="orders-data.js"></script>
 <script>
 let DATA = null;
 let selectedSupplier = null;
@@ -385,14 +386,29 @@ function toNum(v) {
   return isNaN(n) ? 0 : n;
 }
 
-async function loadData() {
-  const res = await fetch('orders-data.json');
-  DATA = await res.json();
+function initApp() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   document.getElementById('metaInfo').textContent =
     `${DATA.meta.total_suppliers} مورد · ${DATA.meta.total_orders} طلبية · ${DATA.meta.total_items.toLocaleString('ar-SA')} صنف`;
   renderSupplierList(DATA.suppliers);
+}
+
+function loadData() {
+  if (window.ORDERS_DATA) {
+    DATA = window.ORDERS_DATA;
+    initApp();
+    return Promise.resolve();
+  }
+  return fetch('orders-data.json')
+    .then(res => {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(data => {
+      DATA = data;
+      initApp();
+    });
 }
 
 function renderSupplierList(suppliers) {
