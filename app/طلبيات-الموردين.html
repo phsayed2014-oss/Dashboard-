@@ -275,6 +275,11 @@ tbody tr:last-child td { border-bottom: none; }
 .td-disc.has-disc { color: var(--rose); font-weight: 600; }
 .td-price { text-align: left; direction: ltr; font-variant-numeric: tabular-nums; }
 .td-total { text-align: left; direction: ltr; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent-light); }
+.td-qty, .td-bonus, .td-disc, .td-price, .td-total, .kpi-value, .badge, .order-stats, .supplier-count {
+  font-variant-numeric: lining-nums;
+  font-feature-settings: "lnum";
+  unicode-bidi: plaintext;
+}
 
 .loading {
   display: flex;
@@ -376,7 +381,13 @@ let selectedSupplier = null;
 function fmt(n) {
   const v = parseFloat(n);
   if (isNaN(v)) return '—';
-  return v.toLocaleString('ar-SA', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  return v.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+
+function num(n) {
+  const v = parseFloat(n);
+  if (isNaN(v)) return String(n ?? '—');
+  return v.toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
 
 function cleanName(name) {
@@ -392,7 +403,7 @@ function initApp() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   document.getElementById('metaInfo').textContent =
-    `${DATA.meta.total_suppliers} مورد · ${DATA.meta.total_orders} طلبية · ${DATA.meta.total_items.toLocaleString('ar-SA')} صنف`;
+    `${num(DATA.meta.total_suppliers)} مورد · ${num(DATA.meta.total_orders)} طلبية · ${num(DATA.meta.total_items)} صنف`;
   renderSupplierList(DATA.suppliers);
 }
 
@@ -405,13 +416,13 @@ function loadData() {
 function renderSupplierList(suppliers) {
   const list = document.getElementById('supplierList');
   const count = document.getElementById('supplierCount');
-  count.textContent = `عرض ${suppliers.length} مورد`;
+  count.textContent = `عرض ${num(suppliers.length)} مورد`;
   list.innerHTML = suppliers.map((s, i) => `
     <div class="supplier-item" data-idx="${DATA.suppliers.indexOf(s)}" data-name="${cleanName(s.name)}">
       <div class="name">${cleanName(s.name)}</div>
       <div class="meta">
-        <span class="badge orders">${s.order_count} طلبية</span>
-        <span class="badge items">${s.item_count} صنف</span>
+        <span class="badge orders">${num(s.order_count)} طلبية</span>
+        <span class="badge items">${num(s.item_count)} صنف</span>
       </div>
     </div>
   `).join('');
@@ -449,14 +460,14 @@ function selectSupplier(supplier) {
       orderTotal += price;
       if (bonus > 0) bonusItems++;
       return `<tr>
-        <td class="td-num">${item.num || ''}</td>
+        <td class="td-num">${num(item.num)}</td>
         <td class="td-code">${item.item_code || ''}</td>
         <td class="td-name">${item.item_name}</td>
-        <td class="td-qty">${item.qty}</td>
-        <td class="td-bonus ${bonus > 0 ? 'has-bonus' : ''}">${bonus > 0 ? '+' + item.bonus : '—'}</td>
-        <td class="td-qty">${item.total_qty}</td>
-        <td class="td-disc ${dis1 > 0 ? 'has-disc' : ''}">${dis1 > 0 ? item.dis1 + '%' : '—'}</td>
-        <td class="td-disc ${dis2 > 0 ? 'has-disc' : ''}">${dis2 > 0 ? item.dis2 + '%' : '—'}</td>
+        <td class="td-qty">${num(item.qty)}</td>
+        <td class="td-bonus ${bonus > 0 ? 'has-bonus' : ''}">${bonus > 0 ? '+' + num(item.bonus) : '—'}</td>
+        <td class="td-qty">${num(item.total_qty)}</td>
+        <td class="td-disc ${dis1 > 0 ? 'has-disc' : ''}">${dis1 > 0 ? num(item.dis1) + '%' : '—'}</td>
+        <td class="td-disc ${dis2 > 0 ? 'has-disc' : ''}">${dis2 > 0 ? num(item.dis2) + '%' : '—'}</td>
         <td class="td-price">${fmt(item.sell_price)}</td>
         <td class="td-total">${fmt(item.total_price)}</td>
       </tr>`;
@@ -469,7 +480,7 @@ function selectSupplier(supplier) {
           <div class="order-date">تاريخ الطلب: ${order.po_date || '—'}</div>
         </div>
         <div class="order-stats">
-          <span>${order.items.length} صنف</span>
+          <span>${num(order.items.length)} صنف</span>
           <span>الإجمالي: ${fmt(orderTotal)} ر.س</span>
         </div>
       </div>
@@ -496,10 +507,10 @@ function selectSupplier(supplier) {
   }).join('');
 
   document.getElementById('kpiRow').style.display = 'flex';
-  document.getElementById('kpiOrders').textContent = supplier.order_count;
-  document.getElementById('kpiItems').textContent = totalItems;
+  document.getElementById('kpiOrders').textContent = num(supplier.order_count);
+  document.getElementById('kpiItems').textContent = num(totalItems);
   document.getElementById('kpiTotal').textContent = fmt(totalPrice);
-  document.getElementById('kpiBonus').textContent = bonusItems;
+  document.getElementById('kpiBonus').textContent = num(bonusItems);
 
   document.getElementById('content').innerHTML = orderCards || '<div class="empty-state"><h3>لا توجد طلبيات</h3></div>';
 }
