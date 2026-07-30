@@ -1,8 +1,10 @@
 // PharmaDash Service Worker — offline-capable PWA
-const CACHE = 'pharmadash-v1';
+const CACHE = 'pharmadash-v2';
 const CORE = [
   './',
   'index.html',
+  'orders-dashboard.html',
+  'orders-data.json',
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png',
