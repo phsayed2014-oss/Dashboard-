@@ -1,0 +1,38 @@
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { outputPaths, renderDashboard } from './build-dashboard.mjs';
+
+const files = await Promise.all(outputPaths.map((path) => readFile(path, 'utf8')));
+
+if (!files.every((file) => file === files[0])) {
+  throw new Error('Generated dashboard files are not byte-identical');
+}
+const expected = await renderDashboard();
+if (files[0] !== expected) {
+  throw new Error('Generated dashboard is stale; run npm run build and commit all generated files');
+}
+if (files[0].includes('/*__PHARMADASH_STYLES__*/') || files[0].includes('/*__PHARMADASH_APP__*/')) {
+  throw new Error('Generated dashboard still contains a build marker');
+}
+
+const inlineScripts = [...files[0].matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
+if (inlineScripts.length !== 1) throw new Error(`Expected one bundled inline script, got ${inlineScripts.length}`);
+for (const marker of ['id="mainContent"', 'id="dataContext"', 'id="skipLink"']) {
+  if (!files[0].includes(marker)) throw new Error(`Generated dashboard is missing ${marker}`);
+}
+
+const temp = await mkdtemp(join(tmpdir(), 'pharmadash-check-'));
+try {
+  for (let index = 0; index < inlineScripts.length; index += 1) {
+    const file = join(temp, `inline-${index}.js`);
+    await writeFile(file, inlineScripts[index], 'utf8');
+    const check = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
+    if (check.status !== 0) throw new Error(check.stderr || `Syntax check failed for inline script ${index}`);
+  }
+} finally {
+  await rm(temp, { recursive: true, force: true });
+}
+
+console.log(`Generated files match; ${inlineScripts.length} inline scripts passed syntax checks.`);

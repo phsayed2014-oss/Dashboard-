@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; worker-src 'self' blob: https://cdnjs.cloudflare.com; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none';">
+<title>PharmaDash | الإدارة التجارية - قطاع الصيدليات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Alexandria:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#0f172a">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232563eb'/><text x='50' y='65' text-anchor='middle' font-size='48' font-weight='900' fill='white' font-family='system-ui'>PD</text></svg>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js" integrity="sha384-DhxhYObIMeMNGyAG7iK11OHzBIKyEIeRL0ad1iFPAOwZB8iirUlTT0O/WJJUk8+o" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<style>
+/*__PHARMADASH_STYLES__*/
+</style>
+</head>
+<body>
+<a class="skip-link" id="skipLink" href="#mainContent" tabindex="-1">تخطي إلى المحتوى الرئيسي</a>
+<!-- ══════════════ LOGIN SCREEN ══════════════ -->
+<div id="loginScreen" role="dialog" aria-modal="true" aria-label="تسجيل الدخول">
+  <div class="login-box" aria-labelledby="loginTitle">
+    <div class="login-logo">
+      <div class="login-logo-icon">PD</div>
+      <h1 id="loginTitle">PharmaDash</h1>
+      <p>الإدارة التجارية — قطاع الصيدليات</p>
+    </div>
+    <div class="login-error" id="loginError" role="alert" aria-live="assertive">اسم المستخدم أو كلمة المرور غير صحيحة</div>
+    <div class="login-field">
+      <label for="loginUser">اسم المستخدم</label>
+      <input class="login-input" id="loginUser" type="text" placeholder="أدخل اسم المستخدم" autocomplete="username" />
+    </div>
+    <div class="login-field">
+      <label for="loginPass">كلمة المرور</label>
+      <input class="login-input" id="loginPass" type="password" placeholder="أدخل كلمة المرور" autocomplete="current-password" />
+    </div>
+    <button class="login-btn" onclick="doLogin()">تسجيل الدخول</button>
+    <div class="login-footer">
+      الإدارة التجارية — قطاع الصيدليات<br/>
+      <span></span>
+    </div>
+  </div>
+</div>
+<!-- ══════════════ END LOGIN ══════════════ -->
+<canvas id="bgCanvas"></canvas>
+<!-- Mobile overlay -->
+<div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()" aria-hidden="true"></div>
+
+<div class="app-shell">
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<aside class="sidebar" id="mainSidebar" aria-label="الشريط الجانبي" inert>
+
+  <!-- Logo -->
+  <div class="sb-logo">
+    <div class="sb-logo-icon">PD</div>
+    <div class="sb-logo-text">
+      <div class="t1">PharmaDash</div>
+      <div class="t2">الإدارة التجارية</div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav style="flex:1;padding-bottom:8px;" aria-label="التنقل الرئيسي">
+
+    <!-- ═══ الرئيسية ═══ -->
+    <button type="button" class="sb-nav-item active" data-tab="overview" onclick="sidebarNav(this,'overview')" aria-current="page"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>      <span>نظرة عامة</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="visitcard" onclick="sidebarNav(this,'visitcard')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><line x1="13" y1="9" x2="19" y2="9"/><line x1="13" y1="13" x2="19" y2="13"/></svg></span>      <span>بطاقة زيارة طبيب</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="dailytrack" onclick="sidebarNav(this,'dailytrack')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><polyline points="8 14 11 17 16 12"/></svg></span>      <span>متابعة يومية</span>
+    </button>
+
+    <!-- ═══ المستهدفات ═══ -->
+    <div class="sb-sec-label">المستهدفات</div>
+    <button type="button" class="sb-nav-item" data-tab="pureherb" onclick="sidebarNav(this,'pureherb')" style="border-right:2px solid rgba(124,58,237,.5);"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 20 12 12 22 4 12"/><line x1="12" y1="6" x2="12" y2="18"/></svg></span>      <span>PureHerb</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="featured" onclick="sidebarNav(this,'featured')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="8" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/></svg></span>      <span>NOSTRI</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="nearexpiry" onclick="sidebarNav(this,'nearexpiry')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 15 15"/><line x1="9" y1="2" x2="15" y2="2"/></svg></span>      <span>أصناف قرب الانتهاء</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="targeted" onclick="sidebarNav(this,'targeted')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 8 12 3 21 8 21 16 12 21 3 16"/><polyline points="3 8 12 13 21 8"/><line x1="12" y1="13" x2="12" y2="21"/></svg></span>      <span>أصناف أوفرستوك</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="targettrack" onclick="sidebarNav(this,'targettrack')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><polyline points="4 6 5 7 7 5"/><polyline points="4 12 5 13 7 11"/><polyline points="4 18 5 19 7 17"/></svg></span>      <span>متابعة أصناف الأوفرستوك</span>
+    </button>
+
+    <!-- ═══ تحليلات ═══ -->
+    <div class="sb-sec-label">تحليلات</div>
+    <button type="button" class="sb-nav-item" data-tab="doctors" onclick="sidebarNav(this,'doctors')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><rect x="6" y="14" width="12" height="9" rx="6"/></svg></span>      <span>الأطباء</span>
+      <span class="sb-badge" id="sb-badge-doctors">0</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="drugs" onclick="sidebarNav(this,'drugs')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="20" height="8" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/></svg></span>      <span>الأدوية</span>
+      <span class="sb-badge" id="sb-badge-drugs">0</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="sections" onclick="sidebarNav(this,'sections')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 8 12 14 2 8"/><polyline points="2 14 12 20 22 14"/></svg></span>      <span>الأقسام</span>
+      <span class="sb-badge" id="sb-badge-sections">0</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="drugintel" onclick="sidebarNav(this,'drugintel')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg></span>      <span>بحث الأدوية</span>
+    </button>
+
+    <!-- ═══ تحليلات متقدمة ═══ -->
+    <div class="sb-sec-label">تحليلات متقدمة</div>
+    <button type="button" class="sb-nav-item" data-tab="trends" onclick="sidebarNav(this,'trends')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/></svg></span>      <span>اتجاه الأطباء</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="loyalty" onclick="sidebarNav(this,'loyalty')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="9" r="3.5"/><circle cx="15.5" cy="9" r="3.5"/><polygon points="4 10 12 21 20 10"/></svg></span>      <span>ولاء الأطباء</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="pareto" onclick="sidebarNav(this,'pareto')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="12"/><line x1="12" y1="12" x2="19" y2="7"/></svg></span>      <span>باريتو 80/20</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="basket" onclick="sidebarNav(this,'basket')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></span>      <span>تركّز الأطباء</span>
+    </button>
+
+    <!-- ═══ تحليل مالي ═══ -->
+    <div class="sb-sec-label">تحليل مالي</div>
+    <button type="button" class="sb-nav-item" data-tab="agedmeds" onclick="sidebarNav(this,'agedmeds')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>      <span>الأدوية آجل</span>
+    </button>
+
+    <!-- ═══ مقارنات ═══ -->
+    <div class="sb-sec-label">مقارنات</div>
+    <button type="button" class="sb-nav-item" data-tab="compare" onclick="sidebarNav(this,'compare')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg></span>      <span>مقارنة الفروع</span>
+    </button>
+    <button type="button" class="sb-nav-item" data-tab="timecomp" onclick="sidebarNav(this,'timecomp')"><span class="sb-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 15 15"/><line x1="5" y1="3" x2="3" y2="5"/><line x1="19" y1="3" x2="21" y2="5"/></svg></span>      <span>مقارنة زمنية</span>
+    </button>
+  </nav>
+
+  <!-- User footer -->
+  <div class="sb-user">
+    <div class="sb-user-inner">
+      <div class="sb-avatar">EH</div>
+      <div style="flex:1;min-width:0;">
+        <div class="sb-user-name">Dr. Elsayed Hassan</div>
+        <div class="sb-user-role">مدير تطوير الأعمال</div>
+      </div>
+    </div>
+  </div>
+</aside>
+<!-- ══════════════ END SIDEBAR ══════════════ -->
+
+<!-- ══════════════ MAIN AREA ══════════════ -->
+<main class="main-area" id="mainContent" tabindex="-1" inert>
+
+<!-- NEW TOPBAR -->
+<div class="new-topbar">
+  <!-- Mobile menu button -->
+  <button class="mob-menu-btn" type="button" onclick="toggleSidebar()" aria-controls="mainSidebar" aria-expanded="false" aria-label="فتح قائمة التنقل">☰</button>
+
+  <!-- Title -->
+  <div class="nb-title">
+    <h1>PharmaDash</h1>
+    <div class="sub" id="todayDate">
+      <span class="live-dot"></span>
+      <span>بيانات يونيو 2026</span>
+      <span class="dot-sep"></span>
+      <span>T1 / T2 / T3</span>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="global-search-wrap">
+    <span class="global-search-icon">🔍</span>
+    <input class="global-search" id="globalSearch" placeholder="بحث سريع: طبيب أو دواء..." autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="searchDropdown" aria-expanded="false">
+    <div class="search-results-dropdown" id="searchDropdown" role="listbox" aria-label="نتائج البحث"></div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <!-- saved badge removed -->
+    <button class="btn" id="themeBtn" onclick="toggleTheme()" title="Dark / Light">☀️</button>
+    <span class="save-status" id="saveStatus" data-state="idle" role="status" aria-live="polite">جاهز</span>
+    <span class="data-context" id="dataContext" aria-live="polite">لا توجد بيانات</span>
+    <select class="select privacy-select" id="exportPrivacyMode" title="مستوى خصوصية التصدير والمشاركة" aria-label="مستوى خصوصية التصدير والمشاركة">
+      <option value="anonymized">مجهول الهوية</option>
+      <option value="full">بيانات كاملة حساسة</option>
+    </select>
+    <button class="btn" id="exportXlsxBtn">Excel</button>
+    <button class="btn btn-success" id="shareBtn">مشاركة</button>
+    <button class="btn" onclick="clearSavedData()" title="مسح البيانات المحفوظة">مسح</button>
+    <button class="btn" onclick="doLogout()" title="تسجيل الخروج" style="background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.25);color:var(--rose-l);">خروج</button>
+  </div>
+</div>
+
+<div class="wrap">
+<div class="loading-bar" id="loadingBar" role="progressbar" aria-label="جارٍ المعالجة" aria-hidden="true"></div>
+<div class="container">
+
+<div class="branch-bar">
+  <div class="branch-card t1" data-branch="T1">
+    <div class="branch-num">1</div>
+    <div class="branch-info" style="flex:1;min-width:0;">
+      <div class="name">التعاون الأول</div>
+      <div class="meta" id="meta-T1">لم يتم رفع ملف بعد</div>
+      <div class="branch-periods" id="periods-T1"></div>
+    </div>
+    <button type="button" class="branch-upload-btn" data-upload="T1" aria-label="رفع ملف التعاون الأول">رفع</button>
+    <button type="button" class="add-period-btn" onclick="startAddPeriod('T1')" aria-label="إضافة فترة للتعاون الأول">+ فترة</button>
+    <input type="file" class="file-input" id="file-T1" accept=".xlsx,.xls,.csv,.pdf">
+    <div class="up-overlay" id="uprog-T1" role="progressbar" aria-label="تقدم رفع ملف التعاون الأول" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="up-icon">⚡</div>
+      <div class="up-name" id="uprog-T1-name">جاري المعالجة...</div>
+      <div class="up-track"><div class="up-fill" id="uprog-T1-fill"></div></div>
+      <div class="up-pct" id="uprog-T1-pct">0%</div>
+    </div>
+  </div>
+  <div class="branch-card t2" data-branch="T2">
+    <div class="branch-num">2</div>
+    <div class="branch-info" style="flex:1;min-width:0;">
+      <div class="name">التعاون الثاني</div>
+      <div class="meta" id="meta-T2">لم يتم رفع ملف بعد</div>
+      <div class="branch-periods" id="periods-T2"></div>
+    </div>
+    <button type="button" class="branch-upload-btn" data-upload="T2" aria-label="رفع ملف التعاون الثاني">رفع</button>
+    <button type="button" class="add-period-btn" onclick="startAddPeriod('T2')" aria-label="إضافة فترة للتعاون الثاني">+ فترة</button>
+    <input type="file" class="file-input" id="file-T2" accept=".xlsx,.xls,.csv,.pdf">
+    <div class="up-overlay" id="uprog-T2" role="progressbar" aria-label="تقدم رفع ملف التعاون الثاني" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="up-icon">⚡</div>
+      <div class="up-name" id="uprog-T2-name">جاري المعالجة...</div>
+      <div class="up-track"><div class="up-fill" id="uprog-T2-fill"></div></div>
+      <div class="up-pct" id="uprog-T2-pct">0%</div>
+    </div>
+  </div>
+  <div class="branch-card t3" data-branch="T3">
+    <div class="branch-num">3</div>
+    <div class="branch-info" style="flex:1;min-width:0;">
+      <div class="name">التعاون الثالث</div>
+      <div class="meta" id="meta-T3">لم يتم رفع ملف بعد</div>
+      <div class="branch-periods" id="periods-T3"></div>
+    </div>
+    <button type="button" class="branch-upload-btn" data-upload="T3" aria-label="رفع ملف التعاون الثالث">رفع</button>
+    <button type="button" class="add-period-btn" onclick="startAddPeriod('T3')" aria-label="إضافة فترة للتعاون الثالث">+ فترة</button>
+    <input type="file" class="file-input" id="file-T3" accept=".xlsx,.xls,.csv,.pdf">
+    <div class="up-overlay" id="uprog-T3" role="progressbar" aria-label="تقدم رفع ملف التعاون الثالث" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="up-icon">⚡</div>
+      <div class="up-name" id="uprog-T3-name">جاري المعالجة...</div>
+      <div class="up-track"><div class="up-fill" id="uprog-T3-fill"></div></div>
+      <div class="up-pct" id="uprog-T3-pct">0%</div>
+    </div>
+  </div>
+</div>
+
+<div class="local-processing-note" role="note">🔒 تتم قراءة PDF وExcel وCSV وحفظها محليًا داخل هذا المتصفح. لا تُرسل ملفات المرضى إلى خادم.</div>
+
+<section class="data-quality-panel" id="dataQualityPanel" aria-live="polite" aria-label="جودة البيانات" hidden></section>
+
+<!-- STICKY SUMMARY BAR -->
+<div class="summary-bar" id="summaryBar">
+  <div class="sb-item"><div class="sb-label">الكتابات</div><div class="sb-val" id="sb-total" style="color:var(--violet-l)">—</div></div>
+  <div class="sb-divider"></div>
+  <div class="sb-item"><div class="sb-label">الأطباء</div><div class="sb-val" id="sb-docs" style="color:var(--teal-l)">—</div></div>
+  <div class="sb-divider"></div>
+  <div class="sb-item"><div class="sb-label">الأصناف</div><div class="sb-val" id="sb-drugs" style="color:var(--amber-l)">—</div></div>
+  <div class="sb-divider"></div>
+  <div class="sb-item"><div class="sb-label">الأقسام</div><div class="sb-val" id="sb-secs" style="color:var(--sky-l)">—</div></div>
+  <div class="sb-divider"></div>
+  <div class="sb-item"><div class="sb-label">المرضى</div><div class="sb-val" id="sb-pats" style="color:var(--purple-l)">—</div></div>
+  <div class="sb-divider"></div>
+  <div class="sb-item" style="margin-right:auto;"><div class="sb-label">متوسط/طبيب</div><div class="sb-val" id="sb-avg" style="color:var(--rose-l)">—</div></div>
+</div>
+
+<div class="card" id="branchPickerCard" style="display:none;">
+  <div class="card-head"><div class="card-title"><span class="dot"></span> اعرض بيانات:</div><div style="display:flex;gap:8px;flex-wrap:wrap;" id="branchPicker"></div></div>
+</div>
+
+<div class="panel" id="panel-featured">
+  <div class="card">
+    <div class="pl-header">
+      <div class="card-title" style="font-size:17px;"><span class="dot"></span> منتجات الـ Private Label — تحليل مجمّع</div>
+      <div class="pl-live-badge"><span class="blink"></span> 6 منتجات · Live</div>
+    </div>
+    <div class="pl-pills" id="plPills"></div>
+    <div id="plTargetCard" style="margin-bottom:20px;"></div>
+    <div id="plComparisonCard" style="margin-bottom:20px;"></div>
+    <div id="plDoctorsAgg" style="margin-bottom:20px;"></div>
+    <div id="plTotalsBar" style="display:none;margin-bottom:20px;"></div>
+    <div class="featured-grid" id="featuredGrid"></div>
+  </div>
+</div>
+<div class="panel" id="panel-compare"><div id="compare-content"></div></div>
+<div class="panel" id="panel-timecomp"><div id="timecomp-content"></div></div>
+<div class="panel active" id="panel-overview"><div id="overview-content"></div></div>
+<div class="panel" id="panel-doctors"><div id="docHubBar"></div><div id="doctors-content"></div><div id="docDash-content" style="display:none"></div></div>
+<div class="panel" id="panel-drugs"><div id="drugHubBar"></div><div id="drugs-content"></div><div id="drugDash-content" style="display:none"></div></div>
+<div class="panel" id="panel-sections"><div id="secHubBar"></div><div id="sections-content"></div><div id="specialty-content" style="display:none"></div></div>
+<div class="panel" id="panel-visitcard"><div id="visitcard-content"></div></div>
+<div class="panel" id="panel-nearexpiry"><div id="nearexpiry-content"></div></div>
+<div class="panel" id="panel-pureherb"><div id="pureherb-content"></div></div>
+
+
+<div class="panel" id="panel-targeted"><div id="targeted-content"></div></div>
+
+<div class="panel" id="panel-pareto"><div id="pareto-content"></div></div>
+<div class="panel" id="panel-loyalty"><div id="loyalty-content"></div></div>
+<div class="panel" id="panel-basket"><div id="basket-content"></div></div>
+<div class="panel" id="panel-targettrack"><div id="targettrack-content"></div></div>
+<div class="panel" id="panel-drugintel"><div id="drugintel-content"></div></div>
+
+<div class="panel" id="panel-dailytrack"><div id="dailytrack-content"></div></div>
+<div class="panel" id="panel-trends"><div id="trends-content"></div></div>
+<div class="panel" id="panel-agedmeds"><div id="agedmeds-content"></div></div>
+
+
+<div class="footer"></div>
+</div>
+</div>
+
+</main><!-- end main-area -->
+</div><!-- end app-shell -->
+
+<!-- PERIOD NAME POPUP -->
+<div class="period-popup" id="periodPopup" role="dialog" aria-modal="true" aria-labelledby="periodPopupTitle" aria-hidden="true">
+  <div class="period-popup-box" tabindex="-1">
+    <h3 id="periodPopupTitle">اختر الشهر وارفع ملفه</h3>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <div style="flex:1;padding:10px;background:rgba(13,148,136,.08);border:1px solid rgba(13,148,136,.3);border-radius:10px;text-align:center;">
+        <div style="font-size:18px;margin-bottom:4px;">①</div>
+        <div style="font-size:11px;font-weight:800;color:var(--teal-l);">اختر الفترة</div>
+        <div style="font-size:10px;color:var(--text-dim);">مثال: مايو 2026</div>
+      </div>
+      <div aria-hidden="true" style="display:flex;align-items:center;color:var(--text-muted);font-size:18px;">←</div>
+      <div style="flex:1;padding:10px;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.3);border-radius:10px;text-align:center;">
+        <div style="font-size:18px;margin-bottom:4px;">②</div>
+        <div style="font-size:11px;font-weight:800;color:var(--violet-l);">ارفع التقرير</div>
+        <div style="font-size:10px;color:var(--text-dim);">PDF أو Excel أو CSV</div>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:6px;">اختر الشهر:</div>
+    <div id="monthPickerGrid" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;"></div>
+    <input class="pp-inp" id="periodNameInput" placeholder="أو اكتب: مايو 2026" maxlength="30" aria-describedby="periodNameWarn">
+    <div id="periodNameWarn" role="alert" style="display:none;font-size:11px;color:var(--amber-l);margin:6px 0 0;padding:6px 10px;background:rgba(217,119,6,.1);border:1px solid rgba(217,119,6,.2);border-radius:6px;">اختر شهراً وسنة صحيحة حتى تعمل المقارنات الزمنية بدقة.</div>
+    <div class="pp-actions" style="margin-top:12px;">
+      <button type="button" class="btn" style="flex:1;background:var(--grad-p);color:#fff;border-color:transparent;font-size:14px;" onclick="confirmAddPeriod()">رفع الملف ←</button>
+      <button type="button" class="btn" onclick="cancelAddPeriod()">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg" aria-hidden="true"><div class="modal" role="dialog" aria-modal="true" aria-label="تفاصيل" tabindex="-1"><button class="modal-close" id="modalClose" type="button" aria-label="إغلاق النافذة">✕</button><div id="modalBody"></div></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"><div class="toast-ico" id="toastIco">✓</div><div class="toast-msg" id="toastMsg">تم</div></div>
+<!-- Footer -->
+<div id="appFooter" style="text-align:center;padding:20px 16px 12px;margin-top:24px;border-top:1px solid var(--border);opacity:.6;">
+  <div style="font-size:11px;color:var(--text-muted);font-weight:600;letter-spacing:.3px;">
+    PharmaDash v4.0 — الإدارة التجارية · قطاع الصيدليات · مجمعات التعاون الطبية
+  </div>
+  <div style="font-size:10px;color:var(--text-muted);margin-top:4px;opacity:.7;">
+    Dr. Elsayed Hassan — Business Development Manager
+  </div>
+</div>
+
+<script>
+/*__PHARMADASH_APP__*/
+</script>
+</body>
+</html>
