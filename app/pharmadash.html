@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PharmaDash | الطلبيات والإدخال</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Alexandria:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root {
+  --bg: #0a0e18; --bg-card: #10162a; --bg-sidebar: #060a14; --bg-nav: #040810;
+  --border: rgba(255,255,255,0.08); --text: #f0f4ff; --text-dim: #9aa7c4; --text-muted: #6b7795;
+  --accent: #0d9488; --accent-light: #14b8a6; --violet: #2563eb; --amber: #f59e0b; --rose: #ef4444;
+  --radius: 12px; --nav-w: 240px; --panel-w: 300px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'IBM Plex Sans Arabic', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; overflow: hidden; }
+
+/* ── Main Nav ── */
+.nav-sidebar {
+  width: var(--nav-w); min-width: var(--nav-w); background: var(--bg-nav);
+  border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh;
+}
+.brand { padding: 22px 18px 16px; border-bottom: 1px solid var(--border); }
+.brand h1 {
+  font-family: 'Alexandria', sans-serif; font-size: 17px; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent-light), var(--violet));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.brand p { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.nav-section { padding: 12px 10px; flex: 1; overflow-y: auto; }
+.nav-parent {
+  width: 100%; display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  background: rgba(13,148,136,0.1); border: 1px solid rgba(13,148,136,0.25); border-radius: 10px;
+  color: var(--accent-light); font-family: inherit; font-size: 14px; font-weight: 700; cursor: default;
+}
+.nav-parent .ico { font-size: 18px; }
+.nav-parent.intake { background: rgba(37,99,235,0.1); border-color: rgba(37,99,235,0.25); color: #60a5fa; }
+.nav-children { margin-top: 6px; padding-right: 8px; }
+.nav-item {
+  width: 100%; text-align: right; padding: 10px 14px 10px 32px; margin-bottom: 2px;
+  background: none; border: none; border-radius: 8px; color: var(--text-dim);
+  font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s;
+  position: relative;
+}
+.nav-item::before { content: ''; position: absolute; right: 14px; top: 50%; width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); transform: translateY(-50%); opacity: .4; }
+.nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+.nav-item.active { background: rgba(37,99,235,0.12); color: #60a5fa; }
+.nav-item.active::before { background: #60a5fa; opacity: 1; }
+.nav-badge {
+  float: left; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
+  background: rgba(245,158,11,0.15); color: var(--amber);
+}
+
+/* ── Suppliers Panel ── */
+.suppliers-panel {
+  width: var(--panel-w); min-width: var(--panel-w); background: var(--bg-sidebar);
+  border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100vh;
+}
+.suppliers-panel.hidden { display: none; }
+.panel-head { padding: 16px 16px 10px; border-bottom: 1px solid var(--border); }
+.panel-head h2 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.panel-head p { font-size: 11px; color: var(--text-muted); }
+.search-box { margin: 12px 16px 8px; position: relative; }
+.search-box input {
+  width: 100%; padding: 10px 14px 10px 36px; background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); border-radius: 10px; color: var(--text);
+  font-family: inherit; font-size: 13px; outline: none;
+}
+.search-box input:focus { border-color: var(--accent); }
+.search-box svg { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+.supplier-count { padding: 0 16px 6px; font-size: 11px; color: var(--text-muted); font-weight: 600; }
+.supplier-list { flex: 1; overflow-y: auto; padding: 4px 10px 16px; }
+.supplier-list::-webkit-scrollbar { width: 4px; }
+.supplier-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+.supplier-item {
+  padding: 11px 12px; border-radius: 10px; cursor: pointer; margin-bottom: 4px;
+  border: 1px solid transparent; transition: all .15s;
+}
+.supplier-item:hover { background: rgba(255,255,255,0.04); border-color: var(--border); }
+.supplier-item.active { background: rgba(13,148,136,0.12); border-color: rgba(13,148,136,0.35); }
+.supplier-item .name { font-size: 12.5px; font-weight: 600; line-height: 1.45; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.supplier-item .meta { display: flex; gap: 6px; flex-wrap: wrap; }
+.badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: rgba(255,255,255,0.06); color: var(--text-dim); }
+.badge.orders { background: rgba(37,99,235,0.15); color: #60a5fa; }
+.badge.items { background: rgba(13,148,136,0.15); color: var(--accent-light); }
+.badge.done { background: rgba(34,197,94,0.15); color: #4ade80; }
+.badge.pending { background: rgba(245,158,11,0.15); color: var(--amber); }
+
+/* ── Main ── */
+.main { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; min-width: 0; }
+.topbar {
+  padding: 18px 28px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  background: rgba(10,14,24,0.8); backdrop-filter: blur(12px);
+}
+.topbar h2 { font-family: 'Alexandria', sans-serif; font-size: 20px; font-weight: 700; }
+.topbar .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.kpi-row { display: flex; gap: 14px; padding: 18px 28px; flex-shrink: 0; flex-wrap: wrap; }
+.kpi { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; min-width: 130px; flex: 1; }
+.kpi-label { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
+.kpi-value { font-family: 'Alexandria', sans-serif; font-size: 24px; font-weight: 800; }
+.kpi-value.teal { color: var(--accent-light); } .kpi-value.blue { color: #60a5fa; }
+.kpi-value.amber { color: var(--amber); } .kpi-value.green { color: #4ade80; }
+.content { flex: 1; overflow-y: auto; padding: 0 28px 28px; }
+.content::-webkit-scrollbar { width: 6px; }
+.content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 6px; }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; color: var(--text-muted); text-align: center; padding: 40px; }
+.empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--text-dim); }
+
+.order-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
+.order-card.completed { border-color: rgba(34,197,94,0.25); }
+.order-head { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: rgba(255,255,255,0.02); }
+.order-no { font-family: 'Alexandria', sans-serif; font-size: 14px; font-weight: 700; color: var(--accent-light); }
+.order-date { font-size: 12px; color: var(--text-muted); }
+.order-stats { display: flex; gap: 10px; font-size: 12px; color: var(--text-dim); align-items: center; flex-wrap: wrap; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+thead th { padding: 10px 14px; text-align: right; font-size: 11px; font-weight: 700; color: var(--text-muted); background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); white-space: nowrap; }
+tbody td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+tbody tr:hover { background: rgba(255,255,255,0.02); }
+.td-num, .td-qty, .td-bonus, .td-disc, .td-price, .td-total, .kpi-value, .badge, .order-stats, .supplier-count, .nav-badge {
+  font-variant-numeric: lining-nums; font-feature-settings: "lnum"; unicode-bidi: plaintext;
+}
+.td-name { max-width: 260px; line-height: 1.4; }
+.td-code { font-family: monospace; font-size: 11px; color: var(--text-dim); }
+.td-qty { text-align: center; font-weight: 700; }
+.td-bonus.has-bonus { color: var(--amber); font-weight: 700; text-align: center; }
+.td-disc.has-disc { color: var(--rose); font-weight: 600; text-align: center; }
+.td-price, .td-total { text-align: left; direction: ltr; }
+.td-total { font-weight: 700; color: var(--accent-light); }
+
+/* Upload */
+.upload-zone {
+  border: 2px dashed var(--border); border-radius: 16px; padding: 48px 24px; text-align: center;
+  background: rgba(255,255,255,0.02); cursor: pointer; transition: all .2s; margin-bottom: 20px;
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(13,148,136,0.06); }
+.upload-zone .icon { font-size: 48px; margin-bottom: 12px; opacity: .5; }
+.upload-zone h3 { font-size: 16px; margin-bottom: 6px; }
+.upload-zone p { font-size: 13px; color: var(--text-muted); }
+.upload-form { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; align-items: end; }
+.field label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+.field input, .field select {
+  padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); font-family: inherit; font-size: 13px;
+}
+.btn {
+  padding: 10px 20px; border-radius: 10px; border: none; font-family: inherit;
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s;
+}
+.btn-primary { background: linear-gradient(135deg, var(--accent), var(--violet)); color: #fff; }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+.btn-ghost { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border); }
+.upload-history { margin-top: 8px; }
+.history-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 16px; background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 8px; flex-wrap: wrap;
+}
+.history-item .info h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.history-item .info p { font-size: 11px; color: var(--text-muted); }
+.month-group { margin-bottom: 24px; }
+.month-group h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--accent-light); padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+.loading { display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column; gap: 16px; color: var(--text-muted); }
+.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.progress-bar { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 12px; }
+.progress-bar .fill { height: 100%; background: var(--accent); transition: width .3s; width: 0; }
+.btn-danger { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+.nav-footer { padding: 12px 10px 16px; border-top: 1px solid var(--border); }
+.danger-zone {
+  margin-top: 24px; padding: 16px; border-radius: 12px;
+  border: 1px solid rgba(239,68,68,0.25); background: rgba(239,68,68,0.06);
+}
+.danger-zone h4 { color: #f87171; font-size: 13px; margin-bottom: 6px; }
+.danger-zone p { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+
+.mobile-toggle { display: none; background: none; border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-family: inherit; margin-bottom: 8px; }
+
+@media (max-width: 900px) {
+  .nav-sidebar, .suppliers-panel { position: fixed; right: -100%; top: 0; z-index: 100; transition: right .3s; }
+  .nav-sidebar.open, .suppliers-panel.open { right: 0; }
+  .mobile-toggle { display: inline-block; }
+  .kpi-row { padding: 12px 16px; } .content { padding: 0 16px 16px; } .topbar { padding: 14px 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="loading" id="loading"><div class="spinner"></div><span>جاري التحميل...</span></div>
+
+<div id="app" style="display:none;width:100%;height:100vh;">
+  <aside class="nav-sidebar" id="navSidebar">
+    <div class="brand">
+      <h1>PharmaDash</h1>
+      <p id="metaInfo">—</p>
+    </div>
+    <div class="nav-section">
+      <div class="nav-parent"><span class="ico">📦</span> الطلبيات</div>
+      <div class="nav-children">
+        <button class="nav-item active" data-section="orders" data-view="suppliers">الموردين</button>
+        <button class="nav-item" data-section="orders" data-view="completed">الطلبيات المكتملة <span class="nav-badge" id="completedBadge">0</span></button>
+        <button class="nav-item" data-section="orders" data-view="upload">رفع ملف شهري</button>
+      </div>
+      <div class="nav-parent intake" style="margin-top:14px"><span class="ico">📥</span> الادخال</div>
+      <div class="nav-children">
+        <button class="nav-item" data-section="intake" data-view="intake-suppliers">الموردين</button>
+        <button class="nav-item" data-section="intake" data-view="intake-upload">رفع ملف</button>
+      </div>
+    </div>
+    <div class="nav-footer">
+      <button class="btn btn-danger" id="deleteAllBtn" style="width:100%">🗑️ حذف كل البيانات</button>
+    </div>
+  </aside>
+
+  <aside class="suppliers-panel" id="suppliersPanel">
+    <div class="panel-head">
+      <button class="mobile-toggle" id="menuToggle">☰ القائمة</button>
+      <h2 id="panelTitle">الموردين</h2>
+      <p id="panelSubtitle">اختر موردًا لعرض التفاصيل</p>
+    </div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="بحث عن مورد...">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    </div>
+    <div class="supplier-count" id="supplierCount"></div>
+    <div class="supplier-list" id="supplierList"></div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <h2 id="pageTitle">اختر مورّدًا</h2>
+      <div class="subtitle" id="pageSubtitle">من قائمة الموردين على اليمين</div>
+    </div>
+    <div class="kpi-row" id="kpiRow" style="display:none"></div>
+    <div class="content" id="content"></div>
+  </main>
+</div>
+
+<input type="file" id="fileInput" accept=".pdf" hidden>
+<input type="file" id="intakeFileInput" accept=".pdf" hidden>
+
+<script>
+/* Client-side PDF order parser — tuned for pdf.js text extraction */
+(function (global) {
+  const START_RE = /^(\d+)\s+(\d*)\s+([\d-]+)\s+(.+)$/;
+
+  function fixSupplier(text) {
+    text = (text || '').trim();
+    if (/^\d{5,6}\s*-\s*/.test(text)) return text.replace(/\s*-\s*-\s*/g, ' - ');
+    const m = text.match(/^(.+?)\s*-\s*(\d{5,6})$/);
+    if (m) return `${m[2]} - ${m[1].trim()}`;
+    const rev = text.match(/^(\d+)\s*-\s*(.+)$/);
+    if (rev) {
+      const name = rev[2].split('').reverse().join('').trim();
+      return `${rev[1]} - ${name}`.replace(/\s*-\s*-\s*/g, ' - ');
+    }
+    return text;
+  }
+
+  function cleanOrderNo(orderNo) {
+    const m = String(orderNo || '').match(/(PO-[\d-]+)/);
+    return m ? m[1] : String(orderNo || '').trim();
+  }
+
+  function preprocessRest(rest) {
+    return rest
+      .replace(/(\d+Tablet\/)B(\d+)(\s)/g, '$1Box $2$3')
+      .replace(/(\/Applicator\/)Applic(\d+)(\s)/g, '$1 $2$3')
+      .replace(/(\d+Capsule\/Box)(\d+)(\s)/gi, '$1 $2$3')
+      .replace(/(\d+TABLET\/BOX)(\d+)(\s)/gi, '$1 $2$3')
+      .replace(/(\d+Tablet\/Box)(\d+)(\s)/g, '$1 $2$3')
+      .replace(/(\d+MG\/1Tablet,\s*\d+)(\d+)(\s)/g, '$1 $2$3');
+  }
+
+  function completeNameSuffix(name) {
+    name = name.replace(/\s+$/, '');
+    if (name.endsWith('/Applic') && !name.endsWith('/Applicator')) {
+      return name.endsWith('1Applicator/Applic') ? name.slice(0, -7) + '/Applicator' : name + 'ator';
+    }
+    if (name.endsWith('t/B') && !name.endsWith('t/Box')) return name.slice(0, -3) + 't/Box';
+    if (name.endsWith('/B') && !name.endsWith('/Box')) return name.slice(0, -2) + '/Box';
+    return name;
+  }
+
+  function fixQtyField(itemName, qty, bonus, totalQty) {
+    let qtyS = String(qty ?? '').trim();
+    const bonusS = String(bonus ?? '0').trim();
+    const totalS = String(totalQty ?? '0').trim();
+    if (/^[\d.]+$/.test(qtyS)) return [completeNameSuffix(itemName), qtyS, bonusS, totalS];
+    let m = qtyS.match(/^([A-Za-z/]+?)(\d+(?:\.\d+)?)$/);
+    if (m) return [completeNameSuffix(itemName + m[1]), m[2], bonusS, totalS];
+    m = qtyS.match(/(\d+(?:\.\d+)?)$/);
+    if (m) {
+      const prefix = qtyS.slice(0, m.index);
+      if (prefix) itemName += prefix;
+      return [completeNameSuffix(itemName), m[1], bonusS, totalS];
+    }
+    return [completeNameSuffix(itemName), qtyS, bonusS, totalS];
+  }
+
+  function parseTail(rest) {
+    rest = rest.trim();
+    const po = rest.match(/\s+(PO-[\d-]+)\s+/);
+    if (!po) return null;
+
+    const order_no = cleanOrderNo(po[1]);
+    const before = rest.slice(0, po.index).trim();
+    const after = rest.slice(po.index + po[0].length).trim();
+    const sup = after.match(/^(.+?)\s*-\s*(\d{5,6})\s*$/);
+    if (!sup) return null;
+
+    const nums = before.match(
+      /([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+(\d{2}-\d{2}-\d{4})\s*$/
+    );
+    if (!nums) return null;
+
+    let itemName = before.slice(0, nums.index).trim();
+    let qty = nums[1];
+    let bonus = nums[2];
+    let total_qty = nums[3];
+    [itemName, qty, bonus, total_qty] = fixQtyField(itemName, qty, bonus, total_qty);
+
+    return {
+      qty, bonus, total_qty,
+      dis1: nums[4], dis2: nums[5], sell_price: nums[6], unit_cost: nums[7],
+      total_price: nums[8], total_cost: nums[9], po_date: nums[10],
+      supplier: fixSupplier(`${sup[2]} - ${sup[1].trim()}`),
+      order_no,
+      item_name: itemName,
+    };
+  }
+
+  function parseTextLine(line) {
+    line = (line || '').trim();
+    if (!line || line.startsWith('#') || !line.includes('PO-')) return null;
+    const sm = line.match(START_RE);
+    if (!sm) return null;
+    const tail = parseTail(preprocessRest(sm[4]));
+    if (!tail) return null;
+    return {
+      num: sm[1],
+      intl_code: sm[2],
+      item_code: sm[3],
+      ...tail,
+    };
+  }
+
+  function groupTextLines(items) {
+    if (!items.length) return [];
+    const sorted = [...items].sort((a, b) => b.transform[5] - a.transform[5] || a.transform[4] - b.transform[4]);
+    const lines = [];
+    let current = { y: sorted[0].transform[5], parts: [] };
+    for (const item of sorted) {
+      const y = item.transform[5];
+      if (Math.abs(y - current.y) > 6) {
+        if (current.parts.length) lines.push(current.parts.join(' ').trim());
+        current = { y, parts: [item.str] };
+      } else {
+        current.parts.push(item.str);
+      }
+    }
+    if (current.parts.length) lines.push(current.parts.join(' ').trim());
+    return lines;
+  }
+
+  function buildSupplierList(orders) {
+    const byCode = {};
+    Object.entries(orders).forEach(([orderNo, order]) => {
+      const code = order.supplier_code || (order.supplier || '').split(' - ')[0];
+      if (!byCode[code]) byCode[code] = { names: new Set(), orders: [] };
+      byCode[code].names.add(fixSupplier(order.supplier));
+      if (!byCode[code].orders.includes(orderNo)) byCode[code].orders.push(orderNo);
+    });
+    return Object.entries(byCode).map(([code, info]) => {
+      const name = [...info.names].sort((a, b) => b.length - a.length)[0];
+      info.orders.forEach((orderNo) => {
+        orders[orderNo].supplier = name;
+        orders[orderNo].supplier_code = code;
+      });
+      return {
+        name, code, orders: info.orders,
+        order_count: info.orders.length,
+        item_count: info.orders.reduce((s, o) => s + (orders[o]?.items.length || 0), 0),
+      };
+    }).sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+  }
+
+  function buildDataFromLines(lines) {
+    const orders = {};
+    for (const line of lines) {
+      const parsed = parseTextLine(line);
+      if (!parsed) continue;
+      const { order_no: orderNo } = parsed;
+      if (!orders[orderNo]) {
+        orders[orderNo] = {
+          order_no: orderNo,
+          supplier: parsed.supplier,
+          supplier_code: parsed.supplier.split(' - ')[0] || '',
+          po_date: parsed.po_date,
+          items: [],
+        };
+      }
+      orders[orderNo].items.push({
+        num: parsed.num,
+        intl_code: parsed.intl_code,
+        item_code: parsed.item_code,
+        item_name: parsed.item_name,
+        qty: parsed.qty,
+        bonus: parsed.bonus,
+        total_qty: parsed.total_qty,
+        dis1: parsed.dis1,
+        dis2: parsed.dis2,
+        sell_price: parsed.sell_price,
+        unit_cost: parsed.unit_cost,
+        total_price: parsed.total_price,
+        total_cost: parsed.total_cost,
+      });
+    }
+
+    const supplierList = buildSupplierList(orders);
+    return {
+      meta: {
+        total_orders: Object.keys(orders).length,
+        total_suppliers: supplierList.length,
+        total_items: Object.values(orders).reduce((s, o) => s + o.items.length, 0),
+        source: 'ملف مرفوع',
+      },
+      suppliers: supplierList,
+      orders,
+    };
+  }
+
+  async function parsePdfBuffer(arrayBuffer, onProgress) {
+    if (!global.pdfjsLib) throw new Error('مكتبة PDF غير محمّلة — تأكد من الاتصال بالإنترنت');
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const allLines = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      allLines.push(...groupTextLines(content.items));
+      if (onProgress) onProgress(i, pdf.numPages);
+    }
+    const data = buildDataFromLines(allLines);
+    if (!data.meta.total_suppliers) {
+      throw new Error('لم يتم التعرف على بيانات في الملف — تأكد أنه ملف طلبيات PDF بالصيغة الصحيحة');
+    }
+    return data;
+  }
+
+  global.OrdersParser = { parsePdfBuffer, parseTextLine, cleanOrderNo, fixSupplier, buildSupplierList };
+})(window);
+
+</script>
+<script>
+/* Client-side PDF intake parser — Stores Issuing And Receiving Query */
+(function (global) {
+  const SUP_RE = /Source\s*:\s*\[SUPPLIERS\]\s*(\d{5,6})-(.+?)\s*,\s*Dest/;
+  const SUP_ALT_RE = /Dest\s*:\s*\[STORES\][^,]+,\s*(.+?)\s*-Source\s*:\s*\[SUPPLIERS\]\s*(\d{5,6})\s+\d+\s*$/;
+  const CORE_RE = /(\d{4})\s+(\d{2}-\d{2}-\d{4})\s+([\d.]+)\s+(\S+)\s+/;
+  const CODE_RE = /(\d{1,2}-\d{2}-\d{3}-\d{3}|\d{10,11})\s+/;
+
+  function fixSupplierName(name) {
+    return (name || '').trim();
+  }
+
+  function fixSupplier(code, name) {
+    const fixed = fixSupplierName(name);
+    return `${code} - ${fixed}`.replace(/\s*-\s*-\s*/g, ' - ');
+  }
+
+  function preprocessLine(line) {
+    return line
+      .replace(/\s+/g, ' ')
+      .replace(/(\d),(\d{3})\s+(\d{2}-\d{2}-\d{4})/g, '$1$2 $3')
+      .replace(/([A-Za-z/])(\d{4})\s+(\d{2}-\d{2}-\d{4})/g, '$1 $2 $3');
+  }
+
+  function groupRows(items, yTol = 4) {
+    if (!items.length) return [];
+    const sorted = [...items].sort((a, b) => b.transform[5] - a.transform[5] || a.transform[4] - b.transform[4]);
+    const rows = [];
+    for (const item of sorted) {
+      const y = item.transform[5];
+      let row = rows.find((r) => Math.abs(r.y - y) <= yTol);
+      if (!row) {
+        row = { y, parts: [] };
+        rows.push(row);
+      }
+      row.parts.push({ x: item.transform[4], str: item.str });
+    }
+    return rows.map((r) => r.parts.sort((a, b) => a.x - b.x).map((p) => p.str).join(' ').trim());
+  }
+
+  function parseTextLine(line) {
+    line = preprocessLine((line || '').trim());
+    if (!line || !line.includes('[SUPPLIERS]')) return null;
+
+    let supplierCode;
+    let supplierName;
+    let itemPart;
+
+    const sm = line.match(SUP_RE);
+    if (sm) {
+      supplierCode = sm[1];
+      supplierName = sm[2].trim();
+      itemPart = line.slice(0, sm.index);
+    } else {
+      const am = line.match(SUP_ALT_RE);
+      if (!am) return null;
+      supplierName = am[1].trim();
+      supplierCode = am[2];
+      const destIdx = line.indexOf('Dest :');
+      itemPart = destIdx >= 0 ? line.slice(0, destIdx) : line;
+    }
+
+    const supplier = fixSupplier(supplierCode, supplierName);
+    const tm = itemPart.match(CORE_RE);
+    if (!tm) return null;
+
+    const head = itemPart.slice(0, tm.index);
+    const codeIdx = head.search(CODE_RE);
+    if (codeIdx < 0) return null;
+
+    const cm = head.slice(codeIdx).match(/^(\d{1,2}-\d{2}-\d{3}-\d{3}|\d{10,11})\s+(.+)$/);
+    if (!cm) return null;
+
+    return {
+      item_code: cm[1],
+      item_name: cm[2].trim(),
+      qty: tm[3],
+      unit: tm[4],
+      supplier,
+      supplier_code: supplierCode,
+    };
+  }
+
+  function buildSupplierList(items) {
+    const byCode = {};
+    items.forEach((item) => {
+      const code = item.supplier_code;
+      if (!byCode[code]) byCode[code] = { names: new Set(), items: [] };
+      byCode[code].names.add(item.supplier);
+      byCode[code].items.push(item);
+    });
+
+    return Object.entries(byCode).map(([code, info]) => {
+      const name = [...info.names].sort((a, b) => b.length - a.length)[0];
+      info.items.forEach((item) => { item.supplier = name; });
+      return {
+        name,
+        code,
+        items: info.items,
+        item_count: info.items.length,
+      };
+    }).sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+  }
+
+  function buildDataFromLines(lines) {
+    const items = [];
+    for (const line of lines) {
+      const parsed = parseTextLine(line);
+      if (parsed) items.push(parsed);
+    }
+    const suppliers = buildSupplierList(items);
+    return {
+      meta: {
+        total_items: items.length,
+        total_suppliers: suppliers.length,
+        source: 'ملف إدخال مرفوع',
+      },
+      suppliers,
+      items,
+    };
+  }
+
+  async function parsePdfBuffer(arrayBuffer, onProgress) {
+    if (!global.pdfjsLib) throw new Error('مكتبة PDF غير محمّلة — تأكد من الاتصال بالإنترنت');
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const allLines = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      allLines.push(...groupRows(content.items));
+      if (onProgress) onProgress(i, pdf.numPages);
+    }
+    const data = buildDataFromLines(allLines);
+    if (!data.meta.total_suppliers) {
+      throw new Error('لم يتم التعرف على بيانات في الملف — تأكد أنه ملف إدخال المستودع PDF بالصيغة الصحيحة');
+    }
+    return data;
+  }
+
+  global.IntakeParser = { parsePdfBuffer, parseTextLine, fixSupplier, buildSupplierList };
+})(window);
+
+</script>
+<script>
+const PDFJS_WORKER_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+let pdfReadyPromise = null;
+
+async function ensurePdfReady() {
+  if (typeof pdfjsLib === 'undefined') {
+    throw new Error('مكتبة PDF غير محمّلة — تأكد من الاتصال بالإنترنت ثم أعد تحميل الصفحة');
+  }
+  if (!pdfReadyPromise) {
+    pdfReadyPromise = (async () => {
+      try {
+        const res = await fetch(PDFJS_WORKER_URL);
+        if (!res.ok) throw new Error('worker fetch failed');
+        const blob = new Blob([await res.text()], { type: 'application/javascript' });
+        pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
+      } catch {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
+      }
+    })();
+  }
+  await pdfReadyPromise;
+}
+
+const DATA_KEY = 'pharmadash_orders_data';
+const UPLOADS_KEY = 'pharmadash_monthly_uploads';
+const INTAKE_DATA_KEY = 'pharmadash_intake_data';
+const INTAKE_UPLOADS_KEY = 'pharmadash_intake_uploads';
+let DATA = null;
+let INTAKE_DATA = null;
+let selectedSupplier = null;
+let selectedIntakeSupplier = null;
+let currentSection = 'orders';
+let currentView = 'suppliers';
+
+function fmt(n) {
+  const v = parseFloat(n);
+  return isNaN(v) ? '—' : v.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+function num(n) {
+  const v = parseFloat(n);
+  return isNaN(v) ? String(n ?? '—') : v.toLocaleString('en-US', { maximumFractionDigits: 2 });
+}
+function cleanName(n) { return (n || '').replace(/\s*-\s*-\s*/g, ' - ').trim(); }
+function toNum(v) { const n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? 0 : n; }
+
+function hasData() { return DATA && DATA.suppliers && DATA.suppliers.length > 0; }
+function hasIntakeData() { return INTAKE_DATA && INTAKE_DATA.suppliers && INTAKE_DATA.suppliers.length > 0; }
+
+function loadStoredData() {
+  try {
+    const raw = localStorage.getItem(DATA_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function loadStoredIntakeData() {
+  try {
+    const raw = localStorage.getItem(INTAKE_DATA_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function saveData() {
+  try {
+    if (DATA) localStorage.setItem(DATA_KEY, JSON.stringify(DATA));
+    else localStorage.removeItem(DATA_KEY);
+  } catch (err) {
+    alert('تعذر حفظ البيانات في المتصفح (السعة ممتلئة). جرّب حذف البيانات القديمة أو متصفحًا آخر.');
+    throw err;
+  }
+}
+
+function saveIntakeData() {
+  try {
+    if (INTAKE_DATA) localStorage.setItem(INTAKE_DATA_KEY, JSON.stringify(INTAKE_DATA));
+    else localStorage.removeItem(INTAKE_DATA_KEY);
+  } catch (err) {
+    alert('تعذر حفظ بيانات الإدخال في المتصفح (السعة ممتلئة).');
+    throw err;
+  }
+}
+
+function getUploads() {
+  try { return JSON.parse(localStorage.getItem(UPLOADS_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveUploads(uploads) { localStorage.setItem(UPLOADS_KEY, JSON.stringify(uploads)); }
+
+function getIntakeUploads() {
+  try { return JSON.parse(localStorage.getItem(INTAKE_UPLOADS_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveIntakeUploads(uploads) { localStorage.setItem(INTAKE_UPLOADS_KEY, JSON.stringify(uploads)); }
+
+function rebuildSuppliers() {
+  DATA.suppliers = OrdersParser.buildSupplierList(DATA.orders);
+  DATA.meta = {
+    total_orders: Object.keys(DATA.orders).length,
+    total_suppliers: DATA.suppliers.length,
+    total_items: Object.values(DATA.orders).reduce((s, o) => s + o.items.length, 0),
+    source: 'ملفات مرفوعة',
+  };
+}
+
+function mergeIntakeData(incoming) {
+  if (!INTAKE_DATA) return JSON.parse(JSON.stringify(incoming));
+  const items = [...INTAKE_DATA.items];
+  const seen = new Set(items.map(i => `${i.item_code}|${i.supplier_code}|${i.qty}|${i.item_name}`));
+  incoming.items.forEach(item => {
+    const key = `${item.item_code}|${item.supplier_code}|${item.qty}|${item.item_name}`;
+    if (!seen.has(key)) { seen.add(key); items.push(item); }
+  });
+  INTAKE_DATA = { items, suppliers: IntakeParser.buildSupplierList(items), meta: {} };
+  INTAKE_DATA.meta = {
+    total_items: items.length,
+    total_suppliers: INTAKE_DATA.suppliers.length,
+    source: 'ملفات إدخال مرفوعة',
+  };
+  return INTAKE_DATA;
+}
+
+function rebuildIntakeSuppliers() {
+  INTAKE_DATA.suppliers = IntakeParser.buildSupplierList(INTAKE_DATA.items);
+  INTAKE_DATA.meta = {
+    total_items: INTAKE_DATA.items.length,
+    total_suppliers: INTAKE_DATA.suppliers.length,
+    source: INTAKE_DATA.meta?.source || 'ملفات إدخال مرفوعة',
+  };
+}
+function mergeOrderData(incoming) {
+  if (!DATA) return JSON.parse(JSON.stringify(incoming));
+  const orders = { ...DATA.orders };
+  Object.entries(incoming.orders).forEach(([no, order]) => { orders[no] = order; });
+  DATA = { ...DATA, orders };
+  rebuildSuppliers();
+  return DATA;
+}
+
+function updateMeta() {
+  const el = document.getElementById('metaInfo');
+  const badge = document.getElementById('completedBadge');
+  const parts = [];
+  if (hasData()) parts.push(`طلبيات: ${num(DATA.meta.total_suppliers)} مورد · ${num(DATA.meta.total_orders)} طلبية`);
+  if (hasIntakeData()) parts.push(`إدخال: ${num(INTAKE_DATA.meta.total_suppliers)} مورد · ${num(INTAKE_DATA.meta.total_items)} صنف`);
+  el.textContent = parts.length ? parts.join(' | ') : 'لا توجد بيانات — ارفع ملف PDF';
+  badge.textContent = num(getUploads().length);
+}
+
+function emptyStateHtml(title, desc, showUploadBtn = false) {
+  return `<div class="empty-state">
+    <div style="font-size:48px;opacity:.3">📄</div>
+    <h3>${title}</h3>
+    <p>${desc}</p>
+    ${showUploadBtn ? '<button class="btn btn-primary" id="goUploadBtn" style="margin-top:16px">رفع ملف PDF الآن</button>' : ''}
+  </div>`;
+}
+
+function initApp() {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  updateMeta();
+  if (hasData()) renderSupplierList(DATA.suppliers);
+  else {
+    selectedSupplier = null;
+    if (currentSection === 'orders') {
+      document.getElementById('supplierList').innerHTML = '';
+      document.getElementById('supplierCount').textContent = '';
+    }
+  }
+  if (hasIntakeData() && currentSection === 'intake') renderIntakeSupplierList(INTAKE_DATA.suppliers);
+  if (!hasData() && !hasIntakeData()) showView('upload', 'orders');
+  else if (!hasData() && hasIntakeData() && currentSection === 'orders') showView('intake-suppliers', 'intake');
+  else showView(currentView, currentSection);
+}
+
+function loadData() {
+  DATA = loadStoredData();
+  INTAKE_DATA = loadStoredIntakeData();
+  initApp();
+  return Promise.resolve();
+}
+
+function deleteAllData() {
+  if (!confirm('هل أنت متأكد؟ سيتم حذف كل بيانات الطلبيات والإدخال والملفات المرفوعة نهائيًا.')) return;
+  localStorage.removeItem(DATA_KEY);
+  localStorage.removeItem(UPLOADS_KEY);
+  localStorage.removeItem(INTAKE_DATA_KEY);
+  localStorage.removeItem(INTAKE_UPLOADS_KEY);
+  DATA = null;
+  INTAKE_DATA = null;
+  selectedSupplier = null;
+  selectedIntakeSupplier = null;
+  updateMeta();
+  document.getElementById('supplierList').innerHTML = '';
+  document.getElementById('supplierCount').textContent = '';
+  document.getElementById('kpiRow').style.display = 'none';
+  showView('upload', 'orders');
+}
+
+function showView(view, section = currentSection) {
+  currentView = view;
+  currentSection = section;
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.view === view && el.dataset.section === section);
+  });
+
+  const panel = document.getElementById('suppliersPanel');
+  const kpi = document.getElementById('kpiRow');
+  const showOrdersPanel = section === 'orders' && view === 'suppliers' && hasData();
+  const showIntakePanel = section === 'intake' && view === 'intake-suppliers' && hasIntakeData();
+  panel.classList.toggle('hidden', !showOrdersPanel && !showIntakePanel);
+  kpi.style.display = 'none';
+
+  if (section === 'intake') {
+    document.getElementById('panelTitle').textContent = 'موردي الإدخال';
+    document.getElementById('panelSubtitle').textContent = 'اختر موردًا لعرض الأصناف الواردة';
+    document.getElementById('searchInput').placeholder = 'بحث عن مورد...';
+    if (view === 'intake-suppliers') renderIntakeSuppliersView();
+    else if (view === 'intake-upload') renderIntakeUploadView();
+    return;
+  }
+
+  document.getElementById('panelTitle').textContent = 'الموردين';
+  document.getElementById('panelSubtitle').textContent = 'اختر موردًا لعرض طلبياته';
+  document.getElementById('searchInput').placeholder = 'بحث عن مورد...';
+
+  if (view === 'suppliers') {
+    if (!hasData()) {
+      document.getElementById('pageTitle').textContent = 'الموردين';
+      document.getElementById('pageSubtitle').textContent = 'ارفع ملفًا أولًا لعرض الموردين';
+      document.getElementById('content').innerHTML = emptyStateHtml('لا توجد بيانات بعد', 'ارفع ملف PDF الطلبيات وسيظهر الموردون تلقائيًا', true);
+      document.getElementById('goUploadBtn')?.addEventListener('click', () => showView('upload', 'orders'));
+      return;
+    }
+    if (hasData()) renderSupplierList(DATA.suppliers);
+    document.getElementById('pageTitle').textContent = selectedSupplier ? cleanName(selectedSupplier.name) : 'اختر مورّدًا';
+    document.getElementById('pageSubtitle').textContent = selectedSupplier ? `كود: ${selectedSupplier.code || '—'}` : 'من قائمة الموردين';
+    if (selectedSupplier) selectSupplier(selectedSupplier, false);
+    else document.getElementById('content').innerHTML = emptyStateHtml('اختر مورّدًا', 'اضغط على مورد من القائمة لعرض طلبياته');
+  } else if (view === 'completed') {
+    renderCompletedView();
+  } else if (view === 'upload') {
+    renderUploadView();
+  }
+}
+
+function renderSupplierList(suppliers) {
+  const list = document.getElementById('supplierList');
+  document.getElementById('supplierCount').textContent = `عرض ${num(suppliers.length)} مورد`;
+  list.innerHTML = suppliers.map(s => `
+    <div class="supplier-item" data-name="${cleanName(s.name)}">
+      <div class="name">${cleanName(s.name)}</div>
+      <div class="meta">
+        <span class="badge orders">${num(s.order_count)} طلبية</span>
+        <span class="badge items">${num(s.item_count)} صنف</span>
+      </div>
+    </div>`).join('');
+  list.querySelectorAll('.supplier-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = DATA.suppliers.find(x => cleanName(x.name) === el.dataset.name);
+      if (s) selectSupplier(s);
+    });
+  });
+}
+
+function orderTableRows(items) {
+  return items.map(item => {
+    const bonus = toNum(item.bonus), dis1 = toNum(item.dis1), dis2 = toNum(item.dis2);
+    return `<tr>
+      <td class="td-num">${num(item.num)}</td>
+      <td class="td-code">${item.item_code || ''}</td>
+      <td class="td-name">${item.item_name}</td>
+      <td class="td-qty">${num(item.qty)}</td>
+      <td class="td-bonus ${bonus > 0 ? 'has-bonus' : ''}">${bonus > 0 ? '+' + num(item.bonus) : '—'}</td>
+      <td class="td-qty">${num(item.total_qty)}</td>
+      <td class="td-disc ${dis1 > 0 ? 'has-disc' : ''}">${dis1 > 0 ? num(item.dis1) + '%' : '—'}</td>
+      <td class="td-disc ${dis2 > 0 ? 'has-disc' : ''}">${dis2 > 0 ? num(item.dis2) + '%' : '—'}</td>
+      <td class="td-price">${fmt(item.sell_price)}</td>
+      <td class="td-total">${fmt(item.total_price)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function orderCard(order) {
+  let total = 0;
+  order.items.forEach(i => total += toNum(i.total_price));
+  return `<div class="order-card">
+    <div class="order-head">
+      <div>
+        <div class="order-no">${order.order_no}</div>
+        <div class="order-date">تاريخ: ${order.po_date || '—'} · ${cleanName(order.supplier)}</div>
+      </div>
+      <div class="order-stats">
+        <span>${num(order.items.length)} صنف</span>
+        <span>الإجمالي: ${fmt(total)} ر.س</span>
+      </div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>كود</th><th>الصنف</th><th>كمية</th><th>بونص</th><th>إجمالي</th><th>خصم1</th><th>خصم2</th><th>سعر</th><th>كلي</th></tr></thead>
+      <tbody>${orderTableRows(order.items)}</tbody>
+    </table></div>
+  </div>`;
+}
+
+function selectSupplier(supplier, updateView = true) {
+  selectedSupplier = supplier;
+  document.querySelectorAll('.supplier-item').forEach(el =>
+    el.classList.toggle('active', el.dataset.name === cleanName(supplier.name)));
+  document.getElementById('pageTitle').textContent = cleanName(supplier.name);
+  document.getElementById('pageSubtitle').textContent = `كود المورد: ${supplier.code || '—'}`;
+
+  let totalItems = 0, totalPrice = 0;
+  const cards = supplier.orders.map(no => {
+    const o = DATA.orders[no]; if (!o) return '';
+    totalItems += o.items.length;
+    o.items.forEach(i => { totalPrice += toNum(i.total_price); });
+    return orderCard(o);
+  }).join('');
+
+  document.getElementById('kpiRow').style.display = 'flex';
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi"><div class="kpi-label">طلبيات</div><div class="kpi-value blue">${num(supplier.order_count)}</div></div>
+    <div class="kpi"><div class="kpi-label">أصناف</div><div class="kpi-value teal">${num(totalItems)}</div></div>
+    <div class="kpi"><div class="kpi-label">القيمة</div><div class="kpi-value amber">${fmt(totalPrice)}</div></div>`;
+  document.getElementById('content').innerHTML = cards || '<div class="empty-state"><h3>لا توجد طلبيات</h3></div>';
+  if (updateView) showView('suppliers', 'orders');
+}
+
+function renderIntakeSupplierList(suppliers) {
+  const list = document.getElementById('supplierList');
+  document.getElementById('supplierCount').textContent = `عرض ${num(suppliers.length)} مورد`;
+  list.innerHTML = suppliers.map(s => `
+    <div class="supplier-item" data-code="${s.code}">
+      <div class="name">${cleanName(s.name)}</div>
+      <div class="meta"><span class="badge items">${num(s.item_count)} صنف</span></div>
+    </div>`).join('');
+  list.querySelectorAll('.supplier-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = INTAKE_DATA.suppliers.find(x => x.code === el.dataset.code);
+      if (s) selectIntakeSupplier(s);
+    });
+  });
+}
+
+function intakeTableRows(items) {
+  return items.map((item, i) => `<tr>
+    <td class="td-num">${num(i + 1)}</td>
+    <td class="td-name">${item.item_name}</td>
+    <td>${cleanName(item.supplier)}</td>
+    <td class="td-qty">${num(item.qty)}</td>
+    <td>${item.unit || '—'}</td>
+  </tr>`).join('');
+}
+
+function renderIntakeItemsTable(items, title) {
+  return `<div class="order-card">
+    <div class="order-head">
+      <div><div class="order-no">${title}</div><div class="order-date">${num(items.length)} صنف وارد للمستودع</div></div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>الصنف</th><th>المورد</th><th>الكمية</th><th>الوحدة</th></tr></thead>
+      <tbody>${intakeTableRows(items)}</tbody>
+    </table></div>
+  </div>`;
+}
+
+function selectIntakeSupplier(supplier, updateView = true) {
+  selectedIntakeSupplier = supplier;
+  document.querySelectorAll('.supplier-item').forEach(el =>
+    el.classList.toggle('active', el.dataset.code === supplier.code));
+  document.getElementById('pageTitle').textContent = cleanName(supplier.name);
+  document.getElementById('pageSubtitle').textContent = `كود المورد: ${supplier.code || '—'}`;
+
+  let totalQty = 0;
+  supplier.items.forEach(i => { totalQty += toNum(i.qty); });
+
+  document.getElementById('kpiRow').style.display = 'flex';
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi"><div class="kpi-label">أصناف</div><div class="kpi-value teal">${num(supplier.item_count)}</div></div>
+    <div class="kpi"><div class="kpi-label">إجمالي الكمية</div><div class="kpi-value blue">${num(totalQty)}</div></div>`;
+  document.getElementById('content').innerHTML = renderIntakeItemsTable(supplier.items, cleanName(supplier.name));
+  if (updateView) showView('intake-suppliers', 'intake');
+}
+
+function renderIntakeSuppliersView() {
+  if (!hasIntakeData()) {
+    document.getElementById('pageTitle').textContent = 'إدخال المستودع';
+    document.getElementById('pageSubtitle').textContent = 'ارفع ملف الإدخال أولًا';
+    document.getElementById('content').innerHTML = emptyStateHtml('لا توجد بيانات إدخال', 'ارفع ملف PDF الإدخال (الأصناف الواردة للمستودع)', true);
+    document.getElementById('goUploadBtn')?.addEventListener('click', () => showView('intake-upload', 'intake'));
+    return;
+  }
+  renderIntakeSupplierList(INTAKE_DATA.suppliers);
+  if (selectedIntakeSupplier) {
+    selectIntakeSupplier(selectedIntakeSupplier, false);
+  } else {
+    document.getElementById('pageTitle').textContent = 'كل أصناف الإدخال';
+    document.getElementById('pageSubtitle').textContent = `${num(INTAKE_DATA.meta.total_items)} صنف من ${num(INTAKE_DATA.meta.total_suppliers)} مورد`;
+    document.getElementById('kpiRow').style.display = 'flex';
+    document.getElementById('kpiRow').innerHTML = `
+      <div class="kpi"><div class="kpi-label">موردين</div><div class="kpi-value blue">${num(INTAKE_DATA.meta.total_suppliers)}</div></div>
+      <div class="kpi"><div class="kpi-label">أصناف</div><div class="kpi-value teal">${num(INTAKE_DATA.meta.total_items)}</div></div>`;
+    document.getElementById('content').innerHTML = renderIntakeItemsTable(INTAKE_DATA.items, 'جميع الأصناف الواردة');
+  }
+}
+
+function renderIntakeUploadView() {
+  const uploads = getIntakeUploads();
+  document.getElementById('pageTitle').textContent = 'رفع ملف إدخال';
+  document.getElementById('pageSubtitle').textContent = 'ارفع ملف PDF الأصناف الواردة للمستودع';
+  document.getElementById('kpiRow').style.display = 'none';
+
+  document.getElementById('content').innerHTML = `
+    <div class="upload-form">
+      <button class="btn btn-primary" id="selectIntakeFileBtn">اختيار ملف PDF</button>
+    </div>
+    <div class="upload-zone" id="intakeUploadZone">
+      <div class="icon">📥</div>
+      <h3>اسحب ملف إدخال PDF هنا</h3>
+      <p>ملف Stores Issuing And Receiving — الأصناف الواردة للمستودع</p>
+      <p style="font-size:12px;color:var(--amber);margin-top:8px">⚠️ يجب الاتصال بالإنترنت أثناء الرفع</p>
+      <div class="progress-bar" id="intakeProgressBar" style="display:none"><div class="fill" id="intakeProgressFill"></div></div>
+      <p id="intakeUploadStatus" style="margin-top:12px;font-size:13px;color:var(--text-muted)"></p>
+    </div>
+    <h3 style="font-size:15px;margin-bottom:12px">الملفات المرفوعة سابقًا</h3>
+    <div class="upload-history" id="intakeUploadHistory">${renderIntakeUploadHistory(uploads)}</div>
+    <div class="danger-zone">
+      <h4>حذف البيانات</h4>
+      <p>يمسح كل بيانات الطلبيات والإدخال.</p>
+      <button class="btn btn-danger" id="deleteAllBtn3">🗑️ حذف كل البيانات</button>
+    </div>`;
+
+  const zone = document.getElementById('intakeUploadZone');
+  const fileInput = document.getElementById('intakeFileInput');
+  document.getElementById('selectIntakeFileBtn').onclick = () => fileInput.click();
+  fileInput.onchange = e => { if (e.target.files[0]) handleIntakeFileUpload(e.target.files[0]); e.target.value = ''; };
+  zone.onclick = () => fileInput.click();
+  zone.ondragover = e => { e.preventDefault(); zone.classList.add('dragover'); };
+  zone.ondragleave = () => zone.classList.remove('dragover');
+  zone.ondrop = e => { e.preventDefault(); zone.classList.remove('dragover'); if (e.dataTransfer.files[0]) handleIntakeFileUpload(e.dataTransfer.files[0]); };
+  document.getElementById('intakeUploadHistory').addEventListener('click', e => {
+    const btn = e.target.closest('[data-delete-intake]');
+    if (btn) deleteIntakeUpload(btn.dataset.deleteIntake);
+  });
+  document.getElementById('deleteAllBtn3').onclick = deleteAllData;
+}
+
+function renderIntakeUploadHistory(uploads) {
+  if (!uploads.length) return '<p style="color:var(--text-muted);font-size:13px">لا توجد ملفات مرفوعة</p>';
+  return uploads.sort((a, b) => (b.uploadedAt || '').localeCompare(a.uploadedAt || '')).map(u => `
+    <div class="history-item">
+      <div class="info">
+        <h4>📥 ${u.fileName}</h4>
+        <p>${num(u.meta?.total_suppliers || 0)} مورد · ${num(u.meta?.total_items || 0)} صنف · ${new Date(u.uploadedAt).toLocaleDateString('en-GB')}</p>
+      </div>
+      <button class="btn btn-ghost" data-delete-intake="${u.id}">حذف</button>
+    </div>`).join('');
+}
+
+function rebuildIntakeFromUploads() {
+  const uploads = getIntakeUploads();
+  if (!uploads.length) { INTAKE_DATA = null; saveIntakeData(); return; }
+  if (!INTAKE_DATA) INTAKE_DATA = { items: [], suppliers: [], meta: {} };
+  rebuildIntakeSuppliers();
+  saveIntakeData();
+}
+
+function deleteIntakeUpload(id) {
+  const upload = getIntakeUploads().find(u => u.id === id);
+  saveIntakeUploads(getIntakeUploads().filter(u => u.id !== id));
+  if (upload && INTAKE_DATA) {
+    INTAKE_DATA.items = INTAKE_DATA.items.filter(item => !upload.itemKeys?.includes(`${item.item_code}|${item.supplier_code}|${item.qty}|${item.item_name}`));
+    if (INTAKE_DATA.items.length) rebuildIntakeSuppliers();
+    else INTAKE_DATA = null;
+    saveIntakeData();
+  }
+  selectedIntakeSupplier = null;
+  updateMeta();
+  showView(currentView, currentSection);
+}
+
+async function handleIntakeFileUpload(file) {
+  if (!file.name.toLowerCase().endsWith('.pdf')) { alert('يرجى اختيار ملف PDF'); return; }
+  const status = document.getElementById('intakeUploadStatus');
+  const bar = document.getElementById('intakeProgressBar');
+  const fill = document.getElementById('intakeProgressFill');
+  status.textContent = 'جاري قراءة الملف...';
+  bar.style.display = 'block'; fill.style.width = '0%';
+
+  try {
+    await ensurePdfReady();
+    const buf = await file.arrayBuffer();
+    const parsed = await IntakeParser.parsePdfBuffer(buf, (cur, total) => {
+      fill.style.width = `${Math.round(cur / total * 100)}%`;
+      status.textContent = `جاري التحليل... صفحة ${num(cur)} من ${num(total)}`;
+    });
+    if (!parsed.meta.total_suppliers || !parsed.items.length) {
+      throw new Error('لم يتم استخراج بيانات من الملف. تأكد أنه ملف إدخال المستودع PDF الصحيح');
+    }
+
+    const itemKeys = parsed.items.map(i => `${i.item_code}|${i.supplier_code}|${i.qty}|${i.item_name}`);
+    const upload = {
+      id: String(Date.now()), fileName: file.name,
+      uploadedAt: new Date().toISOString(), itemKeys, meta: parsed.meta,
+    };
+    saveIntakeUploads([...getIntakeUploads(), upload]);
+
+    INTAKE_DATA = mergeIntakeData(parsed);
+    saveIntakeData();
+    selectedIntakeSupplier = null;
+    updateMeta();
+
+    status.innerHTML = `✅ تم التحليل! <b>${num(parsed.meta.total_suppliers)}</b> مورد · <b>${num(parsed.meta.total_items)}</b> صنف`;
+    fill.style.width = '100%';
+    document.getElementById('intakeUploadHistory').innerHTML = renderIntakeUploadHistory(getIntakeUploads());
+    setTimeout(() => showView('intake-suppliers', 'intake'), 1200);
+  } catch (err) {
+    status.textContent = '❌ خطأ: ' + err.message;
+    bar.style.display = 'none';
+    console.error(err);
+  }
+}
+
+function renderCompletedView() {
+  const uploads = getUploads();
+  document.getElementById('pageTitle').textContent = 'الطلبيات المكتملة';
+  document.getElementById('pageSubtitle').textContent = 'الطلبيات المستخرجة من الملفات المرفوعة حسب الشهر';
+
+  if (!hasData() || !uploads.length) {
+    document.getElementById('kpiRow').style.display = 'none';
+    document.getElementById('content').innerHTML = emptyStateHtml('لا توجد طلبيات بعد', 'ارفع ملف PDF لعرض الطلبيات هنا', true);
+    document.getElementById('goUploadBtn')?.addEventListener('click', () => showView('upload', 'orders'));
+    return;
+  }
+
+  const allOrders = Object.keys(DATA.orders);
+  document.getElementById('kpiRow').style.display = 'flex';
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi"><div class="kpi-label">إجمالي الطلبيات</div><div class="kpi-value teal">${num(allOrders.length)}</div></div>
+    <div class="kpi"><div class="kpi-label">ملفات مرفوعة</div><div class="kpi-value blue">${num(uploads.length)}</div></div>
+    <div class="kpi"><div class="kpi-label">موردين</div><div class="kpi-value green">${num(DATA.meta.total_suppliers)}</div></div>`;
+
+  let html = '';
+  uploads.sort((a, b) => b.month.localeCompare(a.month)).forEach(u => {
+    html += `<div class="month-group"><h3>📅 ${u.monthLabel || u.month} — ${num(u.orderNumbers.length)} طلبية</h3>`;
+    u.orderNumbers.forEach(no => {
+      const o = DATA.orders[no];
+      if (o) html += orderCard(o);
+    });
+    html += '</div>';
+  });
+  document.getElementById('content').innerHTML = html;
+}
+
+function renderUploadView() {
+  const uploads = getUploads();
+  const now = new Date();
+  const monthDefault = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  document.getElementById('pageTitle').textContent = 'رفع ملف شهري';
+  document.getElementById('pageSubtitle').textContent = 'ارفع ملف PDF وسيتم تحليل الموردين والطلبيات تلقائيًا';
+  document.getElementById('kpiRow').style.display = 'none';
+
+  document.getElementById('content').innerHTML = `
+    <div class="upload-form">
+      <div class="field"><label>الشهر</label><input type="month" id="uploadMonth" value="${monthDefault}"></div>
+      <button class="btn btn-primary" id="selectFileBtn">اختيار ملف PDF</button>
+    </div>
+    <div class="upload-zone" id="uploadZone">
+      <div class="icon">📄</div>
+      <h3>اسحب ملف PDF هنا</h3>
+      <p>ارفع ملف الطلبيات — نفس الصيغة — وسيظهر الموردون فورًا</p>
+      <p style="font-size:12px;color:var(--amber);margin-top:8px">⚠️ يجب الاتصال بالإنترنت أثناء الرفع (لتفعيل محلل PDF)</p>
+      <div class="progress-bar" id="progressBar" style="display:none"><div class="fill" id="progressFill"></div></div>
+      <p id="uploadStatus" style="margin-top:12px;font-size:13px;color:var(--text-muted)"></p>
+    </div>
+    <h3 style="font-size:15px;margin-bottom:12px">الملفات المرفوعة سابقًا</h3>
+    <div class="upload-history" id="uploadHistory">${renderUploadHistory(uploads)}</div>
+    <div class="danger-zone">
+      <h4>حذف البيانات</h4>
+      <p>يمسح كل الموردين والطلبيات والملفات المرفوعة ويرجع الداشبورد فاضي.</p>
+      <button class="btn btn-danger" id="deleteAllBtn2">🗑️ حذف كل البيانات</button>
+    </div>`;
+
+  const zone = document.getElementById('uploadZone');
+  const fileInput = document.getElementById('fileInput');
+  document.getElementById('selectFileBtn').onclick = () => fileInput.click();
+  fileInput.onchange = e => { if (e.target.files[0]) handleFileUpload(e.target.files[0]); e.target.value = ''; };
+  zone.onclick = () => fileInput.click();
+  zone.ondragover = e => { e.preventDefault(); zone.classList.add('dragover'); };
+  zone.ondragleave = () => zone.classList.remove('dragover');
+  zone.ondrop = e => { e.preventDefault(); zone.classList.remove('dragover'); if (e.dataTransfer.files[0]) handleFileUpload(e.dataTransfer.files[0]); };
+  document.getElementById('uploadHistory').addEventListener('click', e => {
+    const btn = e.target.closest('[data-delete]');
+    if (btn) { deleteUpload(btn.dataset.delete); }
+  });
+  document.getElementById('deleteAllBtn2').onclick = deleteAllData;
+}
+
+function renderUploadHistory(uploads) {
+  if (!uploads.length) return '<p style="color:var(--text-muted);font-size:13px">لا توجد ملفات مرفوعة</p>';
+  return uploads.sort((a, b) => b.month.localeCompare(a.month)).map(u => `
+    <div class="history-item">
+      <div class="info">
+        <h4>📅 ${u.monthLabel || u.month} — ${u.fileName}</h4>
+        <p>${num(u.orderNumbers.length)} طلبية · ${num(u.meta?.total_items || 0)} صنف · ${new Date(u.uploadedAt).toLocaleDateString('en-GB')}</p>
+      </div>
+      <button class="btn btn-ghost" data-delete="${u.id}">حذف</button>
+    </div>`).join('');
+}
+
+function rebuildDataFromUploads() {
+  const uploads = getUploads();
+  if (!uploads.length) { DATA = null; saveData(); return; }
+  const keepOrders = new Set(uploads.flatMap(u => u.orderNumbers || []));
+  if (!DATA) DATA = { orders: {}, suppliers: [], meta: {} };
+  Object.keys(DATA.orders).forEach(no => { if (!keepOrders.has(no)) delete DATA.orders[no]; });
+  rebuildSuppliers();
+  saveData();
+}
+
+function deleteUpload(id) {
+  saveUploads(getUploads().filter(u => u.id !== id));
+  rebuildDataFromUploads();
+  selectedSupplier = null;
+  updateMeta();
+  if (hasData()) renderSupplierList(DATA.suppliers);
+  showView(currentView);
+}
+
+async function handleFileUpload(file) {
+  if (!file.name.toLowerCase().endsWith('.pdf')) { alert('يرجى اختيار ملف PDF'); return; }
+  const month = document.getElementById('uploadMonth').value;
+  const status = document.getElementById('uploadStatus');
+  const bar = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  status.textContent = 'جاري قراءة الملف...';
+  bar.style.display = 'block'; fill.style.width = '0%';
+
+  try {
+    await ensurePdfReady();
+    const buf = await file.arrayBuffer();
+    const parsed = await OrdersParser.parsePdfBuffer(buf, (cur, total) => {
+      fill.style.width = `${Math.round(cur / total * 100)}%`;
+      status.textContent = `جاري التحليل... صفحة ${num(cur)} من ${num(total)}`;
+    });
+    const orderNumbers = Object.keys(parsed.orders);
+    if (!orderNumbers.length || !parsed.meta.total_suppliers) {
+      throw new Error('لم يتم استخراج بيانات من الملف. تأكد من الاتصال بالإنترنت وأن الملف هو ملف طلبيات PDF الصحيح');
+    }
+
+    const monthLabel = new Date(month + '-01').toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+    const upload = {
+      id: String(Date.now()), month, monthLabel, fileName: file.name,
+      uploadedAt: new Date().toISOString(), orderNumbers, meta: parsed.meta,
+    };
+    const uploads = getUploads().filter(u => u.month !== month);
+    uploads.push(upload);
+    saveUploads(uploads);
+
+    DATA = mergeOrderData(parsed);
+    saveData();
+    selectedSupplier = null;
+    updateMeta();
+    renderSupplierList(DATA.suppliers);
+
+    status.innerHTML = `✅ تم التحليل! <b>${num(parsed.meta.total_suppliers)}</b> مورد · <b>${num(orderNumbers.length)}</b> طلبية · <b>${num(parsed.meta.total_items)}</b> صنف`;
+    fill.style.width = '100%';
+    document.getElementById('uploadHistory').innerHTML = renderUploadHistory(getUploads());
+    setTimeout(() => showView('suppliers', 'orders'), 1200);
+  } catch (err) {
+    status.textContent = '❌ خطأ: ' + err.message;
+    bar.style.display = 'none';
+    console.error(err);
+  }
+}
+
+document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => showView(el.dataset.view, el.dataset.section)));
+document.getElementById('deleteAllBtn').addEventListener('click', deleteAllData);
+document.getElementById('searchInput').addEventListener('input', e => {
+  const q = e.target.value.trim().toLowerCase();
+  if (currentSection === 'intake') {
+    if (!hasIntakeData()) return;
+    const list = q ? INTAKE_DATA.suppliers.filter(s => cleanName(s.name).toLowerCase().includes(q) || (s.code || '').includes(q)) : INTAKE_DATA.suppliers;
+    renderIntakeSupplierList(list);
+    return;
+  }
+  if (!hasData()) return;
+  renderSupplierList(q ? DATA.suppliers.filter(s => cleanName(s.name).toLowerCase().includes(q) || (s.code || '').includes(q)) : DATA.suppliers);
+});
+document.getElementById('menuToggle').addEventListener('click', () => {
+  document.getElementById('navSidebar').classList.toggle('open');
+  document.getElementById('suppliersPanel').classList.toggle('open');
+});
+
+loadData().then(() => ensurePdfReady().catch(() => {})).catch(err => {
+  document.getElementById('loading').innerHTML = `<span style="color:#ef4444">خطأ: ${err.message}</span>`;
+});
+</script>
+</body>
+</html>
