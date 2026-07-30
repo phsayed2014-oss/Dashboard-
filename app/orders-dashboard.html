@@ -169,6 +169,15 @@ tbody tr:hover { background: rgba(255,255,255,0.02); }
 @keyframes spin { to { transform: rotate(360deg); } }
 .progress-bar { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 12px; }
 .progress-bar .fill { height: 100%; background: var(--accent); transition: width .3s; width: 0; }
+.btn-danger { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+.nav-footer { padding: 12px 10px 16px; border-top: 1px solid var(--border); }
+.danger-zone {
+  margin-top: 24px; padding: 16px; border-radius: 12px;
+  border: 1px solid rgba(239,68,68,0.25); background: rgba(239,68,68,0.06);
+}
+.danger-zone h4 { color: #f87171; font-size: 13px; margin-bottom: 6px; }
+.danger-zone p { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+
 .mobile-toggle { display: none; background: none; border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-family: inherit; margin-bottom: 8px; }
 
 @media (max-width: 900px) {
@@ -181,7 +190,7 @@ tbody tr:hover { background: rgba(255,255,255,0.02); }
 </head>
 <body>
 
-<div class="loading" id="loading"><div class="spinner"></div><span>جاري تحميل بيانات الطلبيات...</span></div>
+<div class="loading" id="loading"><div class="spinner"></div><span>جاري التحميل...</span></div>
 
 <div id="app" style="display:none;width:100%;height:100vh;">
   <aside class="nav-sidebar" id="navSidebar">
@@ -196,6 +205,9 @@ tbody tr:hover { background: rgba(255,255,255,0.02); }
         <button class="nav-item" data-view="completed">الطلبيات المكتملة <span class="nav-badge" id="completedBadge">0</span></button>
         <button class="nav-item" data-view="upload">رفع ملف شهري</button>
       </div>
+    </div>
+    <div class="nav-footer">
+      <button class="btn btn-danger" id="deleteAllBtn" style="width:100%">🗑️ حذف كل البيانات</button>
     </div>
   </aside>
 
@@ -225,16 +237,15 @@ tbody tr:hover { background: rgba(255,255,255,0.02); }
 
 <input type="file" id="fileInput" accept=".pdf" hidden>
 
-<script src="orders-data.js"></script>
 <script src="orders-parser.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+const DATA_KEY = 'pharmadash_orders_data';
 const UPLOADS_KEY = 'pharmadash_monthly_uploads';
 let DATA = null;
 let selectedSupplier = null;
 let currentView = 'suppliers';
-let completedSet = new Set();
 
 function fmt(n) {
   const v = parseFloat(n);
@@ -247,34 +258,108 @@ function num(n) {
 function cleanName(n) { return (n || '').replace(/\s*-\s*-\s*/g, ' - ').trim(); }
 function toNum(v) { const n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? 0 : n; }
 
+function hasData() { return DATA && DATA.suppliers && DATA.suppliers.length > 0; }
+
+function loadStoredData() {
+  try {
+    const raw = localStorage.getItem(DATA_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function saveData() {
+  if (DATA) localStorage.setItem(DATA_KEY, JSON.stringify(DATA));
+  else localStorage.removeItem(DATA_KEY);
+}
+
 function getUploads() {
   try { return JSON.parse(localStorage.getItem(UPLOADS_KEY) || '[]'); }
   catch { return []; }
 }
 function saveUploads(uploads) { localStorage.setItem(UPLOADS_KEY, JSON.stringify(uploads)); }
 
-function rebuildCompletedSet() {
-  completedSet = new Set();
-  getUploads().forEach(u => (u.orderNumbers || []).forEach(o => completedSet.add(o)));
-  document.getElementById('completedBadge').textContent = num(completedSet.size);
+function rebuildSuppliers() {
+  const suppliers = {};
+  Object.values(DATA.orders).forEach(order => {
+    const name = order.supplier;
+    if (!suppliers[name]) suppliers[name] = { name, code: name.split(' - ')[0] || '', orders: [] };
+    if (!suppliers[name].orders.includes(order.order_no)) suppliers[name].orders.push(order.order_no);
+  });
+  DATA.suppliers = Object.values(suppliers).map(s => ({
+    ...s,
+    order_count: s.orders.length,
+    item_count: s.orders.reduce((sum, o) => sum + (DATA.orders[o]?.items.length || 0), 0),
+  })).sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+  DATA.meta = {
+    total_orders: Object.keys(DATA.orders).length,
+    total_suppliers: DATA.suppliers.length,
+    total_items: Object.values(DATA.orders).reduce((s, o) => s + o.items.length, 0),
+    source: 'ملفات مرفوعة',
+  };
 }
 
-function isCompleted(orderNo) { return completedSet.has(orderNo); }
+function mergeOrderData(incoming) {
+  if (!DATA) return JSON.parse(JSON.stringify(incoming));
+  const orders = { ...DATA.orders };
+  Object.entries(incoming.orders).forEach(([no, order]) => { orders[no] = order; });
+  DATA = { ...DATA, orders };
+  rebuildSuppliers();
+  return DATA;
+}
+
+function updateMeta() {
+  const el = document.getElementById('metaInfo');
+  const badge = document.getElementById('completedBadge');
+  if (!hasData()) {
+    el.textContent = 'لا توجد بيانات — ارفع ملف PDF';
+    badge.textContent = '0';
+    return;
+  }
+  el.textContent = `${num(DATA.meta.total_suppliers)} مورد · ${num(DATA.meta.total_orders)} طلبية · ${num(DATA.meta.total_items)} صنف`;
+  badge.textContent = num(getUploads().length);
+}
+
+function emptyStateHtml(title, desc, showUploadBtn = false) {
+  return `<div class="empty-state">
+    <div style="font-size:48px;opacity:.3">📄</div>
+    <h3>${title}</h3>
+    <p>${desc}</p>
+    ${showUploadBtn ? '<button class="btn btn-primary" id="goUploadBtn" style="margin-top:16px">رفع ملف PDF الآن</button>' : ''}
+  </div>`;
+}
 
 function initApp() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
-  rebuildCompletedSet();
-  document.getElementById('metaInfo').textContent =
-    `${num(DATA.meta.total_suppliers)} مورد · ${num(DATA.meta.total_orders)} طلبية`;
-  renderSupplierList(DATA.suppliers);
-  showView('suppliers');
+  updateMeta();
+  if (hasData()) {
+    renderSupplierList(DATA.suppliers);
+    showView(currentView);
+  } else {
+    selectedSupplier = null;
+    document.getElementById('supplierList').innerHTML = '';
+    document.getElementById('supplierCount').textContent = '';
+    showView('upload');
+  }
 }
 
 function loadData() {
-  if (window.ORDERS_DATA) { DATA = window.ORDERS_DATA; initApp(); return Promise.resolve(); }
-  return fetch('orders-data.json').then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(d => { DATA = d; initApp(); });
+  DATA = loadStoredData();
+  initApp();
+  return Promise.resolve();
+}
+
+function deleteAllData() {
+  if (!confirm('هل أنت متأكد؟ سيتم حذف كل الموردين والطلبيات والملفات المرفوعة نهائيًا.')) return;
+  localStorage.removeItem(DATA_KEY);
+  localStorage.removeItem(UPLOADS_KEY);
+  DATA = null;
+  selectedSupplier = null;
+  updateMeta();
+  document.getElementById('supplierList').innerHTML = '';
+  document.getElementById('supplierCount').textContent = '';
+  document.getElementById('kpiRow').style.display = 'none';
+  showView('upload');
 }
 
 function showView(view) {
@@ -282,14 +367,21 @@ function showView(view) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.view === view));
   const panel = document.getElementById('suppliersPanel');
   const kpi = document.getElementById('kpiRow');
-  panel.classList.toggle('hidden', view !== 'suppliers');
+  panel.classList.toggle('hidden', view !== 'suppliers' || !hasData());
   kpi.style.display = 'none';
 
   if (view === 'suppliers') {
+    if (!hasData()) {
+      document.getElementById('pageTitle').textContent = 'الموردين';
+      document.getElementById('pageSubtitle').textContent = 'ارفع ملفًا أولًا لعرض الموردين';
+      document.getElementById('content').innerHTML = emptyStateHtml('لا توجد بيانات بعد', 'ارفع ملف PDF الطلبيات وسيظهر الموردون تلقائيًا', true);
+      document.getElementById('goUploadBtn')?.addEventListener('click', () => showView('upload'));
+      return;
+    }
     document.getElementById('pageTitle').textContent = selectedSupplier ? cleanName(selectedSupplier.name) : 'اختر مورّدًا';
     document.getElementById('pageSubtitle').textContent = selectedSupplier ? `كود: ${selectedSupplier.code || '—'}` : 'من قائمة الموردين';
     if (selectedSupplier) selectSupplier(selectedSupplier, false);
-    else document.getElementById('content').innerHTML = `<div class="empty-state"><div style="font-size:48px;opacity:.3">📋</div><h3>مرحبًا بك</h3><p>اختر مورّدًا من القائمة لعرض طلبياته</p></div>`;
+    else document.getElementById('content').innerHTML = emptyStateHtml('اختر مورّدًا', 'اضغط على مورد من القائمة لعرض طلبياته');
   } else if (view === 'completed') {
     renderCompletedView();
   } else if (view === 'upload') {
@@ -300,17 +392,14 @@ function showView(view) {
 function renderSupplierList(suppliers) {
   const list = document.getElementById('supplierList');
   document.getElementById('supplierCount').textContent = `عرض ${num(suppliers.length)} مورد`;
-  list.innerHTML = suppliers.map(s => {
-    const done = s.orders.filter(o => isCompleted(o)).length;
-    return `<div class="supplier-item" data-name="${cleanName(s.name)}">
+  list.innerHTML = suppliers.map(s => `
+    <div class="supplier-item" data-name="${cleanName(s.name)}">
       <div class="name">${cleanName(s.name)}</div>
       <div class="meta">
         <span class="badge orders">${num(s.order_count)} طلبية</span>
         <span class="badge items">${num(s.item_count)} صنف</span>
-        ${done ? `<span class="badge done">${num(done)} مكتملة</span>` : ''}
       </div>
-    </div>`;
-  }).join('');
+    </div>`).join('');
   list.querySelectorAll('.supplier-item').forEach(el => {
     el.addEventListener('click', () => {
       const s = DATA.suppliers.find(x => cleanName(x.name) === el.dataset.name);
@@ -337,18 +426,16 @@ function orderTableRows(items) {
   }).join('');
 }
 
-function orderCard(order, orderNo) {
+function orderCard(order) {
   let total = 0;
   order.items.forEach(i => total += toNum(i.total_price));
-  const done = isCompleted(orderNo);
-  return `<div class="order-card ${done ? 'completed' : ''}">
+  return `<div class="order-card">
     <div class="order-head">
       <div>
         <div class="order-no">${order.order_no}</div>
         <div class="order-date">تاريخ: ${order.po_date || '—'} · ${cleanName(order.supplier)}</div>
       </div>
       <div class="order-stats">
-        ${done ? '<span class="badge done">مكتملة</span>' : '<span class="badge pending">قيد التنفيذ</span>'}
         <span>${num(order.items.length)} صنف</span>
         <span>الإجمالي: ${fmt(total)} ر.س</span>
       </div>
@@ -367,60 +454,51 @@ function selectSupplier(supplier, updateView = true) {
   document.getElementById('pageTitle').textContent = cleanName(supplier.name);
   document.getElementById('pageSubtitle').textContent = `كود المورد: ${supplier.code || '—'}`;
 
-  let totalItems = 0, totalPrice = 0, bonusItems = 0, doneCount = 0;
+  let totalItems = 0, totalPrice = 0;
   const cards = supplier.orders.map(no => {
     const o = DATA.orders[no]; if (!o) return '';
     totalItems += o.items.length;
-    if (isCompleted(no)) doneCount++;
-    o.items.forEach(i => { totalPrice += toNum(i.total_price); if (toNum(i.bonus) > 0) bonusItems++; });
-    return orderCard(o, no);
+    o.items.forEach(i => { totalPrice += toNum(i.total_price); });
+    return orderCard(o);
   }).join('');
 
   document.getElementById('kpiRow').style.display = 'flex';
   document.getElementById('kpiRow').innerHTML = `
     <div class="kpi"><div class="kpi-label">طلبيات</div><div class="kpi-value blue">${num(supplier.order_count)}</div></div>
     <div class="kpi"><div class="kpi-label">أصناف</div><div class="kpi-value teal">${num(totalItems)}</div></div>
-    <div class="kpi"><div class="kpi-label">مكتملة</div><div class="kpi-value green">${num(doneCount)}</div></div>
     <div class="kpi"><div class="kpi-label">القيمة</div><div class="kpi-value amber">${fmt(totalPrice)}</div></div>`;
   document.getElementById('content').innerHTML = cards || '<div class="empty-state"><h3>لا توجد طلبيات</h3></div>';
   if (updateView) showView('suppliers');
 }
 
 function renderCompletedView() {
-  const allOrders = Object.keys(DATA.orders);
-  const completed = allOrders.filter(o => isCompleted(o));
-  const pending = allOrders.filter(o => !isCompleted(o));
   const uploads = getUploads();
-
   document.getElementById('pageTitle').textContent = 'الطلبيات المكتملة';
-  document.getElementById('pageSubtitle').textContent = 'الطلبيات اللي ظهرت في الملفات المرفوعة';
+  document.getElementById('pageSubtitle').textContent = 'الطلبيات المستخرجة من الملفات المرفوعة حسب الشهر';
+
+  if (!hasData() || !uploads.length) {
+    document.getElementById('kpiRow').style.display = 'none';
+    document.getElementById('content').innerHTML = emptyStateHtml('لا توجد طلبيات بعد', 'ارفع ملف PDF لعرض الطلبيات هنا', true);
+    document.getElementById('goUploadBtn')?.addEventListener('click', () => showView('upload'));
+    return;
+  }
+
+  const allOrders = Object.keys(DATA.orders);
   document.getElementById('kpiRow').style.display = 'flex';
   document.getElementById('kpiRow').innerHTML = `
-    <div class="kpi"><div class="kpi-label">مكتملة</div><div class="kpi-value green">${num(completed.length)}</div></div>
-    <div class="kpi"><div class="kpi-label">قيد التنفيذ</div><div class="kpi-value amber">${num(pending.length)}</div></div>
+    <div class="kpi"><div class="kpi-label">إجمالي الطلبيات</div><div class="kpi-value teal">${num(allOrders.length)}</div></div>
     <div class="kpi"><div class="kpi-label">ملفات مرفوعة</div><div class="kpi-value blue">${num(uploads.length)}</div></div>
-    <div class="kpi"><div class="kpi-label">إجمالي</div><div class="kpi-value teal">${num(allOrders.length)}</div></div>`;
+    <div class="kpi"><div class="kpi-label">موردين</div><div class="kpi-value green">${num(DATA.meta.total_suppliers)}</div></div>`;
 
   let html = '';
-  if (!uploads.length) {
-    html += `<div class="empty-state"><div style="font-size:48px;opacity:.3">📤</div><h3>لم ترفع أي ملف بعد</h3><p>اذهب لـ «رفع ملف شهري» وارفع ملف PDF الطلبيات</p></div>`;
-  } else {
-    uploads.sort((a, b) => b.month.localeCompare(a.month)).forEach(u => {
-      html += `<div class="month-group"><h3>📅 ${u.monthLabel || u.month} — ${num(u.orderNumbers.length)} طلبية</h3>`;
-      u.orderNumbers.forEach(no => {
-        const o = DATA.orders[no];
-        if (o) html += orderCard(o, no);
-        else html += `<div class="order-card completed"><div class="order-head"><div><div class="order-no">${no}</div><div class="order-date">طلبية من الملف المرفوع</div></div><span class="badge done">مكتملة</span></div></div>`;
-      });
-      html += '</div>';
+  uploads.sort((a, b) => b.month.localeCompare(a.month)).forEach(u => {
+    html += `<div class="month-group"><h3>📅 ${u.monthLabel || u.month} — ${num(u.orderNumbers.length)} طلبية</h3>`;
+    u.orderNumbers.forEach(no => {
+      const o = DATA.orders[no];
+      if (o) html += orderCard(o);
     });
-  }
-  if (pending.length) {
-    html += `<div class="month-group"><h3>⏳ قيد التنفيذ — ${num(pending.length)} طلبية</h3>`;
-    pending.slice(0, 20).forEach(no => { if (DATA.orders[no]) html += orderCard(DATA.orders[no], no); });
-    if (pending.length > 20) html += `<p style="color:var(--text-muted);font-size:13px;padding:12px">و ${num(pending.length - 20)} طلبية أخرى...</p>`;
     html += '</div>';
-  }
+  });
   document.getElementById('content').innerHTML = html;
 }
 
@@ -429,7 +507,7 @@ function renderUploadView() {
   const now = new Date();
   const monthDefault = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   document.getElementById('pageTitle').textContent = 'رفع ملف شهري';
-  document.getElementById('pageSubtitle').textContent = 'ارفع ملف PDF الطلبيات كل شهر لمتابعة اللي تم';
+  document.getElementById('pageSubtitle').textContent = 'ارفع ملف PDF وسيتم تحليل الموردين والطلبيات تلقائيًا';
   document.getElementById('kpiRow').style.display = 'none';
 
   document.getElementById('content').innerHTML = `
@@ -440,12 +518,17 @@ function renderUploadView() {
     <div class="upload-zone" id="uploadZone">
       <div class="icon">📄</div>
       <h3>اسحب ملف PDF هنا</h3>
-      <p>أو اضغط «اختيار ملف PDF» — نفس صيغة ملف الطلبيات</p>
+      <p>ارفع ملف الطلبيات — نفس الصيغة — وسيظهر الموردون فورًا</p>
       <div class="progress-bar" id="progressBar" style="display:none"><div class="fill" id="progressFill"></div></div>
       <p id="uploadStatus" style="margin-top:12px;font-size:13px;color:var(--text-muted)"></p>
     </div>
     <h3 style="font-size:15px;margin-bottom:12px">الملفات المرفوعة سابقًا</h3>
-    <div class="upload-history" id="uploadHistory">${renderUploadHistory(uploads)}</div>`;
+    <div class="upload-history" id="uploadHistory">${renderUploadHistory(uploads)}</div>
+    <div class="danger-zone">
+      <h4>حذف البيانات</h4>
+      <p>يمسح كل الموردين والطلبيات والملفات المرفوعة ويرجع الداشبورد فاضي.</p>
+      <button class="btn btn-danger" id="deleteAllBtn2">🗑️ حذف كل البيانات</button>
+    </div>`;
 
   const zone = document.getElementById('uploadZone');
   const fileInput = document.getElementById('fileInput');
@@ -457,8 +540,9 @@ function renderUploadView() {
   zone.ondrop = e => { e.preventDefault(); zone.classList.remove('dragover'); if (e.dataTransfer.files[0]) handleFileUpload(e.dataTransfer.files[0]); };
   document.getElementById('uploadHistory').addEventListener('click', e => {
     const btn = e.target.closest('[data-delete]');
-    if (btn) { deleteUpload(btn.dataset.delete); renderUploadView(); rebuildCompletedSet(); renderSupplierList(DATA.suppliers); }
+    if (btn) { deleteUpload(btn.dataset.delete); }
   });
+  document.getElementById('deleteAllBtn2').onclick = deleteAllData;
 }
 
 function renderUploadHistory(uploads) {
@@ -473,9 +557,23 @@ function renderUploadHistory(uploads) {
     </div>`).join('');
 }
 
+function rebuildDataFromUploads() {
+  const uploads = getUploads();
+  if (!uploads.length) { DATA = null; saveData(); return; }
+  const keepOrders = new Set(uploads.flatMap(u => u.orderNumbers || []));
+  if (!DATA) DATA = { orders: {}, suppliers: [], meta: {} };
+  Object.keys(DATA.orders).forEach(no => { if (!keepOrders.has(no)) delete DATA.orders[no]; });
+  rebuildSuppliers();
+  saveData();
+}
+
 function deleteUpload(id) {
   saveUploads(getUploads().filter(u => u.id !== id));
-  rebuildCompletedSet();
+  rebuildDataFromUploads();
+  selectedSupplier = null;
+  updateMeta();
+  if (hasData()) renderSupplierList(DATA.suppliers);
+  showView(currentView);
 }
 
 async function handleFileUpload(file) {
@@ -502,14 +600,17 @@ async function handleFileUpload(file) {
     const uploads = getUploads().filter(u => u.month !== month);
     uploads.push(upload);
     saveUploads(uploads);
-    rebuildCompletedSet();
+
+    DATA = mergeOrderData(parsed);
+    saveData();
+    selectedSupplier = null;
+    updateMeta();
     renderSupplierList(DATA.suppliers);
 
-    const matched = orderNumbers.filter(o => DATA.orders[o]).length;
-    const newOrders = orderNumbers.filter(o => !DATA.orders[o]).length;
-    status.innerHTML = `✅ تم! <b>${num(orderNumbers.length)}</b> طلبية · <b>${num(matched)}</b> مطابقة · <b>${num(newOrders)}</b> جديدة`;
+    status.innerHTML = `✅ تم التحليل! <b>${num(parsed.meta.total_suppliers)}</b> مورد · <b>${num(orderNumbers.length)}</b> طلبية · <b>${num(parsed.meta.total_items)}</b> صنف`;
     fill.style.width = '100%';
     document.getElementById('uploadHistory').innerHTML = renderUploadHistory(getUploads());
+    setTimeout(() => showView('suppliers'), 1200);
   } catch (err) {
     status.textContent = '❌ خطأ: ' + err.message;
     bar.style.display = 'none';
@@ -517,7 +618,9 @@ async function handleFileUpload(file) {
 }
 
 document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', () => showView(el.dataset.view)));
+document.getElementById('deleteAllBtn').addEventListener('click', deleteAllData);
 document.getElementById('searchInput').addEventListener('input', e => {
+  if (!hasData()) return;
   const q = e.target.value.trim().toLowerCase();
   renderSupplierList(q ? DATA.suppliers.filter(s => cleanName(s.name).toLowerCase().includes(q) || (s.code || '').includes(q)) : DATA.suppliers);
 });
