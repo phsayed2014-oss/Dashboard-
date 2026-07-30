@@ -239,7 +239,27 @@ tbody tr:hover { background: rgba(255,255,255,0.02); }
 
 <script src="orders-parser.js"></script>
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const PDFJS_WORKER_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+let pdfReadyPromise = null;
+
+async function ensurePdfReady() {
+  if (typeof pdfjsLib === 'undefined') {
+    throw new Error('مكتبة PDF غير محمّلة — تأكد من الاتصال بالإنترنت ثم أعد تحميل الصفحة');
+  }
+  if (!pdfReadyPromise) {
+    pdfReadyPromise = (async () => {
+      try {
+        const res = await fetch(PDFJS_WORKER_URL);
+        if (!res.ok) throw new Error('worker fetch failed');
+        const blob = new Blob([await res.text()], { type: 'application/javascript' });
+        pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
+      } catch {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
+      }
+    })();
+  }
+  await pdfReadyPromise;
+}
 
 const DATA_KEY = 'pharmadash_orders_data';
 const UPLOADS_KEY = 'pharmadash_monthly_uploads';
@@ -514,6 +534,7 @@ function renderUploadView() {
       <div class="icon">📄</div>
       <h3>اسحب ملف PDF هنا</h3>
       <p>ارفع ملف الطلبيات — نفس الصيغة — وسيظهر الموردون فورًا</p>
+      <p style="font-size:12px;color:var(--amber);margin-top:8px">⚠️ يجب الاتصال بالإنترنت أثناء الرفع (لتفعيل محلل PDF)</p>
       <div class="progress-bar" id="progressBar" style="display:none"><div class="fill" id="progressFill"></div></div>
       <p id="uploadStatus" style="margin-top:12px;font-size:13px;color:var(--text-muted)"></p>
     </div>
@@ -581,12 +602,17 @@ async function handleFileUpload(file) {
   bar.style.display = 'block'; fill.style.width = '0%';
 
   try {
+    await ensurePdfReady();
     const buf = await file.arrayBuffer();
     const parsed = await OrdersParser.parsePdfBuffer(buf, (cur, total) => {
       fill.style.width = `${Math.round(cur / total * 100)}%`;
       status.textContent = `جاري التحليل... صفحة ${num(cur)} من ${num(total)}`;
     });
     const orderNumbers = Object.keys(parsed.orders);
+    if (!orderNumbers.length || !parsed.meta.total_suppliers) {
+      throw new Error('لم يتم استخراج بيانات من الملف. تأكد من الاتصال بالإنترنت وأن الملف هو ملف طلبيات PDF الصحيح');
+    }
+
     const monthLabel = new Date(month + '-01').toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
     const upload = {
       id: String(Date.now()), month, monthLabel, fileName: file.name,
@@ -595,10 +621,6 @@ async function handleFileUpload(file) {
     const uploads = getUploads().filter(u => u.month !== month);
     uploads.push(upload);
     saveUploads(uploads);
-
-    if (!parsed.meta.total_suppliers) {
-      throw new Error('لم يتم استخراج موردين من الملف');
-    }
 
     DATA = mergeOrderData(parsed);
     saveData();
@@ -613,6 +635,7 @@ async function handleFileUpload(file) {
   } catch (err) {
     status.textContent = '❌ خطأ: ' + err.message;
     bar.style.display = 'none';
+    console.error(err);
   }
 }
 
@@ -628,7 +651,7 @@ document.getElementById('menuToggle').addEventListener('click', () => {
   document.getElementById('suppliersPanel').classList.toggle('open');
 });
 
-loadData().catch(err => {
+loadData().then(() => ensurePdfReady().catch(() => {})).catch(err => {
   document.getElementById('loading').innerHTML = `<span style="color:#ef4444">خطأ: ${err.message}</span>`;
 });
 </script>
