@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>متابعة الطلبيات | PharmaDash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Alexandria:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e18;
+  --bg-card: #10162a;
+  --bg-sidebar: #060a14;
+  --border: rgba(255,255,255,0.08);
+  --text: #f0f4ff;
+  --text-dim: #9aa7c4;
+  --text-muted: #6b7795;
+  --accent: #0d9488;
+  --accent-light: #14b8a6;
+  --violet: #2563eb;
+  --amber: #f59e0b;
+  --rose: #ef4444;
+  --radius: 12px;
+  --sidebar-w: 320px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--bg-sidebar);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.sidebar-header {
+  padding: 20px 18px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-header h1 {
+  font-family: 'Alexandria', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent-light), var(--violet));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+.sidebar-header p {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.search-box {
+  margin: 14px 18px 10px;
+  position: relative;
+}
+.search-box input {
+  width: 100%;
+  padding: 10px 14px 10px 36px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color .2s;
+}
+.search-box input:focus { border-color: var(--accent); }
+.search-box svg {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+.supplier-count {
+  padding: 0 18px 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.supplier-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 10px 16px;
+}
+.supplier-list::-webkit-scrollbar { width: 4px; }
+.supplier-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+.supplier-item {
+  padding: 12px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+  transition: all .15s;
+}
+.supplier-item:hover {
+  background: rgba(255,255,255,0.04);
+  border-color: var(--border);
+}
+.supplier-item.active {
+  background: rgba(13,148,136,0.12);
+  border-color: rgba(13,148,136,0.35);
+}
+.supplier-item .name {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.supplier-item .meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.06);
+  color: var(--text-dim);
+}
+.badge.orders { background: rgba(37,99,235,0.15); color: #60a5fa; }
+.badge.items { background: rgba(13,148,136,0.15); color: var(--accent-light); }
+
+/* ── Main ── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+.topbar {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  background: rgba(10,14,24,0.8);
+  backdrop-filter: blur(12px);
+}
+.topbar h2 {
+  font-family: 'Alexandria', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+.topbar .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.kpi-row {
+  display: flex;
+  gap: 14px;
+  padding: 18px 28px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.kpi {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  min-width: 140px;
+  flex: 1;
+}
+.kpi-label { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
+.kpi-value { font-family: 'Alexandria', sans-serif; font-size: 24px; font-weight: 800; }
+.kpi-value.teal { color: var(--accent-light); }
+.kpi-value.blue { color: #60a5fa; }
+.kpi-value.amber { color: var(--amber); }
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 28px 28px;
+}
+.content::-webkit-scrollbar { width: 6px; }
+.content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 6px; }
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 40px;
+}
+.empty-state svg { margin-bottom: 16px; opacity: 0.3; }
+.empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--text-dim); }
+
+.order-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.order-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: rgba(255,255,255,0.02);
+}
+.order-head .order-no {
+  font-family: 'Alexandria', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent-light);
+}
+.order-head .order-date {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.order-head .order-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+thead th {
+  padding: 10px 14px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+}
+tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: middle;
+}
+tbody tr:hover { background: rgba(255,255,255,0.02); }
+tbody tr:last-child td { border-bottom: none; }
+.td-num { text-align: center; color: var(--text-muted); font-weight: 600; width: 40px; }
+.td-name { max-width: 280px; line-height: 1.4; }
+.td-code { font-family: monospace; font-size: 11px; color: var(--text-dim); }
+.td-qty { text-align: center; font-weight: 700; }
+.td-bonus { text-align: center; }
+.td-bonus.has-bonus { color: var(--amber); font-weight: 700; }
+.td-disc { text-align: center; }
+.td-disc.has-disc { color: var(--rose); font-weight: 600; }
+.td-price { text-align: left; direction: ltr; font-variant-numeric: tabular-nums; }
+.td-total { text-align: left; direction: ltr; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent-light); }
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--text-muted);
+}
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.mobile-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    right: -100%;
+    top: 0;
+    z-index: 100;
+    transition: right .3s;
+  }
+  .sidebar.open { right: 0; }
+  .mobile-toggle { display: block; }
+  .kpi-row { padding: 12px 16px; }
+  .content { padding: 0 16px 16px; }
+  .topbar { padding: 14px 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <span>جاري تحميل بيانات الطلبيات...</span>
+</div>
+
+<div id="app" style="display:none;width:100%;height:100vh;display:none;">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h1>متابعة الطلبيات</h1>
+      <p id="metaInfo">—</p>
+    </div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="بحث عن مورد...">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    </div>
+    <div class="supplier-count" id="supplierCount"></div>
+    <div class="supplier-list" id="supplierList"></div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <button class="mobile-toggle" id="menuToggle">☰ الموردين</button>
+        <h2 id="selectedTitle">اختر مورّدًا</h2>
+        <div class="subtitle" id="selectedSubtitle">اضغط على اسم المورد من القائمة الجانبية لعرض طلبياته</div>
+      </div>
+    </div>
+    <div class="kpi-row" id="kpiRow" style="display:none">
+      <div class="kpi"><div class="kpi-label">عدد الطلبيات</div><div class="kpi-value blue" id="kpiOrders">0</div></div>
+      <div class="kpi"><div class="kpi-label">عدد الأصناف</div><div class="kpi-value teal" id="kpiItems">0</div></div>
+      <div class="kpi"><div class="kpi-label">إجمالي القيمة</div><div class="kpi-value amber" id="kpiTotal">0</div></div>
+      <div class="kpi"><div class="kpi-label">أصناف ببونص</div><div class="kpi-value teal" id="kpiBonus">0</div></div>
+    </div>
+    <div class="content" id="content">
+      <div class="empty-state">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 16v-4a4 4 0 0 0-8 0v4"/><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>
+        <h3>مرحبًا بك في لوحة متابعة الطلبيات</h3>
+        <p>اختر مورّدًا من القائمة الجانبية لعرض طلبياته وتفاصيل الأصناف</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+let DATA = null;
+let selectedSupplier = null;
+
+function fmt(n) {
+  const v = parseFloat(n);
+  if (isNaN(v)) return '—';
+  return v.toLocaleString('ar-SA', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+
+function cleanName(name) {
+  return (name || '').replace(/\s*-\s*-\s*/g, ' - ').trim();
+}
+
+function toNum(v) {
+  const n = parseFloat(String(v).replace(/,/g, ''));
+  return isNaN(n) ? 0 : n;
+}
+
+async function loadData() {
+  const res = await fetch('orders-data.json');
+  DATA = await res.json();
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('metaInfo').textContent =
+    `${DATA.meta.total_suppliers} مورد · ${DATA.meta.total_orders} طلبية · ${DATA.meta.total_items.toLocaleString('ar-SA')} صنف`;
+  renderSupplierList(DATA.suppliers);
+}
+
+function renderSupplierList(suppliers) {
+  const list = document.getElementById('supplierList');
+  const count = document.getElementById('supplierCount');
+  count.textContent = `عرض ${suppliers.length} مورد`;
+  list.innerHTML = suppliers.map((s, i) => `
+    <div class="supplier-item" data-idx="${DATA.suppliers.indexOf(s)}" data-name="${cleanName(s.name)}">
+      <div class="name">${cleanName(s.name)}</div>
+      <div class="meta">
+        <span class="badge orders">${s.order_count} طلبية</span>
+        <span class="badge items">${s.item_count} صنف</span>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.supplier-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = parseInt(el.dataset.idx);
+      selectSupplier(DATA.suppliers[idx]);
+      document.getElementById('sidebar').classList.remove('open');
+    });
+  });
+}
+
+function selectSupplier(supplier) {
+  selectedSupplier = supplier;
+  document.querySelectorAll('.supplier-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.name === cleanName(supplier.name));
+  });
+
+  document.getElementById('selectedTitle').textContent = cleanName(supplier.name);
+  document.getElementById('selectedSubtitle').textContent =
+    `كود المورد: ${supplier.code || '—'}`;
+
+  let totalItems = 0, totalPrice = 0, bonusItems = 0;
+  const orderCards = supplier.orders.map(orderNo => {
+    const order = DATA.orders[orderNo];
+    if (!order) return '';
+    totalItems += order.items.length;
+    let orderTotal = 0;
+    const rows = order.items.map(item => {
+      const bonus = toNum(item.bonus);
+      const dis1 = toNum(item.dis1);
+      const dis2 = toNum(item.dis2);
+      const price = toNum(item.total_price);
+      orderTotal += price;
+      if (bonus > 0) bonusItems++;
+      return `<tr>
+        <td class="td-num">${item.num || ''}</td>
+        <td class="td-code">${item.item_code || ''}</td>
+        <td class="td-name">${item.item_name}</td>
+        <td class="td-qty">${item.qty}</td>
+        <td class="td-bonus ${bonus > 0 ? 'has-bonus' : ''}">${bonus > 0 ? '+' + item.bonus : '—'}</td>
+        <td class="td-qty">${item.total_qty}</td>
+        <td class="td-disc ${dis1 > 0 ? 'has-disc' : ''}">${dis1 > 0 ? item.dis1 + '%' : '—'}</td>
+        <td class="td-disc ${dis2 > 0 ? 'has-disc' : ''}">${dis2 > 0 ? item.dis2 + '%' : '—'}</td>
+        <td class="td-price">${fmt(item.sell_price)}</td>
+        <td class="td-total">${fmt(item.total_price)}</td>
+      </tr>`;
+    }).join('');
+    totalPrice += orderTotal;
+    return `<div class="order-card">
+      <div class="order-head">
+        <div>
+          <div class="order-no">${order.order_no}</div>
+          <div class="order-date">تاريخ الطلب: ${order.po_date || '—'}</div>
+        </div>
+        <div class="order-stats">
+          <span>${order.items.length} صنف</span>
+          <span>الإجمالي: ${fmt(orderTotal)} ر.س</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>كود الصنف</th>
+              <th>اسم الصنف</th>
+              <th>الكمية</th>
+              <th>بونص</th>
+              <th>الإجمالي</th>
+              <th>خصم 1</th>
+              <th>خصم 2</th>
+              <th>سعر الوحدة</th>
+              <th>السعر الكلي</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('kpiRow').style.display = 'flex';
+  document.getElementById('kpiOrders').textContent = supplier.order_count;
+  document.getElementById('kpiItems').textContent = totalItems;
+  document.getElementById('kpiTotal').textContent = fmt(totalPrice);
+  document.getElementById('kpiBonus').textContent = bonusItems;
+
+  document.getElementById('content').innerHTML = orderCards || '<div class="empty-state"><h3>لا توجد طلبيات</h3></div>';
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  const q = e.target.value.trim().toLowerCase();
+  const filtered = q
+    ? DATA.suppliers.filter(s => cleanName(s.name).toLowerCase().includes(q) || (s.code || '').includes(q))
+    : DATA.suppliers;
+  renderSupplierList(filtered);
+});
+
+document.getElementById('menuToggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+loadData().catch(err => {
+  document.getElementById('loading').innerHTML =
+    `<span style="color:#ef4444">خطأ في تحميل البيانات: ${err.message}</span>`;
+});
+</script>
+</body>
+</html>
