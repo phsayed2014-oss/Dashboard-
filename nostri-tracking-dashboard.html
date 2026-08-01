@@ -121,6 +121,7 @@ tfoot td{font-weight:700;background:#f0fdfa;border-top:2px solid var(--teal-l)}
 
   <nav class="tabs" id="tabs">
     <button data-tab="sales" class="active">📈 المبيعات</button>
+    <button data-tab="share">🏬 المشاركة</button>
     <button data-tab="writings">✍️ الكتابات</button>
     <button data-tab="conversion">🔄 التحويل</button>
     <button data-tab="expire">⏳ Near-Expire</button>
@@ -287,6 +288,66 @@ V.sales=()=>{
   return note+kpis+chart+table;
 };
 
+/* ---- 1ب. Share: داخلي (1/7/18) مقابل خارجي من الإجمالي ---- */
+const INTERNAL=["1","7","18"];
+function internalTotals(metric){
+  const o={}; M.forEach(m=>o[m]=INTERNAL.reduce((a,p)=>a+itemTotals(p,metric)[m],0)); return o;
+}
+V.share=()=>{
+  const mk=state.metric, unit=metricLabel();
+  const all=itemTotals("all",mk), intr=internalTotals(mk);
+  const ext={},share={};
+  M.forEach(m=>{ext[m]=all[m]-intr[m]; share[m]=all[m]?intr[m]/all[m]*100:0;});
+  const sCur=Math.round(share[CUR]), sPrev=Math.round(share[PREV]), sFirst=Math.round(share[FIRST]);
+  const dShare=sCur-sPrev;
+  const note=`<div class="note info">🏬 <b>المشاركة</b> = نصيب الصيدليات الداخلية (1 + 7 + 18) من إجمالي
+     مبيعات نوستري (كل الفروع). الباقي = الصيدليات الخارجية. محسوبة من البيانات الحقيقية.</div>`;
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="lbl">مشاركة الداخلية — يوليو 07</div><div class="val">${sCur}%</div>
+      <div class="delta ${dShare>0?'up':dShare<0?'down':'flat'}">${dShare>0?'▲ +':dShare<0?'▼ ':'● '}${dShare} نقطة مقابل يونيو</div></div>
+    <div class="kpi"><div class="lbl">الداخلية (1+7+18) — 07</div><div class="val">${fmt(intr[CUR])} <span class="unit">${unit}</span></div>
+      <div class="delta flat">من ${fmt(all[CUR])} إجمالي</div></div>
+    <div class="kpi"><div class="lbl">الخارجية — 07</div><div class="val">${fmt(ext[CUR])} <span class="unit">${unit}</span></div>
+      <div class="delta flat">${100-sCur}% من الإجمالي</div></div>
+    <div class="kpi"><div class="lbl">اتجاه المشاركة 05→07</div>
+      <div class="val ${sCur>=sFirst?'up':'down'}">${sFirst}% ← ${sCur}%</div>
+      <div class="delta ${sCur>=sFirst?'up':'down'}">${sCur>=sFirst?'ارتفاع':'انخفاض'} النصيب</div></div></div>`;
+  // stacked bars per month
+  const maxT=Math.max(...M.map(m=>all[m]),1);
+  const bars=M.map(m=>{
+    const hI=intr[m]/maxT*100, hE=ext[m]/maxT*100;
+    return `<div class="chgroup"><div style="width:46px;height:100%;display:flex;flex-direction:column;justify-content:flex-end">
+      <div style="height:${hE}%;background:var(--c05);border-radius:8px 8px 0 0;position:relative">
+        <span class="cap" style="color:var(--muted);top:-20px">${Math.round(share[m])}%</span></div>
+      <div style="height:${hI}%;background:var(--c07)"></div></div></div>`;
+  }).join("");
+  const chart=`<div class="panel"><h2>الداخلية مقابل الخارجية — تسلسل شهري (${unit})</h2>
+    <p class="hint"><span class="dot" style="background:var(--c07)"></span>داخلية (1/7/18) &nbsp;·&nbsp;
+      <span class="dot" style="background:var(--c05)"></span>خارجية — والنسبة = مشاركة الداخلية</p>
+    <div class="chart">${bars}</div><div class="chlabels">${M.map(m=>`<span>${ML[m]}</span>`).join("")}</div></div>`;
+  const rows=M.map(m=>{
+    const d=m===FIRST?{t:"—",c:"flat"}:(()=>{const p=m===CUR?PREV:FIRST;const dd=Math.round(share[m]-share[p]);
+      return {t:(dd>0?"▲ +":dd<0?"▼ ":"● ")+dd+" نقطة",c:dd>0?"up":dd<0?"down":"flat"};})();
+    return `<tr><td>${ML[m]}</td><td class="num">${fmt(intr[m])}</td><td class="num">${fmt(ext[m])}</td>
+      <td class="num">${fmt(all[m])}</td><td><span class="pill ${share[m]>=50?'g':share[m]>=35?'y':'r'}">${Math.round(share[m])}%</span></td>
+      <td class="trend ${d.c}">${d.t}</td></tr>`;
+  }).join("");
+  const table=`<div class="panel"><h2>جدول المشاركة الشهري (${unit})</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الشهر</th><th>الداخلية (1/7/18)</th><th>الخارجية</th>
+    <th>الإجمالي</th><th>مشاركة الداخلية</th><th>التغير</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  // internal breakdown by pharmacy for CUR
+  const brk=INTERNAL.map(p=>{
+    const t=itemTotals(p,mk)[CUR], sh=all[CUR]?Math.round(t/all[CUR]*100):0;
+    return `<tr><td>${scopeLabel(p)}</td><td class="num">${fmt(t)}</td>
+      <td><span class="pill ${sh>=15?'g':sh>=8?'y':'r'}">${sh}%</span></td></tr>`;}).join("");
+  const brkTable=`<div class="panel"><h2>تفصيل مشاركة كل صيدلية داخلية — يوليو 07 (${unit})</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الصيدلية</th><th>المبيعات</th><th>نصيبها من الإجمالي</th></tr></thead>
+    <tbody>${brk}</tbody>
+    <tfoot><tr><td>مجموع الداخلية</td><td class="num">${fmt(intr[CUR])}</td>
+    <td><span class="pill ${sCur>=50?'g':sCur>=35?'y':'r'}">${sCur}%</span></td></tr></tfoot></table></div></div>`;
+  return note+kpis+chart+table+brkTable;
+};
+
 /* ---- 2. Writings (Demo) ---- */
 V.writings=()=>{
   const w=DATA.writings[state.scope];
@@ -407,7 +468,7 @@ V.pureherb=()=>{
 
 /* ==================== render ==================== */
 function needsScope(t){return t==="sales"||t==="writings";}
-function usesMetric(t){return t==="sales";}
+function usesMetric(t){return t==="sales"||t==="share";}
 function render(){
   const host=document.getElementById("view");
   let chips="";
