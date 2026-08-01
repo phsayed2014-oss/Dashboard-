@@ -198,12 +198,19 @@ const DATA = {
     {name:"Nostri Zinc",       w:{"05": 9,"06":14,"07":26}}
   ],
 
-  /* 🌿 PureHerb (Demo) */
+  /* 🌿 PureHerb — مبيعات حقيقية (مورد شركة بيور هيرب 143711)
+     ملاحظة: شهر 07 فقط · ص1 و ص7 فقط · الكتابات لسه لم تصل.
+     u = وحدات مباعة · v = قيمة البيع (ريال) لكل صيدلية في يوليو 07 */
+  pureherbMonth:"07",
   pureherb:[
-    {name:"PureHerb Ginkgo",      w:{"05":40,"06":52,"07":71}, s:{"05":3600,"06":4800,"07":6900}},
-    {name:"PureHerb Ashwagandha", w:{"05":33,"06":45,"07":63}, s:{"05":3000,"06":4200,"07":6100}},
-    {name:"PureHerb Turmeric",    w:{"05":28,"06":31,"07":44}, s:{"05":2500,"06":2900,"07":4300}},
-    {name:"PureHerb Milk Thistle",w:{"05":19,"06":26,"07":38}, s:{"05":1700,"06":2400,"07":3700}}
+    {name:"ZINCOLIVE Syrup 150ML",        code:"1-03-186-085", u:{"1":9,  "7":null}, v:{"1":630,   "7":null}},
+    {name:"FAWARVIT Vit C 1000mg Eff.",    code:"1-03-044-039", u:{"1":2,  "7":null}, v:{"1":40,    "7":null}},
+    {name:"PureFeel Tablet 30",           code:"1-03-187-269", u:{"1":2,  "7":2},    v:{"1":59,    "7":59}},
+    {name:"PURE OMEGA-3 Syrup 240ML",     code:"1-03-186-084", u:{"1":1,  "7":1},    v:{"1":150,   "7":150}},
+    {name:"CENTROZON WOMEN Tablet 30",    code:"1-03-187-267", u:{"1":15, "7":1},    v:{"1":600,   "7":40}},
+    {name:"CENTROZON Tablet 30",          code:"1-03-187-270", u:{"1":15, "7":6},    v:{"1":292.5, "7":117}},
+    {name:"BoneFriend Tablet 30",         code:"1-03-187-268", u:{"1":15, "7":4},    v:{"1":750,   "7":200}},
+    {name:"ARGIGROW Syrup 150ML",         code:"1-03-186-083", u:{"1":6,  "7":2},    v:{"1":510,   "7":170}}
   ]
 };
 
@@ -357,29 +364,44 @@ V.expire=()=>{
   return note+kpis+chart+table;
 };
 
-/* ---- 5. PureHerb (Demo) ---- */
+/* ---- 5. PureHerb (REAL sales — 07 only, ص1 & ص7) ---- */
 V.pureherb=()=>{
-  const items=DATA.pureherb, totW=m=>items.reduce((a,it)=>a+(it.w[m]||0),0), totS=m=>items.reduce((a,it)=>a+(it.s[m]||0),0);
-  const dW=delta(totW(CUR),totW(PREV)), dS=delta(totS(CUR),totS(PREV));
-  const note=`<div class="note demo">⚠️ <b>بيانات نموذجية</b> — ابعت قائمة أصناف PureHerb
-    وهفلتر كتاباتها ومبيعاتها الحقيقية.</div>`;
+  const items=DATA.pureherb, PH=["1","7"];
+  const sumU=p=>items.reduce((a,it)=>a+(it.u[p]||0),0);
+  const sumV=p=>items.reduce((a,it)=>a+(it.v[p]||0),0);
+  const u1=sumU("1"),u7=sumU("7"),v1=sumV("1"),v7=sumV("7");
+  const note=`<div class="note real">✔ <b>مبيعات حقيقية</b> — مورد «شركة بيور هيرب» (143711)، <b>شهر يوليو 07 فقط</b>،
+     صيدليتَي 1 و 7. ⏳ كتابات PureHerb ومبيعات باقي الشهور/الفروع لسه لم تصل.</div>`;
   const kpis=`<div class="kpis">
-    <div class="kpi"><div class="lbl">كتابات PureHerb يوليو</div><div class="val">${fmt(totW(CUR))}</div>
-      <div class="delta ${dW.c}">${dW.t} مقابل يونيو</div></div>
-    <div class="kpi"><div class="lbl">مبيعات PureHerb يوليو</div><div class="val">${fmt(totS(CUR))} <span class="unit">ريال</span></div>
-      <div class="delta ${dS.c}">${dS.t} مقابل يونيو</div></div>
-    <div class="kpi"><div class="lbl">عدد الأصناف</div><div class="val">${items.length}</div></div></div>`;
-  const chart=`<div class="grid2">
-    <div class="panel"><h2>كتابات PureHerb — تسلسل</h2>${barChart({"05":totW("05"),"06":totW("06"),"07":totW("07")})}</div>
-    <div class="panel"><h2>مبيعات PureHerb — تسلسل</h2>${barChart({"05":totS("05"),"06":totS("06"),"07":totS("07")})}</div></div>`;
+    <div class="kpi"><div class="lbl">وحدات PureHerb — ص1 (07)</div><div class="val">${fmt(u1)} <span class="unit">وحدة</span></div>
+      <div class="delta flat">${fmt(v1)} ريال</div></div>
+    <div class="kpi"><div class="lbl">وحدات PureHerb — ص7 (07)</div><div class="val">${fmt(u7)} <span class="unit">وحدة</span></div>
+      <div class="delta flat">${fmt(v7)} ريال</div></div>
+    <div class="kpi"><div class="lbl">إجمالي الوحدات (ص1+ص7)</div><div class="val">${fmt(u1+u7)}</div>
+      <div class="delta flat">${fmt(v1+v7)} ريال</div></div>
+    <div class="kpi"><div class="lbl">عدد الأصناف المتحركة</div><div class="val">${items.length}</div></div></div>`;
+  // chart: units per pharmacy
+  const chart=`<div class="panel"><h2>مبيعات PureHerb حسب الصيدلية — يوليو 07 (وحدات)</h2>
+    <div class="chart">
+      <div class="chgroup"><div class="bar" style="height:${Math.max(u1/Math.max(u1,u7)*100,2)}%;background:var(--c06)">
+        <span class="cap" style="color:var(--c06)">${fmt(u1)}</span></div></div>
+      <div class="chgroup"><div class="bar" style="height:${Math.max(u7/Math.max(u1,u7)*100,2)}%;background:var(--c07)">
+        <span class="cap" style="color:var(--c07)">${fmt(u7)}</span></div></div>
+    </div><div class="chlabels"><span>صيدلية 1</span><span>صيدلية 7</span></div></div>`;
   const rows=items.map(it=>{
-    const perW=it.w[CUR]?(it.s[CUR]/it.w[CUR]).toFixed(0):"—", d=delta(it.w[CUR],it.w[PREV]);
-    return `<tr><td>${it.name}</td><td class="num">${fmt(it.w[CUR])}</td><td class="num">${fmt(it.s[CUR])}</td>
-      <td class="num">${perW}</td><td class="trend ${d.c}">${d.t}</td></tr>`;}).join("");
-  const table=`<div class="panel"><h2>تفصيلي أصناف PureHerb (يوليو 07) — كتابة ↔ بيع</h2>
-    <p class="hint">تحويل الكتابات لمبيعات: قيمة البيع ÷ كتابة لكل صنف</p>
-    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>كتابات</th><th>مبيعات (ريال)</th><th>بيع لكل كتابة</th><th>نمو الكتابة</th></tr></thead>
-    <tbody>${rows}</tbody></table></div></div>`;
+    const tu=(it.u["1"]||0)+(it.u["7"]||0), tv=(it.v["1"]||0)+(it.v["7"]||0);
+    return `<tr><td>${it.name}<br><span style="color:var(--muted);font-weight:500;font-size:12px">${it.code}</span></td>
+      <td class="num">${it.u["1"]==null?"—":fmt(it.u["1"])}</td><td class="num">${it.v["1"]==null?"—":fmt(it.v["1"])}</td>
+      <td class="num">${it.u["7"]==null?"—":fmt(it.u["7"])}</td><td class="num">${it.v["7"]==null?"—":fmt(it.v["7"])}</td>
+      <td class="num">${fmt(tu)}</td><td class="num">${fmt(tv)}</td></tr>`;}).join("");
+  const table=`<div class="panel"><h2>تفصيلي أصناف PureHerb — يوليو 07</h2>
+    <p class="hint">وحدات وقيمة البيع لكل صيدلية. «—» = الصنف غير متحرك في هذه الصيدلية.</p>
+    <div class="tbl-wrap"><table><thead><tr><th rowspan="2">الصنف</th><th colspan="2">صيدلية 1</th><th colspan="2">صيدلية 7</th><th colspan="2">الإجمالي</th></tr>
+    <tr><th>وحدات</th><th>ريال</th><th>وحدات</th><th>ريال</th><th>وحدات</th><th>ريال</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td>الإجمالي</td><td class="num">${fmt(u1)}</td><td class="num">${fmt(v1)}</td>
+    <td class="num">${fmt(u7)}</td><td class="num">${fmt(v7)}</td><td class="num">${fmt(u1+u7)}</td><td class="num">${fmt(v1+v7)}</td></tr></tfoot>
+    </table></div></div>`;
   return note+kpis+chart+table;
 };
 
