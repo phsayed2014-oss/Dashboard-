@@ -1,0 +1,397 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NOSTRI — داش بورد المتابعة الشهرية</title>
+<style>
+/* ============================================================
+   NOSTRI Tracking Dashboard — single file, offline, RTL
+   يتابع: المبيعات · الكتابات · التحويل · Near-Expire · PureHerb
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
+
+:root{
+  --teal:#0f766e; --teal-d:#06332e; --teal-l:#5eead4;
+  --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f1f5f9; --card:#ffffff;
+  --up:#16a34a; --down:#dc2626; --warn:#d97706;
+  --c05:#94a3b8; --c06:#38bdf8; --c07:#0f766e;
+  --shadow:0 1px 3px rgba(15,23,42,.08),0 1px 2px rgba(15,23,42,.04);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;
+  background:var(--bg); color:var(--ink); direction:rtl;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+
+/* Header */
+header.top{
+  background:radial-gradient(ellipse at 80% 10%,#0f766e 0%,#06332e 70%);
+  color:#fff;border-radius:20px;padding:22px 24px;box-shadow:var(--shadow);
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;
+}
+header.top h1{margin:0;font-size:22px;font-weight:700;letter-spacing:.2px}
+header.top .sub{color:var(--teal-l);font-size:13px;margin-top:4px}
+.badge-demo{background:#facc15;color:#422006;font-weight:700;font-size:12px;
+  padding:5px 12px;border-radius:999px}
+
+/* Month legend */
+.mlegend{display:flex;gap:14px;flex-wrap:wrap;margin:18px 2px 4px;font-size:13px;color:var(--muted)}
+.mlegend b{color:var(--ink)}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-left:5px;vertical-align:middle}
+
+/* Tabs */
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0}
+nav.tabs button{
+  border:1px solid var(--line);background:var(--card);color:var(--muted);
+  padding:10px 16px;border-radius:12px;font-family:inherit;font-size:14px;font-weight:600;
+  cursor:pointer;transition:.15s;box-shadow:var(--shadow)}
+nav.tabs button:hover{color:var(--teal)}
+nav.tabs button.active{background:var(--teal);color:#fff;border-color:var(--teal)}
+
+/* Filter chips */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.chips button{border:1px solid var(--line);background:var(--card);color:var(--muted);
+  padding:7px 14px;border-radius:999px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.chips button.active{background:var(--teal-d);color:#fff;border-color:var(--teal-d)}
+
+/* KPI cards */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+.kpi .lbl{font-size:13px;color:var(--muted);font-weight:600}
+.kpi .val{font-size:28px;font-weight:700;margin-top:6px;line-height:1}
+.kpi .delta{font-size:13px;font-weight:700;margin-top:8px;display:inline-flex;align-items:center;gap:4px}
+.kpi .delta.up{color:var(--up)} .kpi .delta.down{color:var(--down)} .kpi .delta.flat{color:var(--muted)}
+
+/* Panels */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;
+  box-shadow:var(--shadow);margin-bottom:18px}
+.panel h2{margin:0 0 4px;font-size:17px}
+.panel .hint{color:var(--muted);font-size:13px;margin:0 0 16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+
+/* Bar chart (CSS) */
+.chart{display:flex;align-items:flex-end;gap:18px;height:220px;padding:10px 6px 0;
+  border-bottom:2px solid var(--line);position:relative}
+.chgroup{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:8px;height:100%}
+.bar{width:34px;border-radius:8px 8px 0 0;position:relative;transition:height .4s ease;min-height:2px}
+.bar .cap{position:absolute;top:-22px;left:50%;transform:translateX(-50%);
+  font-size:12px;font-weight:700;white-space:nowrap}
+.chlabels{display:flex;gap:18px;margin-top:8px}
+.chlabels span{flex:1;text-align:center;font-size:13px;font-weight:600;color:var(--muted)}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line)}
+th{background:#f8fafc;font-weight:700;color:var(--muted);font-size:13px;position:sticky;top:0}
+tbody tr:hover{background:#f8fafc}
+.num{font-variant-numeric:tabular-nums;font-weight:600}
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--line)}
+
+/* Conversion bar */
+.conv{display:flex;align-items:center;gap:10px}
+.conv .track{flex:1;height:12px;background:var(--line);border-radius:999px;overflow:hidden}
+.conv .fill{height:100%;border-radius:999px}
+.pill{font-weight:700;font-size:13px;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill.g{background:#dcfce7;color:#166534}.pill.y{background:#fef9c3;color:#854d0e}.pill.r{background:#fee2e2;color:#991b1b}
+
+.trend{font-size:12px;font-weight:700}
+.up{color:var(--up)}.down{color:var(--down)}
+.foot{color:var(--muted);font-size:12px;text-align:center;margin-top:30px;line-height:1.7}
+.note{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 16px;
+  font-size:13px;color:#854d0e;margin-bottom:18px}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>NOSTRI · داش بورد المتابعة الشهرية</h1>
+      <div class="sub">مبيعات · كتابات · تحويل · Near-Expire · PureHerb — مقارنة 05 / 06 / 07 — 2026</div>
+    </div>
+    <span class="badge-demo">بيانات نموذجية — للاستبدال</span>
+  </header>
+
+  <div class="note">
+    ⚠️ الأرقام الظاهرة <b>نموذجية (Demo)</b> لعرض الشكل النهائي فقط. ابعتلي الأربع ملفات
+    (كتابات 05/06/07 · مبيعات الصيدليات · Near-Expire · PureHerb) وهستبدلها بالأرقام الحقيقية.
+  </div>
+
+  <div class="mlegend">
+    <span><span class="dot" style="background:var(--c05)"></span><b>مايو 05</b></span>
+    <span><span class="dot" style="background:var(--c06)"></span><b>يونيو 06</b></span>
+    <span><span class="dot" style="background:var(--c07)"></span><b>يوليو 07 (الحالي)</b></span>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="sales" class="active">📈 المبيعات</button>
+    <button data-tab="writings">✍️ الكتابات</button>
+    <button data-tab="conversion">🔄 التحويل</button>
+    <button data-tab="expire">⏳ Near-Expire</button>
+    <button data-tab="pureherb">🌿 PureHerb</button>
+  </nav>
+
+  <section id="view"></section>
+
+  <div class="foot">
+    NOSTRI Tracking Dashboard · يعمل offline بدون إنترنت ·
+    كل الأرقام قابلة للتحديث من كائن <code>DATA</code> أعلى الكود
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ★★★  نموذج البيانات — استبدل القيم بأرقامك الحقيقية  ★★★
+   كل الأرقام هنا Demo. الشهور: 05 / 06 / 07 لسنة 2026.
+   ============================================================ */
+const DATA = {
+  months: ["05","06","07"],
+  monthLabel: {"05":"مايو","06":"يونيو","07":"يوليو"},
+
+  /* 1) مبيعات NOSTRI (قيمة/وحدات) لكل صيدلية × شهر */
+  sales: {
+    "1":   {"05":18400, "06":22100, "07":27800},
+    "7":   {"05":12600, "06":15900, "07":21300},
+    "18":  {"05": 9800, "06":11200, "07":16400},
+    "all": {"05":54200, "06":63500, "07":82900}   // كل الصيدليات (بند إضافي)
+  },
+
+  /* 2) كتابات NOSTRI (عدد مرات كتابة الأطباء) لكل صيدلية × شهر */
+  writings: {
+    "1":   {"05":210, "06":248, "07":305},
+    "7":   {"05":150, "06":182, "07":236},
+    "18":  {"05":118, "06":133, "07":181},
+    "all": {"05":640, "06":742, "07":940}
+  },
+
+  /* 3) التحويل = مبيعات ÷ كتابات (كتب 5 وباع 5 = 100%).
+        محسوب تلقائياً من sales/writings لكل صيدلية وشهر. */
+
+  /* 4) أصناف Near-Expire — متابعة تحسّن كتابتها (كتابات/شهر) */
+  nearExpire: [
+    {name:"Nostri Calcium D3",   w:{"05":22,"06":31,"07":48}},
+    {name:"Nostri Omega 3",      w:{"05":15,"06":24,"07":40}},
+    {name:"Nostri Iron Plus",    w:{"05":30,"06":28,"07":37}},
+    {name:"Nostri Vitamin C",    w:{"05":18,"06":22,"07":21}},
+    {name:"Nostri Zinc",         w:{"05": 9,"06":14,"07":26}}
+  ],
+
+  /* 5) PureHerb — كتابات + مبيعات لكل صنف × شهر */
+  pureherb: [
+    {name:"PureHerb Ginkgo",     w:{"05":40,"06":52,"07":71}, s:{"05":3600,"06":4800,"07":6900}},
+    {name:"PureHerb Ashwagandha",w:{"05":33,"06":45,"07":63}, s:{"05":3000,"06":4200,"07":6100}},
+    {name:"PureHerb Turmeric",   w:{"05":28,"06":31,"07":44}, s:{"05":2500,"06":2900,"07":4300}},
+    {name:"PureHerb Milk Thistle",w:{"05":19,"06":26,"07":38},s:{"05":1700,"06":2400,"07":3700}}
+  ]
+};
+
+/* ==================== helpers ==================== */
+const M = DATA.months, ML = DATA.monthLabel;
+const CUR="07", PREV="06", FIRST="05";
+const COL={"05":"var(--c05)","06":"var(--c06)","07":"var(--c07)"};
+const fmt = n => (n==null?"—":Number(n).toLocaleString("en-US"));
+const pct = (a,b)=> b? Math.round((a/b)*100) : 0;
+function delta(cur,prev){
+  if(prev==null||prev===0) return {t:"—",c:"flat"};
+  const d=Math.round(((cur-prev)/prev)*100);
+  return {t:(d>0?"▲ +":d<0?"▼ ":"● ")+d+"%", c:d>0?"up":d<0?"down":"flat"};
+}
+function barChart(series){ // series: [{label,vals:{05,06,07}}] -> but we render 3 bars per group
+  const all=[]; series.forEach(g=>M.forEach(m=>all.push(g.vals[m]||0)));
+  const max=Math.max(...all,1);
+  let bars=series.map(g=>`
+    <div class="chgroup">${M.map(m=>{
+      const h=Math.max((g.vals[m]||0)/max*100,1.5);
+      return `<div class="bar" style="height:${h}%;background:${COL[m]}">
+        <span class="cap" style="color:${COL[m]}">${fmt(g.vals[m])}</span></div>`;
+    }).join("")}</div>`).join("");
+  let labels=series.map(g=>`<span>${g.label}</span>`).join("");
+  return `<div class="chart">${bars}</div><div class="chlabels">${labels}</div>`;
+}
+function convClass(p){return p>=90?"g":p>=60?"y":"r";}
+
+/* ==================== views ==================== */
+const V = {};
+
+/* ---- 1. Sales ---- */
+V.sales = ()=>{
+  const scope = state.scope;
+  const s = DATA.sales[scope];
+  const dCur = delta(s[CUR],s[PREV]), dTot=delta(s[CUR],s[FIRST]);
+  const kpis = `
+   <div class="kpis">
+    <div class="kpi"><div class="lbl">مبيعات يوليو 07</div><div class="val">${fmt(s[CUR])}</div>
+      <div class="delta ${dCur.c}">${dCur.t} <span style="color:var(--muted);font-weight:500">مقابل يونيو</span></div></div>
+    <div class="kpi"><div class="lbl">يونيو 06</div><div class="val">${fmt(s[PREV])}</div></div>
+    <div class="kpi"><div class="lbl">مايو 05</div><div class="val">${fmt(s[FIRST])}</div></div>
+    <div class="kpi"><div class="lbl">النمو من مايو ← يوليو</div><div class="val">${dTot.t.replace(/[▲▼●] /,"")}</div>
+      <div class="delta ${dTot.c}">اتجاه تصاعدي</div></div>
+   </div>`;
+  const chart = `<div class="panel"><h2>تسلسل المبيعات — ${scopeLabel(scope)}</h2>
+     <p class="hint">مقارنة زمنية 05 → 06 → 07</p>
+     ${barChart([{label:"المبيعات",vals:s}])}</div>`;
+  // per-pharmacy comparison
+  const rows = ["1","7","18","all"].map(p=>{
+    const x=DATA.sales[p], d=delta(x[CUR],x[PREV]);
+    return `<tr><td>${scopeLabel(p)}</td>
+      <td class="num">${fmt(x[FIRST])}</td><td class="num">${fmt(x[PREV])}</td>
+      <td class="num">${fmt(x[CUR])}</td>
+      <td class="trend ${d.c}">${d.t}</td></tr>`;
+  }).join("");
+  const table=`<div class="panel"><h2>كل الصيدليات — تفصيلي</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الصيدلية</th><th>مايو</th><th>يونيو</th>
+    <th>يوليو</th><th>التغير ش/ش</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  return kpis+chart+table;
+};
+
+/* ---- 2. Writings ---- */
+V.writings = ()=>{
+  const scope=state.scope, w=DATA.writings[scope];
+  const dCur=delta(w[CUR],w[PREV]), dTot=delta(w[CUR],w[FIRST]);
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="lbl">كتابات يوليو 07</div><div class="val">${fmt(w[CUR])}</div>
+      <div class="delta ${dCur.c}">${dCur.t} مقابل يونيو</div></div>
+    <div class="kpi"><div class="lbl">يونيو 06</div><div class="val">${fmt(w[PREV])}</div></div>
+    <div class="kpi"><div class="lbl">مايو 05</div><div class="val">${fmt(w[FIRST])}</div></div>
+    <div class="kpi"><div class="lbl">نسبة التحسّن 05←07</div><div class="val ${dTot.c}">${dTot.t.replace(/[▲▼●] /,"")}</div>
+      <div class="delta ${dTot.c}">تحسّن الكتابات</div></div></div>`;
+  const chart=`<div class="panel"><h2>تسلسل الكتابات — ${scopeLabel(scope)}</h2>
+     <p class="hint">عدد مرات كتابة الأطباء لأصناف نوستري</p>
+     ${barChart([{label:"الكتابات",vals:w}])}</div>`;
+  const rows=["1","7","18","all"].map(p=>{
+    const x=DATA.writings[p], d=delta(x[CUR],x[PREV]);
+    return `<tr><td>${scopeLabel(p)}</td><td class="num">${fmt(x[FIRST])}</td>
+      <td class="num">${fmt(x[PREV])}</td><td class="num">${fmt(x[CUR])}</td>
+      <td class="trend ${d.c}">${d.t}</td></tr>`;}).join("");
+  const table=`<div class="panel"><h2>الكتابات لكل صيدلية</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الصيدلية</th><th>مايو</th><th>يونيو</th>
+    <th>يوليو</th><th>التغير ش/ش</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  return kpis+chart+table;
+};
+
+/* ---- 3. Conversion ---- */
+V.conversion = ()=>{
+  const scope=state.scope, s=DATA.sales[scope], w=DATA.writings[scope];
+  // Conversion هنا: كام بيع مقابل كل كتابة (كتب 5 وباع 5 = 100%).
+  // بما إن المبيعات بالقيمة، النسبة توضيحية = مبيعات/كتابة. لو المبيعات بالوحدات النسبة تبقى فعلية.
+  const rows = ["1","7","18","all"].map(p=>{
+    return `<tr><td>${scopeLabel(p)}</td>`+M.map(m=>{
+      const cw=DATA.writings[p][m], cs=DATA.sales[p][m];
+      const per = cw? (cs/cw).toFixed(1):"—";   // مبيعات لكل كتابة
+      return `<td class="num">${fmt(cs)} / ${fmt(cw)}<br><span style="color:var(--muted);font-weight:500">${per} لكل كتابة</span></td>`;
+    }).join("")+`</tr>`;
+  }).join("");
+  const explain=`<div class="note" style="background:#ecfeff;border-color:#a5f3fc;color:#155e75">
+    🔄 <b>التحويل</b> = نسبة تحويل الكتابة لبيع. لو المبيعات بالوحدات: التحويل = (وحدات مباعة ÷ عدد الكتابات)×100.
+    مثال: طبيب كتب 5 مرات وحصل بيع 5 مرات ⇒ تحويل 100%. لما تبعتلي المبيعات بالوحدات هفعّل النسبة الفعلية لكل صنف/طبيب.
+  </div>`;
+  // demo conversion per item (وحدات) — using pureherb-style illustration on nostri near-expire
+  const items = DATA.nearExpire.map(it=>{
+    const cw=it.w[CUR];
+    // demo: assume sold units ~ writings * factor
+    return it;
+  });
+  const table=`<div class="panel"><h2>تحويل الكتابات لمبيعات — لكل صيدلية × شهر</h2>
+    <p class="hint">القيمة = مبيعات / كتابات لكل شهر</p>
+    <div class="tbl-wrap"><table><thead><tr><th>الصيدلية</th>
+    <th>مايو</th><th>يونيو</th><th>يوليو</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  // conversion bars illustrative (based on writings growth as proxy 0-100)
+  const convBars = ["1","7","18","all"].map(p=>{
+    const growth = pct(DATA.writings[p][CUR], DATA.writings[p][FIRST]+DATA.writings[p][CUR]);
+    const cp = Math.min(100, Math.round(DATA.sales[p][CUR]/ (DATA.writings[p][CUR]*100) *100)); // demo scale
+    const c = convClass(cp);
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:6px">
+        <span>${scopeLabel(p)}</span><span class="pill ${c}">${cp}%</span></div>
+      <div class="conv"><div class="track"><div class="fill" style="width:${cp}%;
+        background:var(--${c=='g'?'up':c=='y'?'warn':'down'})"></div></div></div></div>`;
+  }).join("");
+  const gauge=`<div class="panel"><h2>مؤشر التحويل الحالي (يوليو 07)</h2>
+    <p class="hint">توضيحي — يُحسب فعلياً من المبيعات بالوحدات</p>${convBars}</div>`;
+  return explain+gauge+table;
+};
+
+/* ---- 4. Near-Expire ---- */
+V.expire = ()=>{
+  const items=DATA.nearExpire;
+  const tot = m=>items.reduce((a,it)=>a+(it.w[m]||0),0);
+  const dCur=delta(tot(CUR),tot(PREV)), dTot=delta(tot(CUR),tot(FIRST));
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="lbl">كتابات Near-Expire يوليو</div><div class="val">${fmt(tot(CUR))}</div>
+      <div class="delta ${dCur.c}">${dCur.t} مقابل يونيو</div></div>
+    <div class="kpi"><div class="lbl">عدد الأصناف المتابَعة</div><div class="val">${items.length}</div></div>
+    <div class="kpi"><div class="lbl">تحسّن الكتابة 05←07</div><div class="val ${dTot.c}">${dTot.t.replace(/[▲▼●] /,"")}</div>
+      <div class="delta ${dTot.c}">هدف: رفع الكتابة</div></div></div>`;
+  const rows=items.map(it=>{
+    const d=delta(it.w[CUR],it.w[PREV]);
+    const barmax=Math.max(...items.map(x=>x.w[CUR]));
+    return `<tr><td>${it.name}</td>
+      <td class="num">${fmt(it.w[FIRST])}</td><td class="num">${fmt(it.w[PREV])}</td>
+      <td class="num">${fmt(it.w[CUR])}</td><td class="trend ${d.c}">${d.t}</td>
+      <td style="width:120px"><div class="conv"><div class="track">
+        <div class="fill" style="width:${it.w[CUR]/barmax*100}%;background:var(--teal)"></div></div></div></td></tr>`;
+  }).join("");
+  const table=`<div class="panel"><h2>متابعة كتابة أصناف Near-Expire</h2>
+    <p class="hint">الهدف: زيادة كتابة الأطباء للأصناف قريبة الانتهاء قبل انتهائها</p>
+    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>مايو</th><th>يونيو</th>
+    <th>يوليو</th><th>التغير</th><th>المستوى</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  const chart=`<div class="panel"><h2>إجمالي كتابات Near-Expire — تسلسل شهري</h2>
+    ${barChart([{label:"إجمالي الكتابات",vals:{"05":tot("05"),"06":tot("06"),"07":tot("07")}}])}</div>`;
+  return kpis+chart+table;
+};
+
+/* ---- 5. PureHerb ---- */
+V.pureherb = ()=>{
+  const items=DATA.pureherb;
+  const totW=m=>items.reduce((a,it)=>a+(it.w[m]||0),0);
+  const totS=m=>items.reduce((a,it)=>a+(it.s[m]||0),0);
+  const dW=delta(totW(CUR),totW(PREV)), dS=delta(totS(CUR),totS(PREV));
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="lbl">كتابات PureHerb يوليو</div><div class="val">${fmt(totW(CUR))}</div>
+      <div class="delta ${dW.c}">${dW.t} مقابل يونيو</div></div>
+    <div class="kpi"><div class="lbl">مبيعات PureHerb يوليو</div><div class="val">${fmt(totS(CUR))}</div>
+      <div class="delta ${dS.c}">${dS.t} مقابل يونيو</div></div>
+    <div class="kpi"><div class="lbl">عدد الأصناف</div><div class="val">${items.length}</div></div></div>`;
+  const chart=`<div class="grid2">
+    <div class="panel"><h2>كتابات PureHerb — تسلسل</h2>
+      ${barChart([{label:"الكتابات",vals:{"05":totW("05"),"06":totW("06"),"07":totW("07")}}])}</div>
+    <div class="panel"><h2>مبيعات PureHerb — تسلسل</h2>
+      ${barChart([{label:"المبيعات",vals:{"05":totS("05"),"06":totS("06"),"07":totS("07")}}])}</div></div>`;
+  const rows=items.map(it=>{
+    const perW=it.w[CUR]?(it.s[CUR]/it.w[CUR]).toFixed(0):"—";
+    const d=delta(it.w[CUR],it.w[PREV]);
+    return `<tr><td>${it.name}</td>
+      <td class="num">${fmt(it.w[CUR])}</td><td class="num">${fmt(it.s[CUR])}</td>
+      <td class="num">${perW}</td><td class="trend ${d.c}">${d.t}</td></tr>`;
+  }).join("");
+  const table=`<div class="panel"><h2>تفصيلي أصناف PureHerb (يوليو 07) — كتابة ↔ بيع</h2>
+    <p class="hint">تحويل الكتابات لمبيعات: مبيعات ÷ كتابة لكل صنف</p>
+    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>كتابات</th><th>مبيعات</th>
+    <th>بيع لكل كتابة</th><th>نمو الكتابة</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  return kpis+chart+table;
+};
+
+/* ==================== state + render ==================== */
+const state={tab:"sales",scope:"all"};
+function scopeLabel(s){return s==="all"?"كل الصيدليات":"صيدلية "+s;}
+function needsScope(t){return t==="sales"||t==="writings"||t==="conversion";}
+
+function render(){
+  const host=document.getElementById("view");
+  let chips="";
+  if(needsScope(state.tab)){
+    chips=`<div class="chips">${["1","7","18","all"].map(s=>
+      `<button data-scope="${s}" class="${state.scope===s?'active':''}">${scopeLabel(s)}</button>`).join("")}</div>`;
+  }
+  host.innerHTML = chips + V[state.tab]();
+  // wire chips
+  host.querySelectorAll(".chips button").forEach(b=>b.onclick=()=>{state.scope=b.dataset.scope;render();});
+}
+document.getElementById("tabs").querySelectorAll("button").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active"); state.tab=b.dataset.tab; render();
+  };
+});
+render();
+</script>
