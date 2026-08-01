@@ -143,25 +143,33 @@ const DATA = {
   months:["05","06","07"],
   monthLabel:{"05":"مايو","06":"يونيو","07":"يوليو"},
 
-  /* ★ مبيعات NOSTRI — حقيقية من تقارير 05/06/07-2026 (كل الصيدليات) ★
-     units = الكمية المباعة · value = القيمة بسعر البيع (ريال) */
+  /* ★ مبيعات NOSTRI — حقيقية من تقارير «مبيعات اصناف مورد» 05/06/07-2026 ★
+     لكل صنف: بيانات لكل صيدلية (all = الإجمالي · 1/7/18 = صيدليات).
+     u = الكمية المباعة · v = القيمة بسعر البيع (ريال).
+     ملاحظة: all هو إجمالي كل الفروع من التقرير العام (ليس مجموع 1+7+18). */
   nostriItems:[
-    {name:"RIZER apply Cream 75ML",        code:"2-09-031-483",
-     units:{"05":123,"06":108,"07":168}, value:{"05":7380,   "06":6480,   "07":10080}},
-    {name:"NOSTRICURE Oral Gel 30ML",      code:"1-09-066-046",
-     units:{"05":230,"06":194,"07":255}, value:{"05":9200,   "06":7760,   "07":10200}},
-    {name:"REFLEX MASSAGE Emulgel 100ML",  code:"1-02-066-034",
-     units:{"05":367,"06":355,"07":359}, value:{"05":23855,  "06":23075,  "07":23335}},
-    {name:"INTIMO Vaginal Wash 250ML",     code:"1-14-166-032",
-     units:{"05":116,"06":147,"07":212}, value:{"05":8700,   "06":11025,  "07":15900}},
-    {name:"NOSTRIDERM Ointment 50ML",      code:"1-09-118-050",
-     units:{"05":168,"06":171,"07":279}, value:{"05":10920,  "06":11115,  "07":18135}},
-    {name:"ORACURE Mouth Wash 300ML",      code:"1-12-109-038",
-     units:{"05":330,"06":177,"07":284}, value:{"05":11550.033,"06":6195.018,"07":9940.021}}
+    {name:"RIZER apply Cream 75ML", code:"2-09-031-483",
+     all:{u:{"05":123,"06":108,"07":168}, v:{"05":7380,"06":6480,"07":10080}},
+     "1":{u:{"05":24, "06":24, "07":13 }, v:{"05":1440,"06":1440,"07":780}}},
+    {name:"NOSTRICURE Oral Gel 30ML", code:"1-09-066-046",
+     all:{u:{"05":230,"06":194,"07":255}, v:{"05":9200,"06":7760,"07":10200}},
+     "1":{u:{"05":33, "06":24, "07":17 }, v:{"05":1320,"06":960,"07":680}}},
+    {name:"REFLEX MASSAGE Emulgel 100ML", code:"1-02-066-034",
+     all:{u:{"05":367,"06":355,"07":359}, v:{"05":23855,"06":23075,"07":23335}},
+     "1":{u:{"05":128,"06":160,"07":79 }, v:{"05":8320,"06":10400,"07":5135}}},
+    {name:"INTIMO Vaginal Wash 250ML", code:"1-14-166-032",
+     all:{u:{"05":116,"06":147,"07":212}, v:{"05":8700,"06":11025,"07":15900}},
+     "1":{u:{"05":17, "06":33, "07":45 }, v:{"05":1275,"06":2475,"07":3375}}},
+    {name:"NOSTRIDERM Ointment 50ML", code:"1-09-118-050",
+     all:{u:{"05":168,"06":171,"07":279}, v:{"05":10920,"06":11115,"07":18135}},
+     "1":{u:{"05":78, "06":88, "07":81 }, v:{"05":5070,"06":5720,"07":5265}}},
+    {name:"ORACURE Mouth Wash 300ML", code:"1-12-109-038",
+     all:{u:{"05":330,"06":177,"07":284}, v:{"05":11550.033,"06":6195.018,"07":9940.021}},
+     "1":{u:{"05":81, "06":49, "07":47 }, v:{"05":2835.008,"06":1715.005,"07":1645.005}}}
   ],
 
-  /* الصيدليات المتاحة: all = حقيقي · 1/7/18 = بانتظار الملفات المنفصلة */
-  pharmacyReady:{"all":true,"1":false,"7":false,"18":false},
+  /* الصيدليات المتاحة: all + ص1 حقيقي · 7/18 بانتظار الملفات */
+  pharmacyReady:{"all":true,"1":true,"7":false,"18":false},
 
   /* ✍️ كتابات NOSTRI (Demo لحين وصول ملف الكتابات) */
   writings:{
@@ -198,8 +206,11 @@ function delta(cur,prev){
   const d=Math.round(((cur-prev)/prev)*100);
   return {t:(d>0?"▲ +":d<0?"▼ ":"● ")+d+"%",c:d>0?"up":d<0?"down":"flat"};
 }
-function itemTotals(metric){ // {05,06,07} totals across items
-  const o={}; M.forEach(m=>o[m]=DATA.nostriItems.reduce((a,it)=>a+(it[metric][m]||0),0)); return o;
+const MK={units:"u",value:"v"};
+function itemVals(it,scope,metric){ return it[scope] ? it[scope][MK[metric]] : null; }
+function itemTotals(scope,metric){ // {05,06,07} totals across items for a scope
+  const o={}; M.forEach(m=>o[m]=DATA.nostriItems.reduce((a,it)=>{
+    const v=itemVals(it,scope,metric); return a+((v&&v[m])||0);},0)); return o;
 }
 function barChart(vals,unit){
   const max=Math.max(...M.map(m=>vals[m]||0),1);
@@ -226,11 +237,12 @@ V.sales=()=>{
       <p class="hint">تقارير المبيعات الحالية إجمالية (كل الصيدليات). ابعت ملف مبيعات هذه الصيدلية
       بنفس الصيغة وهيتفعّل التبويب فوراً بالأرقام الحقيقية.</p></div></div>`;
   }
-  const mk=state.metric, unit=metricLabel();
-  const tot=itemTotals(mk);
+  const mk=state.metric, unit=metricLabel(), scope=state.scope;
+  const tot=itemTotals(scope,mk);
   const dCur=delta(tot[CUR],tot[PREV]), dTot=delta(tot[CUR],tot[FIRST]);
+  const srcTxt=scope==="all"?"لكل الصيدليات (الإجمالي العام)":scopeLabel(scope);
   const note=`<div class="note real">✔ <b>بيانات حقيقية</b> — تقرير «مبيعات اصناف مورد نوستري»
-     لكل الصيدليات، 6 أصناف، شهور 05/06/07-2026. بدّل بين الوحدات والقيمة من فوق.</div>`;
+     — ${srcTxt}، 6 أصناف، شهور 05/06/07-2026. بدّل بين الوحدات والقيمة من فوق.</div>`;
   const kpis=`<div class="kpis">
     <div class="kpi"><div class="lbl">${mk==="units"?"وحدات مباعة":"قيمة المبيعات"} — يوليو 07</div>
       <div class="val">${fmt(tot[CUR])} <span class="unit">${unit}</span></div>
@@ -243,7 +255,7 @@ V.sales=()=>{
      <p class="hint">مقارنة زمنية 05 → 06 → 07</p>${barChart(tot,unit)}</div>`;
   // per-item table
   const rows=DATA.nostriItems.map(it=>{
-    const v=it[mk], d=delta(v[CUR],v[PREV]);
+    const v=itemVals(it,scope,mk)||{}, d=delta(v[CUR],v[PREV]);
     return `<tr><td>${it.name}<br><span style="color:var(--muted);font-weight:500;font-size:12px">${it.code}</span></td>
       <td class="num">${fmt(v[FIRST])}</td><td class="num">${fmt(v[PREV])}</td>
       <td class="num">${fmt(v[CUR])}</td><td class="trend ${d.c}">${d.t}</td></tr>`;
@@ -287,7 +299,7 @@ V.conversion=()=>{
   const note=`<div class="note info">🔄 <b>التحويل</b> = (وحدات مباعة ÷ عدد الكتابات) × 100.
     مثال: طبيب كتب 5 مرات وحصل بيع 5 وحدات ⇒ 100%. الوحدات المباعة <b>حقيقية</b>،
     والكتابات <b>نموذجية</b> لحد ما يوصل ملف الكتابات — ساعتها النسبة تبقى فعلية بالكامل.</div>`;
-  const soldTot=itemTotals("units");
+  const soldTot=itemTotals("all","units");
   const rows=M.map(m=>{
     const sold=soldTot[m], wr=DATA.writings.all[m];
     const cv=wr?Math.round(sold/wr*100):0, c=convClass(cv);
