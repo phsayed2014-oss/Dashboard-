@@ -1604,7 +1604,7 @@ V.expire=()=>{
     <div class="kpi"><div class="lbl">أصناف يكتبها الأطباء</div><div class="val" style="color:var(--up)">${fmt(s.prescribed)}</div>
       <div class="delta flat">${Math.round(s.prescribed/s.items*100)}% من الأصناف</div></div>
     <div class="kpi"><div class="lbl">أصناف بدون أي كتابة ⚠️</div><div class="val" style="color:var(--down)">${fmt(s.risk)}</div>
-      <div class="delta down">خطر ركود</div></div>
+      <div class="delta down">بدون كتابة</div></div>
     <div class="kpi"><div class="lbl">إجمالي كتاباتها (07)</div><div class="val">${fmt(mo[CUR])}</div>
       <div class="delta ${dCur.c}">${dCur.t} مقابل يونيو</div></div></div>`;
   const chart=`<div class="panel"><h2>إجمالي كتابات أصناف النير اكسبير — تسلسل شهري</h2>
