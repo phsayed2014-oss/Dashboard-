@@ -231,28 +231,79 @@ const DATA = {
     ]
   },
 
-  /* ⏳ Near-Expire (Demo) */
-  nearExpire:[
-    {name:"Nostri Calcium D3", w:{"05":22,"06":31,"07":48}},
-    {name:"Nostri Omega 3",    w:{"05":15,"06":24,"07":40}},
-    {name:"Nostri Iron Plus",  w:{"05":30,"06":28,"07":37}},
-    {name:"Nostri Vitamin C",  w:{"05":18,"06":22,"07":21}},
-    {name:"Nostri Zinc",       w:{"05": 9,"06":14,"07":26}}
-  ],
+  /* ⏳ Near-Expire — حقيقي (ملف Near Expire till 31-12-2026 + كتابات التعاونات الثلاثة)
+     كل صف: [الوصف, المخزون, تاريخ الانتهاء, كتابات 05, 06, 07] */
+  nearExpire:{
+    summary:{items:664, qty:17374, prescribed:407, risk:257},
+    monthly:{"05":7260,"06":6666,"07":6598},
+    prescribed:[
+      ["CLARA Tablet 10MG/1Tablet",1,"2026-09-12",357,303,310],
+      ["DEFADOL 160 mg/5 ml Syrup, 100 ML",1,"2026-07-17",366,271,138],
+      ["COXICEL 200 mg/capsule, 30 CAP",1,"2026-02-10",271,239,170],
+      ["DESLOR 5 mg/tablet, 20 TABLET/BOX",3,"2026-11-14",262,232,153],
+      ["PULMICORT 0.5 mg/ml Ampoule, 20",14,"2026-09-30",237,146,124],
+      ["PROF SUSPENTION 100MG/5ML, 110ML",1,"2026-12-20",167,158,179],
+      ["NEORIN Syrup 0.5MG/1ML, 150ML",8,"2026-06-30",257,149,71],
+      ["ROFENAC 1 %/apply Gel, 50 GM/TUBE",1,"2026-01-07",140,92,229],
+      ["MUCOSOLVAN Fort 6 mg/ml Syrup, 250",6,"2026-10-31",145,119,183],
+      ["COLI-URINAL GRANULES, 60G",2,"2026-10-31",154,143,127],
+      ["REFLEX MASSAGE Emulgel, 100 ML",11,"2026-08-31",125,168,112],
+      ["HYFRESH EYE GEL drop, 30 ML",9,"2026-06-11",132,169,93],
+      ["VEDOXIN 500 mg/tablet, 5 TABLET",9,"2026-10-29",175,144,66],
+      ["CATAFAST SACHETS 50MG, 9sachet",29,"2026-09-30",78,115,132],
+      ["DESTAMIN 5 mg/tablet, 20 TABLET",6,"2026-09-30",25,119,166],
+      ["ADOL 120 mg/5 ml Syrup, 100 ML",41,"2026-08-30",145,68,93],
+      ["REPADERM 1 %/apply Gel, 100 GM",1,"2026-08-14",128,65,107],
+      ["ELICA-M Cream 0.1/2%, 30GM",3,"2026-09-24",72,84,86],
+      ["ETORIA Tablet 90MG, 28Tablet",1,"2026-10-17",89,50,83],
+      ["CEFIM Capsule 400MG, 6Capsule",7,"2026-07-31",46,37,126],
+      ["CARTIMOV 50 mg/capsule, 20 CAP",6,"2026-09-14",44,35,95],
+      ["AGIOLAX POWDER, 250GM",2,"2026-09-30",46,77,92],
+      ["DERMO Ointment, 30GM/Tube",4,"2026-09-30",51,70,83],
+      ["TILAX Tablet 2MG, 30Tablet",2,"2026-12-31",86,57,77]
+    ],
+    highStock:[
+      ["HYMOX FORTE SUSPENTION 250MG/5ML",2594,"2026-01-09",0,0,0],
+      ["EMILOK Capsule 20MG, 14Capsule",1434,"2026-02-09",43,76,32],
+      ["ZETRON 200MG/5ML SUSPENTION",929,"2026-08-31",9,21,56],
+      ["FORMIT XR Tablet 750MG, 30",734,"2026-01-12",23,33,35],
+      ["AVALON AVOCOM 0.1 %/apply Ointment",581,"2026-06-30",0,0,0],
+      ["VOLTIC tablet 50MG, 20Tablet",431,"2026-07-25",22,80,7],
+      ["EMIDOL 120 mg/5 ml Syrup, 100 ML",364,"2026-10-12",0,0,0],
+      ["OPTIFLOX Eye drops 0.3MG, 5ML",331,"2026-06-30",1,0,0],
+      ["DAONIL Tablet 5MG, 30Tablet",321,"2026-07-31",0,1,0],
+      ["BIOCAL D 500 mg/tablet, 60",258,"2026-01-07",24,1,0],
+      ["PANADREX 120 mg/5 ml Syrup, 60 ML",245,"2026-12-24",1,0,0],
+      ["SETAPRO 10 mg/tablet, 30 TABLET",233,"2026-01-08",38,41,26],
+      ["AVALON AVOMEB EXTERA Ointment, 50",205,"2026-06-30",8,1,1],
+      ["TRENTAL Tablet 400MG, 20Tablet",175,"2026-10-31",0,2,1],
+      ["JARDIANCE Coated tablet 10MG",166,"2026-09-30",12,1,2],
+      ["SERETIDE EVOHALER 125MG SPRAY",147,"2026-06-30",0,0,0],
+      ["MIXTARD Injection 30IU/1ML, 10ML",147,"2026-07-31",2,3,3],
+      ["PEXAPAN 2.5 mg/tablet, 60 TABLET",146,"2026-11-18",0,0,0],
+      ["ROLIP Ointment 1%, 30GM/Tube",141,"2026-06-30",4,2,8],
+      ["ECHILIB Chewable tablet, 20",139,"2026-09-30",0,4,0],
+      ["JP VITAMIN D3 Soft Gel 1000IU",125,"2026-03-10",0,0,0],
+      ["REMOX SUSPENTION 125MG/5ML, 70ML",119,"2026-07-17",16,21,41],
+      ["AVALON SALINOSE BABY 0.9 ml/drop",112,"2026-08-31",0,0,0],
+      ["RINOFED COLD&ALLERGY Tablet, 30",109,"2026-10-11",0,0,0],
+      ["INHIXA 40 mg/syringe Injection",101,"2026-08-31",0,0,0]
+    ]
+  },
 
   /* 🌿 PureHerb — مبيعات حقيقية (مورد شركة بيور هيرب 143711)
      ملاحظة: شهر 07 فقط · ص1 و ص7 فقط · الكتابات لسه لم تصل.
      u = وحدات مباعة · v = قيمة البيع (ريال) لكل صيدلية في يوليو 07 */
   pureherbMonth:"07",
   pureherb:[
-    {name:"ZINCOLIVE Syrup 150ML",        code:"1-03-186-085", u:{"1":9,  "7":null}, v:{"1":630,   "7":null}, w1:9},
-    {name:"FAWARVIT Vit C 1000mg Eff.",    code:"1-03-044-039", u:{"1":2,  "7":null}, v:{"1":40,    "7":null}, w1:0},
-    {name:"PureFeel Tablet 30",           code:"1-03-187-269", u:{"1":2,  "7":2},    v:{"1":59,    "7":59},  w1:0},
-    {name:"PURE OMEGA-3 Syrup 240ML",     code:"1-03-186-084", u:{"1":1,  "7":1},    v:{"1":150,   "7":150}, w1:1},
-    {name:"CENTROZON WOMEN Tablet 30",    code:"1-03-187-267", u:{"1":15, "7":1},    v:{"1":600,   "7":40},  w1:9},
-    {name:"CENTROZON Tablet 30",          code:"1-03-187-270", u:{"1":15, "7":6},    v:{"1":292.5, "7":117}, w1:15},
-    {name:"BoneFriend Tablet 30",         code:"1-03-187-268", u:{"1":15, "7":4},    v:{"1":750,   "7":200}, w1:20},
-    {name:"ARGIGROW Syrup 150ML",         code:"1-03-186-083", u:{"1":6,  "7":2},    v:{"1":510,   "7":170}, w1:2}
+    {name:"ZINCOLIVE Syrup 150ML",        code:"1-03-186-085", u:{"1":9,  "7":null,"18":null}, v:{"1":630,   "7":null,"18":null}, w1:9},
+    {name:"FAWARVIT Vit C 1000mg Eff.",    code:"1-03-044-039", u:{"1":2,  "7":null,"18":null}, v:{"1":40,    "7":null,"18":null}, w1:0},
+    {name:"PureFeel Tablet 30",           code:"1-03-187-269", u:{"1":2,  "7":2,   "18":2},    v:{"1":59,    "7":59,  "18":59},  w1:0},
+    {name:"PURE OMEGA-3 Syrup 240ML",     code:"1-03-186-084", u:{"1":1,  "7":1,   "18":null}, v:{"1":150,   "7":150, "18":null}, w1:1},
+    {name:"CENTROZON WOMEN Tablet 30",    code:"1-03-187-267", u:{"1":15, "7":1,   "18":2},    v:{"1":600,   "7":40,  "18":80},  w1:9},
+    {name:"CENTROZON Tablet 30",          code:"1-03-187-270", u:{"1":15, "7":6,   "18":6},    v:{"1":292.5, "7":117, "18":117}, w1:15},
+    {name:"BoneFriend Tablet 30",         code:"1-03-187-268", u:{"1":15, "7":4,   "18":3},    v:{"1":750,   "7":200, "18":150}, w1:20},
+    {name:"ARGIGROW Syrup 150ML",         code:"1-03-186-083", u:{"1":6,  "7":2,   "18":1},    v:{"1":510,   "7":170, "18":85},  w1:2}
   ]
 };
 
@@ -505,72 +556,85 @@ V.doctors=()=>{
   return note+kpis+chart+table;
 };
 
-/* ---- 4. Near-Expire (Demo) ---- */
+/* ---- 4. Near-Expire (REAL) ---- */
 V.expire=()=>{
-  const items=DATA.nearExpire, tot=m=>items.reduce((a,it)=>a+(it.w[m]||0),0);
-  const dCur=delta(tot(CUR),tot(PREV)), dTot=delta(tot(CUR),tot(FIRST));
-  const note=`<div class="note demo">⚠️ <b>بيانات نموذجية</b> — ابعت ملف أصناف Near-Expire
-    وهنتابع كتابة الأطباء ليها بالأرقام الحقيقية.</div>`;
+  const NE=DATA.nearExpire, s=NE.summary, mo=NE.monthly;
+  const dCur=delta(mo[CUR],mo[PREV]), dTot=delta(mo[CUR],mo[FIRST]);
+  const expShort=e=>e?e.slice(0,7):"—";
+  const wpill=w7=>w7===0?'<span class="pill r">بدون كتابة</span>':w7<=5?'<span class="pill y">ضعيف</span>':'<span class="pill g">نشط</span>';
+  const note=`<div class="note real">⏳ <b>Near-Expire حقيقي</b> — ملف الأصناف قريبة الانتهاء (حتى 31-12-2026)
+     مقاطَع مع كتابات الأطباء للتعاونات الثلاثة (ص1+ص7+ص18). الهدف: رفع كتابة الأصناف الراكدة قبل انتهائها.
+     <br><small>تواريخ الانتهاء كما وردت في الملف (سنة-شهر).</small></div>`;
   const kpis=`<div class="kpis">
-    <div class="kpi"><div class="lbl">كتابات Near-Expire يوليو</div><div class="val">${fmt(tot(CUR))}</div>
-      <div class="delta ${dCur.c}">${dCur.t} مقابل يونيو</div></div>
-    <div class="kpi"><div class="lbl">عدد الأصناف المتابَعة</div><div class="val">${items.length}</div></div>
-    <div class="kpi"><div class="lbl">تحسّن الكتابة 05←07</div><div class="val ${dTot.c}">${dTot.t.replace(/[▲▼●] /,"")}</div>
-      <div class="delta ${dTot.c}">هدف: رفع الكتابة</div></div></div>`;
-  const barmax=Math.max(...items.map(x=>x.w[CUR]),1);
-  const rows=items.map(it=>{
-    const d=delta(it.w[CUR],it.w[PREV]);
-    return `<tr><td>${it.name}</td><td class="num">${fmt(it.w[FIRST])}</td><td class="num">${fmt(it.w[PREV])}</td>
-      <td class="num">${fmt(it.w[CUR])}</td><td class="trend ${d.c}">${d.t}</td>
-      <td style="width:120px"><div class="conv"><div class="track">
-        <div class="fill" style="width:${it.w[CUR]/barmax*100}%;background:var(--teal)"></div></div></div></td></tr>`;
-  }).join("");
-  const table=`<div class="panel"><h2>متابعة كتابة أصناف Near-Expire</h2>
-    <p class="hint">الهدف: زيادة كتابة الأطباء للأصناف قريبة الانتهاء قبل انتهائها</p>
-    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>مايو</th><th>يونيو</th><th>يوليو</th><th>التغير</th><th>المستوى</th></tr></thead>
-    <tbody>${rows}</tbody></table></div></div>`;
-  const chart=`<div class="panel"><h2>إجمالي كتابات Near-Expire — تسلسل شهري</h2>
-    ${barChart({"05":tot("05"),"06":tot("06"),"07":tot("07")})}</div>`;
-  return note+kpis+chart+table;
+    <div class="kpi"><div class="lbl">إجمالي أصناف النير اكسبير</div><div class="val">${fmt(s.items)}</div>
+      <div class="delta flat">${fmt(s.qty)} وحدة مخزون</div></div>
+    <div class="kpi"><div class="lbl">أصناف يكتبها الأطباء</div><div class="val" style="color:var(--up)">${fmt(s.prescribed)}</div>
+      <div class="delta flat">${Math.round(s.prescribed/s.items*100)}% من الأصناف</div></div>
+    <div class="kpi"><div class="lbl">أصناف بدون أي كتابة ⚠️</div><div class="val" style="color:var(--down)">${fmt(s.risk)}</div>
+      <div class="delta down">خطر ركود</div></div>
+    <div class="kpi"><div class="lbl">إجمالي كتاباتها (07)</div><div class="val">${fmt(mo[CUR])}</div>
+      <div class="delta ${dCur.c}">${dCur.t} مقابل يونيو</div></div></div>`;
+  const chart=`<div class="panel"><h2>إجمالي كتابات أصناف النير اكسبير — تسلسل شهري</h2>
+    <p class="hint">اتجاه كتابة الأطباء لكل الأصناف قريبة الانتهاء (${dTot.c==="up"?"تحسّن":dTot.c==="down"?"تراجع طفيف":"ثبات"} 05→07)</p>
+    ${barChart(mo)}</div>`;
+  const hrows=NE.highStock.map(r=>{
+    const[desc,qty,exp,w5,w6,w7]=r, d=delta(w7,w6);
+    return `<tr><td>${desc}</td><td class="num" style="${qty>=200?'color:var(--down);font-weight:700':''}">${fmt(qty)}</td>
+      <td class="num" style="font-size:12px">${expShort(exp)}</td>
+      <td class="num">${w5}</td><td class="num">${w6}</td><td class="num">${w7}</td>
+      <td class="trend ${d.c}">${d.t}</td><td>${wpill(w7)}</td></tr>`;}).join("");
+  const htable=`<div class="panel"><h2>🚨 أعلى مخزون معرّض للركود (أعلى 25 بالكمية)</h2>
+    <p class="hint">أصناف مخزونها كبير — لازم تنشيط كتابة الأطباء ليها بسرعة قبل الانتهاء</p>
+    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>المخزون</th><th>ينتهي</th>
+    <th>مايو</th><th>يونيو</th><th>يوليو</th><th>التغير</th><th>الحالة</th></tr></thead><tbody>${hrows}</tbody></table></div></div>`;
+  const prows=NE.prescribed.slice().sort((a,b)=>b[5]-a[5]).map(r=>{
+    const[desc,qty,exp,w5,w6,w7]=r, d=delta(w7,w6);
+    return `<tr><td>${desc}</td><td class="num">${fmt(qty)}</td><td class="num" style="font-size:12px">${expShort(exp)}</td>
+      <td class="num">${w5}</td><td class="num">${w6}</td><td class="num">${w7}</td>
+      <td class="trend ${d.c}">${d.t}</td></tr>`;}).join("");
+  const ptable=`<div class="panel"><h2>✅ أكثر أصناف النير اكسبير كتابةً (أعلى 24)</h2>
+    <p class="hint">الأصناف اللي الأطباء بيكتبوها بالفعل — تابع تحسّن/تراجع كل صنف شهريًا</p>
+    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>المخزون</th><th>ينتهي</th>
+    <th>مايو</th><th>يونيو</th><th>يوليو</th><th>التغير</th></tr></thead><tbody>${prows}</tbody></table></div></div>`;
+  return note+kpis+chart+htable+ptable;
 };
 
-/* ---- 5. PureHerb (REAL sales — 07 only, ص1 & ص7) ---- */
+/* ---- 5. PureHerb (REAL sales — 07 only, ص1 & ص7 & ص18) ---- */
 V.pureherb=()=>{
-  const items=DATA.pureherb, PH=["1","7"];
+  const items=DATA.pureherb, PH=["1","7","18"];
   const sumU=p=>items.reduce((a,it)=>a+(it.u[p]||0),0);
   const sumV=p=>items.reduce((a,it)=>a+(it.v[p]||0),0);
-  const u1=sumU("1"),u7=sumU("7"),v1=sumV("1"),v7=sumV("7");
+  const u1=sumU("1"),u7=sumU("7"),u18=sumU("18"),v1=sumV("1"),v7=sumV("7"),v18=sumV("18");
+  const uT=u1+u7+u18, vT=v1+v7+v18;
   const note=`<div class="note real">✔ <b>مبيعات حقيقية</b> — مورد «شركة بيور هيرب» (143711)، <b>شهر يوليو 07 فقط</b>،
-     صيدليتَي 1 و 7. ⏳ كتابات PureHerb ومبيعات باقي الشهور/الفروع لسه لم تصل.</div>`;
+     صيدليات 1 و 7 و 18. ⏳ مبيعات باقي الشهور، وكتابات PureHerb متاحة لـ ص1.</div>`;
   const kpis=`<div class="kpis">
-    <div class="kpi"><div class="lbl">وحدات PureHerb — ص1 (07)</div><div class="val">${fmt(u1)} <span class="unit">وحدة</span></div>
+    <div class="kpi"><div class="lbl">وحدات ص1 (07)</div><div class="val">${fmt(u1)} <span class="unit">وحدة</span></div>
       <div class="delta flat">${fmt(v1)} ريال</div></div>
-    <div class="kpi"><div class="lbl">وحدات PureHerb — ص7 (07)</div><div class="val">${fmt(u7)} <span class="unit">وحدة</span></div>
+    <div class="kpi"><div class="lbl">وحدات ص7 (07)</div><div class="val">${fmt(u7)} <span class="unit">وحدة</span></div>
       <div class="delta flat">${fmt(v7)} ريال</div></div>
-    <div class="kpi"><div class="lbl">إجمالي الوحدات (ص1+ص7)</div><div class="val">${fmt(u1+u7)}</div>
-      <div class="delta flat">${fmt(v1+v7)} ريال</div></div>
-    <div class="kpi"><div class="lbl">عدد الأصناف المتحركة</div><div class="val">${items.length}</div></div></div>`;
-  // chart: units per pharmacy
+    <div class="kpi"><div class="lbl">وحدات ص18 (07)</div><div class="val">${fmt(u18)} <span class="unit">وحدة</span></div>
+      <div class="delta flat">${fmt(v18)} ريال</div></div>
+    <div class="kpi"><div class="lbl">الإجمالي (ص1+7+18)</div><div class="val">${fmt(uT)}</div>
+      <div class="delta flat">${fmt(vT)} ريال</div></div></div>`;
+  const mx=Math.max(u1,u7,u18,1);
+  const bar=(u,c,lbl)=>`<div class="chgroup"><div class="bar" style="height:${Math.max(u/mx*100,2)}%;background:${c}">
+        <span class="cap" style="color:${c}">${fmt(u)}</span></div></div>`;
   const chart=`<div class="panel"><h2>مبيعات PureHerb حسب الصيدلية — يوليو 07 (وحدات)</h2>
-    <div class="chart">
-      <div class="chgroup"><div class="bar" style="height:${Math.max(u1/Math.max(u1,u7)*100,2)}%;background:var(--c06)">
-        <span class="cap" style="color:var(--c06)">${fmt(u1)}</span></div></div>
-      <div class="chgroup"><div class="bar" style="height:${Math.max(u7/Math.max(u1,u7)*100,2)}%;background:var(--c07)">
-        <span class="cap" style="color:var(--c07)">${fmt(u7)}</span></div></div>
-    </div><div class="chlabels"><span>صيدلية 1</span><span>صيدلية 7</span></div></div>`;
+    <div class="chart">${bar(u1,'var(--c05)')}${bar(u7,'var(--c06)')}${bar(u18,'var(--c07)')}</div>
+    <div class="chlabels"><span>صيدلية 1</span><span>صيدلية 7</span><span>صيدلية 18</span></div></div>`;
+  const cell=x=>x==null?"—":fmt(x);
   const rows=items.map(it=>{
-    const tu=(it.u["1"]||0)+(it.u["7"]||0), tv=(it.v["1"]||0)+(it.v["7"]||0);
+    const tu=(it.u["1"]||0)+(it.u["7"]||0)+(it.u["18"]||0), tv=(it.v["1"]||0)+(it.v["7"]||0)+(it.v["18"]||0);
     return `<tr><td>${it.name}<br><span style="color:var(--muted);font-weight:500;font-size:12px">${it.code}</span></td>
-      <td class="num">${it.u["1"]==null?"—":fmt(it.u["1"])}</td><td class="num">${it.v["1"]==null?"—":fmt(it.v["1"])}</td>
-      <td class="num">${it.u["7"]==null?"—":fmt(it.u["7"])}</td><td class="num">${it.v["7"]==null?"—":fmt(it.v["7"])}</td>
+      <td class="num">${cell(it.u["1"])}</td><td class="num">${cell(it.u["7"])}</td><td class="num">${cell(it.u["18"])}</td>
       <td class="num">${fmt(tu)}</td><td class="num">${fmt(tv)}</td></tr>`;}).join("");
-  const table=`<div class="panel"><h2>تفصيلي أصناف PureHerb — يوليو 07</h2>
-    <p class="hint">وحدات وقيمة البيع لكل صيدلية. «—» = الصنف غير متحرك في هذه الصيدلية.</p>
-    <div class="tbl-wrap"><table><thead><tr><th rowspan="2">الصنف</th><th colspan="2">صيدلية 1</th><th colspan="2">صيدلية 7</th><th colspan="2">الإجمالي</th></tr>
-    <tr><th>وحدات</th><th>ريال</th><th>وحدات</th><th>ريال</th><th>وحدات</th><th>ريال</th></tr></thead>
+  const table=`<div class="panel"><h2>تفصيلي أصناف PureHerb — يوليو 07 (وحدات)</h2>
+    <p class="hint">الوحدات المباعة لكل صيدلية + الإجمالي. «—» = غير متحرك في هذه الصيدلية.</p>
+    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>ص1</th><th>ص7</th><th>ص18</th><th>إجمالي وحدات</th><th>إجمالي ريال</th></tr></thead>
     <tbody>${rows}</tbody>
-    <tfoot><tr><td>الإجمالي</td><td class="num">${fmt(u1)}</td><td class="num">${fmt(v1)}</td>
-    <td class="num">${fmt(u7)}</td><td class="num">${fmt(v7)}</td><td class="num">${fmt(u1+u7)}</td><td class="num">${fmt(v1+v7)}</td></tr></tfoot>
+    <tfoot><tr><td>الإجمالي</td><td class="num">${fmt(u1)}</td><td class="num">${fmt(u7)}</td><td class="num">${fmt(u18)}</td>
+    <td class="num">${fmt(uT)}</td><td class="num">${fmt(vT)}</td></tr></tfoot>
     </table></div></div>`;
   // كتابات + تحويل ص1 (يوليو)
   const totW1=items.reduce((a,it)=>a+(it.w1||0),0);
