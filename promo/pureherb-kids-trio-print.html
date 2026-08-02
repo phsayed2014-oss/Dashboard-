@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pure Herb Kids Trio | صفحة دعائية قابلة للطباعة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800;900&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #132033;
+    --muted: #4d6075;
+    --paper: #f7f9fc;
+    --line: rgba(19, 32, 51, 0.1);
+    --zinc: #1a4f8b;
+    --zinc-soft: #e8f1fb;
+    --zinc-accent: #f0a33a;
+    --omega: #0b6e8a;
+    --omega-soft: #e6f6fb;
+    --omega-accent: #ef6b2d;
+    --argi: #c45a12;
+    --argi-soft: #fff4e5;
+    --argi-accent: #e2a218;
+    --navy: #0f2744;
+    --ok: #1f8a5b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Cairo", "Sora", sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 12% 8%, rgba(26, 79, 139, 0.08), transparent 28%),
+      radial-gradient(circle at 88% 12%, rgba(239, 107, 45, 0.08), transparent 26%),
+      linear-gradient(180deg, #eef3f8 0%, #f8fafc 45%, #eef2f6 100%);
+    min-height: 100vh;
+    padding: 18px;
+  }
+
+  .sheet {
+    width: 297mm;
+    min-height: 210mm;
+    max-width: 100%;
+    margin: 0 auto;
+    background:
+      linear-gradient(135deg, rgba(15, 39, 68, 0.04), transparent 40%),
+      linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    border: 1px solid rgba(15, 39, 68, 0.12);
+    border-radius: 18px;
+    box-shadow: 0 18px 50px rgba(15, 39, 68, 0.12);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .sheet::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.045;
+    background-image:
+      radial-gradient(circle at 20% 20%, #0f2744 1px, transparent 1px),
+      radial-gradient(circle at 80% 40%, #0f2744 1px, transparent 1px);
+    background-size: 28px 28px, 42px 42px;
+  }
+
+  .toolbar {
+    width: 297mm;
+    max-width: 100%;
+    margin: 0 auto 12px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .toolbar button {
+    border: none;
+    border-radius: 999px;
+    padding: 10px 18px;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+    background: var(--navy);
+    color: #fff;
+  }
+
+  .toolbar .ghost {
+    background: #fff;
+    color: var(--navy);
+    border: 1px solid rgba(15, 39, 68, 0.18);
+  }
+
+  /* ── Header ── */
+  .hero {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 18px;
+    padding: 18px 22px 14px;
+    background:
+      linear-gradient(120deg, #0f2744 0%, #16416d 55%, #0b6e8a 100%);
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: "";
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    right: -60px;
+    top: -90px;
+    background: radial-gradient(circle, rgba(255,255,255,.16), transparent 68%);
+  }
+
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .leaf {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #7dcf6a, #2f9d57);
+    display: grid;
+    place-items: center;
+    box-shadow: 0 6px 16px rgba(0,0,0,.2);
+  }
+
+  .leaf svg { width: 18px; height: 18px; fill: #fff; }
+
+  .brand-name {
+    font-family: "Sora", "Cairo", sans-serif;
+    font-weight: 800;
+    font-size: 1.35rem;
+    letter-spacing: 0.04em;
+  }
+
+  .brand-name span { color: #9be7c0; }
+
+  .hero h1 {
+    font-size: clamp(1.45rem, 2.4vw, 2rem);
+    line-height: 1.25;
+    font-weight: 900;
+    position: relative;
+    z-index: 1;
+    max-width: 18ch;
+  }
+
+  .hero p {
+    margin-top: 8px;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: rgba(255,255,255,.88);
+    max-width: 42ch;
+    position: relative;
+    z-index: 1;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-points {
+    display: grid;
+    gap: 8px;
+    align-content: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-points li {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 12px;
+    padding: 9px 12px;
+    font-size: 0.86rem;
+    font-weight: 700;
+  }
+
+  .hero-points .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+  }
+
+  .dot.z { background: var(--zinc-accent); }
+  .dot.o { background: #5ec8e8; }
+  .dot.a { background: #f0c14a; }
+
+  /* ── Benefits strip ── */
+  .benefits {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 10px 18px;
+    background: #f3f6fa;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .benefit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 8px 10px;
+  }
+
+  .benefit .ico {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-family: "Sora", "Cairo", sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #fff;
+    flex: 0 0 auto;
+    letter-spacing: -0.02em;
+  }
+
+  .benefit strong {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  .benefit span {
+    display: block;
+    font-size: 0.68rem;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+
+  .b1 .ico { background: linear-gradient(145deg, #f0a33a, #d97706); }
+  .b2 .ico { background: linear-gradient(145deg, #0b6e8a, #0891b2); }
+  .b3 .ico { background: linear-gradient(145deg, #1f8a5b, #16a34a); }
+  .b4 .ico { background: linear-gradient(145deg, #1a4f8b, #2563eb); }
+
+  /* ── Products ── */
+  .products {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 14px 16px 12px;
+  }
+
+  .card {
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    background: #fff;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .card.zinc { --accent: var(--zinc); --soft: var(--zinc-soft); --hot: var(--zinc-accent); }
+  .card.omega { --accent: var(--omega); --soft: var(--omega-soft); --hot: var(--omega-accent); }
+  .card.argi { --accent: var(--argi); --soft: var(--argi-soft); --hot: var(--argi-accent); }
+
+  .card-top {
+    background: linear-gradient(180deg, var(--soft), #fff 72%);
+    padding: 12px 12px 8px;
+    border-bottom: 3px solid var(--accent);
+    position: relative;
+  }
+
+  .tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 999px;
+    margin-bottom: 6px;
+  }
+
+  .card h2 {
+    font-family: "Sora", "Cairo", sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1.15;
+  }
+
+  .card h2 small {
+    display: block;
+    margin-top: 2px;
+    font-family: "Cairo", sans-serif;
+    font-size: 0.92rem;
+    color: var(--ink);
+    font-weight: 800;
+  }
+
+  .desc {
+    margin-top: 6px;
+    font-size: 0.72rem;
+    line-height: 1.45;
+    color: var(--muted);
+    min-height: 2.9em;
+  }
+
+  .visual {
+    margin-top: 8px;
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 1.35 / 1;
+    background: #eef2f6;
+    border: 1px solid rgba(19,32,51,.06);
+  }
+
+  .visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .chip {
+    font-size: 0.68rem;
+    font-weight: 800;
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, white);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 3px 8px;
+  }
+
+  .chip.hot {
+    background: var(--hot);
+    border-color: transparent;
+    color: #fff;
+  }
+
+  .card-body {
+    padding: 10px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 900;
+    color: var(--accent);
+  }
+
+  .section-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: color-mix(in srgb, var(--accent) 25%, white);
+  }
+
+  .points {
+    display: grid;
+    gap: 4px;
+  }
+
+  .points li {
+    list-style: none;
+    font-size: 0.72rem;
+    line-height: 1.35;
+    color: var(--ink);
+    display: grid;
+    grid-template-columns: 14px 1fr;
+    gap: 6px;
+    align-items: start;
+  }
+
+  .points li::before {
+    content: "✓";
+    color: var(--ok);
+    font-weight: 900;
+    font-size: 0.75rem;
+    margin-top: 1px;
+  }
+
+  .dose-box {
+    background: var(--soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 18%, white);
+    border-radius: 12px;
+    padding: 8px;
+  }
+
+  .dose-box ul {
+    display: grid;
+    gap: 3px;
+    margin-top: 4px;
+  }
+
+  .dose-box li {
+    list-style: none;
+    font-size: 0.68rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--ink);
+    border-bottom: 1px dashed rgba(19,32,51,.08);
+    padding-bottom: 2px;
+  }
+
+  .dose-box li:last-child { border-bottom: none; padding-bottom: 0; }
+  .dose-box li strong { color: var(--accent); font-weight: 800; white-space: nowrap; }
+
+  .nutrients {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .nutrients span {
+    font-size: 0.64rem;
+    font-weight: 800;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 7px;
+    color: var(--muted);
+  }
+
+  /* ── Footer ── */
+  .footer {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 16px 14px;
+    border-top: 1px solid var(--line);
+    background: linear-gradient(180deg, #f8fafc, #eef3f8);
+  }
+
+  .badges {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .badge {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 7px 6px;
+    text-align: center;
+  }
+
+  .badge strong {
+    display: block;
+    font-size: 0.62rem;
+    font-weight: 900;
+    color: var(--navy);
+    line-height: 1.25;
+  }
+
+  .badge span {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.58rem;
+    color: var(--muted);
+  }
+
+  .cta-bar {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 12px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .cta-bar strong {
+    font-size: 0.9rem;
+    font-weight: 900;
+  }
+
+  .cta-bar span {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,.82);
+    line-height: 1.35;
+  }
+
+  .note {
+    width: 297mm;
+    max-width: 100%;
+    margin: 10px auto 0;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  @media (max-width: 980px) {
+    body { padding: 10px; }
+    .sheet { width: 100%; border-radius: 14px; }
+    .hero, .products, .footer, .benefits { grid-template-columns: 1fr; }
+    .benefits { grid-template-columns: 1fr 1fr; }
+    .badges { grid-template-columns: 1fr 1fr; }
+    .toolbar { width: 100%; justify-content: stretch; }
+    .toolbar button { flex: 1; }
+  }
+
+  @media print {
+    @page {
+      size: A4 landscape;
+      margin: 6mm;
+    }
+
+    body {
+      background: #fff;
+      padding: 0;
+    }
+
+    .toolbar, .note { display: none !important; }
+
+    .sheet {
+      width: auto;
+      min-height: auto;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      overflow: visible;
+    }
+
+    .hero { padding: 12px 14px 10px; }
+    .benefits { padding: 8px 12px; gap: 6px; }
+    .products { padding: 10px 12px 8px; gap: 8px; }
+    .footer { padding: 8px 12px 10px; }
+    .card, .benefit, .badge, .cta-bar, .dose-box { break-inside: avoid; }
+    .visual { aspect-ratio: 1.5 / 1; }
+  }
+</style>
+</head>
+<body>
+  <div class="toolbar">
+    <button class="ghost" type="button" onclick="window.location.href=window.location.pathname">تحديث</button>
+    <button type="button" onclick="window.print()">طباعة / حفظ PDF</button>
+  </div>
+
+  <main class="sheet" aria-label="صفحة دعائية لثلاثة مكملات غذائية للأطفال">
+    <header class="hero">
+      <div>
+        <div class="brand-row">
+          <div class="leaf" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M17.5 3.5c-4.2.4-7.4 2.4-9.3 5.5-1.5 2.5-2 5.5-1.5 8.3 2.8.5 5.8 0 8.3-1.5 3.1-1.9 5.1-5.1 5.5-9.3-1.1.1-2.2.1-3 0zM6.2 18.8c1.7-2.2 2.4-4.7 2.2-7.1C5.8 13 4 15.6 3.5 18.5c1 .3 1.9.4 2.7.3z"/></svg>
+          </div>
+          <div class="brand-name">PURE <span>HERB</span> KIDS</div>
+        </div>
+        <h1>ثلاثة مكملات… دعم نمو أوضح لعقول وأجسام الأطفال</h1>
+        <p>
+          صفحة دعائية واحدة قابلة للطباعة تجمع Zincolive و Pure Omega-3 و Argi Grow —
+          بنفس روح الملصق التعليمي: فائدة سريعة، جرعة واضحة، وطعم محبّب.
+        </p>
+        <div class="pill">SMARTER KIDS · HEALTHIER TOMORROW</div>
+      </div>
+      <ul class="hero-points">
+        <li><span class="dot z"></span> زنك لنمو الشعر والعظام وتصنيع البروتين</li>
+        <li><span class="dot o"></span> أوميغا-3 + فيتامينات لدعم الدماغ والتركيز</li>
+        <li><span class="dot a"></span> أحماض أمينية ومعادن لنمو طبيعي أوضح</li>
+      </ul>
+    </header>
+
+    <section class="benefits" aria-label="فوائد سريعة">
+      <div class="benefit b1">
+        <div class="ico">BR</div>
+        <div>
+          <strong>نشاط الدماغ</strong>
+          <span>دعم التركيز والتطور المعرفي</span>
+        </div>
+      </div>
+      <div class="benefit b2">
+        <div class="ico">EN</div>
+        <div>
+          <strong>طاقة يومية</strong>
+          <span>تحويل الغذاء إلى نشاط مفيد</span>
+        </div>
+      </div>
+      <div class="benefit b3">
+        <div class="ico">GR</div>
+        <div>
+          <strong>نمو صحي</strong>
+          <span>عظام وعضلات وتطور متوازن</span>
+        </div>
+      </div>
+      <div class="benefit b4">
+        <div class="ico">IM</div>
+        <div>
+          <strong>مناعة أقوى</strong>
+          <span>دعم دفاعات الجسم الطبيعية</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="products" aria-label="المنتجات الثلاثة">
+      <!-- ZINCOLIVE -->
+      <article class="card zinc">
+        <div class="card-top">
+          <span class="tag">HEMA LIVE · زنك</span>
+          <h2>ZINCOLIVE<small>زينكوليف شراب</small></h2>
+          <p class="desc">مكمل غذائي شراب من الزنك بنكهات الفراولة، محلى ببدائل السكر — تركيز 20mg / 10ml.</p>
+          <div class="visual">
+            <img src="assets/zincolive-hero.png" alt="عبوة زينكوليف شراب" width="640" height="480">
+          </div>
+          <div class="meta">
+            <span class="chip hot">فراولة</span>
+            <span class="chip">20mg / 10ml</span>
+            <span class="chip">150 ml</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="section-label">لماذا زينكوليف؟</div>
+          <ul class="points">
+            <li>يساهم في التصنيع الطبيعي للبروتين</li>
+            <li>يدعم صحة العظام والشعر</li>
+            <li>طعم فراولة محبّب للأطفال</li>
+          </ul>
+          <div class="dose-box">
+            <div class="section-label">الجرعة مع وجبة</div>
+            <ul>
+              <li><span>أقل من سنة</span><strong>1 ml</strong></li>
+              <li><span>1–3 سنوات</span><strong>2.5 ml</strong></li>
+              <li><span>4–8 سنوات</span><strong>5 ml</strong></li>
+              <li><span>أكبر من 8 سنوات</span><strong>10 ml</strong></li>
+            </ul>
+          </div>
+          <div class="nutrients">
+            <span>Zinc</span>
+            <span>بدون سكر مضاف</span>
+            <span>شراب فموي</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- PURE OMEGA-3 -->
+      <article class="card omega">
+        <div class="card-top">
+          <span class="tag">PURE HERB · أوميغا-3</span>
+          <h2>OMEGA-3<small>بيور هيرب أوميغا-3</small></h2>
+          <p class="desc">شراب مكمل يحتوي زيت السمك والفيتامينات المتعددة والزنك — بنكهة البرتقال والفواكه الاستوائية.</p>
+          <div class="visual">
+            <img src="assets/pure-omega-hero.png" alt="عبوة بيور هيرب أوميغا-3" width="640" height="480">
+          </div>
+          <div class="meta">
+            <span class="chip hot">برتقال واستوائي</span>
+            <span class="chip">DHA · EPA</span>
+            <span class="chip">240 ml</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="section-label">لماذا أوميغا-3؟</div>
+          <ul class="points">
+            <li>دعم وظائف الدماغ والتركيز</li>
+            <li>فيتامينات D / E / مجموعة B</li>
+            <li>طعم فواكه بدون طعم السمك</li>
+          </ul>
+          <div class="dose-box">
+            <div class="section-label">تركيبة داعمة</div>
+            <ul>
+              <li><span>أوميغا-3 · DHA · EPA</span><strong>دماغ</strong></li>
+              <li><span>فيتامينات متعددة</span><strong>طاقة</strong></li>
+              <li><span>زنك</span><strong>مناعة</strong></li>
+              <li><span>زيت سمك نقي</span><strong>نمو</strong></li>
+            </ul>
+          </div>
+          <div class="nutrients">
+            <span>Omega-3</span>
+            <span>Multivitamins</span>
+            <span>Zinc</span>
+            <span>Fish Oil</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- ARGI GROW -->
+      <article class="card argi">
+        <div class="card-top">
+          <span class="tag">ARGI GROW · نمو</span>
+          <h2>ARGI GROW<small>أرجيجرو شراب</small></h2>
+          <p class="desc">مكمل غذائي متعدد الفيتامينات والأحماض الأمينية والمعادن، محلى ببدائل السكر — لدعم نمو الأطفال.</p>
+          <div class="visual">
+            <img src="assets/argi-grow-hero.png" alt="عبوة أرجيجرو شراب" width="640" height="480">
+          </div>
+          <div class="meta">
+            <span class="chip hot">نمو الأطفال</span>
+            <span class="chip">Vit D3 · Iodine · Iron</span>
+            <span class="chip">150 ml</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="section-label">لماذا أرجيجرو؟</div>
+          <ul class="points">
+            <li>فيتامين D3 واليود والحديد لنمو العظام والإدراك</li>
+            <li>أحماض أمينية ومعادن متعددة</li>
+            <li>تركيبة مناسبة لمرحلة النمو</li>
+          </ul>
+          <div class="dose-box">
+            <div class="section-label">محاور الدعم</div>
+            <ul>
+              <li><span>فيتامينات متعددة</span><strong>حيوية</strong></li>
+              <li><span>أحماض أمينية</span><strong>بناء</strong></li>
+              <li><span>معادن أساسية</span><strong>توازن</strong></li>
+              <li><span>محلى ببدائل السكر</span><strong>ألطف</strong></li>
+            </ul>
+          </div>
+          <div class="nutrients">
+            <span>Amino Acids</span>
+            <span>Vitamins</span>
+            <span>Minerals</span>
+            <span>Sugar substitutes</span>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <footer class="footer">
+      <div class="badges">
+        <div class="badge">
+          <strong>مكونات عالية الجودة</strong>
+          <span>High Quality</span>
+        </div>
+        <div class="badge">
+          <strong>بدون ألوان صناعية</strong>
+          <span>No Artificial Colors</span>
+        </div>
+        <div class="badge">
+          <strong>تركيبة مدروسة</strong>
+          <span>Clinically Formulated</span>
+        </div>
+        <div class="badge">
+          <strong>يُحفظ بعيدًا عن الأطفال</strong>
+          <span>Store &lt; 25°C</span>
+        </div>
+      </div>
+      <div class="cta-bar">
+        <strong>ثلاث عبوات · دعم متكامل للنمو اليومي</strong>
+        <span>
+          المكمل الغذائي لا يغني عن الغذاء المتوازن. يُستخدم حسب الجرعة الموضحة أو استشارة الصيدلي/الطبيب.
+          | Oral liquid supplements · Kids growth support
+        </span>
+      </div>
+    </footer>
+  </main>
+
+  <p class="note">نصيحة طباعة: اختر A4 أفقي (Landscape) وفعّل «خلفيات الرسومات» / Background graphics للحصول على الألوان كاملة.</p>
+</body>
+</html>
