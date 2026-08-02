@@ -154,54 +154,71 @@ const DATA = {
      all:{u:{"05":123,"06":108,"07":168}, v:{"05":7380,"06":6480,"07":10080}},
      "1":{u:{"05":24, "06":24, "07":13 }, v:{"05":1440,"06":1440,"07":780}},
      "7":{u:{"05":11,"06":10,"07":3}, v:{"05":660,"06":600,"07":180}},
-     "18":{u:{"05":9,"06":6,"07":26}, v:{"05":540,"06":360,"07":1560}}, wr:{"1":{"05":11,"06":13,"07":11}}},
+     "18":{u:{"05":9,"06":6,"07":26}, v:{"05":540,"06":360,"07":1560}}, wr:{"1":{"05":11,"06":13,"07":11},"18":{"05":6,"06":7,"07":33}}},
     {name:"NOSTRICURE Oral Gel 30ML", code:"1-09-066-046",
      all:{u:{"05":230,"06":194,"07":255}, v:{"05":9200,"06":7760,"07":10200}},
      "1":{u:{"05":33, "06":24, "07":17 }, v:{"05":1320,"06":960,"07":680}},
      "7":{u:{"05":7,"06":6,"07":9}, v:{"05":280,"06":240,"07":360}},
-     "18":{u:{"05":20,"06":12,"07":15}, v:{"05":800,"06":480,"07":600}}, wr:{"1":{"05":13,"06":19,"07":8}}},
+     "18":{u:{"05":20,"06":12,"07":15}, v:{"05":800,"06":480,"07":600}}, wr:{"1":{"05":13,"06":19,"07":8},"18":{"05":7,"06":2,"07":4}}},
     {name:"REFLEX MASSAGE Emulgel 100ML", code:"1-02-066-034",
      all:{u:{"05":367,"06":355,"07":359}, v:{"05":23855,"06":23075,"07":23335}},
      "1":{u:{"05":128,"06":160,"07":79 }, v:{"05":8320,"06":10400,"07":5135}},
      "7":{u:{"05":22,"06":35,"07":15}, v:{"05":1430,"06":2275,"07":975}},
-     "18":{u:{"05":34,"06":19,"07":44}, v:{"05":2210,"06":1235,"07":2860}}, wr:{"1":{"05":95,"06":131,"07":74}}},
+     "18":{u:{"05":34,"06":19,"07":44}, v:{"05":2210,"06":1235,"07":2860}}, wr:{"1":{"05":95,"06":131,"07":74},"18":{"05":15,"06":9,"07":34}}},
     {name:"INTIMO Vaginal Wash 250ML", code:"1-14-166-032",
      all:{u:{"05":116,"06":147,"07":212}, v:{"05":8700,"06":11025,"07":15900}},
      "1":{u:{"05":17, "06":33, "07":45 }, v:{"05":1275,"06":2475,"07":3375}},
      "7":{u:{"05":17,"06":19,"07":17}, v:{"05":1275,"06":1425,"07":1275}},
-     "18":{u:{"05":53,"06":57,"07":48}, v:{"05":3975,"06":4275,"07":3600}}, wr:{"1":{"05":16,"06":32,"07":54}}},
+     "18":{u:{"05":53,"06":57,"07":48}, v:{"05":3975,"06":4275,"07":3600}}, wr:{"1":{"05":16,"06":32,"07":54},"18":{"05":28,"06":55,"07":44}}},
     {name:"NOSTRIDERM Ointment 50ML", code:"1-09-118-050",
      all:{u:{"05":168,"06":171,"07":279}, v:{"05":10920,"06":11115,"07":18135}},
      "1":{u:{"05":78, "06":88, "07":81 }, v:{"05":5070,"06":5720,"07":5265}},
      "7":{u:{"05":7,"06":1,"07":2}, v:{"05":455,"06":65,"07":130}},
-     "18":{u:{"05":37,"06":39,"07":64}, v:{"05":2405,"06":2535,"07":4160}}, wr:{"1":{"05":77,"06":100,"07":87}}},
+     "18":{u:{"05":37,"06":39,"07":64}, v:{"05":2405,"06":2535,"07":4160}}, wr:{"1":{"05":77,"06":100,"07":87},"18":{"05":4,"06":19,"07":28}}},
     {name:"ORACURE Mouth Wash 300ML", code:"1-12-109-038",
      all:{u:{"05":330,"06":177,"07":284}, v:{"05":11550.033,"06":6195.018,"07":9940.021}},
      "1":{u:{"05":81, "06":49, "07":47 }, v:{"05":2835.008,"06":1715.005,"07":1645.005}},
      "7":{u:{"05":23,"06":13,"07":11}, v:{"05":805.002,"06":455.001,"07":385.001}},
-     "18":{u:{"05":13,"06":14,"07":23}, v:{"05":455.001,"06":490.001,"07":805.002}}, wr:{"1":{"05":73,"06":38,"07":42}}}
+     "18":{u:{"05":13,"06":14,"07":23}, v:{"05":455.001,"06":490.001,"07":805.002}}, wr:{"1":{"05":73,"06":38,"07":42},"18":{"05":10,"06":5,"07":16}}}
   ],
 
   /* كل الصيدليات (1/7/18) + الإجمالي = مبيعات حقيقية كاملة */
   pharmacyReady:{"all":true,"1":true,"7":true,"18":true},
-  /* الكتابات متاحة لـ ص1 فقط حالياً (التعاون الأول) */
-  writingsReady:{"all":false,"1":true,"7":false,"18":false},
+  /* الكتابات متاحة لـ ص1 (التعاون الأول) و ص18 (التعاون الثاني) */
+  writingsReady:{"all":false,"1":true,"7":false,"18":true},
 
-  /* أعلى الأطباء كتابةً لأصناف نوستري — ص1 — [الاسم, 05, 06, 07] */
-  doctorsNostri:[
-    ["Hossameldin Mohamed Amin Bekh",61,61,63],
-    ["Nehad Farouk Abdallah Ramadan",15,27,54],
-    ["Mohammed Shabaan Abdelhay Els",60,93,37],
-    ["Ahmad Mahmoud Mohammed Elad",18,39,27],
-    ["Samah Abdelkarim Ahmed Elbashi",30,16,22],
-    ["Mohamed Samir Abdelfattah Fara",0,0,22],
-    ["Radwa Mohamed Mabrouk Abdalla",14,7,11],
-    ["Mona Farid Elmandouh Abdelrahm",5,10,11],
-    ["Ahmed Hassanin Mohamed Hassan",14,10,6],
-    ["Rafik Elsayed Aboelhythim Ereba",8,13,5],
-    ["Ahmed Taher Mokhtar Mashaly",14,13,3],
-    ["Said Tolba Elsayed Elbedewy",15,3,3]
-  ],
+  /* عدد الأطباء الكاتبين لنوستري لكل صيدلية */
+  doctorCount:{"1":26,"18":10},
+
+  /* أعلى الأطباء كتابةً لأصناف نوستري لكل صيدلية — [الاسم, 05, 06, 07] */
+  doctorsNostri:{
+    "1":[
+      ["Hossameldin Mohamed Amin Bekh",61,61,63],
+      ["Nehad Farouk Abdallah Ramadan",15,27,54],
+      ["Mohammed Shabaan Abdelhay Els",60,93,37],
+      ["Ahmad Mahmoud Mohammed Elad",18,39,27],
+      ["Samah Abdelkarim Ahmed Elbashi",30,16,22],
+      ["Mohamed Samir Abdelfattah Fara",0,0,22],
+      ["Radwa Mohamed Mabrouk Abdalla",14,7,11],
+      ["Mona Farid Elmandouh Abdelrahm",5,10,11],
+      ["Ahmed Hassanin Mohamed Hassan",14,10,6],
+      ["Rafik Elsayed Aboelhythim Ereba",8,13,5],
+      ["Ahmed Taher Mokhtar Mashaly",14,13,3],
+      ["Said Tolba Elsayed Elbedewy",15,3,3]
+    ],
+    "18":[
+      ["Anwar Ali Abdullah Jwass",0,0,52],
+      ["Fatimah Abdulhafeez Mohamed K",21,39,37],
+      ["Medhat Alashry Aladawy Goger",0,0,31],
+      ["Mugahid Khalid Zainelabdin Elfak",1,5,16],
+      ["Ahmad Abdelrahman Abdallah Ha",4,20,8],
+      ["Heba Mohsen Mohamed Khalil",7,16,7],
+      ["Shivapriya Nair",9,2,6],
+      ["Mohamed Samir Abdelfattah Fara",15,8,1],
+      ["Amira Mohamed Salem Eldaltoun",6,6,1],
+      ["Mohamed Muhiddeen Abd Al Gde",7,1,0]
+    ]
+  },
 
   /* ⏳ Near-Expire (Demo) */
   nearExpire:[
@@ -398,10 +415,15 @@ V.writings=()=>{
   return note+kpis+chart+table;
 };
 
-/* ---- 3. Conversion (REAL — ص1) ---- */
+/* ---- 3. Conversion (REAL — ص1 & ص18) ---- */
 V.conversion=()=>{
-  const scope="1";  // الكتابات متاحة لـ ص1 فقط
-  const note=`<div class="note real">🔄 <b>التحويل الفعلي — صيدلية 1</b> = (وحدات مباعة ÷ عدد الكتابات) × 100.
+  const scope=state.scope;
+  if(!DATA.writingsReady[scope]){
+    return `<div class="panel"><div class="pend"><div class="big">🔄</div>
+      <h2>تحويل ${scopeLabel(scope)} — بانتظار الكتابات</h2>
+      <p class="hint">التحويل يحتاج مبيعات + كتابات. المبيعات متاحة للكل، والكتابات لـ ص1 وص18 فقط حالياً.</p></div></div>`;
+  }
+  const note=`<div class="note real">🔄 <b>التحويل الفعلي — ${scopeLabel(scope)}</b> = (وحدات مباعة ÷ عدد الكتابات) × 100.
     كلاهما حقيقي. أكثر من 100% يعني بيع أكبر من الكتابة (صرف متعدد الوحدات أو بيع بدون وصفة).
     ⏳ باقي الصيدليات تدخل هنا فور وصول كتاباتها.</div>`;
   const soldTot=itemTotals(scope,"units"), wr=wrTotals(scope);
@@ -420,7 +442,7 @@ V.conversion=()=>{
       <div class="delta ${cvCur>=cvPrev?'up':'down'}">${cvCur-cvPrev>0?'▲ +':'▼ '}${cvCur-cvPrev} نقطة مقابل يونيو</div></div>
     <div class="kpi"><div class="lbl">كتابات 07</div><div class="val">${fmt(wr[CUR])}</div></div>
     <div class="kpi"><div class="lbl">وحدات مباعة 07</div><div class="val">${fmt(soldTot[CUR])}</div></div></div>`;
-  const mtable=`<div class="panel"><h2>التحويل الشهري — صيدلية 1</h2>
+  const mtable=`<div class="panel"><h2>التحويل الشهري — ${scopeLabel(scope)}</h2>
     <p class="hint">كتابات مقابل وحدات مباعة (شريط يعادل حتى 150%)</p>
     <div class="tbl-wrap"><table><thead><tr><th>الشهر</th><th>كتابات</th><th>وحدات مباعة</th>
     <th>التحويل %</th><th></th></tr></thead><tbody>${mrows}</tbody></table></div></div>`;
@@ -430,25 +452,31 @@ V.conversion=()=>{
     const cv=wv?Math.round(uv/wv*100):0, c=convClass(cv);
     return `<tr><td>${it.name}</td><td class="num">${fmt(wv)}</td><td class="num">${fmt(uv)}</td>
       <td><span class="pill ${c}">${wv?cv+'%':'—'}</span></td></tr>`;}).join("");
-  const itable=`<div class="panel"><h2>التحويل لكل صنف — يوليو 07 (صيدلية 1)</h2>
+  const itable=`<div class="panel"><h2>التحويل لكل صنف — يوليو 07 (${scopeLabel(scope)})</h2>
     <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>كتابات</th><th>وحدات مباعة</th><th>التحويل %</th></tr></thead>
     <tbody>${irows}</tbody></table></div></div>`;
   return note+kpis+mtable+itable;
 };
 
-/* ---- 3ب. Doctors (REAL — ص1) ---- */
+/* ---- 3ب. Doctors (REAL — ص1 & ص18) ---- */
 V.doctors=()=>{
-  const docs=DATA.doctorsNostri;
+  const scope=state.scope;
+  if(!DATA.writingsReady[scope] || !DATA.doctorsNostri[scope]){
+    return `<div class="panel"><div class="pend"><div class="big">👨‍⚕️</div>
+      <h2>أطباء ${scopeLabel(scope)} — بانتظار الملف</h2>
+      <p class="hint">بيانات الأطباء متاحة للصيدليات التي وصلت كتاباتها (ص1 وص18).</p></div></div>`;
+  }
+  const docs=DATA.doctorsNostri[scope], nDoc=DATA.doctorCount[scope]||docs.length;
   const tot=m=>docs.reduce((a,d)=>a+d[m],0);
   const t5=tot(1),t6=tot(2),t7=tot(3);
-  const note=`<div class="note real">👨‍⚕️ <b>أعلى الأطباء كتابةً لأصناف نوستري — صيدلية 1</b>.
-     من ملفات الكتابات 05/06/07 (أسماء موحّدة). إجمالي الأطباء الكاتبين: 26 طبيب.</div>`;
+  const note=`<div class="note real">👨‍⚕️ <b>أعلى الأطباء كتابةً لأصناف نوستري — ${scopeLabel(scope)}</b>.
+     من ملفات الكتابات 05/06/07 (أسماء موحّدة). إجمالي الأطباء الكاتبين: ${nDoc} طبيب.</div>`;
   const dTop=docs[0];
   const kpis=`<div class="kpis">
     <div class="kpi"><div class="lbl">أعلى طبيب (يوليو)</div><div class="val" style="font-size:18px">${dTop[0]}</div>
       <div class="delta up">${dTop[3]} كتابة</div></div>
-    <div class="kpi"><div class="lbl">عدد الأطباء الكاتبين</div><div class="val">26</div></div>
-    <div class="kpi"><div class="lbl">متوسط كتابة/طبيب (07)</div><div class="val">${(t7/26).toFixed(1)}</div></div>
+    <div class="kpi"><div class="lbl">عدد الأطباء الكاتبين</div><div class="val">${nDoc}</div></div>
+    <div class="kpi"><div class="lbl">متوسط كتابة/طبيب (07)</div><div class="val">${(t7/nDoc).toFixed(1)}</div></div>
     <div class="kpi"><div class="lbl">إجمالي الكتابات (07)</div><div class="val">${fmt(t7)}</div></div></div>`;
   const chart=`<div class="panel"><h2>إجمالي كتابات الأطباء — تسلسل شهري (ص1)</h2>
     ${barChart({"05":t5,"06":t6,"07":t7})}</div>`;
@@ -547,14 +575,16 @@ V.pureherb=()=>{
 };
 
 /* ==================== render ==================== */
-function needsScope(t){return t==="sales"||t==="writings";}
+function needsScope(t){return t==="sales"||t==="writings"||t==="conversion"||t==="doctors";}
+function scopeReadyMap(t){return (t==="writings"||t==="conversion"||t==="doctors")?DATA.writingsReady:DATA.pharmacyReady;}
 function usesMetric(t){return t==="sales"||t==="share";}
 function render(){
   const host=document.getElementById("view");
   let chips="";
   if(needsScope(state.tab)){
-    const readyMap=state.tab==="writings"?DATA.writingsReady:DATA.pharmacyReady;
-    chips=`<div class="chips">${["1","7","18","all"].map(s=>{
+    const readyMap=scopeReadyMap(state.tab);
+    const scopes=(state.tab==="doctors")?["1","18"]:["1","7","18","all"];
+    chips=`<div class="chips">${scopes.map(s=>{
       const pend=!readyMap[s];
       return `<button data-scope="${s}" class="${state.scope===s?'active':''} ${pend?'pending':''}">${scopeLabel(s)}${pend?' ⏳':''}</button>`;
     }).join("")}</div>`;
@@ -569,7 +599,7 @@ document.querySelectorAll("#tabs button").forEach(b=>{
     document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("active"));
     b.classList.add("active"); state.tab=b.dataset.tab;
     if(state.tab==="sales") state.scope="all";
-    if(state.tab==="writings") state.scope="1";
+    else if(needsScope(state.tab) && !scopeReadyMap(state.tab)[state.scope]) state.scope="1";
     render();
   };
 });
