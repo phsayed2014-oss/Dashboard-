@@ -202,6 +202,58 @@ body.nav-collapsed .layout{gap:0}
 .kpi .unit{font-size:13px;color:var(--muted);font-weight:600;font-family:'IBM Plex Sans Arabic',sans-serif}
 .kpi .delta{font-size:12.5px;font-weight:700;margin-top:10px;display:inline-flex;align-items:center;gap:4px}
 .kpi .delta.up{color:var(--up)} .kpi .delta.down{color:var(--down)} .kpi .delta.flat{color:var(--muted)}
+.kpi.hero{
+  background:linear-gradient(145deg, color-mix(in srgb,var(--teal) 12%, var(--card)) 0%, var(--card) 55%);
+  border-color:color-mix(in srgb,var(--teal) 35%, var(--line));
+}
+.kpi.hero .val{font-size:clamp(28px,3vw,34px);color:var(--heading)}
+.kpi.hero::before{width:5px;background:linear-gradient(180deg,#99f6e4,#0f766e)}
+
+/* --- Section stage (board storytelling) --- */
+.section-stage{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  margin:0 0 16px;padding:16px 18px;border-radius:16px;position:relative;overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--teal) 22%, var(--line));
+  background:
+    linear-gradient(120deg, color-mix(in srgb,var(--teal) 10%, var(--card)), var(--card) 55%),
+    var(--card);
+  box-shadow:var(--sh-direct);
+  animation:fadeRise .4s var(--ease) both;
+}
+.section-stage::after{
+  content:"";position:absolute;inset-inline-end:-40px;top:-50px;width:160px;height:160px;border-radius:50%;
+  background:radial-gradient(circle, color-mix(in srgb,var(--teal-l) 35%, transparent), transparent 70%);
+  pointer-events:none;
+}
+.section-stage .eyebrow{
+  font-size:11px;font-weight:700;color:var(--teal);letter-spacing:.08em;margin-bottom:4px;
+}
+.section-stage h2{
+  margin:0;font-family:'Alexandria','IBM Plex Sans Arabic',sans-serif;font-size:clamp(20px,2.2vw,26px);
+  font-weight:800;color:var(--heading);letter-spacing:.2px;line-height:1.2;
+}
+.section-stage .sub{margin:6px 0 0;color:var(--muted);font-size:13px;font-weight:500;max-width:52ch}
+.section-stage .stamp{
+  flex:0 0 auto;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:700;
+  color:var(--teal-d);background:color-mix(in srgb,var(--teal-l) 28%, transparent);
+  border:1px solid color-mix(in srgb,var(--teal) 25%, transparent);white-space:nowrap;
+}
+:root[data-theme="dark"] .section-stage .stamp{color:var(--teal-l)}
+#view{animation:viewIn .35s var(--ease)}
+@keyframes viewIn{from{opacity:.35;translate:0 6px}to{opacity:1;translate:0 0}}
+
+/* --- Presentation / board projector mode --- */
+body.present{
+  --bg:#071310;
+}
+body.present .wrap{max-width:1780px;padding:14px 18px 40px}
+body.present .sidebar{flex-basis:150px}
+body.present .kpi .val{font-size:clamp(28px,3.2vw,36px)}
+body.present .section-stage h2{font-size:clamp(24px,2.8vw,30px)}
+body.present .chart{height:270px}
+body.present .mlegend,.section-stage .stamp{font-size:13px}
+body.present header.top{min-height:96px}
+#presentBtn.active{color:#fff;background:var(--teal);border-color:var(--teal)}
 
 .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 22px 20px;
   box-shadow:var(--sh-ambient),var(--sh-direct);margin-bottom:16px;transition:box-shadow .2s var(--ease)}
@@ -309,7 +361,8 @@ tfoot td{font-weight:700;background:var(--tfoot-bg);border-top:2px solid var(--t
 }
 @media print{
   body{background:#fff!important;color:#0f172a}
-  #menuToggle,.sidebar,.chips,#metricToggle,#themeBtn,#printBtn,.spacer,.mlegend .toggle{display:none!important}
+  #menuToggle,.sidebar,.chips,#metricToggle,#themeBtn,#printBtn,#presentBtn,.spacer,.mlegend .toggle{display:none!important}
+  .section-stage{box-shadow:none;break-inside:avoid}
   .layout{display:block;margin-top:8px}
   .main{width:100%}
   .mlegend{box-shadow:none;backdrop-filter:none;border-color:#cbd5e1;background:#fff;padding:8px 0;border:0}
@@ -349,6 +402,7 @@ tfoot td{font-weight:700;background:var(--tfoot-bg);border-top:2px solid var(--t
       <button data-metric="value">قيمة (ريال)</button>
     </span>
     <button id="themeBtn" class="ctrlbtn" title="الوضع الداكن" aria-label="تبديل الوضع الداكن">◐</button>
+    <button id="presentBtn" class="ctrlbtn" title="وضع العرض (مجلس الإدارة)" aria-label="وضع العرض">▣</button>
     <button id="printBtn" class="ctrlbtn" title="طباعة / PDF" aria-label="طباعة">⎙</button>
   </div>
 
@@ -369,7 +423,7 @@ tfoot td{font-weight:700;background:var(--tfoot-bg);border-top:2px solid var(--t
     </main>
   </div>
 
-  <div class="foot">NOSTRI · تقرير مجلس الإدارة · مايو–يوليو 2026 · الإدارة التجارية</div>
+  <div class="foot">NOSTRI · تقرير مجلس الإدارة · مايو–يوليو 2026 · الإدارة التجارية · v4.3 board</div>
 </div>
 
 <script>
@@ -1555,6 +1609,23 @@ V.pureherb=()=>{
 function needsScope(t){return t==="sales"||t==="writings"||t==="conversion"||t==="doctors";}
 function scopeReadyMap(t){return (t==="writings"||t==="conversion"||t==="doctors")?DATA.writingsReady:DATA.pharmacyReady;}
 function usesMetric(t){return t==="sales"||t==="share";}
+const TAB_META={
+  sales:{t:"مبيعات Nostri",s:"أداء الأصناف عبر الشهور الثلاثة — وحدات وقيمة"},
+  share:{t:"المشاركة",s:"نصيب الصيدليات الداخلية (1 · 7 · 18) من إجمالي نوستري"},
+  writings:{t:"الكتابات",s:"حركة وصفات الأطباء لأصناف نوستري حسب الصيدلية"},
+  conversion:{t:"التحويل",s:"كفاءة تحويل الكتابة إلى بيع فعلي"},
+  pureherb:{t:"مبيعات Pure herb",s:"إجمالي كل الصيدليات مقابل الداخلية والخارجية — يوليو"},
+  doctors:{t:"الأطباء",s:"أعلى الأطباء كتابةً لأصناف نوستري"},
+  expire:{t:"Near-Expire",s:"أصناف قريبة الانتهاء ومعدّل كتابتها"},
+  credit:{t:"الأدوية آجل",s:"مقارنة القيمة الآجلة 2025 مقابل 2026"}
+};
+function sectionStage(tab){
+  const m=TAB_META[tab]||{t:tab,s:""};
+  return `<div class="section-stage">
+    <div><div class="eyebrow">تقرير مجلس الإدارة</div>
+    <h2>${m.t}</h2><p class="sub">${m.s}</p></div>
+    <div class="stamp">مايو ← يوليو 2026</div></div>`;
+}
 function render(){
   const host=document.getElementById("view");
   let chips="";
@@ -1566,7 +1637,7 @@ function render(){
       return `<button data-scope="${s}" class="${state.scope===s?'active':''} ${pend?'pending':''}">${scopeLabel(s)}${pend?' ⏳':''}</button>`;
     }).join("")}</div>`;
   }
-  host.innerHTML=chips+V[state.tab]();
+  host.innerHTML=sectionStage(state.tab)+chips+V[state.tab]();
   host.querySelectorAll(".chips button").forEach(b=>b.onclick=()=>{state.scope=b.dataset.scope;render();});
   // show/hide metric toggle
   document.getElementById("metricToggle").style.display=usesMetric(state.tab)?"inline-flex":"none";
@@ -1589,18 +1660,32 @@ document.querySelectorAll("#metricToggle button").forEach(b=>{
 document.getElementById("menuToggle").onclick=()=>document.body.classList.toggle("nav-collapsed");
 render();
 
-/* ---- visual layer: theme toggle + print (no data/logic touched) ---- */
+/* ---- visual layer: theme + present + print ---- */
 (function(){
-  const html=document.documentElement, tb=document.getElementById("themeBtn");
+  const html=document.documentElement, tb=document.getElementById("themeBtn"),
+        pb=document.getElementById("presentBtn");
   function apply(t){html.setAttribute("data-theme",t);tb.textContent=t==="dark"?"☀":"◐";
     tb.title=t==="dark"?"الوضع الفاتح":"الوضع الداكن";}
   apply(localStorage.getItem("nostri-theme")||"light");
   tb.onclick=()=>{const t=html.getAttribute("data-theme")==="dark"?"light":"dark";
     localStorage.setItem("nostri-theme",t);apply(t);};
+  function setPresent(on){
+    document.body.classList.toggle("present",!!on); pb.classList.toggle("active",!!on);
+    pb.title=on?"إيقاف وضع العرض":"وضع العرض (مجلس الإدارة)";
+    if(on){try{document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();}catch(e){}}
+    else if(document.fullscreenElement){try{document.exitFullscreen();}catch(e){}}
+  }
+  pb.onclick=()=>setPresent(!document.body.classList.contains("present"));
+  document.addEventListener("fullscreenchange",()=>{
+    if(!document.fullscreenElement){
+      document.body.classList.remove("present"); pb.classList.remove("active");
+      pb.title="وضع العرض (مجلس الإدارة)";
+    }
+  });
   document.getElementById("printBtn").onclick=()=>window.print();
 })();
 
-/* ---- visual layer: chart tooltip + trend chips + trend line (runs after each render) ---- */
+/* ---- visual layer: chart tooltip + trend chips + trend line + KPI polish ---- */
 (function(){
   const view=document.getElementById("view");
   const tip=document.createElement("div"); tip.id="barTip"; document.body.appendChild(tip);
@@ -1616,6 +1701,29 @@ render();
       const cls=td.classList.contains("up")?"up":td.classList.contains("down")?"down":"flat";
       const sp=document.createElement("span"); sp.className="trend-chip "+cls; sp.textContent=txt;
       td.textContent=""; td.appendChild(sp);
+    });
+  }
+  function heroKpi(){
+    const first=view.querySelector(".kpis .kpi"); if(first) first.classList.add("hero");
+  }
+  function countUp(){
+    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+    view.querySelectorAll(".kpi .val").forEach(el=>{
+      if(el.dataset.counted)return;
+      const unit=el.querySelector(".unit");
+      const unitHtml=unit?unit.outerHTML:"";
+      const raw=(el.childNodes[0]?el.childNodes[0].textContent:el.textContent).replace(/[^\d.+-]/g,"");
+      const target=parseFloat(raw); if(!isFinite(target))return;
+      el.dataset.counted="1";
+      const isPct=/%/.test(el.textContent), decimals=String(raw).includes(".")?1:0;
+      const start=performance.now(), dur=700;
+      const tick=now=>{
+        const p=Math.min(1,(now-start)/dur), e=1-Math.pow(1-p,3), n=target*e;
+        const num=n.toLocaleString("en-US",{maximumFractionDigits:decimals,minimumFractionDigits:decimals});
+        el.innerHTML=num+(isPct&&!unitHtml?"%":"")+(unitHtml?" "+unitHtml:"");
+        if(p<1)requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
     });
   }
   function trendLines(){
@@ -1643,7 +1751,10 @@ render();
       chart.appendChild(svg);
     });
   }
-  function enhance(){try{chipTrends();}catch(e){} setTimeout(()=>{try{trendLines();}catch(e){}},860);}
+  function enhance(){
+    try{chipTrends();heroKpi();countUp();}catch(e){}
+    setTimeout(()=>{try{trendLines();}catch(e){}},860);
+  }
   try{new MutationObserver(enhance).observe(view,{childList:true});}catch(e){}
   enhance();
 })();
