@@ -1791,10 +1791,6 @@ function insightsFor(tab){
     const docs=DATA.doctorsNostri[scope]||[];
     if(docs[0]) out.push({c:"up",t:`الأعلى يوليو (ص${scope}): ${shortName(docs[0][0])} — ${docs[0][3]}`});
     out.push({c:"flat",t:`عدد الأطباء الكاتبين: ${DATA.doctorCount[scope]||docs.length}`});
-  } else if(tab==="expire"){
-    const s=DATA.nearExpire.summary, mo=DATA.nearExpire.monthly, d=delta(mo[CUR],mo[PREV]);
-    out.push({c:"down",t:`بدون كتابة: ${fmt(s.risk)} من ${fmt(s.items)} صنف`});
-    out.push({c:d.c,t:`كتابات يوليو: ${fmt(mo[CUR])} (${d.t})`});
   } else if(tab==="credit"){
     const y5=DATA.credit["2025"], y6=DATA.credit["2026"];
     const t5=M.reduce((a,m)=>a+y5[m],0), t6=M.reduce((a,m)=>a+y6[m],0);
@@ -1867,21 +1863,6 @@ function spotlightHTML(tab){
       <div class="metric"><span class="ml">كل الصيدليات</span><span class="mv">${fmt(best.u.all)} وحدة</span>
         <span class="md flat">${fmt(best.v.all)} ريال</span></div>
       <div class="metric"><span class="ml">الداخلية</span><span class="mv" style="font-size:22px">${fmt(u1)}</span></div>
-    </div></div>`;
-  }
-  if(tab==="expire"){
-    const rows=DATA.nearExpire.all||[];
-    let risk=null;
-    for(const r of rows){ if(r[3]+r[4]+r[5]===0 && r[1]>0){risk=r;break;} }
-    if(!risk) risk=rows[0];
-    return `<div class="spotlight"><div class="spot-main">
-      <span class="tag">أعلى مخزون بلا كتابة</span>
-      <h3>${shortName(risk[0])}</h3>
-      <p class="spot-sub">Near-Expire</p>
-    </div><div class="spot-side">
-      <div class="metric"><span class="ml">المخزون</span><span class="mv">${fmt(risk[1])}</span>
-        <span class="md down">ينتهي ${risk[2]}</span></div>
-      <div class="metric"><span class="ml">كتابات 05/06/07</span><span class="mv" style="font-size:20px">${risk[3]} / ${risk[4]} / ${risk[5]}</span></div>
     </div></div>`;
   }
   return "";
