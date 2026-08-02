@@ -124,6 +124,7 @@ tfoot td{font-weight:700;background:#f0fdfa;border-top:2px solid var(--teal-l)}
     <button data-tab="share">🏬 المشاركة</button>
     <button data-tab="writings">✍️ الكتابات</button>
     <button data-tab="conversion">🔄 التحويل</button>
+    <button data-tab="doctors">👨‍⚕️ الأطباء</button>
     <button data-tab="expire">⏳ Near-Expire</button>
     <button data-tab="pureherb">🌿 PureHerb</button>
   </nav>
@@ -153,42 +154,54 @@ const DATA = {
      all:{u:{"05":123,"06":108,"07":168}, v:{"05":7380,"06":6480,"07":10080}},
      "1":{u:{"05":24, "06":24, "07":13 }, v:{"05":1440,"06":1440,"07":780}},
      "7":{u:{"05":11,"06":10,"07":3}, v:{"05":660,"06":600,"07":180}},
-     "18":{u:{"05":9,"06":6,"07":26}, v:{"05":540,"06":360,"07":1560}}},
+     "18":{u:{"05":9,"06":6,"07":26}, v:{"05":540,"06":360,"07":1560}}, wr:{"1":{"05":11,"06":13,"07":11}}},
     {name:"NOSTRICURE Oral Gel 30ML", code:"1-09-066-046",
      all:{u:{"05":230,"06":194,"07":255}, v:{"05":9200,"06":7760,"07":10200}},
      "1":{u:{"05":33, "06":24, "07":17 }, v:{"05":1320,"06":960,"07":680}},
      "7":{u:{"05":7,"06":6,"07":9}, v:{"05":280,"06":240,"07":360}},
-     "18":{u:{"05":20,"06":12,"07":15}, v:{"05":800,"06":480,"07":600}}},
+     "18":{u:{"05":20,"06":12,"07":15}, v:{"05":800,"06":480,"07":600}}, wr:{"1":{"05":13,"06":19,"07":8}}},
     {name:"REFLEX MASSAGE Emulgel 100ML", code:"1-02-066-034",
      all:{u:{"05":367,"06":355,"07":359}, v:{"05":23855,"06":23075,"07":23335}},
      "1":{u:{"05":128,"06":160,"07":79 }, v:{"05":8320,"06":10400,"07":5135}},
      "7":{u:{"05":22,"06":35,"07":15}, v:{"05":1430,"06":2275,"07":975}},
-     "18":{u:{"05":34,"06":19,"07":44}, v:{"05":2210,"06":1235,"07":2860}}},
+     "18":{u:{"05":34,"06":19,"07":44}, v:{"05":2210,"06":1235,"07":2860}}, wr:{"1":{"05":95,"06":131,"07":74}}},
     {name:"INTIMO Vaginal Wash 250ML", code:"1-14-166-032",
      all:{u:{"05":116,"06":147,"07":212}, v:{"05":8700,"06":11025,"07":15900}},
      "1":{u:{"05":17, "06":33, "07":45 }, v:{"05":1275,"06":2475,"07":3375}},
      "7":{u:{"05":17,"06":19,"07":17}, v:{"05":1275,"06":1425,"07":1275}},
-     "18":{u:{"05":53,"06":57,"07":48}, v:{"05":3975,"06":4275,"07":3600}}},
+     "18":{u:{"05":53,"06":57,"07":48}, v:{"05":3975,"06":4275,"07":3600}}, wr:{"1":{"05":16,"06":32,"07":54}}},
     {name:"NOSTRIDERM Ointment 50ML", code:"1-09-118-050",
      all:{u:{"05":168,"06":171,"07":279}, v:{"05":10920,"06":11115,"07":18135}},
      "1":{u:{"05":78, "06":88, "07":81 }, v:{"05":5070,"06":5720,"07":5265}},
      "7":{u:{"05":7,"06":1,"07":2}, v:{"05":455,"06":65,"07":130}},
-     "18":{u:{"05":37,"06":39,"07":64}, v:{"05":2405,"06":2535,"07":4160}}},
+     "18":{u:{"05":37,"06":39,"07":64}, v:{"05":2405,"06":2535,"07":4160}}, wr:{"1":{"05":77,"06":100,"07":87}}},
     {name:"ORACURE Mouth Wash 300ML", code:"1-12-109-038",
      all:{u:{"05":330,"06":177,"07":284}, v:{"05":11550.033,"06":6195.018,"07":9940.021}},
      "1":{u:{"05":81, "06":49, "07":47 }, v:{"05":2835.008,"06":1715.005,"07":1645.005}},
      "7":{u:{"05":23,"06":13,"07":11}, v:{"05":805.002,"06":455.001,"07":385.001}},
-     "18":{u:{"05":13,"06":14,"07":23}, v:{"05":455.001,"06":490.001,"07":805.002}}}
+     "18":{u:{"05":13,"06":14,"07":23}, v:{"05":455.001,"06":490.001,"07":805.002}}, wr:{"1":{"05":73,"06":38,"07":42}}}
   ],
 
-  /* كل الصيدليات (1/7/18) + الإجمالي = بيانات حقيقية كاملة */
+  /* كل الصيدليات (1/7/18) + الإجمالي = مبيعات حقيقية كاملة */
   pharmacyReady:{"all":true,"1":true,"7":true,"18":true},
+  /* الكتابات متاحة لـ ص1 فقط حالياً (التعاون الأول) */
+  writingsReady:{"all":false,"1":true,"7":false,"18":false},
 
-  /* ✍️ كتابات NOSTRI (Demo لحين وصول ملف الكتابات) */
-  writings:{
-    "1":{"05":210,"06":248,"07":305}, "7":{"05":150,"06":182,"07":236},
-    "18":{"05":118,"06":133,"07":181}, "all":{"05":640,"06":742,"07":940}
-  },
+  /* أعلى الأطباء كتابةً لأصناف نوستري — ص1 — [الاسم, 05, 06, 07] */
+  doctorsNostri:[
+    ["Hossameldin Mohamed Amin Bekh",61,61,63],
+    ["Nehad Farouk Abdallah Ramadan",15,27,54],
+    ["Mohammed Shabaan Abdelhay Els",60,93,37],
+    ["Ahmad Mahmoud Mohammed Elad",18,39,27],
+    ["Samah Abdelkarim Ahmed Elbashi",30,16,22],
+    ["Mohamed Samir Abdelfattah Fara",0,0,22],
+    ["Radwa Mohamed Mabrouk Abdalla",14,7,11],
+    ["Mona Farid Elmandouh Abdelrahm",5,10,11],
+    ["Ahmed Hassanin Mohamed Hassan",14,10,6],
+    ["Rafik Elsayed Aboelhythim Ereba",8,13,5],
+    ["Ahmed Taher Mokhtar Mashaly",14,13,3],
+    ["Said Tolba Elsayed Elbedewy",15,3,3]
+  ],
 
   /* ⏳ Near-Expire (Demo) */
   nearExpire:[
@@ -204,14 +217,14 @@ const DATA = {
      u = وحدات مباعة · v = قيمة البيع (ريال) لكل صيدلية في يوليو 07 */
   pureherbMonth:"07",
   pureherb:[
-    {name:"ZINCOLIVE Syrup 150ML",        code:"1-03-186-085", u:{"1":9,  "7":null}, v:{"1":630,   "7":null}},
-    {name:"FAWARVIT Vit C 1000mg Eff.",    code:"1-03-044-039", u:{"1":2,  "7":null}, v:{"1":40,    "7":null}},
-    {name:"PureFeel Tablet 30",           code:"1-03-187-269", u:{"1":2,  "7":2},    v:{"1":59,    "7":59}},
-    {name:"PURE OMEGA-3 Syrup 240ML",     code:"1-03-186-084", u:{"1":1,  "7":1},    v:{"1":150,   "7":150}},
-    {name:"CENTROZON WOMEN Tablet 30",    code:"1-03-187-267", u:{"1":15, "7":1},    v:{"1":600,   "7":40}},
-    {name:"CENTROZON Tablet 30",          code:"1-03-187-270", u:{"1":15, "7":6},    v:{"1":292.5, "7":117}},
-    {name:"BoneFriend Tablet 30",         code:"1-03-187-268", u:{"1":15, "7":4},    v:{"1":750,   "7":200}},
-    {name:"ARGIGROW Syrup 150ML",         code:"1-03-186-083", u:{"1":6,  "7":2},    v:{"1":510,   "7":170}}
+    {name:"ZINCOLIVE Syrup 150ML",        code:"1-03-186-085", u:{"1":9,  "7":null}, v:{"1":630,   "7":null}, w1:9},
+    {name:"FAWARVIT Vit C 1000mg Eff.",    code:"1-03-044-039", u:{"1":2,  "7":null}, v:{"1":40,    "7":null}, w1:0},
+    {name:"PureFeel Tablet 30",           code:"1-03-187-269", u:{"1":2,  "7":2},    v:{"1":59,    "7":59},  w1:0},
+    {name:"PURE OMEGA-3 Syrup 240ML",     code:"1-03-186-084", u:{"1":1,  "7":1},    v:{"1":150,   "7":150}, w1:1},
+    {name:"CENTROZON WOMEN Tablet 30",    code:"1-03-187-267", u:{"1":15, "7":1},    v:{"1":600,   "7":40},  w1:9},
+    {name:"CENTROZON Tablet 30",          code:"1-03-187-270", u:{"1":15, "7":6},    v:{"1":292.5, "7":117}, w1:15},
+    {name:"BoneFriend Tablet 30",         code:"1-03-187-268", u:{"1":15, "7":4},    v:{"1":750,   "7":200}, w1:20},
+    {name:"ARGIGROW Syrup 150ML",         code:"1-03-186-083", u:{"1":6,  "7":2},    v:{"1":510,   "7":170}, w1:2}
   ]
 };
 
@@ -348,52 +361,109 @@ V.share=()=>{
   return note+kpis+chart+table+brkTable;
 };
 
-/* ---- 2. Writings (Demo) ---- */
+/* ---- 2. Writings (REAL — ص1) ---- */
+function itemWr(it,scope){ return it.wr && it.wr[scope] ? it.wr[scope] : null; }
+function wrTotals(scope){ const o={}; M.forEach(m=>o[m]=DATA.nostriItems.reduce((a,it)=>{
+  const w=itemWr(it,scope); return a+((w&&w[m])||0);},0)); return o; }
 V.writings=()=>{
-  const w=DATA.writings[state.scope];
-  const dCur=delta(w[CUR],w[PREV]), dTot=delta(w[CUR],w[FIRST]);
-  const note=`<div class="note demo">⚠️ <b>بيانات نموذجية</b> — ابعت ملف كتابات الأطباء (05/06/07)
-    وهيتبدّل بالأرقام الحقيقية + هضيف تبويب الأطباء (متوسط الكتابة وأعلى طبيب لكل صنف).</div>`;
+  const scope=state.scope;
+  if(!DATA.writingsReady[scope]){
+    return `<div class="panel"><div class="pend"><div class="big">✍️</div>
+      <h2>كتابات ${scopeLabel(scope)} — بانتظار الملف</h2>
+      <p class="hint">وصلت كتابات صيدلية 1 (التعاون الأول) فقط. ابعت ملفات كتابات الأطباء
+      لهذه الصيدلية (Excel/CSV) وهتتفعّل فوراً + تدخل في حساب التحويل.</p></div></div>`;
+  }
+  const w=wrTotals(scope), dCur=delta(w[CUR],w[PREV]), dTot=delta(w[CUR],w[FIRST]);
+  const note=`<div class="note real">✔ <b>كتابات حقيقية</b> — ${scopeLabel(scope)}، من ملفات الأطباء 05/06/07.
+     كل «كتابة» = سطر وصفة لأحد أصناف نوستري (كل الحالات).</div>`;
   const kpis=`<div class="kpis">
     <div class="kpi"><div class="lbl">كتابات يوليو 07</div><div class="val">${fmt(w[CUR])}</div>
       <div class="delta ${dCur.c}">${dCur.t} مقابل يونيو</div></div>
     <div class="kpi"><div class="lbl">يونيو 06</div><div class="val">${fmt(w[PREV])}</div></div>
     <div class="kpi"><div class="lbl">مايو 05</div><div class="val">${fmt(w[FIRST])}</div></div>
-    <div class="kpi"><div class="lbl">نسبة التحسّن 05←07</div><div class="val ${dTot.c}">${dTot.t.replace(/[▲▼●] /,"")}</div>
-      <div class="delta ${dTot.c}">تحسّن الكتابات</div></div></div>`;
-  const chart=`<div class="panel"><h2>تسلسل الكتابات — ${scopeLabel(state.scope)}</h2>
+    <div class="kpi"><div class="lbl">التغير 05←07</div><div class="val ${dTot.c}">${dTot.t.replace(/[▲▼●] /,"")}</div>
+      <div class="delta ${dTot.c}">${dTot.c==="up"?"تحسّن":dTot.c==="down"?"تراجع":"ثبات"} الكتابات</div></div></div>`;
+  const chart=`<div class="panel"><h2>تسلسل الكتابات — ${scopeLabel(scope)}</h2>
      <p class="hint">عدد مرات كتابة الأطباء لأصناف نوستري</p>${barChart(w)}</div>`;
-  const rows=["1","7","18","all"].map(p=>{
-    const x=DATA.writings[p], d=delta(x[CUR],x[PREV]);
-    return `<tr><td>${scopeLabel(p)}</td><td class="num">${fmt(x[FIRST])}</td>
+  const rows=DATA.nostriItems.map(it=>{
+    const x=itemWr(it,scope)||{}, d=delta(x[CUR],x[PREV]);
+    return `<tr><td>${it.name}</td><td class="num">${fmt(x[FIRST])}</td>
       <td class="num">${fmt(x[PREV])}</td><td class="num">${fmt(x[CUR])}</td>
       <td class="trend ${d.c}">${d.t}</td></tr>`;}).join("");
-  const table=`<div class="panel"><h2>الكتابات لكل صيدلية</h2>
-    <div class="tbl-wrap"><table><thead><tr><th>الصيدلية</th><th>مايو</th><th>يونيو</th><th>يوليو</th><th>التغير ش/ش</th></tr></thead>
-    <tbody>${rows}</tbody></table></div></div>`;
+  const table=`<div class="panel"><h2>الكتابات لكل صنف — ${scopeLabel(scope)}</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>مايو</th><th>يونيو</th><th>يوليو</th><th>التغير ش/ش</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td>الإجمالي</td><td class="num">${fmt(w[FIRST])}</td><td class="num">${fmt(w[PREV])}</td>
+    <td class="num">${fmt(w[CUR])}</td><td class="trend ${dCur.c}">${dCur.t}</td></tr></tfoot></table></div></div>`;
   return note+kpis+chart+table;
 };
 
-/* ---- 3. Conversion ---- */
+/* ---- 3. Conversion (REAL — ص1) ---- */
 V.conversion=()=>{
-  const note=`<div class="note info">🔄 <b>التحويل</b> = (وحدات مباعة ÷ عدد الكتابات) × 100.
-    مثال: طبيب كتب 5 مرات وحصل بيع 5 وحدات ⇒ 100%. الوحدات المباعة <b>حقيقية</b>،
-    والكتابات <b>نموذجية</b> لحد ما يوصل ملف الكتابات — ساعتها النسبة تبقى فعلية بالكامل.</div>`;
-  const soldTot=itemTotals("all","units");
-  const rows=M.map(m=>{
-    const sold=soldTot[m], wr=DATA.writings.all[m];
-    const cv=wr?Math.round(sold/wr*100):0, c=convClass(cv);
-    return `<tr><td>${ML[m]}</td><td class="num">${fmt(wr)}</td><td class="num">${fmt(sold)}</td>
+  const scope="1";  // الكتابات متاحة لـ ص1 فقط
+  const note=`<div class="note real">🔄 <b>التحويل الفعلي — صيدلية 1</b> = (وحدات مباعة ÷ عدد الكتابات) × 100.
+    كلاهما حقيقي. أكثر من 100% يعني بيع أكبر من الكتابة (صرف متعدد الوحدات أو بيع بدون وصفة).
+    ⏳ باقي الصيدليات تدخل هنا فور وصول كتاباتها.</div>`;
+  const soldTot=itemTotals(scope,"units"), wr=wrTotals(scope);
+  // monthly totals
+  const mrows=M.map(m=>{
+    const cv=wr[m]?Math.round(soldTot[m]/wr[m]*100):0, c=convClass(cv);
+    return `<tr><td>${ML[m]}</td><td class="num">${fmt(wr[m])}</td><td class="num">${fmt(soldTot[m])}</td>
       <td><span class="pill ${c}">${cv}%</span></td>
       <td style="width:160px"><div class="conv"><div class="track">
-        <div class="fill" style="width:${Math.min(cv,100)}%;background:var(--${c==='g'?'up':c==='y'?'warn':'down'})"></div>
-      </div></div></td></tr>`;
-  }).join("");
-  const table=`<div class="panel"><h2>تحويل الكتابات لمبيعات — كل الصيدليات</h2>
-    <p class="hint">وحدات مباعة (حقيقي) مقابل كتابات (نموذجي) لكل شهر</p>
+        <div class="fill" style="width:${Math.min(cv,150)/1.5}%;background:var(--${c==='g'?'up':c==='y'?'warn':'down'})"></div>
+      </div></div></td></tr>`;}).join("");
+  const cvCur=wr[CUR]?Math.round(soldTot[CUR]/wr[CUR]*100):0;
+  const cvPrev=wr[PREV]?Math.round(soldTot[PREV]/wr[PREV]*100):0;
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="lbl">تحويل يوليو 07</div><div class="val">${cvCur}%</div>
+      <div class="delta ${cvCur>=cvPrev?'up':'down'}">${cvCur-cvPrev>0?'▲ +':'▼ '}${cvCur-cvPrev} نقطة مقابل يونيو</div></div>
+    <div class="kpi"><div class="lbl">كتابات 07</div><div class="val">${fmt(wr[CUR])}</div></div>
+    <div class="kpi"><div class="lbl">وحدات مباعة 07</div><div class="val">${fmt(soldTot[CUR])}</div></div></div>`;
+  const mtable=`<div class="panel"><h2>التحويل الشهري — صيدلية 1</h2>
+    <p class="hint">كتابات مقابل وحدات مباعة (شريط يعادل حتى 150%)</p>
     <div class="tbl-wrap"><table><thead><tr><th>الشهر</th><th>كتابات</th><th>وحدات مباعة</th>
-    <th>التحويل %</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
-  return note+table;
+    <th>التحويل %</th><th></th></tr></thead><tbody>${mrows}</tbody></table></div></div>`;
+  // per-item July
+  const irows=DATA.nostriItems.map(it=>{
+    const wv=(itemWr(it,scope)||{})[CUR]||0, uv=(itemVals(it,scope,"units")||{})[CUR]||0;
+    const cv=wv?Math.round(uv/wv*100):0, c=convClass(cv);
+    return `<tr><td>${it.name}</td><td class="num">${fmt(wv)}</td><td class="num">${fmt(uv)}</td>
+      <td><span class="pill ${c}">${wv?cv+'%':'—'}</span></td></tr>`;}).join("");
+  const itable=`<div class="panel"><h2>التحويل لكل صنف — يوليو 07 (صيدلية 1)</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>كتابات</th><th>وحدات مباعة</th><th>التحويل %</th></tr></thead>
+    <tbody>${irows}</tbody></table></div></div>`;
+  return note+kpis+mtable+itable;
+};
+
+/* ---- 3ب. Doctors (REAL — ص1) ---- */
+V.doctors=()=>{
+  const docs=DATA.doctorsNostri;
+  const tot=m=>docs.reduce((a,d)=>a+d[m],0);
+  const t5=tot(1),t6=tot(2),t7=tot(3);
+  const note=`<div class="note real">👨‍⚕️ <b>أعلى الأطباء كتابةً لأصناف نوستري — صيدلية 1</b>.
+     من ملفات الكتابات 05/06/07 (أسماء موحّدة). إجمالي الأطباء الكاتبين: 26 طبيب.</div>`;
+  const dTop=docs[0];
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="lbl">أعلى طبيب (يوليو)</div><div class="val" style="font-size:18px">${dTop[0]}</div>
+      <div class="delta up">${dTop[3]} كتابة</div></div>
+    <div class="kpi"><div class="lbl">عدد الأطباء الكاتبين</div><div class="val">26</div></div>
+    <div class="kpi"><div class="lbl">متوسط كتابة/طبيب (07)</div><div class="val">${(t7/26).toFixed(1)}</div></div>
+    <div class="kpi"><div class="lbl">إجمالي الكتابات (07)</div><div class="val">${fmt(t7)}</div></div></div>`;
+  const chart=`<div class="panel"><h2>إجمالي كتابات الأطباء — تسلسل شهري (ص1)</h2>
+    ${barChart({"05":t5,"06":t6,"07":t7})}</div>`;
+  const max7=Math.max(...docs.map(d=>d[3]),1);
+  const rows=docs.map((d,i)=>{
+    const dd=delta(d[3],d[2]);
+    return `<tr><td>${i+1}. ${d[0]}</td><td class="num">${d[1]}</td><td class="num">${d[2]}</td>
+      <td class="num">${d[3]}</td><td class="trend ${dd.c}">${dd.t}</td>
+      <td style="width:120px"><div class="conv"><div class="track">
+        <div class="fill" style="width:${d[3]/max7*100}%;background:var(--teal)"></div></div></div></td></tr>`;}).join("");
+  const table=`<div class="panel"><h2>ترتيب الأطباء (أعلى 12) — كتابات نوستري</h2>
+    <p class="hint">مرتّب حسب يوليو 07 · التغير = يوليو مقابل يونيو</p>
+    <div class="tbl-wrap"><table><thead><tr><th>الطبيب</th><th>مايو</th><th>يونيو</th><th>يوليو</th><th>التغير</th><th>يوليو</th></tr></thead>
+    <tbody>${rows}</tbody></table></div></div>`;
+  return note+kpis+chart+table;
 };
 
 /* ---- 4. Near-Expire (Demo) ---- */
@@ -463,7 +533,17 @@ V.pureherb=()=>{
     <tfoot><tr><td>الإجمالي</td><td class="num">${fmt(u1)}</td><td class="num">${fmt(v1)}</td>
     <td class="num">${fmt(u7)}</td><td class="num">${fmt(v7)}</td><td class="num">${fmt(u1+u7)}</td><td class="num">${fmt(v1+v7)}</td></tr></tfoot>
     </table></div></div>`;
-  return note+kpis+chart+table;
+  // كتابات + تحويل ص1 (يوليو)
+  const totW1=items.reduce((a,it)=>a+(it.w1||0),0);
+  const crows=items.map(it=>{
+    const wv=it.w1||0, uv=it.u["1"]||0, cv=wv?Math.round(uv/wv*100):0, c=convClass(cv);
+    return `<tr><td>${it.name}</td><td class="num">${fmt(wv)}</td><td class="num">${it.u["1"]==null?"—":fmt(uv)}</td>
+      <td><span class="pill ${wv?c:'y'}">${wv?cv+'%':'—'}</span></td></tr>`;}).join("");
+  const conv=`<div class="panel"><h2>كتابات وتحويل PureHerb — صيدلية 1 (يوليو 07)</h2>
+    <p class="hint">إجمالي كتابات ص1 = <b>${totW1}</b> · التحويل = وحدات مباعة ÷ كتابات. الكتابات بدأت في يوليو فقط.</p>
+    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>كتابات ص1</th><th>وحدات ص1</th><th>التحويل %</th></tr></thead>
+    <tbody>${crows}</tbody></table></div></div>`;
+  return note+kpis+chart+table+conv;
 };
 
 /* ==================== render ==================== */
@@ -473,8 +553,9 @@ function render(){
   const host=document.getElementById("view");
   let chips="";
   if(needsScope(state.tab)){
+    const readyMap=state.tab==="writings"?DATA.writingsReady:DATA.pharmacyReady;
     chips=`<div class="chips">${["1","7","18","all"].map(s=>{
-      const pend=state.tab==="sales"&&!DATA.pharmacyReady[s];
+      const pend=!readyMap[s];
       return `<button data-scope="${s}" class="${state.scope===s?'active':''} ${pend?'pending':''}">${scopeLabel(s)}${pend?' ⏳':''}</button>`;
     }).join("")}</div>`;
   }
@@ -488,6 +569,7 @@ document.querySelectorAll("#tabs button").forEach(b=>{
     document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("active"));
     b.classList.add("active"); state.tab=b.dataset.tab;
     if(state.tab==="sales") state.scope="all";
+    if(state.tab==="writings") state.scope="1";
     render();
   };
 });
