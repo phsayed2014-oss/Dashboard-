@@ -486,8 +486,8 @@ tfoot td{font-weight:700;background:var(--tfoot-bg);border-top:2px solid var(--t
       <button data-metric="value">قيمة (ريال)</button>
     </span>
     <button id="themeBtn" class="ctrlbtn" title="الوضع الداكن" aria-label="تبديل الوضع الداكن">◐</button>
-    <button id="storyBtn" class="ctrlbtn" title="القصة التنفيذية (عرض تلقائي)" aria-label="القصة التنفيذية">▶</button>
-    <button id="presentBtn" class="ctrlbtn" title="وضع العرض (مجلس الإدارة)" aria-label="وضع العرض">▣</button>
+    <button id="storyBtn" class="ctrlbtn" title="عرض تلقائي" aria-label="عرض تلقائي">▶</button>
+    <button id="presentBtn" class="ctrlbtn" title="وضع عرض" aria-label="وضع عرض">▣</button>
     <button id="printBtn" class="ctrlbtn" title="طباعة / PDF" aria-label="طباعة">⎙</button>
   </div>
 
@@ -508,12 +508,12 @@ tfoot td{font-weight:700;background:var(--tfoot-bg);border-top:2px solid var(--t
     </main>
   </div>
 
-  <div class="foot">NOSTRI · تقرير مجلس الإدارة · مايو–يوليو 2026 · الإدارة التجارية · v4.4 story</div>
+  <div class="foot">NOSTRI · مايو–يوليو 2026 · الإدارة التجارية</div>
 </div>
 
 <div class="story-bar" id="storyBar" aria-live="polite">
   <div class="row">
-    <div class="stitle" id="storyTitle">القصة التنفيذية</div>
+    <div class="stitle" id="storyTitle">عرض تلقائي</div>
     <div class="smeta" id="storyMeta">0 / 3</div>
     <button type="button" id="storyStop">إيقاف</button>
   </div>
@@ -1704,20 +1704,19 @@ function needsScope(t){return t==="sales"||t==="writings"||t==="conversion"||t==
 function scopeReadyMap(t){return (t==="writings"||t==="conversion"||t==="doctors")?DATA.writingsReady:DATA.pharmacyReady;}
 function usesMetric(t){return t==="sales"||t==="share";}
 const TAB_META={
-  sales:{t:"مبيعات Nostri",s:"أداء الأصناف عبر الشهور الثلاثة — وحدات وقيمة"},
-  share:{t:"المشاركة",s:"نصيب الصيدليات الداخلية (1 · 7 · 18) من إجمالي نوستري"},
-  writings:{t:"الكتابات",s:"حركة وصفات الأطباء لأصناف نوستري حسب الصيدلية"},
-  conversion:{t:"التحويل",s:"كفاءة تحويل الكتابة إلى بيع فعلي"},
-  pureherb:{t:"مبيعات Pure herb",s:"إجمالي كل الصيدليات مقابل الداخلية والخارجية — يوليو"},
-  doctors:{t:"الأطباء",s:"أعلى الأطباء كتابةً لأصناف نوستري"},
-  expire:{t:"Near-Expire",s:"أصناف قريبة الانتهاء ومعدّل كتابتها"},
-  credit:{t:"الأدوية آجل",s:"مقارنة القيمة الآجلة 2025 مقابل 2026"}
+  sales:{t:"مبيعات Nostri",s:"مقارنة مايو / يونيو / يوليو"},
+  share:{t:"المشاركة",s:"الداخلية (1 · 7 · 18) من إجمالي نوستري"},
+  writings:{t:"الكتابات",s:"كتابات الأطباء حسب الصيدلية"},
+  conversion:{t:"التحويل",s:"الكتابة مقابل الوحدات المباعة"},
+  pureherb:{t:"مبيعات Pure herb",s:"كل الصيدليات · الداخلية · الخارجية — يوليو"},
+  doctors:{t:"الأطباء",s:"ترتيب الأطباء حسب الكتابات"},
+  expire:{t:"Near-Expire",s:"المخزون قريب الانتهاء والكتابات"},
+  credit:{t:"الأدوية آجل",s:"2025 مقابل 2026"}
 };
 function sectionStage(tab){
   const m=TAB_META[tab]||{t:tab,s:""};
   return `<div class="section-stage">
-    <div><div class="eyebrow">تقرير مجلس الإدارة</div>
-    <h2>${m.t}</h2><p class="sub">${m.s}</p></div>
+    <div><h2>${m.t}</h2><p class="sub">${m.s}</p></div>
     <div class="stamp">مايو ← يوليو 2026</div></div>`;
 }
 function goTab(tab){
@@ -1753,56 +1752,56 @@ function insightsFor(tab){
   if(tab==="sales"){
     const tot=itemTotals("all",state.metric), d=delta(tot[CUR],tot[PREV]), d3=delta(tot[CUR],tot[FIRST]);
     const unit=state.metric==="units"?"وحدة":"ريال";
-    out.push({c:d.c,t:`نمو يوليو مقابل يونيو: ${d.t} (${fmt(tot[CUR])} ${unit})`});
-    out.push({c:d3.c,t:`الاتجاه من مايو إلى يوليو: ${d3.t}`});
+    out.push({c:d.c,t:`يوليو vs يونيو: ${d.t} — ${fmt(tot[CUR])} ${unit}`});
+    out.push({c:d3.c,t:`مايو ← يوليو: ${d3.t}`});
     const g=topGrowthItem();
-    if(g.it) out.push({c:g.d>=0?"up":"down",t:`أسرع صنف نمواً: ${shortName(g.it.name)} (${delta(g.cur,g.prev).t})`});
+    if(g.it) out.push({c:g.d>=0?"up":"down",t:`أعلى نمو شهري: ${shortName(g.it.name)} (${delta(g.cur,g.prev).t})`});
   } else if(tab==="share"){
     const all=itemTotals("all",state.metric), intr=internalTotals(state.metric);
     const sCur=all[CUR]?Math.round(intr[CUR]/all[CUR]*100):0;
     const sPrev=all[PREV]?Math.round(intr[PREV]/all[PREV]*100):0;
     const dd=sCur-sPrev;
-    out.push({c:dd>0?"up":dd<0?"down":"flat",t:`مشاركة الداخلية في يوليو: ${sCur}% (${dd>0?"+":""}${dd} نقطة مقابل يونيو)`});
-    out.push({c:"flat",t:`الخارجية تستحوذ على ${100-sCur}% من إجمالي نوستري`});
+    out.push({c:dd>0?"up":dd<0?"down":"flat",t:`مشاركة الداخلية يوليو: ${sCur}% (${dd>0?"+":""}${dd} نقطة vs يونيو)`});
+    out.push({c:"flat",t:`الخارجية: ${100-sCur}% من الإجمالي`});
     let bestP="1",bestV=-1;
     ["1","7","18"].forEach(p=>{const v=itemTotals(p,state.metric)[CUR]; if(v>bestV){bestV=v;bestP=p;}});
-    out.push({c:"up",t:`أقوى صيدلية داخلية: ص${bestP} بـ ${fmt(bestV)} ${metricLabel()}`});
+    out.push({c:"up",t:`أعلى صيدلية داخلية: ص${bestP} — ${fmt(bestV)} ${metricLabel()}`});
   } else if(tab==="writings"){
     const scope=DATA.writingsReady[state.scope]?state.scope:"1";
     const w=wrTotals(scope), d=delta(w[CUR],w[PREV]);
-    out.push({c:d.c,t:`كتابات ${scopeLabel(scope)} في يوليو: ${fmt(w[CUR])} (${d.t} مقابل يونيو)`});
-    out.push({c:delta(w[CUR],w[FIRST]).c,t:`التغير من مايو إلى يوليو: ${delta(w[CUR],w[FIRST]).t}`});
+    out.push({c:d.c,t:`${scopeLabel(scope)} يوليو: ${fmt(w[CUR])} كتابة (${d.t} vs يونيو)`});
+    out.push({c:delta(w[CUR],w[FIRST]).c,t:`مايو ← يوليو: ${delta(w[CUR],w[FIRST]).t}`});
   } else if(tab==="conversion"){
     const scope=DATA.writingsReady[state.scope]?state.scope:"1";
     const sold=itemTotals(scope,"units"), wr=wrTotals(scope);
     const cv=wr[CUR]?Math.round(sold[CUR]/wr[CUR]*100):0;
     const cvP=wr[PREV]?Math.round(sold[PREV]/wr[PREV]*100):0;
     out.push({c:cv>=cvP?"up":"down",t:`تحويل ${scopeLabel(scope)} يوليو: ${cv}% (${cv-cvP>0?"+":""}${cv-cvP} نقطة)`});
-    out.push({c:"flat",t:`${fmt(wr[CUR])} كتابة ← ${fmt(sold[CUR])} وحدة مباعة`});
+    out.push({c:"flat",t:`${fmt(wr[CUR])} كتابة / ${fmt(sold[CUR])} وحدة`});
   } else if(tab==="pureherb"){
     const items=DATA.pureherb;
     const sum=(k,p)=>items.reduce((a,it)=>a+(it[k][p]||0),0);
     const uAll=sum("u","all"), uIntr=sum("u","1")+sum("u","7")+sum("u","18");
     const sh=uAll?Math.round(uIntr/uAll*100):0;
-    out.push({c:"flat",t:`كل الصيدليات (يوليو): ${fmt(uAll)} وحدة · ${fmt(sum("v","all"))} ريال`});
+    out.push({c:"flat",t:`كل الصيدليات يوليو: ${fmt(uAll)} وحدة · ${fmt(sum("v","all"))} ريال`});
     out.push({c:"up",t:`الداخلية (1+7+18): ${fmt(uIntr)} وحدة · ${sh}%`});
-    out.push({c:"down",t:`الخارجية: ${fmt(uAll-uIntr)} وحدة · ${100-sh}% من الحجم`});
+    out.push({c:"down",t:`الخارجية: ${fmt(uAll-uIntr)} وحدة · ${100-sh}%`});
   } else if(tab==="doctors"){
     const scope=DATA.doctorsNostri[state.scope]?state.scope:"1";
     const docs=DATA.doctorsNostri[scope]||[];
-    if(docs[0]) out.push({c:"up",t:`أعلى طبيب في يوليو (ص${scope}): ${shortName(docs[0][0])} — ${docs[0][3]} كتابة`});
+    if(docs[0]) out.push({c:"up",t:`الأعلى يوليو (ص${scope}): ${shortName(docs[0][0])} — ${docs[0][3]}`});
     out.push({c:"flat",t:`عدد الأطباء الكاتبين: ${DATA.doctorCount[scope]||docs.length}`});
   } else if(tab==="expire"){
     const s=DATA.nearExpire.summary, mo=DATA.nearExpire.monthly, d=delta(mo[CUR],mo[PREV]);
-    out.push({c:"down",t:`أصناف بلا أي كتابة: ${fmt(s.risk)} من ${fmt(s.items)} (خطر ركود)`});
-    out.push({c:d.c,t:`كتابات Near-Expire في يوليو: ${fmt(mo[CUR])} (${d.t})`});
+    out.push({c:"down",t:`بدون كتابة: ${fmt(s.risk)} من ${fmt(s.items)} صنف`});
+    out.push({c:d.c,t:`كتابات يوليو: ${fmt(mo[CUR])} (${d.t})`});
   } else if(tab==="credit"){
     const y5=DATA.credit["2025"], y6=DATA.credit["2026"];
     const t5=M.reduce((a,m)=>a+y5[m],0), t6=M.reduce((a,m)=>a+y6[m],0);
     const d=Math.round((t6-t5)/t5*1000)/10;
-    out.push({c:t6>=t5?"up":"down",t:`إجمالي الآجل 2026 (05→07): ${fmt(t6)} ريال (${d>0?"+":""}${d}% مقابل 2025)`});
+    out.push({c:t6>=t5?"up":"down",t:`إجمالي 2026 (05→07): ${fmt(t6)} ريال (${d>0?"+":""}${d}% vs 2025)`});
     const dd=y6[CUR]-y5[CUR];
-    out.push({c:dd>=0?"up":"down",t:`يوليو وحده: ${fmt(y6[CUR])} مقابل ${fmt(y5[CUR])} في 2025`});
+    out.push({c:dd>=0?"up":"down",t:`يوليو 2026: ${fmt(y6[CUR])} · يوليو 2025: ${fmt(y5[CUR])}`});
   }
   return out;
 }
@@ -1817,13 +1816,13 @@ function spotlightHTML(tab){
     const unit=metricLabel();
     const d=delta((itemVals(top.it,"all",state.metric)||{})[CUR],(itemVals(top.it,"all",state.metric)||{})[PREV]);
     return `<div class="spotlight"><div class="spot-main">
-      <span class="tag">بطل الشهر</span>
+      <span class="tag">أعلى صنف — يوليو</span>
       <h3>${shortName(top.it.name)}</h3>
-      <p class="spot-sub">أعلى صنف مبيعاً في يوليو عبر كل الصيدليات — محور الحديث أمام الإدارة.</p>
+      <p class="spot-sub">إجمالي كل الصيدليات</p>
     </div><div class="spot-side">
       <div class="metric"><span class="ml">مبيعات يوليو</span><span class="mv">${fmt(top.v)} <span class="unit">${unit}</span></span>
-        <span class="md ${d.c}">${d.t} مقابل يونيو</span></div>
-      ${g.it?`<div class="metric"><span class="ml">أسرع نمو</span><span class="mv" style="font-size:18px">${shortName(g.it.name)}</span>
+        <span class="md ${d.c}">${d.t} vs يونيو</span></div>
+      ${g.it?`<div class="metric"><span class="ml">أعلى نمو شهري</span><span class="mv" style="font-size:18px">${shortName(g.it.name)}</span>
         <span class="md ${g.d>=0?"up":"down"}">${delta(g.cur,g.prev).t}</span></div>`:""}
     </div></div>`;
   }
@@ -1833,12 +1832,12 @@ function spotlightHTML(tab){
     ["1","7","18"].forEach(p=>{const v=itemTotals(p,state.metric)[CUR]; if(v>bestV){bestV=v;bestP=p;}});
     const sh=all[CUR]?Math.round(bestV/all[CUR]*100):0;
     return `<div class="spotlight"><div class="spot-main">
-      <span class="tag">بطل المشاركة</span>
+      <span class="tag">أعلى صيدلية داخلية</span>
       <h3>صيدلية ${bestP}</h3>
-      <p class="spot-sub">أقوى صيدلية داخلية من حيث نصيب مبيعات نوستري في يوليو.</p>
+      <p class="spot-sub">من إجمالي نوستري — يوليو</p>
     </div><div class="spot-side">
       <div class="metric"><span class="ml">مبيعات يوليو</span><span class="mv">${fmt(bestV)}</span>
-        <span class="md flat">${sh}% من إجمالي كل الصيدليات</span></div>
+        <span class="md flat">${sh}% من الإجمالي</span></div>
     </div></div>`;
   }
   if(tab==="doctors"){
@@ -1846,12 +1845,12 @@ function spotlightHTML(tab){
     const docs=DATA.doctorsNostri[scope]||[]; if(!docs[0]) return "";
     const d=docs[0], dd=delta(d[3],d[2]);
     return `<div class="spotlight"><div class="spot-main">
-      <span class="tag">طبيب الشهر</span>
+      <span class="tag">أعلى طبيب — يوليو</span>
       <h3>${shortName(d[0])}</h3>
-      <p class="spot-sub">أعلى كتابة لأصناف نوستري في ${scopeLabel(scope)} خلال يوليو.</p>
+      <p class="spot-sub">${scopeLabel(scope)}</p>
     </div><div class="spot-side">
       <div class="metric"><span class="ml">كتابات يوليو</span><span class="mv">${d[3]}</span>
-        <span class="md ${dd.c}">${dd.t} مقابل يونيو</span></div>
+        <span class="md ${dd.c}">${dd.t} vs يونيو</span></div>
       <div class="metric"><span class="ml">مايو → يوليو</span><span class="mv" style="font-size:20px">${d[1]} ← ${d[3]}</span></div>
     </div></div>`;
   }
@@ -1861,13 +1860,13 @@ function spotlightHTML(tab){
     items.forEach(it=>{if((it.u.all||0)>((best.u.all)||0)) best=it;});
     const u1=(best.u["1"]||0)+(best.u["7"]||0)+(best.u["18"]||0);
     return `<div class="spotlight"><div class="spot-main">
-      <span class="tag">بطل PureHerb</span>
+      <span class="tag">أعلى صنف PureHerb</span>
       <h3>${shortName(best.name)}</h3>
-      <p class="spot-sub">أعلى صنف مبيعاً من PureHerb على مستوى كل الصيدليات في يوليو.</p>
+      <p class="spot-sub">كل الصيدليات — يوليو</p>
     </div><div class="spot-side">
       <div class="metric"><span class="ml">كل الصيدليات</span><span class="mv">${fmt(best.u.all)} وحدة</span>
         <span class="md flat">${fmt(best.v.all)} ريال</span></div>
-      <div class="metric"><span class="ml">منها داخلية</span><span class="mv" style="font-size:22px">${fmt(u1)}</span></div>
+      <div class="metric"><span class="ml">الداخلية</span><span class="mv" style="font-size:22px">${fmt(u1)}</span></div>
     </div></div>`;
   }
   if(tab==="expire"){
@@ -1876,9 +1875,9 @@ function spotlightHTML(tab){
     for(const r of rows){ if(r[3]+r[4]+r[5]===0 && r[1]>0){risk=r;break;} }
     if(!risk) risk=rows[0];
     return `<div class="spotlight"><div class="spot-main">
-      <span class="tag">أولوية التدخل</span>
+      <span class="tag">أعلى مخزون بلا كتابة</span>
       <h3>${shortName(risk[0])}</h3>
-      <p class="spot-sub">صنف Near-Expire بمخزون مرتفع وبدون كتابة كافية — يحتاج تحريك فوري.</p>
+      <p class="spot-sub">Near-Expire</p>
     </div><div class="spot-side">
       <div class="metric"><span class="ml">المخزون</span><span class="mv">${fmt(risk[1])}</span>
         <span class="md down">ينتهي ${risk[2]}</span></div>
@@ -1925,7 +1924,7 @@ render();
     localStorage.setItem("nostri-theme",t);apply(t);};
   function setPresent(on){
     document.body.classList.toggle("present",!!on); pb.classList.toggle("active",!!on);
-    pb.title=on?"إيقاف وضع العرض":"وضع العرض (مجلس الإدارة)";
+    pb.title=on?"إيقاف وضع العرض":"وضع عرض";
     if(on){try{document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();}catch(e){}}
     else if(document.fullscreenElement){try{document.exitFullscreen();}catch(e){}}
   }
@@ -1933,7 +1932,7 @@ render();
   document.addEventListener("fullscreenchange",()=>{
     if(!document.fullscreenElement){
       document.body.classList.remove("present"); pb.classList.remove("active");
-      pb.title="وضع العرض (مجلس الإدارة)";
+      pb.title="وضع عرض";
     }
   });
   document.getElementById("printBtn").onclick=()=>window.print();
@@ -1942,9 +1941,9 @@ render();
 /* ---- Executive Story Mode: sales → share → pureherb (~75s) ---- */
 (function(){
   const STEPS=[
-    {tab:"sales", title:"① مبيعات Nostri — نبض الأداء", sec:26},
-    {tab:"share", title:"② المشاركة — الداخلية مقابل الخارجية", sec:24},
-    {tab:"pureherb", title:"③ PureHerb — الفرصة خارج الشبكة الداخلية", sec:24}
+    {tab:"sales", title:"1 · مبيعات Nostri", sec:26},
+    {tab:"share", title:"2 · المشاركة", sec:24},
+    {tab:"pureherb", title:"3 · PureHerb", sec:24}
   ];
   const btn=document.getElementById("storyBtn");
   const fill=document.getElementById("storyFill");
@@ -1954,7 +1953,7 @@ render();
   function stop(){
     running=false; document.body.classList.remove("storying");
     btn.classList.remove("active"); btn.textContent="▶";
-    btn.title="القصة التنفيذية (عرض تلقائي)";
+    btn.title="عرض تلقائي";
     if(timer){clearTimeout(timer);timer=null;}
     if(raf){cancelAnimationFrame(raf);raf=null;}
     fill.style.width="0%";
@@ -1982,7 +1981,7 @@ render();
     if(running){stop();return;}
     running=true; document.body.classList.add("storying","nav-collapsed");
     btn.classList.add("active"); btn.textContent="■";
-    btn.title="إيقاف القصة التنفيذية";
+    btn.title="إيقاف العرض التلقائي";
     playStep(0);
   }
   btn.onclick=start;
