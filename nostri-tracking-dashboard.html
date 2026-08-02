@@ -296,14 +296,14 @@ const DATA = {
      u = وحدات مباعة · v = قيمة البيع (ريال) لكل صيدلية في يوليو 07 */
   pureherbMonth:"07",
   pureherb:[
-    {name:"ZINCOLIVE Syrup 150ML",        code:"1-03-186-085", u:{"1":9,  "7":null,"18":null}, v:{"1":630,   "7":null,"18":null}, w1:9},
-    {name:"FAWARVIT Vit C 1000mg Eff.",    code:"1-03-044-039", u:{"1":2,  "7":null,"18":null}, v:{"1":40,    "7":null,"18":null}, w1:0},
-    {name:"PureFeel Tablet 30",           code:"1-03-187-269", u:{"1":2,  "7":2,   "18":2},    v:{"1":59,    "7":59,  "18":59},  w1:0},
-    {name:"PURE OMEGA-3 Syrup 240ML",     code:"1-03-186-084", u:{"1":1,  "7":1,   "18":null}, v:{"1":150,   "7":150, "18":null}, w1:1},
-    {name:"CENTROZON WOMEN Tablet 30",    code:"1-03-187-267", u:{"1":15, "7":1,   "18":2},    v:{"1":600,   "7":40,  "18":80},  w1:9},
-    {name:"CENTROZON Tablet 30",          code:"1-03-187-270", u:{"1":15, "7":6,   "18":6},    v:{"1":292.5, "7":117, "18":117}, w1:15},
-    {name:"BoneFriend Tablet 30",         code:"1-03-187-268", u:{"1":15, "7":4,   "18":3},    v:{"1":750,   "7":200, "18":150}, w1:20},
-    {name:"ARGIGROW Syrup 150ML",         code:"1-03-186-083", u:{"1":6,  "7":2,   "18":1},    v:{"1":510,   "7":170, "18":85},  w1:2}
+    {name:"ZINCOLIVE Syrup 150ML",        code:"1-03-186-085", u:{"1":9,  "7":null,"18":null}, v:{"1":630,   "7":null,"18":null}, w:{"1":9, "7":0,"18":0}},
+    {name:"FAWARVIT Vit C 1000mg Eff.",    code:"1-03-044-039", u:{"1":2,  "7":null,"18":null}, v:{"1":40,    "7":null,"18":null}, w:{"1":0, "7":0,"18":0}},
+    {name:"PureFeel Tablet 30",           code:"1-03-187-269", u:{"1":2,  "7":2,   "18":2},    v:{"1":59,    "7":59,  "18":59},  w:{"1":0, "7":0,"18":2}},
+    {name:"PURE OMEGA-3 Syrup 240ML",     code:"1-03-186-084", u:{"1":1,  "7":1,   "18":null}, v:{"1":150,   "7":150, "18":null}, w:{"1":1, "7":0,"18":0}},
+    {name:"CENTROZON WOMEN Tablet 30",    code:"1-03-187-267", u:{"1":15, "7":1,   "18":2},    v:{"1":600,   "7":40,  "18":80},  w:{"1":9, "7":1,"18":0}},
+    {name:"CENTROZON Tablet 30",          code:"1-03-187-270", u:{"1":15, "7":6,   "18":6},    v:{"1":292.5, "7":117, "18":117}, w:{"1":15,"7":1,"18":6}},
+    {name:"BoneFriend Tablet 30",         code:"1-03-187-268", u:{"1":15, "7":4,   "18":3},    v:{"1":750,   "7":200, "18":150}, w:{"1":20,"7":5,"18":4}},
+    {name:"ARGIGROW Syrup 150ML",         code:"1-03-186-083", u:{"1":6,  "7":2,   "18":1},    v:{"1":510,   "7":170, "18":85},  w:{"1":2, "7":0,"18":0}}
   ]
 };
 
@@ -636,15 +636,26 @@ V.pureherb=()=>{
     <tfoot><tr><td>الإجمالي</td><td class="num">${fmt(u1)}</td><td class="num">${fmt(u7)}</td><td class="num">${fmt(u18)}</td>
     <td class="num">${fmt(uT)}</td><td class="num">${fmt(vT)}</td></tr></tfoot>
     </table></div></div>`;
-  // كتابات + تحويل ص1 (يوليو)
-  const totW1=items.reduce((a,it)=>a+(it.w1||0),0);
+  // كتابات + تحويل PureHerb لكل صيدلية (يوليو)
+  const sumW=p=>items.reduce((a,it)=>a+((it.w&&it.w[p])||0),0);
+  const w1t=sumW("1"),w7t=sumW("7"),w18t=sumW("18");
+  const convCell=(w,u)=>{
+    if(!w) return '<td class="num">'+(u==null?"—":fmt(u))+'</td><td><span class="pill y">—</span></td>';
+    const cv=Math.round((u||0)/w*100), c=convClass(cv);
+    return '<td class="num">'+(u==null?"—":fmt(u))+'</td><td><span class="pill '+c+'">'+cv+'%</span></td>';
+  };
   const crows=items.map(it=>{
-    const wv=it.w1||0, uv=it.u["1"]||0, cv=wv?Math.round(uv/wv*100):0, c=convClass(cv);
-    return `<tr><td>${it.name}</td><td class="num">${fmt(wv)}</td><td class="num">${it.u["1"]==null?"—":fmt(uv)}</td>
-      <td><span class="pill ${wv?c:'y'}">${wv?cv+'%':'—'}</span></td></tr>`;}).join("");
-  const conv=`<div class="panel"><h2>كتابات وتحويل PureHerb — صيدلية 1 (يوليو 07)</h2>
-    <p class="hint">إجمالي كتابات ص1 = <b>${totW1}</b> · التحويل = وحدات مباعة ÷ كتابات. الكتابات بدأت في يوليو فقط.</p>
-    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>كتابات ص1</th><th>وحدات ص1</th><th>التحويل %</th></tr></thead>
+    const w=it.w||{};
+    return `<tr><td>${it.name}</td>
+      <td class="num">${fmt(w["1"]||0)}</td>${convCell(w["1"]||0,it.u["1"])}
+      <td class="num">${fmt(w["7"]||0)}</td>${convCell(w["7"]||0,it.u["7"])}
+      <td class="num">${fmt(w["18"]||0)}</td>${convCell(w["18"]||0,it.u["18"])}</tr>`;}).join("");
+  const conv=`<div class="panel"><h2>كتابات وتحويل PureHerb — كل الصيدليات (يوليو 07)</h2>
+    <p class="hint">إجمالي الكتابات: ص1 = <b>${w1t}</b> · ص7 = <b>${w7t}</b> · ص18 = <b>${w18t}</b>.
+      التحويل = وحدات مباعة ÷ كتابات. الكتابات بدأت في يوليو فقط.</p>
+    <div class="tbl-wrap"><table><thead>
+    <tr><th rowspan="2">الصنف</th><th colspan="3">صيدلية 1</th><th colspan="3">صيدلية 7</th><th colspan="3">صيدلية 18</th></tr>
+    <tr><th>كتابة</th><th>بيع</th><th>تحويل</th><th>كتابة</th><th>بيع</th><th>تحويل</th><th>كتابة</th><th>بيع</th><th>تحويل</th></tr></thead>
     <tbody>${crows}</tbody></table></div></div>`;
   return note+kpis+chart+table+conv;
 };
