@@ -120,6 +120,7 @@ tfoot td{font-weight:700;background:#f0fdfa;border-top:2px solid var(--teal-l)}
   <nav class="tabs" id="tabs">
     <button data-tab="sales" class="active">📈 المبيعات</button>
     <button data-tab="share">🏬 المشاركة</button>
+    <button data-tab="credit">💳 الأدوية آجل</button>
     <button data-tab="writings">✍️ الكتابات</button>
     <button data-tab="conversion">🔄 التحويل</button>
     <button data-tab="doctors">👨‍⚕️ الأطباء</button>
@@ -897,6 +898,12 @@ const DATA = {
       ["Vicks vapodrops Berry menthol 36 lozenges",0,"2026-08",0,0,0]]
   },
 
+  /* 💳 الأدوية آجل — مقارنة سنوية (قيمة بالريال) لشهور 05/06/07 */
+  credit:{
+    "2025":{"05":1612294,"06":1303473,"07":1290410},
+    "2026":{"05":1377517,"06":1378186,"07":1310669}
+  },
+
   /* 🌿 PureHerb — مبيعات حقيقية (مورد شركة بيور هيرب 143711)
      ملاحظة: شهر 07 فقط · ص1 و ص7 فقط · الكتابات لسه لم تصل.
      u = وحدات مباعة · v = قيمة البيع (ريال) لكل صيدلية في يوليو 07 */
@@ -1039,6 +1046,50 @@ V.share=()=>{
     <tfoot><tr><td>مجموع الداخلية</td><td class="num">${fmt(intr[CUR])}</td>
     <td><span class="pill ${sCur>=50?'g':sCur>=35?'y':'r'}">${sCur}%</span></td></tr></tfoot></table></div></div>`;
   return note+kpis+chart+table+brkTable;
+};
+
+/* ---- 1ج. Credit (الأدوية آجل) — مقارنة سنوية 2025 vs 2026 ---- */
+V.credit=()=>{
+  const C=DATA.credit, y5=C["2025"], y6=C["2026"];
+  const t5=M.reduce((a,m)=>a+y5[m],0), t6=M.reduce((a,m)=>a+y6[m],0);
+  const dTot=Math.round((t6-t5)/t5*1000)/10;
+  const note=`<div class="note info">💳 <b>الأدوية آجل</b> — مقارنة قيمة المبيعات الآجلة (بالريال) بين
+     <b>2025</b> و<b>2026</b> لنفس الشهور (05/06/07).</div>`;
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="lbl">إجمالي 2026 (05→07)</div><div class="val">${fmt(t6)} <span class="unit">ريال</span></div>
+      <div class="delta ${t6>=t5?'up':'down'}">${dTot>0?'▲ +':''}${dTot}% مقابل 2025</div></div>
+    <div class="kpi"><div class="lbl">إجمالي 2025 (05→07)</div><div class="val">${fmt(t5)} <span class="unit">ريال</span></div></div>
+    <div class="kpi"><div class="lbl">الفرق السنوي</div><div class="val ${t6>=t5?'up':'down'}">${t6-t5>0?'+':''}${fmt(t6-t5)}</div>
+      <div class="delta ${t6>=t5?'up':'down'}">ريال</div></div>
+    <div class="kpi"><div class="lbl">يوليو 2026</div><div class="val">${fmt(y6[CUR])}</div>
+      <div class="delta ${y6[CUR]>=y5[CUR]?'up':'down'}">${y6[CUR]-y5[CUR]>0?'▲ +':'▼ '}${Math.round((y6[CUR]-y5[CUR])/y5[CUR]*1000)/10}% مقابل يوليو 2025</div></div></div>`;
+  // grouped bars: per month 2025 vs 2026
+  const mx=Math.max(...M.map(m=>Math.max(y5[m],y6[m])),1);
+  const groups=M.map(m=>{
+    const h5=y5[m]/mx*100, h6=y6[m]/mx*100;
+    const d=Math.round((y6[m]-y5[m])/y5[m]*1000)/10;
+    return `<div class="chgroup">
+      <div class="bar" style="height:${h5}%;background:var(--c05)"><span class="cap" style="color:var(--muted);font-size:11px">${fmt(y5[m])}</span></div>
+      <div class="bar" style="height:${h6}%;background:var(--c07)"><span class="cap" style="color:var(--teal);font-size:11px">${fmt(y6[m])}</span></div>
+    </div>`;}).join("");
+  const chart=`<div class="panel"><h2>الأدوية آجل — 2025 مقابل 2026 (ريال)</h2>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">
+      <span class="dot" style="background:var(--c05)"></span>2025 &nbsp;·&nbsp;
+      <span class="dot" style="background:var(--c07)"></span>2026</div>
+    <div class="chart">${groups}</div>
+    <div class="chlabels">${M.map(m=>`<span>${ML[m]}</span>`).join("")}</div></div>`;
+  const rows=M.map(m=>{
+    const diff=y6[m]-y5[m], d=Math.round(diff/y5[m]*1000)/10, c=d>0?"up":d<0?"down":"flat";
+    return `<tr><td>${ML[m]}</td><td class="num">${fmt(y5[m])}</td><td class="num">${fmt(y6[m])}</td>
+      <td class="num ${c}">${diff>0?'+':''}${fmt(diff)}</td>
+      <td class="trend ${c}">${d>0?'▲ +':d<0?'▼ ':'● '}${d}%</td></tr>`;}).join("");
+  const dc=dTot>0?"up":dTot<0?"down":"flat";
+  const table=`<div class="panel"><h2>جدول المقارنة السنوية</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الشهر</th><th>2025</th><th>2026</th><th>الفرق</th><th>التغير %</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td>الإجمالي</td><td class="num">${fmt(t5)}</td><td class="num">${fmt(t6)}</td>
+    <td class="num ${dc}">${t6-t5>0?'+':''}${fmt(t6-t5)}</td><td class="trend ${dc}">${dTot>0?'▲ +':dTot<0?'▼ ':'● '}${dTot}%</td></tr></tfoot></table></div></div>`;
+  return note+kpis+chart+table;
 };
 
 /* ---- 2. Writings (REAL — ص1) ---- */
