@@ -199,7 +199,7 @@ body.nav-collapsed .layout{gap:0}
 .kpi .val{font-family:'Alexandria','IBM Plex Sans Arabic',sans-serif;
   font-size:clamp(24px,2.4vw,30px);font-weight:800;margin-top:8px;line-height:1.05;letter-spacing:-.4px;
   color:var(--ink)}
-.kpi .unit{font-size:13px;color:var(--muted);font-weight:600;font-family:'IBM Plex Sans Arabic',sans-serif}
+.kpi .val .rng{margin:0 .35em;opacity:.7;font-weight:700}
 .kpi .delta{font-size:12.5px;font-weight:700;margin-top:10px;display:inline-flex;align-items:center;gap:4px}
 .kpi .delta.up{color:var(--up)} .kpi .delta.down{color:var(--down)} .kpi .delta.flat{color:var(--muted)}
 .kpi.hero{
@@ -1333,7 +1333,7 @@ function barChart(vals,unit){
       <span class="cap" style="color:${COL[m]}">${fmt(vals[m])}</span></div></div>`;
   }).join("");
   const labels=M.map(m=>`<span>${ML[m]}</span>`).join("");
-  return `<div class="chart">${bars}</div><div class="chlabels">${labels}</div>`;
+  return `<div class="chart chart-monthly">${bars}</div><div class="chlabels">${labels}</div>`;
 }
 function scopeLabel(s){return s==="all"?"كل الصيدليات":"صيدلية "+s;}
 function metricLabel(){return state.metric==="units"?"وحدة":"ريال";}
@@ -1400,7 +1400,7 @@ V.share=()=>{
     <div class="kpi"><div class="lbl">الخارجية — 07</div><div class="val">${fmt(ext[CUR])} <span class="unit">${unit}</span></div>
       <div class="delta flat">${100-sCur}% من الإجمالي</div></div>
     <div class="kpi"><div class="lbl">اتجاه المشاركة 05→07</div>
-      <div class="val ${sCur>=sFirst?'up':'down'}">${sFirst}% ← ${sCur}%</div>
+      <div class="val val-range ${sCur>=sFirst?'up':'down'}"><span>${sFirst}%</span><span class="rng">←</span><span>${sCur}%</span></div>
       <div class="delta ${sCur>=sFirst?'up':'down'}">${sCur>=sFirst?'ارتفاع':'انخفاض'} النصيب</div></div></div>`;
   // stacked bars per month
   const maxT=Math.max(...M.map(m=>all[m]),1);
@@ -1646,16 +1646,18 @@ V.pureherb=()=>{
   const uExt=Math.max(uAll-uIntr,0), vExt=Math.max(vAll-vIntr,0);
   const shUv=uAll?Math.round(uIntr/uAll*100):0;
   const shVv=vAll?Math.round(vIntr/vAll*100):0;
+  // تقريب متسق بحيث مجموع الداخلية+الخارجية = الإجمالي المعروض
+  const vAllR=Math.round(vAll), vIntrR=Math.round(vIntr), vExtR=vAllR-vIntrR;
   const kpis=`<div class="kpis">
     <div class="kpi"><div class="lbl">كل الصيدليات — يوليو 07</div><div class="val">${fmt(uAll)} <span class="unit">وحدة</span></div>
-      <div class="delta flat">${fmt(vAll)} ريال</div></div>
+      <div class="delta flat">${fmt(vAllR)} ريال</div></div>
     <div class="kpi"><div class="lbl">الداخلية (1+7+18)</div><div class="val">${fmt(uIntr)} <span class="unit">وحدة</span></div>
-      <div class="delta flat">${fmt(vIntr)} ريال · ${shUv}% وحدات</div></div>
+      <div class="delta flat">${fmt(vIntrR)} ريال · ${shUv}% وحدات</div></div>
     <div class="kpi"><div class="lbl">الخارجية</div><div class="val">${fmt(uExt)} <span class="unit">وحدة</span></div>
-      <div class="delta flat">${fmt(vExt)} ريال · ${100-shUv}% وحدات</div></div>
+      <div class="delta flat">${fmt(vExtR)} ريال · ${100-shUv}% وحدات</div></div>
     <div class="kpi"><div class="lbl">مشاركة الداخلية (قيمة)</div><div class="val">${shVv}%</div>
       <div class="delta flat">الخارجية ${100-shVv}% من القيمة</div></div></div>`;
-  const mxShare=Math.max(uIntr,uExt,1);
+  const mxShare=Math.max(uIntr,uExt,uAll,1);
   const bar=(u,c)=>`<div class="chgroup"><div class="bar" style="height:${Math.max(u/mxShare*100,2)}%;background:${c}">
         <span class="cap" style="color:${c}">${fmt(u)}</span></div></div>`;
   const shareChart=`<div class="panel"><h2>PureHerb — الداخلية مقابل الخارجية (وحدات · يوليو 07)</h2>
@@ -1995,24 +1997,30 @@ render();
     if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches)return;
     view.querySelectorAll(".kpi .val").forEach(el=>{
       if(el.dataset.counted)return;
+      if(el.classList.contains("val-range")){el.dataset.counted="1";return;}
       const unit=el.querySelector(".unit");
       const unitHtml=unit?unit.outerHTML:"";
-      const raw=(el.childNodes[0]?el.childNodes[0].textContent:el.textContent).replace(/[^\d.+-]/g,"");
+      const probe=el.cloneNode(true);
+      probe.querySelectorAll(".unit").forEach(u=>u.remove());
+      const core=probe.textContent.replace(/\s+/g,"").trim();
+      // رقم واحد فقط (مع فاصلة/% اختيارية) — يتجاهل قيم مثل 46% ← 36%
+      if(!/^[+-]?\d{1,3}(?:,\d{3})*(?:\.\d+)?%?$/.test(core)) return;
+      const raw=core.replace(/[^\d.+-]/g,"");
       const target=parseFloat(raw); if(!isFinite(target))return;
       el.dataset.counted="1";
-      const isPct=/%/.test(el.textContent), decimals=String(raw).includes(".")?1:0;
+      const isPct=/%/.test(core), decimals=String(raw).includes(".")?1:0;
       const start=performance.now(), dur=700;
       const tick=now=>{
         const p=Math.min(1,(now-start)/dur), e=1-Math.pow(1-p,3), n=target*e;
         const num=n.toLocaleString("en-US",{maximumFractionDigits:decimals,minimumFractionDigits:decimals});
-        el.innerHTML=num+(isPct&&!unitHtml?"%":"")+(unitHtml?" "+unitHtml:"");
+        el.innerHTML=num+(isPct?"%":"")+(unitHtml?" "+unitHtml:"");
         if(p<1)requestAnimationFrame(tick);
       };
       requestAnimationFrame(tick);
     });
   }
   function trendLines(){
-    view.querySelectorAll(".chart").forEach(chart=>{
+    view.querySelectorAll(".chart.chart-monthly").forEach(chart=>{
       const old=chart.querySelector("svg.trendline"); if(old)old.remove();
       const groups=[...chart.children].filter(c=>c.classList&&c.classList.contains("chgroup"));
       if(groups.length!==3)return;
