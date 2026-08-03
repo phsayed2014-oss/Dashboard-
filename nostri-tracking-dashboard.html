@@ -81,11 +81,13 @@ header.top::after{
   pointer-events:none;animation:sheen 7s var(--ease) infinite;
 }
 @keyframes sheen{0%,70%{transform:translateX(8%)}100%{transform:translateX(-55%)}}
-.brand-block{text-align:center;position:relative;z-index:1;max-width:720px}
+.brand-block{text-align:center;position:relative;z-index:1;max-width:960px;width:100%}
 .brand{
   font-family:'Alexandria','IBM Plex Sans Arabic',sans-serif;
-  font-size:clamp(34px,4.6vw,48px);font-weight:900;letter-spacing:.34em;
-  line-height:1;margin:0;text-indent:.34em;
+  font-size:clamp(30px,4.4vw,46px);font-weight:900;line-height:1;margin:0;
+  display:flex;justify-content:space-between;width:100%;padding:0 .35em;direction:ltr;
+}
+.brand span{
   background:linear-gradient(180deg,#ffffff 20%,#99f6e4 100%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
   filter:drop-shadow(0 2px 10px rgba(0,0,0,.18));
@@ -464,7 +466,7 @@ tfoot td{font-weight:700;background:var(--tfoot-bg);border-top:2px solid var(--t
     -webkit-print-color-adjust:exact;print-color-adjust:exact;min-height:auto;padding:18px
   }
   header.top::before,header.top::after{display:none}
-  .brand{-webkit-text-fill-color:#fff;background:none;filter:none;color:#fff}
+  .brand span{-webkit-text-fill-color:#fff;background:none;filter:none;color:#fff}
   .panel,.kpi{box-shadow:none;break-inside:avoid;border:1px solid #cbd5e1}
   .kpi:hover,.panel:hover{transform:none;box-shadow:none}
   .tbl-wrap{overflow:visible;border-color:#cbd5e1}
@@ -479,7 +481,7 @@ tfoot td{font-weight:700;background:var(--tfoot-bg);border-top:2px solid var(--t
   <header class="top">
     <button id="menuToggle" aria-label="طي القائمة" title="طي / فتح القائمة">☰</button>
     <div class="brand-block">
-      <div class="brand">NOSTRI</div>
+      <div class="brand"><span>N</span><span>O</span><span>S</span><span>T</span><span>R</span><span>I</span></div>
       <h1>الإدارة التجارية — د. السيد حسن</h1>
       <div class="period">متابعة الأداء · مايو ← يوليو 2026</div>
     </div>
