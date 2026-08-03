@@ -1400,7 +1400,7 @@ V.share=()=>{
     <div class="kpi"><div class="lbl">الخارجية — 07</div><div class="val">${fmt(ext[CUR])} <span class="unit">${unit}</span></div>
       <div class="delta flat">${100-sCur}% من الإجمالي</div></div>
     <div class="kpi"><div class="lbl">اتجاه المشاركة 05→07</div>
-      <div class="val val-range ${sCur>=sFirst?'up':'down'}"><span>${sFirst}%</span><span class="rng">←</span><span>${sCur}%</span></div>
+      <div class="val val-range ${sCur>=sFirst?'up':'down'}">من ${sFirst}% إلى ${sCur}%</div>
       <div class="delta ${sCur>=sFirst?'up':'down'}">${sCur>=sFirst?'ارتفاع':'انخفاض'} النصيب</div></div></div>`;
   // stacked bars per month
   const maxT=Math.max(...M.map(m=>all[m]),1);
