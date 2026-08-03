@@ -430,8 +430,17 @@ tfoot td{font-weight:700;background:var(--tfoot-bg);border-top:2px solid var(--t
 .ctrlbtn{border:1px solid var(--line);background:var(--card);color:var(--muted);width:38px;height:38px;
   border-radius:12px;font-size:15px;cursor:pointer;line-height:1;transition:.15s}
 .ctrlbtn:hover{color:var(--teal);border-color:var(--teal-l);transform:translateY(-1px)}
-#neSearch{background:var(--card);color:var(--ink);outline:none}
+#neSearch{background:var(--card);color:var(--ink);outline:none;
+  width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:12px;
+  font-family:inherit;font-size:14px;direction:rtl}
 #neSearch:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 18%, transparent)}
+.ne-tools{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.ne-tools .ne-status{margin:0}
+@media(min-width:720px){
+  .ne-tools{flex-direction:row;align-items:center}
+  .ne-tools #neSearch{flex:1;min-width:0}
+  .ne-tools .ne-status{flex:0 0 auto}
+}
 
 /* --- chart tooltip + trend line --- */
 #barTip{position:fixed;z-index:50;pointer-events:none;background:var(--teal-d);color:#fff;
@@ -1593,12 +1602,9 @@ V.doctors=()=>{
 /* ---- 4. Near-Expire (REAL) ---- */
 V.expire=()=>{
   const NE=DATA.nearExpire, s=NE.summary, mo=NE.monthly;
-  const dCur=delta(mo[CUR],mo[PREV]), dTot=delta(mo[CUR],mo[FIRST]);
-  const expShort=e=>e?e.slice(0,7):"—";
+  const dCur=delta(mo[CUR],mo[PREV]);
+  const statusOf=w7=>w7===0?"none":w7<=5?"weak":"active";
   const wpill=w7=>w7===0?'<span class="pill r">بدون كتابة</span>':w7<=5?'<span class="pill y">ضعيف</span>':'<span class="pill g">نشط</span>';
-  const note=`<div class="note real">⏳ <b>Near-Expire حقيقي</b> — ملف الأصناف قريبة الانتهاء (حتى 31-12-2026)
-     مقاطَع مع كتابات الأطباء للتعاونات الثلاثة (ص1+ص7+ص18). الهدف: رفع كتابة الأصناف الراكدة قبل انتهائها.
-     <br><small>تواريخ الانتهاء كما وردت في الملف (سنة-شهر).</small></div>`;
   const kpis=`<div class="kpis">
     <div class="kpi"><div class="lbl">إجمالي أصناف النير اكسبير</div><div class="val">${fmt(s.items)}</div>
       <div class="delta flat">${fmt(s.qty)} وحدة مخزون</div></div>
@@ -1611,27 +1617,50 @@ V.expire=()=>{
   const chart=`<div class="panel"><h2>إجمالي كتابات أصناف النير اكسبير — تسلسل شهري</h2>
     ${barChart(mo)}</div>`;
   const allRows=NE.all.map(r=>{
-    const[desc,qty,exp,w5,w6,w7]=r, d=delta(w7,w6);
-    return `<tr data-name="${desc.toLowerCase()}"><td>${desc}</td>
+    const[desc,qty,exp,w5,w6,w7]=r, d=delta(w7,w6), st=statusOf(w7);
+    return `<tr data-name="${desc.toLowerCase()}" data-status="${st}"><td>${desc}</td>
       <td class="num" style="${qty>=200?'color:var(--down);font-weight:700':''}">${fmt(qty)}</td>
-      <td class="num" style="font-size:12px">${expShort(exp)}</td>
       <td class="num">${w5}</td><td class="num">${w6}</td><td class="num">${w7}</td>
       <td class="trend ${d.c}">${d.t}</td><td>${wpill(w7)}</td></tr>`;}).join("");
   const table=`<div class="panel"><h2>كل أصناف النير اكسبير (${NE.all.length}) — مرتّبة بالمخزون</h2>
-    <input id="neSearch" placeholder="🔎 ابحث باسم الصنف..." autocomplete="off"
-      style="width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:12px;
-      font-family:inherit;font-size:14px;margin-bottom:14px;direction:rtl">
+    <div class="ne-tools">
+      <input id="neSearch" placeholder="ابحث باسم الصنف..." autocomplete="off">
+      <div class="chips ne-status" id="neStatus">
+        <button type="button" data-status="all" class="active">الكل</button>
+        <button type="button" data-status="none">بدون كتابة</button>
+        <button type="button" data-status="weak">ضعيف</button>
+        <button type="button" data-status="active">نشط</button>
+      </div>
+    </div>
     <div id="neCount" style="font-size:12px;color:var(--muted);margin-bottom:8px"></div>
     <div class="tbl-wrap" style="max-height:70vh;overflow-y:auto"><table><thead><tr>
-      <th>الصنف</th><th>المخزون</th><th>ينتهي</th><th>مايو</th><th>يونيو</th><th>يوليو</th>
+      <th>الصنف</th><th>المخزون</th><th>مايو</th><th>يونيو</th><th>يوليو</th>
       <th>التغير</th><th>الحالة</th></tr></thead><tbody id="neBody">${allRows}</tbody></table></div></div>`;
   setTimeout(()=>{
     const inp=document.getElementById("neSearch"), body=document.getElementById("neBody"),
-          cnt=document.getElementById("neCount"), trs=[...body.querySelectorAll("tr")];
-    const upd=()=>{const q=(inp.value||"").trim().toLowerCase();let n=0;
-      trs.forEach(t=>{const show=!q||t.dataset.name.includes(q);t.style.display=show?"":"none";if(show)n++;});
-      cnt.textContent="عدد الأصناف الظاهرة: "+n;};
-    if(inp){inp.oninput=upd;upd();}
+          cnt=document.getElementById("neCount"), trs=[...body.querySelectorAll("tr")],
+          statusBox=document.getElementById("neStatus");
+    let status="all";
+    const upd=()=>{
+      const q=(inp.value||"").trim().toLowerCase(); let n=0;
+      trs.forEach(t=>{
+        const okName=!q||t.dataset.name.includes(q);
+        const okStatus=status==="all"||t.dataset.status===status;
+        const show=okName&&okStatus;
+        t.style.display=show?"":"none"; if(show)n++;
+      });
+      cnt.textContent="عدد الأصناف الظاهرة: "+n;
+    };
+    if(inp){inp.oninput=upd;}
+    if(statusBox){
+      statusBox.querySelectorAll("button").forEach(b=>{
+        b.onclick=()=>{
+          statusBox.querySelectorAll("button").forEach(x=>x.classList.remove("active"));
+          b.classList.add("active"); status=b.dataset.status; upd();
+        };
+      });
+    }
+    upd();
   },0);
   return kpis+chart+table;
 };
