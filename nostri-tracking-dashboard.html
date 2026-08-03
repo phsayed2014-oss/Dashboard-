@@ -1,0 +1,2086 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>NOSTRI — متابعة الأداء التجاري | مايو–يوليو 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   NOSTRI Tracking Dashboard — board presentation polish
+   يتابع: المبيعات · الكتابات · التحويل · Near-Expire · PureHerb
+   ============================================================ */
+:root{
+  --teal:#0f766e; --teal-d:#06332e; --teal-m:#0b5c55; --teal-l:#5eead4; --heading:#06332e;
+  --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#eef3f6; --card:#ffffff;
+  --up:#15803d; --down:#b91c1c; --warn:#c2410c;
+  --c05:#99f6e4; --c06:#2dd4bf; --c07:#0f766e;
+  --grid:rgba(148,163,184,.18);
+  --th-bg:#f3f7fa; --zebra:rgba(15,118,110,.035); --row-hover:#eef8f6; --tfoot-bg:#ecfdf5;
+  --trend-line-color:rgba(15,23,42,.38);
+  --mesh1:rgba(45,212,191,.12); --mesh2:rgba(6,51,46,.05); --mesh3:rgba(14,116,144,.06);
+  --sh-ambient:0 14px 36px -18px rgba(15,23,42,.18);
+  --sh-direct:0 1px 2px rgba(15,23,42,.05);
+  --shadow:0 1px 2px rgba(15,23,42,.05),0 4px 12px -6px rgba(15,23,42,.08);
+  --radius:18px; --ease:cubic-bezier(.22,1,.36,1);
+}
+:root[data-theme="dark"]{
+  --teal-d:#041f1c; --heading:#99f6e4;
+  --ink:#e8eef7; --muted:#9fb1c4; --line:#243247; --bg:#081018; --card:#101b2c;
+  --c05:#5eead4; --c06:#2dd4bf; --c07:#14b8a6;
+  --grid:rgba(148,163,184,.14);
+  --th-bg:#162437; --zebra:rgba(255,255,255,.025); --row-hover:#1a2b42; --tfoot-bg:#123029;
+  --trend-line-color:rgba(226,232,240,.55);
+  --mesh1:rgba(45,212,191,.08); --mesh2:rgba(20,184,166,.06); --mesh3:rgba(56,189,248,.05);
+  --sh-ambient:0 16px 40px -18px rgba(0,0,0,.55);
+  --sh-direct:0 1px 2px rgba(0,0,0,.35);
+  --shadow:0 1px 3px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:'IBM Plex Sans Arabic',Tahoma,sans-serif;
+  background:
+    radial-gradient(980px 460px at 100% -8%, var(--mesh1), transparent 58%),
+    radial-gradient(820px 440px at -8% 12%, var(--mesh2), transparent 52%),
+    radial-gradient(700px 380px at 55% 100%, var(--mesh3), transparent 55%),
+    linear-gradient(180deg, #f7fafb 0%, var(--bg) 38%, var(--bg) 100%);
+  background-attachment:fixed;
+  color:var(--ink);direction:rtl;-webkit-font-smoothing:antialiased;
+  line-height:1.55;
+}
+:root[data-theme="dark"] body{
+  background:
+    radial-gradient(980px 460px at 100% -8%, var(--mesh1), transparent 58%),
+    radial-gradient(820px 440px at -8% 12%, var(--mesh2), transparent 52%),
+    radial-gradient(700px 380px at 55% 100%, var(--mesh3), transparent 55%),
+    var(--bg);
+}
+.wrap{max-width:1680px;margin:0 auto;padding:18px 28px 56px}
+
+/* --- Board header --- */
+header.top{
+  background:
+    linear-gradient(120deg, rgba(94,234,212,.14), transparent 42%),
+    radial-gradient(ellipse at 70% 0%, #12897f 0%, #0a4f48 42%, #052925 100%);
+  color:#fff;border-radius:22px;padding:26px 32px 24px 64px;
+  box-shadow:0 18px 40px -20px rgba(6,51,46,.55), inset 0 1px 0 rgba(255,255,255,.12);
+  display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+  min-height:108px;
+}
+header.top::before{
+  content:"";position:absolute;inset:auto -10% -55% auto;width:280px;height:280px;border-radius:50%;
+  background:radial-gradient(circle, rgba(94,234,212,.18), transparent 68%);pointer-events:none;
+}
+header.top::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(105deg, transparent 30%, rgba(255,255,255,.05) 48%, transparent 66%);
+  pointer-events:none;animation:sheen 7s var(--ease) infinite;
+}
+@keyframes sheen{0%,70%{transform:translateX(8%)}100%{transform:translateX(-55%)}}
+.brand-block{text-align:center;position:relative;z-index:1;max-width:720px}
+.brand{
+  font-family:'Alexandria','IBM Plex Sans Arabic',sans-serif;
+  font-size:clamp(34px,4.6vw,48px);font-weight:900;letter-spacing:.18em;
+  line-height:1;margin:0;
+  background:linear-gradient(180deg,#ffffff 20%,#99f6e4 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 2px 10px rgba(0,0,0,.18));
+}
+header.top h1{
+  margin:10px 0 0;font-size:clamp(15px,1.7vw,18px);font-weight:600;letter-spacing:.2px;
+  text-align:center;color:rgba(240,253,250,.92);
+}
+.period{
+  display:inline-flex;align-items:center;gap:8px;margin-top:12px;
+  padding:5px 14px;border-radius:999px;font-size:12.5px;font-weight:700;
+  color:#ecfeff;background:rgba(4,30,27,.35);border:1px solid rgba(153,246,228,.28);
+  letter-spacing:.2px;
+}
+.period::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--teal-l);box-shadow:0 0 0 3px rgba(94,234,212,.2)}
+.badge{background:#dcfce7;color:#166534;font-weight:700;font-size:12px;padding:5px 12px;border-radius:999px}
+
+/* --- Toolbar --- */
+.mlegend{
+  display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 0;font-size:13px;color:var(--muted);
+  align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:16px;
+  background:color-mix(in srgb,var(--card) 88%, transparent);
+  backdrop-filter:blur(8px);box-shadow:var(--sh-direct);
+}
+.mlegend b{color:var(--ink);font-weight:700}
+.month-chip{
+  display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;
+  background:color-mix(in srgb,var(--card) 70%, var(--bg));border:1px solid var(--line);
+  font-weight:600;color:var(--ink);font-size:12.5px;
+}
+.month-chip.current{border-color:color-mix(in srgb,var(--teal) 45%, var(--line));
+  background:color-mix(in srgb,var(--teal) 10%, var(--card))}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle;
+  box-shadow:inset 0 0 0 1px rgba(15,23,42,.08)}
+.spacer{flex:1}
+.toggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--card)}
+.toggle button{border:0;background:transparent;padding:8px 16px;font-family:inherit;font-size:13px;
+  font-weight:600;color:var(--muted);cursor:pointer;transition:background .15s,color .15s}
+.toggle button.active{background:var(--teal);color:#fff}
+.toggle button:hover:not(.active){color:var(--teal)}
+
+/* --- Edge sidebar + collapse --- */
+#menuToggle{
+  position:absolute;inset-inline-start:14px;top:50%;transform:translateY(-50%);
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;
+  width:42px;height:42px;border-radius:12px;font-size:18px;line-height:1;cursor:pointer;
+  z-index:2;transition:background .15s,transform .15s;backdrop-filter:blur(6px)
+}
+#menuToggle:hover{background:rgba(255,255,255,.26);transform:translateY(-50%) scale(1.04)}
+.layout{display:flex;gap:14px;align-items:flex-start;margin-top:16px}
+.main{flex:1;min-width:0}
+.sidebar{
+  flex:0 0 168px;display:flex;flex-direction:column;gap:4px;position:sticky;top:12px;
+  margin-inline-start:-6px;padding:8px 6px;border:1px solid var(--line);border-radius:16px;
+  background:color-mix(in srgb,var(--card) 94%, transparent);box-shadow:var(--sh-direct);
+}
+.sidebar .nav-label{
+  font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.06em;
+  padding:2px 8px 6px;
+}
+.sidebar button{
+  border:1px solid transparent;background:transparent;color:var(--muted);
+  padding:10px 10px;border-radius:11px;font-family:inherit;font-size:12.5px;font-weight:700;
+  cursor:pointer;transition:all .18s var(--ease);text-align:right;width:100%;position:relative;
+}
+.sidebar button::before{
+  content:"";position:absolute;inset-inline-start:0;top:22%;bottom:22%;width:3px;border-radius:0 3px 3px 0;
+  background:transparent;transition:background .18s
+}
+.sidebar button:hover{color:var(--teal);background:color-mix(in srgb,var(--teal) 8%, transparent)}
+.sidebar button:hover::before{background:var(--teal-l)}
+.sidebar button.active{
+  color:#fff;background:linear-gradient(135deg,var(--teal) 0%,var(--teal-m) 100%);
+  box-shadow:0 8px 16px -10px rgba(15,118,110,.7);
+}
+.sidebar button.active::before{background:var(--teal-l)}
+body.nav-collapsed .sidebar{display:none}
+body.nav-collapsed .layout{gap:0}
+@media(max-width:820px){
+  .wrap{padding:14px 14px 48px}
+  header.top{padding:22px 56px 20px;min-height:96px;border-radius:18px}
+  .layout{flex-direction:column}
+  .sidebar{
+    flex-basis:auto;width:100%;flex-direction:row;flex-wrap:wrap;position:static;
+    margin:0;padding:8px;
+  }
+  .sidebar .nav-label{width:100%}
+  .sidebar button{width:auto;flex:1 1 auto;text-align:center}
+}
+
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.chips button{border:1px solid var(--line);background:var(--card);color:var(--muted);
+  padding:8px 14px;border-radius:999px;font-family:inherit;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .15s}
+.chips button:hover{color:var(--teal);border-color:var(--teal-l)}
+.chips button.active{background:var(--teal-d);color:#fff;border-color:var(--teal-d);
+  box-shadow:0 6px 14px -8px rgba(6,51,46,.55)}
+.chips button.pending{opacity:.55}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px 16px;
+  box-shadow:var(--sh-ambient),var(--sh-direct);position:relative;overflow:hidden;
+  transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+.kpi::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;
+  background:linear-gradient(180deg,var(--teal-l),var(--teal))}
+.kpi::after{content:"";position:absolute;inset-inline-end:-30px;top:-30px;width:90px;height:90px;
+  border-radius:50%;background:radial-gradient(circle, color-mix(in srgb,var(--teal) 10%, transparent), transparent 70%);
+  pointer-events:none}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 16px 28px -18px rgba(15,23,42,.22),var(--sh-direct)}
+.kpi .lbl{font-size:12.5px;color:var(--muted);font-weight:600;letter-spacing:.1px}
+.kpi .val{font-family:'Alexandria','IBM Plex Sans Arabic',sans-serif;
+  font-size:clamp(24px,2.4vw,30px);font-weight:800;margin-top:8px;line-height:1.05;letter-spacing:-.4px;
+  color:var(--ink)}
+.kpi .val .rng{margin:0 .35em;opacity:.7;font-weight:700}
+.kpi .delta{font-size:12.5px;font-weight:700;margin-top:10px;display:inline-flex;align-items:center;gap:4px}
+.kpi .delta.up{color:var(--up)} .kpi .delta.down{color:var(--down)} .kpi .delta.flat{color:var(--muted)}
+.kpi.hero{
+  background:linear-gradient(145deg, color-mix(in srgb,var(--teal) 12%, var(--card)) 0%, var(--card) 55%);
+  border-color:color-mix(in srgb,var(--teal) 35%, var(--line));
+}
+.kpi.hero .val{font-size:clamp(28px,3vw,34px);color:var(--heading)}
+.kpi.hero::before{width:5px;background:linear-gradient(180deg,#99f6e4,#0f766e)}
+
+/* --- Section stage (board storytelling) --- */
+.section-stage{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  margin:0 0 16px;padding:16px 18px;border-radius:16px;position:relative;overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--teal) 22%, var(--line));
+  background:
+    linear-gradient(120deg, color-mix(in srgb,var(--teal) 10%, var(--card)), var(--card) 55%),
+    var(--card);
+  box-shadow:var(--sh-direct);
+  animation:fadeRise .4s var(--ease) both;
+}
+.section-stage::after{
+  content:"";position:absolute;inset-inline-end:-40px;top:-50px;width:160px;height:160px;border-radius:50%;
+  background:radial-gradient(circle, color-mix(in srgb,var(--teal-l) 35%, transparent), transparent 70%);
+  pointer-events:none;
+}
+.section-stage .eyebrow{
+  font-size:11px;font-weight:700;color:var(--teal);letter-spacing:.08em;margin-bottom:4px;
+}
+.section-stage h2{
+  margin:0;font-family:'Alexandria','IBM Plex Sans Arabic',sans-serif;font-size:clamp(20px,2.2vw,26px);
+  font-weight:800;color:var(--heading);letter-spacing:.2px;line-height:1.2;
+}
+.section-stage .sub{margin:6px 0 0;color:var(--muted);font-size:13px;font-weight:500;max-width:52ch}
+.section-stage .stamp{
+  flex:0 0 auto;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:700;
+  color:var(--teal-d);background:color-mix(in srgb,var(--teal-l) 28%, transparent);
+  border:1px solid color-mix(in srgb,var(--teal) 25%, transparent);white-space:nowrap;
+}
+:root[data-theme="dark"] .section-stage .stamp{color:var(--teal-l)}
+#view{animation:viewIn .35s var(--ease)}
+@keyframes viewIn{from{opacity:.35;translate:0 6px}to{opacity:1;translate:0 0}}
+
+/* --- Presentation / board projector mode --- */
+body.present{
+  --bg:#071310;
+}
+body.present .wrap{max-width:1780px;padding:14px 18px 40px}
+body.present .sidebar{flex-basis:150px}
+body.present .kpi .val{font-size:clamp(28px,3.2vw,36px)}
+body.present .section-stage h2{font-size:clamp(24px,2.8vw,30px)}
+body.present .chart{height:270px}
+body.present .mlegend,.section-stage .stamp{font-size:13px}
+body.present header.top{min-height:96px}
+#presentBtn.active,#storyBtn.active{color:#fff;background:var(--teal);border-color:var(--teal)}
+
+/* --- Live insights --- */
+.insights{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 14px}
+.insight{
+  flex:1 1 220px;display:flex;align-items:flex-start;gap:10px;padding:12px 14px;
+  border-radius:14px;border:1px solid var(--line);background:var(--card);
+  box-shadow:var(--sh-direct);font-size:13px;font-weight:600;line-height:1.45;
+  animation:fadeRise .45s var(--ease) both;
+}
+.insight .idot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex:0 0 auto}
+.insight.up{border-color:color-mix(in srgb,var(--up) 35%, var(--line));
+  background:color-mix(in srgb,var(--up) 7%, var(--card))}
+.insight.up .idot{background:var(--up);box-shadow:0 0 0 3px color-mix(in srgb,var(--up) 18%, transparent)}
+.insight.down{border-color:color-mix(in srgb,var(--down) 35%, var(--line));
+  background:color-mix(in srgb,var(--down) 7%, var(--card))}
+.insight.down .idot{background:var(--down);box-shadow:0 0 0 3px color-mix(in srgb,var(--down) 18%, transparent)}
+.insight.flat{border-color:color-mix(in srgb,var(--teal) 30%, var(--line));
+  background:color-mix(in srgb,var(--teal) 6%, var(--card))}
+.insight.flat .idot{background:var(--teal);box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 16%, transparent)}
+.insights .insight:nth-child(2){animation-delay:.05s}
+.insights .insight:nth-child(3){animation-delay:.1s}
+
+/* --- Spotlight hero --- */
+.spotlight{
+  display:grid;grid-template-columns:1.15fr .85fr;gap:0;margin:0 0 16px;
+  border-radius:20px;overflow:hidden;border:1px solid color-mix(in srgb,var(--teal) 28%, var(--line));
+  box-shadow:var(--sh-ambient),var(--sh-direct);animation:fadeRise .5s var(--ease) both;
+  background:var(--card);
+}
+.spotlight .spot-main{
+  padding:22px 24px;position:relative;overflow:hidden;
+  background:
+    radial-gradient(420px 180px at 100% 0%, color-mix(in srgb,var(--teal-l) 28%, transparent), transparent 70%),
+    linear-gradient(135deg, #06332e 0%, #0f766e 55%, #12897f 100%);
+  color:#fff;
+}
+.spotlight .spot-main::after{
+  content:"";position:absolute;inset-inline-start:-30px;bottom:-40px;width:140px;height:140px;border-radius:50%;
+  background:rgba(255,255,255,.06);pointer-events:none;
+}
+.spotlight .tag{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;
+  font-size:11px;font-weight:800;letter-spacing:.06em;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:#ecfeff;
+}
+.spotlight .tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--teal-l)}
+.spotlight h3{
+  margin:12px 0 6px;font-family:'Alexandria','IBM Plex Sans Arabic',sans-serif;
+  font-size:clamp(22px,2.6vw,30px);font-weight:900;line-height:1.2;letter-spacing:.2px;
+}
+.spotlight .spot-sub{margin:0;color:rgba(236,254,250,.85);font-size:13.5px;font-weight:500;max-width:40ch}
+.spotlight .spot-side{
+  padding:20px 22px;display:flex;flex-direction:column;justify-content:center;gap:12px;
+  background:linear-gradient(180deg, color-mix(in srgb,var(--teal) 6%, var(--card)), var(--card));
+}
+.spotlight .metric{display:flex;flex-direction:column;gap:2px}
+.spotlight .metric .ml{font-size:12px;color:var(--muted);font-weight:700}
+.spotlight .metric .mv{
+  font-family:'Alexandria','IBM Plex Sans Arabic',sans-serif;font-size:clamp(22px,2.4vw,28px);
+  font-weight:800;color:var(--heading);line-height:1.1;
+}
+.spotlight .metric .md{font-size:12.5px;font-weight:700}
+@media(max-width:820px){.spotlight{grid-template-columns:1fr}}
+
+/* --- Executive story mode --- */
+.story-bar{
+  position:fixed;inset-inline:16px 16px;bottom:16px;z-index:80;display:none;
+  padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.18);
+  background:rgba(6,51,46,.92);color:#ecfeff;backdrop-filter:blur(10px);
+  box-shadow:0 16px 40px -18px rgba(0,0,0,.55);
+}
+body.storying .story-bar{display:block;animation:fadeRise .35s var(--ease) both}
+body.storying .sidebar{opacity:.55}
+.story-bar .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.story-bar .stitle{font-weight:800;font-size:13.5px;flex:1}
+.story-bar .smeta{font-size:12px;opacity:.85;font-weight:600}
+.story-bar .track{width:100%;height:6px;border-radius:999px;background:rgba(255,255,255,.16);margin-top:10px;overflow:hidden}
+.story-bar .fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#5eead4,#99f6e4);
+  transition:width .25s linear}
+.story-bar button{
+  border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;
+  border-radius:10px;padding:7px 12px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;
+}
+.story-bar button:hover{background:rgba(255,255,255,.2)}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 22px 20px;
+  box-shadow:var(--sh-ambient),var(--sh-direct);margin-bottom:16px;transition:box-shadow .2s var(--ease)}
+.panel:hover{box-shadow:0 18px 36px -20px rgba(15,23,42,.2),var(--sh-direct)}
+.panel h2{
+  margin:0 0 14px;font-size:16px;color:var(--heading);font-weight:700;
+  font-family:'Alexandria','IBM Plex Sans Arabic',sans-serif;letter-spacing:.1px;
+  display:flex;align-items:center;gap:10px;
+}
+.panel h2::before{
+  content:"";width:8px;height:8px;border-radius:50%;flex:0 0 auto;
+  background:var(--teal);box-shadow:0 0 0 4px color-mix(in srgb,var(--teal) 16%, transparent);
+}
+.panel .hint{color:var(--muted);font-size:13px;margin:0 0 16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+
+.chart{display:flex;align-items:flex-end;gap:18px;height:236px;padding:28px 8px 0;
+  border-bottom:2px solid var(--line);position:relative;border-radius:4px}
+.chart::before{content:"";position:absolute;left:8px;right:8px;top:28px;bottom:0;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(to top,var(--grid) 0 1px,transparent 1px 25%)}
+.chgroup{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:8px;height:100%;position:relative;z-index:1}
+.bar{width:40px;border-radius:10px 10px 3px 3px;position:relative;transition:height .45s var(--ease);min-height:2px;
+  box-shadow:0 8px 14px -8px rgba(15,23,42,.35)}
+.bar::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,0) 40%,rgba(0,0,0,.1))}
+.bar .cap{position:absolute;top:-24px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:700;white-space:nowrap}
+.chlabels{display:flex;gap:18px;margin-top:10px}
+.chlabels span{flex:1;text-align:center;font-size:13px;font-weight:700;color:var(--muted)}
+
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px}
+th,td{padding:11px 13px;text-align:right;border-bottom:1px solid var(--line)}
+th{background:var(--th-bg);font-weight:700;color:var(--muted);font-size:12px;letter-spacing:.02em;
+  position:sticky;top:0;z-index:1}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:hover{background:var(--row-hover)}
+tbody td:first-child{font-weight:600}
+tfoot td{font-weight:700;background:var(--tfoot-bg);border-top:2px solid var(--teal-l);border-bottom:0}
+.num{font-variant-numeric:tabular-nums;font-weight:600}
+.tbl-wrap{overflow:auto;border-radius:14px;border:1px solid var(--line);max-width:100%}
+
+.conv{display:flex;align-items:center;gap:10px}
+.conv .track{flex:1;height:10px;background:color-mix(in srgb,var(--line) 80%, transparent);
+  border-radius:999px;overflow:hidden}
+.conv .fill{height:100%;border-radius:999px}
+.pill{font-weight:700;font-size:12px;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.pill.g{background:#dcfce7;color:#166534}.pill.y{background:#fef9c3;color:#854d0e}.pill.r{background:#fee2e2;color:#991b1b}
+:root[data-theme="dark"] .pill.g{background:#14532d;color:#bbf7d0}
+:root[data-theme="dark"] .pill.y{background:#713f12;color:#fde68a}
+:root[data-theme="dark"] .pill.r{background:#7f1d1d;color:#fecaca}
+.trend{font-size:12px;font-weight:700}
+.up{color:var(--up)}.down{color:var(--down)}.flat{color:var(--muted)}
+.foot{color:var(--muted);font-size:12px;text-align:center;margin-top:28px;line-height:1.8;
+  padding-top:18px;border-top:1px solid var(--line)}
+.note{border-radius:14px;padding:12px 16px;font-size:13px;margin-bottom:16px}
+.note.demo{background:#fffbeb;border:1px solid #fde68a;color:#854d0e}
+.note.real{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+.note.info{background:#ecfeff;border:1px solid #a5f3fc;color:#155e75}
+.pend{text-align:center;color:var(--muted);padding:48px 20px}
+.pend .big{font-size:36px;opacity:.7}
+
+/* --- entrance motion --- */
+@keyframes fadeRise{from{opacity:0;translate:0 12px}to{opacity:1;translate:0 0}}
+@keyframes barRise{from{opacity:0;translate:0 16px}to{opacity:1;translate:0 0}}
+@keyframes brandIn{from{opacity:0;letter-spacing:.32em;filter:blur(4px)}to{opacity:1;letter-spacing:.18em;filter:blur(0)}}
+.brand{animation:brandIn .7s var(--ease) both}
+.kpi{animation:fadeRise .45s var(--ease) both}
+.kpis .kpi:nth-child(2){animation-delay:.05s}
+.kpis .kpi:nth-child(3){animation-delay:.10s}
+.kpis .kpi:nth-child(4){animation-delay:.15s}
+.kpis .kpi:nth-child(5){animation-delay:.20s}
+.kpis .kpi:nth-child(6){animation-delay:.25s}
+.panel{animation:fadeRise .5s var(--ease) both}
+.bar{animation:barRise .55s cubic-bezier(.2,.75,.2,1) both}
+.chart .chgroup:nth-child(1) .bar{animation-delay:.04s}
+.chart .chgroup:nth-child(2) .bar{animation-delay:.12s}
+.chart .chgroup:nth-child(3) .bar{animation-delay:.20s}
+.chart .chgroup:nth-child(4) .bar{animation-delay:.28s}
+.chart .chgroup:nth-child(5) .bar{animation-delay:.36s}
+.chart .chgroup:nth-child(6) .bar{animation-delay:.44s}
+
+/* --- trend delta chips --- */
+.trend-chip{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:999px;
+  font-weight:700;font-size:12px;white-space:nowrap;line-height:1.5}
+.trend-chip.up{background:color-mix(in srgb,var(--up) 14%,transparent);color:var(--up)}
+.trend-chip.down{background:color-mix(in srgb,var(--down) 14%,transparent);color:var(--down)}
+.trend-chip.flat{background:color-mix(in srgb,var(--muted) 14%,transparent);color:var(--muted)}
+
+/* --- control buttons / inputs --- */
+.ctrlbtn{border:1px solid var(--line);background:var(--card);color:var(--muted);width:38px;height:38px;
+  border-radius:12px;font-size:15px;cursor:pointer;line-height:1;transition:.15s}
+.ctrlbtn:hover{color:var(--teal);border-color:var(--teal-l);transform:translateY(-1px)}
+#neSearch{background:var(--card);color:var(--ink);outline:none;
+  width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:12px;
+  font-family:inherit;font-size:14px;direction:rtl}
+#neSearch:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 18%, transparent)}
+.ne-tools{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.ne-tools .ne-status{margin:0}
+@media(min-width:720px){
+  .ne-tools{flex-direction:row;align-items:center}
+  .ne-tools #neSearch{flex:1;min-width:0}
+  .ne-tools .ne-status{flex:0 0 auto}
+}
+
+/* --- chart tooltip + trend line --- */
+#barTip{position:fixed;z-index:50;pointer-events:none;background:var(--teal-d);color:#fff;
+  padding:6px 11px;border-radius:9px;font-size:12px;font-weight:700;opacity:0;transition:opacity .12s;
+  transform:translate(-50%,-100%);white-space:nowrap;box-shadow:var(--sh-direct)}
+.trendline polyline{stroke:var(--trend-line-color)}
+.trendline circle{stroke:var(--trend-line-color);fill:var(--card)}
+
+@media (prefers-reduced-motion:reduce){
+  .kpi,.panel,.bar,.brand,header.top::after,.insight,.spotlight,#view,.section-stage{animation:none}
+}
+@media print{
+  body{background:#fff!important;color:#0f172a}
+  #menuToggle,.sidebar,.chips,#metricToggle,#themeBtn,#printBtn,#presentBtn,#storyBtn,.story-bar,.spacer,.mlegend .toggle{display:none!important}
+  .section-stage,.spotlight,.insight{box-shadow:none;break-inside:avoid}
+  .layout{display:block;margin-top:8px}
+  .main{width:100%}
+  .mlegend{box-shadow:none;backdrop-filter:none;border-color:#cbd5e1;background:#fff;padding:8px 0;border:0}
+  header.top{
+    background:#06332e!important;color:#fff;box-shadow:none;border-radius:12px;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;min-height:auto;padding:18px
+  }
+  header.top::before,header.top::after{display:none}
+  .brand{-webkit-text-fill-color:#fff;background:none;filter:none;color:#fff}
+  .panel,.kpi{box-shadow:none;break-inside:avoid;border:1px solid #cbd5e1}
+  .kpi:hover,.panel:hover{transform:none;box-shadow:none}
+  .tbl-wrap{overflow:visible;border-color:#cbd5e1}
+  th{position:static}
+  .foot{border:0}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <button id="menuToggle" aria-label="طي القائمة" title="طي / فتح القائمة">☰</button>
+    <div class="brand-block">
+      <div class="brand">NOSTRI</div>
+      <h1>الإدارة التجارية — د. السيد حسن</h1>
+      <div class="period">متابعة الأداء · مايو ← يوليو 2026</div>
+    </div>
+  </header>
+
+  <div class="mlegend">
+    <span class="month-chip"><span class="dot" style="background:var(--c05)"></span><b>مايو 05</b></span>
+    <span class="month-chip"><span class="dot" style="background:var(--c06)"></span><b>يونيو 06</b></span>
+    <span class="month-chip current"><span class="dot" style="background:var(--c07)"></span><b>يوليو 07 · الحالي</b></span>
+    <span class="spacer"></span>
+    <span class="toggle" id="metricToggle">
+      <button data-metric="units" class="active">وحدات مباعة</button>
+      <button data-metric="value">قيمة (ريال)</button>
+    </span>
+    <button id="themeBtn" class="ctrlbtn" title="الوضع الداكن" aria-label="تبديل الوضع الداكن">◐</button>
+    <button id="storyBtn" class="ctrlbtn" title="عرض تلقائي" aria-label="عرض تلقائي">▶</button>
+    <button id="presentBtn" class="ctrlbtn" title="وضع عرض" aria-label="وضع عرض">▣</button>
+    <button id="printBtn" class="ctrlbtn" title="طباعة / PDF" aria-label="طباعة">⎙</button>
+  </div>
+
+  <div class="layout">
+    <nav class="sidebar" id="tabs" aria-label="أقسام التقرير">
+      <div class="nav-label">أقسام التقرير</div>
+      <button data-tab="sales" class="active">مبيعات Nostri</button>
+      <button data-tab="share">المشاركة</button>
+      <button data-tab="writings">الكتابات</button>
+      <button data-tab="conversion">التحويل</button>
+      <button data-tab="pureherb">مبيعات Pure herb</button>
+      <button data-tab="doctors">الأطباء</button>
+      <button data-tab="expire">Near-Expire</button>
+      <button data-tab="credit">الأدوية آجل</button>
+    </nav>
+    <main class="main">
+      <section id="view"></section>
+    </main>
+  </div>
+
+  <div class="foot">NOSTRI · مايو–يوليو 2026 · الإدارة التجارية</div>
+</div>
+
+<div class="story-bar" id="storyBar" aria-live="polite">
+  <div class="row">
+    <div class="stitle" id="storyTitle">عرض تلقائي</div>
+    <div class="smeta" id="storyMeta">0 / 3</div>
+    <button type="button" id="storyStop">إيقاف</button>
+  </div>
+  <div class="track"><div class="fill" id="storyFill"></div></div>
+</div>
+
+<script>
+/* ============================================================
+   البيانات
+   ============================================================ */
+const DATA = {
+  months:["05","06","07"],
+  monthLabel:{"05":"مايو","06":"يونيو","07":"يوليو"},
+
+  /* ★ مبيعات NOSTRI — حقيقية من تقارير «مبيعات اصناف مورد» 05/06/07-2026 ★
+     لكل صنف: بيانات لكل صيدلية (all = الإجمالي · 1/7/18 = صيدليات).
+     u = الكمية المباعة · v = القيمة بسعر البيع (ريال).
+     ملاحظة: all هو إجمالي كل الفروع من التقرير العام (ليس مجموع 1+7+18). */
+  nostriItems:[
+    {name:"RIZER apply Cream 75ML", code:"2-09-031-483",
+     all:{u:{"05":123,"06":108,"07":168}, v:{"05":7380,"06":6480,"07":10080}},
+     "1":{u:{"05":24, "06":24, "07":13 }, v:{"05":1440,"06":1440,"07":780}},
+     "7":{u:{"05":11,"06":10,"07":3}, v:{"05":660,"06":600,"07":180}},
+     "18":{u:{"05":9,"06":6,"07":26}, v:{"05":540,"06":360,"07":1560}}, wr:{"1":{"05":11,"06":13,"07":11},"18":{"05":6,"06":7,"07":33},"7":{"05":10,"06":13,"07":3}}},
+    {name:"NOSTRICURE Oral Gel 30ML", code:"1-09-066-046",
+     all:{u:{"05":230,"06":194,"07":255}, v:{"05":9200,"06":7760,"07":10200}},
+     "1":{u:{"05":33, "06":24, "07":17 }, v:{"05":1320,"06":960,"07":680}},
+     "7":{u:{"05":7,"06":6,"07":9}, v:{"05":280,"06":240,"07":360}},
+     "18":{u:{"05":20,"06":12,"07":15}, v:{"05":800,"06":480,"07":600}}, wr:{"1":{"05":13,"06":19,"07":8},"18":{"05":7,"06":2,"07":4},"7":{"05":2,"06":2,"07":3}}},
+    {name:"REFLEX MASSAGE Emulgel 100ML", code:"1-02-066-034",
+     all:{u:{"05":367,"06":355,"07":359}, v:{"05":23855,"06":23075,"07":23335}},
+     "1":{u:{"05":128,"06":160,"07":79 }, v:{"05":8320,"06":10400,"07":5135}},
+     "7":{u:{"05":22,"06":35,"07":15}, v:{"05":1430,"06":2275,"07":975}},
+     "18":{u:{"05":34,"06":19,"07":44}, v:{"05":2210,"06":1235,"07":2860}}, wr:{"1":{"05":95,"06":131,"07":74},"18":{"05":15,"06":9,"07":34},"7":{"05":15,"06":28,"07":4}}},
+    {name:"INTIMO Vaginal Wash 250ML", code:"1-14-166-032",
+     all:{u:{"05":116,"06":147,"07":212}, v:{"05":8700,"06":11025,"07":15900}},
+     "1":{u:{"05":17, "06":33, "07":45 }, v:{"05":1275,"06":2475,"07":3375}},
+     "7":{u:{"05":17,"06":19,"07":17}, v:{"05":1275,"06":1425,"07":1275}},
+     "18":{u:{"05":53,"06":57,"07":48}, v:{"05":3975,"06":4275,"07":3600}}, wr:{"1":{"05":16,"06":32,"07":54},"18":{"05":28,"06":55,"07":44},"7":{"05":12,"06":19,"07":12}}},
+    {name:"NOSTRIDERM Ointment 50ML", code:"1-09-118-050",
+     all:{u:{"05":168,"06":171,"07":279}, v:{"05":10920,"06":11115,"07":18135}},
+     "1":{u:{"05":78, "06":88, "07":81 }, v:{"05":5070,"06":5720,"07":5265}},
+     "7":{u:{"05":7,"06":1,"07":2}, v:{"05":455,"06":65,"07":130}},
+     "18":{u:{"05":37,"06":39,"07":64}, v:{"05":2405,"06":2535,"07":4160}}, wr:{"1":{"05":77,"06":100,"07":87},"18":{"05":4,"06":19,"07":28},"7":{"05":4,"06":1,"07":0}}},
+    {name:"ORACURE Mouth Wash 300ML", code:"1-12-109-038",
+     all:{u:{"05":330,"06":177,"07":284}, v:{"05":11550.033,"06":6195.018,"07":9940.021}},
+     "1":{u:{"05":81, "06":49, "07":47 }, v:{"05":2835.008,"06":1715.005,"07":1645.005}},
+     "7":{u:{"05":23,"06":13,"07":11}, v:{"05":805.002,"06":455.001,"07":385.001}},
+     "18":{u:{"05":13,"06":14,"07":23}, v:{"05":455.001,"06":490.001,"07":805.002}}, wr:{"1":{"05":73,"06":38,"07":42},"18":{"05":10,"06":5,"07":16},"7":{"05":14,"06":8,"07":11}}}
+  ],
+
+  /* كل الصيدليات (1/7/18) + الإجمالي = مبيعات حقيقية كاملة */
+  pharmacyReady:{"all":true,"1":true,"7":true,"18":true},
+  /* الكتابات متاحة لـ ص1 (الأول) وص18 (الثاني) وص7 (الثالث) */
+  writingsReady:{"all":false,"1":true,"7":true,"18":true},
+
+  /* عدد الأطباء الكاتبين لنوستري لكل صيدلية */
+  doctorCount:{"1":26,"7":9,"18":10},
+
+  /* أعلى الأطباء كتابةً لأصناف نوستري لكل صيدلية — [الاسم, 05, 06, 07] */
+  doctorsNostri:{
+    "1":[
+      ["Hossameldin Mohamed Amin Bekh",61,61,63],
+      ["Nehad Farouk Abdallah Ramadan",15,27,54],
+      ["Mohammed Shabaan Abdelhay Els",60,93,37],
+      ["Ahmad Mahmoud Mohammed Elad",18,39,27],
+      ["Samah Abdelkarim Ahmed Elbashi",30,16,22],
+      ["Mohamed Samir Abdelfattah Fara",0,0,22],
+      ["Radwa Mohamed Mabrouk Abdalla",14,7,11],
+      ["Mona Farid Elmandouh Abdelrahm",5,10,11],
+      ["Ahmed Hassanin Mohamed Hassan",14,10,6],
+      ["Rafik Elsayed Aboelhythim Ereba",8,13,5],
+      ["Ahmed Taher Mokhtar Mashaly",14,13,3],
+      ["Said Tolba Elsayed Elbedewy",15,3,3]
+    ],
+    "18":[
+      ["Anwar Ali Abdullah Jwass",0,0,52],
+      ["Fatimah Abdulhafeez Mohamed K",21,39,37],
+      ["Medhat Alashry Aladawy Goger",0,0,31],
+      ["Mugahid Khalid Zainelabdin Elfak",1,5,16],
+      ["Ahmad Abdelrahman Abdallah Ha",4,20,8],
+      ["Heba Mohsen Mohamed Khalil",7,16,7],
+      ["Shivapriya Nair",9,2,6],
+      ["Mohamed Samir Abdelfattah Fara",15,8,1],
+      ["Amira Mohamed Salem Eldaltoun",6,6,1],
+      ["Mohamed Muhiddeen Abd Al Gde",7,1,0]
+    ],
+    "7":[
+      ["Nesreen Mohammed Hassan Amash",15,5,10],
+      ["Soha Mohamed Salaheldeen Solima",8,9,9],
+      ["Hala Fathi Ewis Mansur",4,12,4],
+      ["Amira Mohamed Salem Eldaltouni",12,13,3],
+      ["Medhat Alashry Aladawy Goger",14,27,2],
+      ["Nesrin Ibrahim Mohamed Elmokad",3,0,2],
+      ["Khalid Ghalib Masar Alharbi",1,1,2],
+      ["Ahmed Gamal Abdelnasser Abdelm",0,0,1],
+      ["Huda Mohamed Khedr Ghali",0,4,0]
+    ]
+  },
+
+  /* ⏳ Near-Expire — حقيقي (ملف Near Expire till 31-12-2026 + كتابات التعاونات الثلاثة)
+     كل صف: [الوصف, المخزون, تاريخ الانتهاء, كتابات 05, 06, 07] */
+  nearExpire:{
+    summary:{items:664, qty:17374, prescribed:407, risk:257},
+    monthly:{"05":7260,"06":6666,"07":6598},
+    all:[["HYMOX FORTE SUSPENTION 250MG/5ML, 100ML/Bott",2594,"2026-01",0,0,0],
+      ["EMILOK Capsule 20MG/1Capsule, 14Capsule/Box",1434,"2026-02",43,76,32],
+      ["ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE",929,"2026-08",9,21,56],
+      ["FORMIT XR Tablet 750MG/1Tablet, 30Tablet/BOX",734,"2026-01",23,33,35],
+      ["AVALON AVOCOM 0.1 %/apply Ointment , 50 GM/T",581,"2026-06",0,0,0],
+      ["VOLTIC  tablet 50MG/1Tablet, 20Tablet/Box",431,"2026-07",22,80,7],
+      ["EMIDOL 120 mg/5 ml Syrup, 100 ML/BOTTLE",364,"2026-10",0,0,0],
+      ["OPTIFLOX Eye drops 0.3MG/1Drop,  5 ML/Contai",331,"2026-06",1,0,0],
+      ["DAONIL Tablet 5MG/1Tablet, 30Tablet/Box",321,"2026-07",0,1,0],
+      ["BIOCAL D 500 mg/tablet, 60 TABLET/BOX",258,"2026-01",24,1,0],
+      ["PANADREX 120 mg/5 ml Syrup, 60 ML/BOTTLE",245,"2026-12",1,0,0],
+      ["SETAPRO 10 mg/tablet, 30 TABLET/BOX",233,"2026-01",38,41,26],
+      ["AVALON AVOMEB EXTERA Ointment , 50 GM/TUBE",205,"2026-06",8,1,1],
+      ["TRENTAL Tablet 400MG/1Tablet, 20Tablet/Box",175,"2026-10",0,2,1],
+      ["JARDIANCE Coated tablet 10MG/1Tablet, 30Tabl",166,"2026-09",12,1,2],
+      ["SERETIDE EVOHALER125MG INHALATION SPRAY /1In",147,"2026-06",0,0,0],
+      ["MIXTARD Injection 30IU/1ML, 10ML/Vial",147,"2026-07",2,3,3],
+      ["PEXAPAN 2.5 mg/tablet, 60 TABLET/BOX",146,"2026-11",0,0,0],
+      ["ROLIP Ointment 1%/1APPLY, 30GM/Tube",141,"2026-06",4,2,8],
+      ["ECHILIB CHewable tablet, 20 TABLET/BOX",139,"2026-09",0,4,0],
+      ["LEVOGAND 50 mcg/tablet, 100 TABLET/BOX",129,"2026-09",2,0,0],
+      ["JP VITAMIN D3 Soft Gel Cap 1000IU/1Capsule, ",125,"2026-03",0,0,0],
+      ["REMOX SUSPENTION 125MG/5ML, 70ML/Bottle",119,"2026-07",16,21,41],
+      ["AMYDRAMINE PED ml Syrup, 120 ML/BOTTLE",116,"2026-01",25,1,1],
+      ["OPTICIN Eye drops 0.3MG/1Drop, 5ML/Container",116,"2026-01",0,0,1],
+      ["AVALON SALINOSE BABY 0.9 ml/drop, 20 ML/BOTT",112,"2026-08",0,0,0],
+      ["RINOFED COLD&ALLERGY Tablet, 30 TABLET/BOX",109,"2026-10",0,0,0],
+      ["VIDA-IRON  Spray, 60 ML/BOTTLE",107,"2026-12",30,20,26],
+      ["OPTILONE Eye drops 0.1MG/1Drop, 5ML/Containe",103,"2026-02",0,0,0],
+      ["INHIXA 40 mg/syringe Injection, 1 SYRINGE/BO",101,"2026-08",0,0,0],
+      ["CIPROCIN Eye drops 0.3MG/1Drop, 5ML/Containe",90,"2026-12",0,1,1],
+      ["FARCOLIN Solution 0.5MG/1ML, 20ML/Bottle",83,"2026-03",0,0,0],
+      ["CLARINASE Tablet 5/120MG/1Tablet, 14Tablet/B",82,"2026-09",1,4,9],
+      ["AVALON AVOCOM AQU NASAL SPRAY 0.05%/1Applica",82,"2026-11",0,0,0],
+      ["LEVOGAND 100 mcg/tablet, 100 TABLET/BOX",80,"2026-08",1,0,0],
+      ["CITICOLINE Capsule, 30 CAPSULE/BOX",79,"2026-11",3,2,0],
+      ["LOVERA 5 mg/tablet, 30 TABLET/BOX",76,"2026-04",0,1,2],
+      ["ELEVIT Tablet, 30 TABLET/BOX",74,"2026-07",0,1,0],
+      ["IRO-VIT drop, 30 ML/CONTAINER",74,"2026-11",0,2,0],
+      ["MIRZAGEN Gastro-resistant coated tablet 30MG",73,"2026-12",0,0,0],
+      ["BABYCOOL ml Syrup, 100 ML/BOTTLE",72,"2026-08",5,9,9],
+      ["ADZOY 0.1% / 2.5% apply Gel, 30 GM/TUBE",70,"2026-07",4,3,1],
+      ["OPTIPRED Eye drops 1%/1Drop, 5ML/Container",70,"2026-01",1,0,0],
+      ["SEFARIX 125 mg/5 ml Suspention, 50 ML/BOTTLE",69,"2026-12",1,0,0],
+      ["SYMBICORT INHALATION SPRAY 1MG/1Inhaler, 1In",66,"2026-07",0,0,0],
+      ["NOVOMIX 30 FLEXPEN Susp. for inj. pre-filled",65,"2026-06",0,0,0],
+      ["TOBRADEX Eye drops /1Drop, 5ML/Container",65,"2026-09",41,23,22],
+      ["TYMER Eye drops 0.3MG/1Drop, 5ML/Container",62,"2026-08",2,0,0],
+      ["RAVIXA 75 mg/tablet, 30 TABLET/BOX",60,"2026-10",18,7,14],
+      ["LACTEEZ PLUS drop, 30 ML/CONTAINER",60,"2026-12",0,0,0],
+      ["ISOLONE 5 mg/TABLET, 30 Effervescent Tablet",60,"2026-01",61,63,41],
+      ["OTRI ALLERGY 0.05 mg/applicator Nasal Spray",59,"2026-12",19,19,5],
+      ["RAFOL 5 mg/tablet, 50 TABLET/BOX",57,"2026-10",18,32,21],
+      ["ADZOY 0.3 % / 2.5%/apply Gel, 30 GM/TUBE",56,"2026-07",0,0,0],
+      ["AVALON AVOCOM Cream 0.1%/1APPLY, 30GM/Tube",56,"2026-07",0,8,3],
+      ["ARTELAC COMPLET MDO 24 %/drop, 10 ML/CONTAIN",55,"2026-10",0,0,0],
+      ["PEXAPAN 5 mg/tablet, 60 TABLET/BOX",54,"2026-05",2,3,1],
+      ["RHINATHIOL ENF Syrup 2%/1ML, 125ML/Bottle",54,"2026-12",10,3,1],
+      ["LAXOCODYL 5 mg/suppository, 10 SUPPOSITORY/B",54,"2026-08",0,0,0],
+      ["ANAZOL Film coated tablet 250MG/1Tablet, 20T",53,"2026-12",0,0,0],
+      ["NEVOTIC 500 mg/tablet, 7 TABLET/BOX",52,"2026-12",6,14,10],
+      ["CENTRUM IMMUNE Support Capsule, 60 CAPSULE/C",51,"2026-08",0,0,0],
+      ["MARNYS SALMON OIL VIT E Capsule 60MG/1Capsul",50,"2026-10",0,0,0],
+      ["LOTINIL drop, 5 ML/CONTAINER",49,"2026-06",0,0,0],
+      ["APIDRA SOLOSTAR 100 iu/ml Injection, 5 VIAL/",47,"2026-07",0,0,1],
+      ["REXOFIL 20 mg/tablet, 4 TABLET/BOX",47,"2026-06",0,0,0],
+      ["ZOLIX 5 mg/tablet, 20 TABLET/BOX",45,"2026-06",0,0,1],
+      ["CIPRODAR Tablet 500MG/1Tablet, 10Tablet/Box",44,"2026-01",1,0,0],
+      ["FAWAR LEMON 5 gm/sachet, 6 SACHET/BOX",43,"2026-08",0,0,0],
+      ["FEMI BIOTIC box Sachets, 20 SACHET/BOX",42,"2026-08",3,5,5],
+      ["ROXIL SUSPENTION 250MG/5ML, 100ML/Bottle",42,"2026-06",4,2,2],
+      ["SINEO 1 mg/drop, 20 ML/CONTAINER",42,"2026-09",18,30,53],
+      ["ZETRON SUSPENTION 200MG/1ML, 15ML/Bottle",41,"2026-06",22,3,4],
+      ["ADOL 120 mg/5 ml Syrup, 100 ML/BOTTLE",41,"2026-08",145,68,93],
+      ["PANA NATURAL  Syrup, 128 GM/BOTTLE",40,"2026-03",0,0,0],
+      ["LEVOGAND 25 mcg/tablet, 100 TABLET/BOX",39,"2026-08",2,1,0],
+      ["PURGE Solution /1APPLY, 250ML/Container",38,"2026-09",2,0,0],
+      ["DIFFERIN Gel 0.1%/1APPLY, 30GM/Tube",38,"2026-09",0,2,0],
+      ["ZOLAN 5 mg/tablet, 30 TABLET/BOX",37,"2026-12",15,16,20],
+      ["SENNA ARKO Capsule 180MG/1Capsule, 45Capsule",37,"2026-06",0,0,0],
+      ["KLACID 125 mg/5 ml Suspention, 100 ML/BOTTLE",36,"2026-09",14,6,16],
+      ["OMIZ Capsule 20MG/1Capsule, 14Capsule/Box",36,"2026-06",5,5,6],
+      ["ARKO PHARMA FORCAPIL GROWTH HAIR AND NAILS G",35,"2026-01",0,0,0],
+      ["FORXIGA Tablet 10MG/1Tablet, 28Tablet/Box",34,"2026-10",18,23,28],
+      ["JOINTACE CHONDROITIN GLUCOSAMIN Tablet /1Tab",34,"2026-07",0,0,0],
+      ["BUTALIN INHALATION SPRAY 100MCG/1Applicator,",34,"2026-07",0,0,0],
+      ["AVALON AVOMEB EXTRA 75 GM Ointment",33,"2026-12",1,5,10],
+      ["HIDRASEC 30 mg/sachet Powder, 16 SACHET/BOX ",33,"2026-11",0,0,0],
+      ["TOBREX Eye drops 0.3MG/1Drop, 5ML/Container",32,"2026-09",16,7,11],
+      ["TRIOLITE CREAM apply Cream, 30 GM/TUBE",32,"2026-12",8,9,16],
+      ["OLNEDA 20 /10mg/tablet, 30 TABLET/BOX",31,"2026-07",0,1,1],
+      ["TENORYL PLUS 10/10 mg/tablet, 30 TABLET/BOX",31,"2026-06",1,0,0],
+      ["PREGADEX Capsule 150MG/1Capsule, 14Capsule/B",30,"2026-01",0,0,0],
+      ["GAMCET 0.4 mg/tablet, 30 TABLET/BOX",30,"2026-01",0,1,0],
+      ["SYSTANE ULTRA UD Eye drops /1Drop, 0.4ML/Con",30,"2026-12",0,0,0],
+      ["ONDANS 4 mg/tablet, 10 TABLET/BOX",29,"2026-10",8,4,11],
+      ["CATAFAST SACHETS 50MG/1Sachet, 9sachet/Box",29,"2026-09",78,115,132],
+      ["PICO Oral drops 7.5MG/1Drop, 30ML/Container",29,"2026-05",3,4,6],
+      ["GENTAPLEX Capsule /1Capsule, 36Capsule/Box",28,"2026-07",3,8,2],
+      ["NYDA PLUS 100 ml topical spray /1Applicator,",28,"2026-06",0,0,0],
+      ["AVALON AVOQUIN 4 %/apply Cream, 50 GM/TUBE",28,"2026-06",0,0,0],
+      ["SANOVIT ml Syrup, 320 ML/BOTTLE",28,"2026-08",0,0,0],
+      ["ZERTAZINE 5 mg/5 ml Syrup, 100 ML/BOTTLE",28,"2026-09",0,0,0],
+      ["FLIXOTIDE Inhalation powder 125MCG/1Containe",27,"2026-12",0,0,0],
+      ["AVALON ALPHA PLUS apply Cream, 30 GM/TUBE",27,"2026-10",0,1,0],
+      ["TRAVATAN Eye drops 0.004MG/1Drop, 2.5ML/Cont",26,"2026-07",0,0,0],
+      ["MEBAGEN 200 mg/ml/tablet Extended Release Ta",26,"2026-07",0,0,0],
+      ["PROTON Gastro-resistant coated tablet 40MG/1",26,"2026-01",0,0,0],
+      ["SURECURE Gel 0.1%/1APPLY, 30GM/Tube",26,"2026-06",0,0,0],
+      ["KLAVOX SUSPENTION 156MG/5ML, 100ML/Bottle",26,"2026-11",33,15,27],
+      ["TIOTROPIUM EVA 18 mcg/capsule, 30 CAPSULE/BO",25,"2026-02",0,0,0],
+      ["SALINOSE PLUS NASAL SPRAY 0.9ML/1Spray, 20ML",25,"2026-08",0,0,0],
+      ["CLAVODAR Tablet 625MG/1Tablet, 20Tablet/Box",25,"2026-01",0,0,0],
+      ["VENTOLIN EVOHALER SPRAY 100MG/1Applicator, 2",25,"2026-11",0,0,0],
+      ["NAFEES PHARMA ROYA-GIN Tablet, 30 TABLET/BOX",25,"2026-12",0,0,0],
+      ["MERIONAL HG 75 iu/ampoule Injection, 1 AMPOU",24,"2026-06",0,0,0],
+      ["SORTIVA H Tablet 50/12.5MG/1Tablet, 28Tablet",24,"2026-01",0,1,0],
+      ["AZIMAC Film coated tablet 250MG/1Tablet, 6Ta",24,"2026-11",5,0,0],
+      ["RYBELSUS 7 mg/tablet, 30 TABLET/BOX",23,"2026-06",2,1,3],
+      ["MELATONIN Tablet 3MG/1Tablet, 100Tablet/Box",23,"2026-11",1,4,0],
+      ["NAFEES PHARMA BIOTIN Tablet, 60 TABLET/BOX",23,"2026-09",0,1,0],
+      ["MARLON 20 mg/tablet, 30 TABLET/BOX",22,"2026-02",0,0,1],
+      ["DOXIDA-M sachet, 30 SACHET/BOX",22,"2026-10",11,15,14],
+      ["VIOTOPIC Ointment 0.3%/1APPLY, 30GM/Tube'",22,"2026-05",2,17,19],
+      ["FOSTIMON Powder for injection 75IU/1ML, 1Via",22,"2026-02",0,0,0],
+      ["ZINCOVIT drop, 60 ML/CONTAINER",22,"2026-11",14,14,9],
+      ["ATROSOL 250 mg/mcg/2 ml Ampoule, 2 oral solu",21,"2026-08",0,0,0],
+      ["MOUNJARO 7.5 mg/ml Ampoule, 4 AMPOULE/BOX",20,"2026-10",3,3,4],
+      ["AROX 0.5 %/drop, 5 ML/CONTAINER",20,"2026-12",2,0,0],
+      ["OYSTERCAL Tablet 500MG/1Tablet, 60Tablet/Box",20,"2026-01",0,0,0],
+      ["ROYAL HONEY  Sachets, 15 GM/SACHET",20,"2026-10",0,0,0],
+      ["LAXOCODYL 10 mg/suppository, 10 SUPPOSITORY/",20,"2026-06",0,0,0],
+      ["LOVRAK 200MG/5ML/100ML SYRUP 200MG/5ML, 100M",19,"2026-10",0,0,0],
+      ["TACROZ 0.03 %/apply Ointment , 10 GM/TUBE",19,"2026-09",0,1,1],
+      ["RECTACURE 2% /apply Cream, 30 GM/TUBE",19,"2026-01",44,43,7],
+      ["BEFOLVIT 5 mg/tablet, 30 TABLET/BOX",19,"2026-06",11,9,14],
+      ["FENSOLIN 10 mg/tablet, 30 TABLET/BOX",18,"2026-08",0,1,0],
+      ["JULEEN 100 mg/tablet, 30 TABLET/BOX",18,"2026-11",0,1,1],
+      ["CORTRIEF 1 mg/applicator Nasal Spray, APPLIC",18,"2026-06",5,0,0],
+      ["PROHAIR 1 mg/tablet, 30 TABLET/BOX",18,"2026-11",0,0,0],
+      ["AVALON AVOGAIN 5% SPRAY offer (2+1)  50 ML/A",18,"2026-11",0,0,0],
+      ["NERVAN 500 mg/tablet, 30 TABLET/BOX",18,"2026-10",5,2,2],
+      ["VITALIFE Soft Gel Cap /1Capsule, 30Capsule/B",18,"2026-04",3,5,3],
+      ["DONIFOXATE 80 mg/tablet, 30 TABLET/BOX",18,"2026-02",0,0,1],
+      ["ZYPREXA Tablet 5MG/1Tablet, 28Tablet/Box",17,"2026-06",0,0,1],
+      ["ORATANE 10 mg/capsule, 30 CAPSULE/BOX",17,"2026-12",0,0,0],
+      ["LOCASONE Cream 0.1%/1APPLY, 100GM/Tube",17,"2026-09",0,1,4],
+      ["FORCAPIL Capsule, 180 CAPSULE/BOX",16,"2026-10",13,25,18],
+      ["DEBILUR 40 mg/tablet, 30 TABLET/BOX",16,"2026-11",0,0,0],
+      ["DEBILUR 80 mg/tablet, 30 TABLET/BOX",16,"2026-03",0,0,0],
+      ["ARAVA TABLET 20MG/1Tablet, 30Tablet/BOX",16,"2026-11",2,4,2],
+      ["THIOTACID 600 mg/tablet, 30 TABLET/BOX",16,"2026-12",4,10,4],
+      ["AMLOVAN-HCT 10/320/25 mg/tablet, 28 TABLET/B",16,"2026-08",0,0,0],
+      ["CONTRACTUBEX 1 %/apply Gel, 50 GM/TUBE",16,"2026-10",9,17,6],
+      ["VIGAMOX Eye drops 0.5MG/1Drop, 5ML/Container",16,"2026-09",70,56,54],
+      ["DOXIDA-F sachet, 30 SACHET/BOX",15,"2026-11",17,19,39],
+      ["MEGATOP SYRUP /1ML, 125ML/BOTTLE",15,"2026-11",0,0,1],
+      ["DECONE sachet, 20 SACHET/BOX",15,"2026-11",0,0,0],
+      ["AMLOVAN-HCT 5/160/12.5 mg/tablet, 28 TABLET/",15,"2026-03",0,0,0],
+      ["CLARIXIN Tablet 500MG/1Tablet, 14Tablet/Box",15,"2026-11",22,35,40],
+      ["DEBILUR 20 mg/tablet, 30 TABLET/BOX",14,"2026-10",0,0,0],
+      ["DUODART Capsule 0.5/0.4MG/1Capsule, 30Capsul",14,"2026-11",1,0,0],
+      ["PULMICORT 0.5 mg/ml Ampoule, 20 AMPOULE/BOX",14,"2026-09",237,146,124],
+      ["INHIXA 20 mg/syringe Injection, 1 SYRINGE/BO",14,"2026-06",0,0,0],
+      ["ADAZIO 25 mg/tablet, (new price )30 TABLET/B",14,"2026-06",1,1,2],
+      ["FENSOLIN 5 mg/tablet, 30 TABLET/BOX",14,"2026-10",6,8,9],
+      ["EPIFASI Injection 5000IU/1Vial, 1Vial/Box",13,"2026-06",20,30,4],
+      ["FORTIFERRUM sachet Powder, 14 SACHET/BOX",13,"2026-11",8,11,5],
+      ["LAVISTINA 24 mg/tablet, 50 TABLET/BOX",13,"2026-12",1,0,0],
+      ["DEXTROSE 10% 1 mg/ml Solution, 500 ML/BOTTLE",13,"2026-06",0,0,0],
+      ["AVALON AVOCOM Ointment 0.1%/1APPLY, 30GM/Tub",13,"2026-08",0,0,0],
+      ["FEXODINE 120 mg/tablet, 14 TABLET/BOX",13,"2026-09",7,2,11],
+      ["OZEMPIC 0.5 mg/ml Ampoule, 4 AMPOULE/BOX",12,"2026-08",0,0,1],
+      ["BONOLIGHT (CARTIBON) SACHETS /1SACHET, 30SAC",12,"2026-10",0,0,0],
+      ["ZOLONIA 10 mg/tablet, 28 TABLET/BOX",12,"2026-01",0,1,0],
+      ["PHYSIOTHERM ARKO NASAL SPRAY 9MG/1Spray, 100",12,"2026-01",0,0,0],
+      ["DAKTARIN 2 %/apply Cream, 30 GM/TUBE",12,"2026-08",8,8,4],
+      ["VITA ROYAL 1000 MG 30 CAPS",11,"2026-07",0,0,0],
+      ["SERETIDE DISKUS 250MG Inhalation powder /1In",11,"2026-06",0,0,0],
+      ["PASSIFLORE ARKO Capsule 1MG/1Capsule, 45Caps",11,"2026-01",0,0,0],
+      ["FUSIBACT-B Cream 2/0.1%/1APPLY, 15GM/Tube",11,"2026-08",55,65,54],
+      ["MAXEVA 400 mg/tablet, 10 TABLET/BOX",11,"2026-02",21,0,36],
+      ["AVALON AVOBAN 2 %/apply Ointment , 30 GM/TUB",11,"2026-07",13,9,18],
+      ["REFLEX MASSAGE Emulgel, 100 ML/TUBE",11,"2026-08",125,168,112],
+      ["ROXIL Capsule 500MG/1Capsule, 20Capsule/Box",11,"2026-09",0,0,11],
+      ["PRIMA VIT D Capsule 50000MG/1Capsule, 30Caps",10,"2026-10",0,0,0],
+      ["ACTI-COLLA sachet, 30 SACHET/BOX",10,"2026-12",0,0,0],
+      ["FEMIC 500 mg/tablet, 60 TABLET/BOX",10,"2026-10",19,32,19],
+      ["LUSAM 10MG/ML 200M/BOTTLE SYP",10,"2026-10",0,0,0],
+      ["ZOVIRAX 200 mg/tablet, 25 TABLET/BOX",10,"2026-07",1,0,0],
+      ["ASTATIN Film coated tablet 40MG/1Tablet, 30T",10,"2026-12",0,0,0],
+      ["ZINNAT SUSPENTION 125MG/5ML, 70ML/Bottle",10,"2026-09",0,0,0],
+      ["COMBIWAVE 25/125 mg/inhaler Inhalation Spray",10,"2026-11",0,0,0],
+      ["OSTEOCARE Syrup 100MG/1ML, 200ML/Bottle",10,"2026-09",9,9,8],
+      ["FUSIBACT Ointment 2%/1APPLY, 15GM/Tube",10,"2026-10",22,21,50],
+      ["MOUNJARO 5 mg/ml Ampoule, 4 AMPOULE/BOX",9,"2026-10",3,3,6],
+      ["LUSAM 200 mg/tablet, 56 TABLET/BOX",9,"2026-03",0,0,0],
+      ["MEGAROY Capsule, 30 CAPSULE/BOX",9,"2026-09",0,3,0],
+      ["OPTIMUM OMEGA-3 1000 mg/capsule, 30 CAPSULE/",9,"2026-11",0,0,0],
+      ["EVERT Capsule, 30 CAPSULE/BOX",9,"2026-12",0,3,3],
+      ["CEFAJECT 1000 mg IV /vial Powder For Injecti",9,"2026-10",0,0,0],
+      ["EULAX sachet Powder For Oral Soln, 30 SACHET",9,"2026-09",28,6,2],
+      ["ZYMAXID Eye drops 0.5MG/1Drop, 2.5ML/Contain",9,"2026-06",0,0,0],
+      ["JP SAFFRON 28 mg/capsule, 30 CAPSULE/BOTTLE",9,"2026-09",0,0,0],
+      ["XIGDUO XR 5/1000 mg/tablet, 56 TABLET/BOX",9,"2026-12",1,3,2],
+      ["HYFRESH EYE GEL drop, 30 ML/BOTTEL",9,"2026-06",132,169,93],
+      ["EUTHYROX Tablet 150MG/1Tablet, 100Tablet/Box",9,"2026-06",5,9,5],
+      ["CO-TABUVAN Tablet 80/12.5MG/1Tablet, 30Table",9,"2026-08",0,0,0],
+      ["ARKOCAPS CALCOS 500 mg/tablet, 60 TABLET/BOX",9,"2026-11",5,13,11],
+      ["VEDOXIN 500 mg/tablet, 5 TABLET/BOX",9,"2026-10",175,144,66],
+      ["CEFODOX Film coated tablet 200MG/1Tablet, 14",9,"2026-07",0,0,0],
+      ["SANOVIT IRON ml Syrup, 320 ML/BOTTLE",9,"2026-12",0,0,0],
+      ["NEO HEALAR Ointment /1APPLY, 30GM/Tube",9,"2026-10",4,13,15],
+      ["SEROXAT CR 12.5 MG 30Tablet/Box",9,"2026-09",0,1,0],
+      ["XEVANEER 125 mg/5 ml Suspention, 40 ML/BOTTL",9,"2026-01",1,0,1],
+      ["VAVO SHAMPOO 2%/1Container, 1Container/Conta",9,"2026-12",0,0,0],
+      ["LOGYNON Tablet /1Tablet, 21Tablet/Box",9,"2026-11",1,1,2],
+      ["AMOVAC enema Solution, 120 ML/CONTAINER",9,"2026-08",0,1,0],
+      ["AVALON AVOQUIN Cream 1.9%/1Container, 50GM/C",9,"2026-06",0,0,0],
+      ["ROSALUS 20 mg/tablet, 28 TABLET/BOX",9,"2026-11",9,6,9],
+      ["SPIRIVA INHALATION SPRAY 18MG/1Inhaler, 30In",8,"2026-10",0,0,0],
+      ["QUERSA Capsule, 60 CAPSULE/BOTTLE",8,"2026-10",8,11,3],
+      ["ROYAL JELLY 1000 mg/capsule, 30 CAPSULE/BOX",8,"2026-10",1,0,0],
+      ["MONTEL Chewable tablet 5MG/1Tablet, 28Tablet",8,"2026-03",0,0,1],
+      ["AVODART Capsule 0.5MG/1Capsule, 30Capsule/Bo",8,"2026-08",3,3,2],
+      ["EYMID 1% drop, 10 ML/CONTAINER",8,"2026-05",0,0,0],
+      ["COSOPT Eye drops 2/0.5%/1Drop, 5ML/Container",8,"2026-11",0,0,0],
+      ["HEALCARE 100 mg/g Lotion, 180 ML/CONTAINER",8,"2026-10",0,0,0],
+      ["BEESLINE HAJJ KIT Ointment-shampo-soap /1Con",8,"2026-02",0,0,0],
+      ["IPRAMAX Film coated tablet 25MG/1Tablet, 60T",8,"2026-12",0,0,0],
+      ["NEO HEALAR Suppository /1Suppository, 10Supp",8,"2026-08",0,0,0],
+      ["NEORIN Syrup 0.5MG/1ML, 150ML/Bottle",8,"2026-06",257,149,71],
+      ["PROLAX Capsule 15MG/1Capsule, 30Capsule/Box",8,"2026-10",12,12,18],
+      ["FLAZOL Syrup 125MG/5ML, 120ML/Bottle",8,"2026-07",78,20,44],
+      ["BANORIV 2.5 mg/tablet, 60 TABLET/BOX",7,"2026-12",0,0,0],
+      ["FORCAPIL TOPICAL SPRAY",7,"2026-09",1,7,3],
+      ["BUFOMIX 1 mg/inhaler Inhalation Spray, INHAL",7,"2026-11",1,5,2],
+      ["ENTEROGERMINA ORAL VIAL 2billionMG/1Ampoule,",7,"2026-09",0,0,0],
+      ["FAVERIN Tablet 50MG/1Tablet, 60Tablet/Box",7,"2026-10",7,8,1],
+      ["AMLOVAN-HCT 10/160/12.5 mg/tablet, 28 TABLET",7,"2026-05",0,0,0],
+      ["RELPAX 40 mg/tablet, 3 TABLET/BOX",7,"2026-12",0,0,0],
+      ["ASTATIN Film coated tablet 10MG/1Tablet, 30T",7,"2026-07",0,0,0],
+      ["DENACIF 300 mg/capsule, 10 CAPSULE",7,"2026-07",19,4,1],
+      ["ZINNAT SUSPENTION 250MG/5ML, 50ML/Bottle",7,"2026-10",0,1,0],
+      ["VAGINECALM GEL CALM tube Gel, 50 ML/TUBE",7,"2026-12",1,0,3],
+      ["JP VITAMIN D3 1000 iu/capsule Soft Gel Cap, ",7,"2026-12",0,0,0],
+      ["PYRALVEX Solution 1%/1ML, 10ML/Bottle",7,"2026-12",0,0,0],
+      ["CEFIM Capsule 400MG/1Capsule, 6Capsule/Box",7,"2026-07",46,37,126],
+      ["A-LAX Tablet 20MG/1Tablet, 30Tablet/Box",7,"2026-12",0,0,0],
+      ["RIACHOL Ointment 1%/1APPLY, 5GM/Tube",7,"2026-11",0,0,0],
+      ["SORTIVA-H Tablet 100/12.5MG/1Tablet, 30Table",7,"2026-12",1,0,1],
+      ["GLOMOX Capsule 500MG/1Capsule, 20Capsule/Box",7,"2026-10",0,0,0],
+      ["FLUSORT 0.05 % Nasal Spray, APPLICATOR",7,"2026-08",0,0,0],
+      ["GARDASIL 9 0.5 ml Injection, 1 SYRINGE/BOX",6,"2026-09",0,0,0],
+      ["VAROXA 20 mg/tablet, 30 TABLET/BOX",6,"2026-09",2,2,0],
+      ["HEROX Tablet 20MG/1Tablet, 4Tablet/Box",6,"2026-02",0,0,0],
+      ["KIDS GUMMY OMEGA+DHA tablet, 60 TABLET/BOX",6,"2026-10",0,0,0],
+      ["AZARGA Eye drops 10MG/1Drop, 5ML/Container",6,"2026-07",0,0,0],
+      ["VANCOLON 1 gm/ml Vials, VIAL",6,"2026-06",0,0,0],
+      ["MELIGAMET 50 mg / 1000 mg/tablet, 60 TABLET/",6,"2026-06",0,1,2],
+      ["JALRA M Tablet 50/1000MG/1Tablet, 60Tablet/B",6,"2026-08",18,20,20],
+      ["AVALON POVIDONE ANTISEPTIC Solution 10%/1ML,",6,"2026-02",0,0,0],
+      ["DIVINUS 10 mg/tablet, 30 TABLET/BOX",6,"2026-12",19,14,22],
+      ["SELECTA PLUS Film coated tablet 5/12.5MG/1Ta",6,"2026-07",0,0,0],
+      ["LIPANTHYL Capsule 200MG/1Capsule, 30Capsule/",6,"2026-09",9,18,7],
+      ["VAGINECALM ANTIAGING tube Gel, 50 ML/TUBE",6,"2026-12",2,3,0],
+      ["MUCOSOLVAN Fort 6 mg/ml Syrup, 250 ML/BOTTLE",6,"2026-10",145,119,183],
+      ["ACRETIN C GEL 30 GM/TUBE",6,"2026-07",2,1,19],
+      ["CEFUTIL Film coated tablet 500MG/1Tablet, 10",6,"2026-12",0,0,0],
+      ["CARTIMOV 50 mg/capsule, 20 CAPSULE/BOX",6,"2026-09",44,35,95],
+      ["EREVARD 20 mg/tablet, 4 TABLET/BOX",6,"2026-05",0,0,0],
+      ["DESTAMIN 5 mg/tablet, 20 TABLET/BOX",6,"2026-09",25,119,166],
+      ["ELIQUIS 2.5 mg/tablet, 60 TABLET/BOX",5,"2026-10",0,0,0],
+      ["PENTAXIM 0.5 ml Injection, .5 ML/VIAL",5,"2026-12",0,0,0],
+      ["VIMPAT 2 %/ml Syrup, 200 ML/BOTTLE",5,"2026-10",0,0,0],
+      ["RYBELSUS 3 mg/tablet, 30 TABLET/BOX",5,"2026-10",1,1,6],
+      ["URILAX Tablet 10MG/1Tablet, 30Tablet/Box",5,"2026-12",0,0,1],
+      ["ACTRAPID Solution for injection 100IU/1ML, 1",5,"2026-06",0,0,0],
+      ["ECTOLLERG Eye drops 0.4MG/1Drop, 3ML/Contain",5,"2026-12",0,0,0],
+      ["LAXATROL 50/8.6 mg/tablet, 100 TABLET/BOX",5,"2026-12",9,18,11],
+      ["LINTRA 5 mg/tablet, 30 TABLET/BOX",5,"2026-03",23,20,30],
+      ["JANUMET Tablet 50/850MG/1Tablet, 56Tablet/Bo",5,"2026-04",4,13,9],
+      ["ENTAPRO Film coated tablet 20MG/1Tablet, 30T",5,"2026-07",0,0,0],
+      ["GLIPTAMET Tablet 50/850MG/1Tablet, 56Tablet/",5,"2026-01",22,29,49],
+      ["PRISTIQ Extended release tab 50MG/1Tablet, 3",5,"2026-08",0,0,0],
+      ["ARTELAC ADV Eye drops 2%/1Drop, 0.4ML/Contai",5,"2026-11",11,0,1],
+      ["AVALON FOOT Cream /1APPLY, 90GM/Tube",5,"2026-08",0,0,1],
+      ["KLENDAM 300 mg/capsule, 16 CAPSULE/BOX",5,"2026-07",0,1,0],
+      ["ACRETIN Cream 0.05%/1APPLY, 30GM/Tube",5,"2026-08",0,0,6],
+      ["FENISTIL Oral drops 1MG/1Drop, 20ML/Containe",5,"2026-09",73,2,0],
+      ["AVOMEB EXTRA OINTMENT 15 GM",5,"2026-12",45,33,29],
+      ["LODIAB XR 1000 mg/tablet, 30 TABLET/BOX",5,"2026-08",0,0,0],
+      ["PANADREX Syrup 120MG/5ML, 120ML/Bottle",5,"2026-06",0,0,0],
+      ["ZOVIRAX Tablet 400MG/1Tablet, 70Tablet/Box",4,"2026-09",1,1,1],
+      ["NUTRAQUINOL 100 mg/capsule Soft Gel Cap, 30 ",4,"2026-02",0,0,0],
+      ["JARDIANCE Coated tablet 25MG/1Tablet, 30Tabl",4,"2026-08",25,8,16],
+      ["URI-PLUS capsule, 30 capsule/BOX",4,"2026-11",0,0,0],
+      ["OUTRIGHT Capsule, 30 CAPSULE/BOX",4,"2026-11",1,3,6],
+      ["MELIGLPTIN 100 mg/tablet, 30 TABLET/BOX",4,"2026-06",2,2,0],
+      ["BIOGAIA oral drops 100MILLION/1Drop, 5ML/Con",4,"2026-10",0,0,0],
+      ["IPRAMAX Film coated tablet 100MG/1Tablet, 60",4,"2026-10",0,0,0],
+      ["PEPTAZOL 30 mg/capsule, 28 CAPSULE/BOX",4,"2026-02",2,16,22],
+      ["ATACAND Tablet 8MG/1Tablet, 28Tablet/Box",4,"2026-09",0,0,0],
+      ["HAEMOVIT Tablet, 30 TABLET/BOX",4,"2026-07",0,2,1],
+      ["DEPAKINE Tablet 500MG/1Tablet, 30Tablet/Box",4,"2026-08",1,0,0],
+      ["SEROXAT Tablet 20MG/1Tablet, 30Tablet/Box",4,"2026-10",4,3,7],
+      ["SCAR PRO apply Gel, 6 GM/TUBE",4,"2026-07",0,0,0],
+      ["QUEEN JELLY ROYAL NIGELLA Capsule, 30 CAPSUL",4,"2026-09",0,0,0],
+      ["LAMIRA 50 mg/tablet, 30 TABLET/BOX",4,"2026-01",3,4,2],
+      ["ARENA Tablet 150MG/1Tablet, 30Tablet/Box",4,"2026-11",0,2,3],
+      ["LODIPAM 10 mg/tablet, 30 TABLET/BOX",4,"2026-10",1,0,1],
+      ["EMANERA 20 mg/capsule, 28 CAPSULE/BOX",4,"2026-10",4,21,21],
+      ["SEFARIX 300 mg/capsule, 10 CAPSULE/BOX",4,"2026-10",7,0,0],
+      ["AQUAFLAM 50 mg/sachet, 12 SACHET/BOX",4,"2026-08",0,0,0],
+      ["DERMO Ointment /1APPLY, 30GM/Tube",4,"2026-09",51,70,83],
+      ["ESIDREX Tablet 25MG/1Tablet, 20Tablet/Box",4,"2026-09",1,0,0],
+      ["LOXOL 25 mg/tablet, 30 TABLET/BOX",4,"2026-09",0,0,0],
+      ["DERMOVATE topical solution 0.05%/1Applicator",4,"2026-09",0,0,0],
+      ["BENZAFLEX 5 mg/tablet, 30 TABLET/BOX",4,"2026-01",73,34,52],
+      ["RESPRED SYRUP 5MG/5ML, 120ML/BOTTLE",4,"2026-08",141,99,0],
+      ["ACETAB 25 mg/tablet, 30 TABLET/BOX",4,"2026-03",0,0,0],
+      ["CALSYR  Syrup, 100 ML/BOTTLE",4,"2026-08",0,0,0],
+      ["CONCOR PLUS Film coated tablet 5MG/1Tablet, ",4,"2026-09",0,0,0],
+      ["EMOLIA apply Cream, 100 GM/TUBE",4,"2026-09",2,8,0],
+      ["FIXIT 150 mg/capsule, 14 CAPSULE/BOX",4,"2026-12",20,2,3],
+      ["DICETEL Tablet 50MG/1Tablet, 20Tablet/Box",4,"2026-12",1,2,3],
+      ["ADOL SINUS Tablet /1Capsule, 20Tablet/Box",4,"2026-10",1,2,0],
+      ["VIDROP drops 2800IU/1Drop, 15ML/Container",4,"2026-10",66,58,71],
+      ["BLUM-D 50000 iu/tablet, 20 TABLET/BOX",4,"2026-06",0,0,0],
+      ["LINAJENT 5 mg/tablet, 30 TABLET/BOX",4,"2026-06",2,4,1],
+      ["SABRIL 500 mg/tablet, 100 TABLET/BOX",3,"2026-11",0,0,0],
+      ["RELVAR ELLIPTA inhalation powder 100/25MCG/1",3,"2026-10",0,0,0],
+      ["KEPPRA 1000 mg/tablet, 30 TABLET/BOX",3,"2026-08",2,1,1],
+      ["FOSTIMON Powder for injection 150MG/1Vial, 1",3,"2026-11",0,0,0],
+      ["BETMIGA 50 mg/tablet, 30 TABLET/BOX",3,"2026-06",2,1,5],
+      ["LAZURE 50 mg/tablet, 60 TABLET/BOX",3,"2026-10",0,2,1],
+      ["OMEGA MIND 1200 mg/5 ml Syrup, 100 ML/BOTTLE",3,"2026-11",0,1,0],
+      ["ELIDEL Cream 1%/1APPLY, 30GM/Tube",3,"2026-12",26,13,21],
+      ["VULGA XR Tablet 105MG/1Tablet, 30TABLET/BOX",3,"2026-10",13,8,6],
+      ["EXFORGE HCT Tablet 5/160/25MG/1Tablet, 28Tab",3,"2026-06",0,0,0],
+      ["ADACEL 0.5 ml Solution For Injection , 1 VIA",3,"2026-06",0,0,0],
+      ["DAMESTA 20 mg/tablet, 30 TABLET/BOX",3,"2026-08",0,0,3],
+      ["DIGESTCARE ml Syrup, 125 ML/BOTTLE",3,"2026-11",2,0,0],
+      ["OMEGA 3 FORT Capsule, 60 CAPSULE/BOX",3,"2026-11",1,2,1],
+      ["OXYBUPROCAINE 0.4% EYE MINMS(PINOX) D Eye dr",3,"2026-11",0,0,0],
+      ["GLUCAJONE 1000 mg/sachet, 30 SACHET/BOX",3,"2026-09",11,26,9],
+      ["HEMAGEL Gel /1APPLY, 30GM/Tube",3,"2026-10",0,2,4],
+      ["LAMIRA 100 mg/tablet, 30 TABLET/BOX",3,"2026-01",7,9,9],
+      ["SEVIKAR HCT Tablet 40/5/25MG/1Tablet, 28Tabl",3,"2026-09",0,0,0],
+      ["SILOMES 100 mg/tablet, 30 TABLET/BOX",3,"2026-07",4,0,0],
+      ["FOSTER NEXThaler 100 mcg/applicator Inhalati",3,"2026-10",0,0,0],
+      ["SIMVA Film coated tablet 20MG/1Tablet, 30Tab",3,"2026-08",0,0,1],
+      ["DOMINE 40 mg/ml ampoule Injection, 5 AMPOULE",3,"2026-11",0,0,0],
+      ["OLMETEC Tablet 20MG/1Tablet, 28Tablet/Box",3,"2026-08",26,21,20],
+      ["MIRZAGEN Tablet 15MG/1Tablet, 30Tablet/Box",3,"2026-10",4,8,4],
+      ["BIOSOFT PLUS drop, 10 ML/CONTAINER",3,"2026-06",11,16,17],
+      ["TENORYL 10 mg/tablet, 30 TABLET/BOX",3,"2026-07",1,1,0],
+      ["LASIX Tablet 40MG/1Tablet, 20Tablet/Box",3,"2026-09",5,6,10],
+      ["BILAXTEN Tablet 20MG/1Tablet, 20Tablet/Box",3,"2026-10",2,0,1],
+      ["ALDACTONE Tablet 100MG/1Tablet, 10Tablet/Box",3,"2026-09",0,0,1],
+      ["ERECTA Tablet 50MG/1Tablet, 4Tablet/Box",3,"2026-11",0,0,0],
+      ["ROSALUS 10 mg/tablet, 28 TABLET/BOX",3,"2026-12",4,7,9],
+      ["DESLOR 5 mg/tablet, 20 TABLET/BOX",3,"2026-11",262,232,153],
+      ["C-LACT Solution /1ML, 220ML/Container",3,"2026-12",6,5,0],
+      ["DENACIF 125 mg/5 ml Suspention, 50 ML/BOTTLE",3,"2026-10",14,16,22],
+      ["EPICURE PLUS Ointment /1APPLY, 30ML/Tube",3,"2026-06",2,3,2],
+      ["LODIAB XR 750 mg/tablet, 60 TABLET/BOX",3,"2026-07",0,0,1],
+      ["AVOCOM-M Cream 0.1/2%/1APPLY, 50GM/Tube",3,"2026-12",40,72,35],
+      ["GYNERA Tablet /1Tablet, 21Tablet/Box",3,"2026-07",1,3,1],
+      ["ELICA-M Cream 0.1/2%/1APPLY, 30GM/Tube",3,"2026-09",72,84,86],
+      ["PROTON 40 mg/tablet, 14 TABLET/BOX",3,"2026-01",12,25,26],
+      ["TORICOX 120 mg/tablet, 10 TABLET/BOX",3,"2026-10",1,0,2],
+      ["OFLAM 50 mg/sachet, 10 SACHET/BOX",3,"2026-03",17,2,0],
+      ["MAXITROL Eye drops /1Drop, 5ML/Container",3,"2026-12",0,0,0],
+      ["OXIRA 8 mg/tablet, 20 TABLET/BOX",3,"2026-11",8,4,11],
+      ["DAONIL-M Tablet 5/500MG/1Tablet, 30Tablet/Bo",3,"2026-05",0,0,1],
+      ["AZI-ONCE SUSPENTION 200MG/5ML, 15ML/Bottle",3,"2026-12",23,18,16],
+      ["CEBO 200 mg/capsule, 20 CAPSULE/BOX",3,"2026-12",0,0,0],
+      ["RINOFED PLUS Tablet /1Tablet, 30Tablet/Box",3,"2026-01",0,0,0],
+      ["ALFACORT Cream 0.1%/1APPLY, 15GM/Tube",3,"2026-12",12,16,11],
+      ["RIAXINE Syrup 0.8MG/1ML, 100ML/Bottle",3,"2026-10",0,3,2],
+      ["JUVAMOX Capsule 500MG/1Capsule, 20Capsule/Bo",3,"2026-09",0,1,0],
+      ["LOHIST Tablet 10MG/1Tablet, 10Tablet/Box",3,"2026-12",0,0,0],
+      ["ISOLONE 20 mg/tablet, 20 Effervescent Tablet",3,"2026-01",31,40,31],
+      ["MYFORTIC 360 mg/tablet, 120 TABLET/BOX",2,"2026-10",0,0,0],
+      ["OZEMPIC 0.25 mg/ml Ampoule, 4 AMPOULE/BOX",2,"2026-11",0,3,3],
+      ["GONAL-F Injection 300IU/1pen, 0.5ML/Pen",2,"2026-11",1,0,0],
+      ["GONAL-F Injection 450IU/1pen, 1ML/Pen",2,"2026-09",0,2,0],
+      ["RYBELSUS 14 mg/tablet, 30 TABLET/BOX",2,"2026-06",0,1,1],
+      ["MENACTRA VACCIN Solution for injection 4MCG/",2,"2026-05",0,0,0],
+      ["LANTUS SOLOSTAR 100 iu/ml Solution For Injec",2,"2026-12",0,0,0],
+      ["HUMALOG KWIK PEN Injection 50/50 IU/1ML, 15M",2,"2026-06",0,0,0],
+      ["DAIVOBET apply Ointment , 60 GM/TUBE",2,"2026-10",0,2,0],
+      ["OLENZA TABLET 15MG/1Tablet, 30Tablet/BOX",2,"2026-12",6,5,11],
+      ["G1000 3 gm/sachet, 30 SACHET/BOX",2,"2026-11",1,2,0],
+      ["JP MACA 500 mg/capsule, 50 CAPSULE/BOTTLE",2,"2026-10",0,0,0],
+      ["CONESTAL 2 mg/tablet, 28 TABLET/BOX",2,"2026-11",4,8,18],
+      ["CONCERTA 18 mg/tablet Extended Release Tab, ",2,"2026-12",0,0,0],
+      ["NEXIUM 10 mg/sachet Granules for oral susp, ",2,"2026-12",0,0,0],
+      ["AUGMENTIN Tablet 1000MG/1Tablet, 14Tablet/Bo",2,"2026-12",4,10,24],
+      ["ATACAND PLUS Tablet 16 /12.5MG/1Tablet, 28Ta",2,"2026-08",0,0,0],
+      ["CLENIL FORTE INHALATION SPRAY 250MG/1Inhaler",2,"2026-12",0,0,0],
+      ["CYANOSEPT 6 tube Vaginal Gel, 6 TUBE/BOX",2,"2026-10",0,8,11],
+      ["NEMR ROYAL 1000 mg/capsule, 30 CAPSULE/BOX",2,"2026-07",0,0,0],
+      ["ASACOL Film coated tablet 400MG/1Tablet, 50T",2,"2026-07",0,0,0],
+      ["KOZAMOD 5 % Cream, 12 sachet/box",2,"2026-08",3,6,3],
+      ["SEVIKAR HCT Tablet 40/10/25MG/1Tablet, 28Tab",2,"2026-09",0,0,0],
+      ["TRAJENTA Coated tablet 5MG/1Tablet, 30Tablet",2,"2026-11",7,10,8],
+      ["BEPANTHENE 5 %/apply Cream, 100 GM/TUBE",2,"2026-06",3,3,0],
+      ["ARYZALERA 15 mg/tablet, 30 TABLET/BOX",2,"2026-08",0,0,0],
+      ["ZOLINDA Tablet 5MG/1Tablet, 30TABLET/BOX",2,"2026-11",1,2,8],
+      ["OSTEOFLEX Tablet, 60 TABLET/BOX",2,"2026-06",3,7,0],
+      ["GLIPTAMET Tablet 50/1000MG/1Tablet, 56Tablet",2,"2026-08",49,55,54],
+      ["NUVA RING VAGINAL RING 0.120/0.01MG/1Ring, 1",2,"2026-09",0,0,0],
+      ["SEROXAT CR Tablet 25MG/1Tablet, 30Tablet/Box",2,"2026-09",0,2,3],
+      ["SIMVA Film coated tablet 10MG/1Tablet, 30Tab",2,"2026-08",0,1,0],
+      ["CREVAST 10 mg/tablet, 30 TABLET/BOX",2,"2026-03",0,0,2],
+      ["EXETORA 20 mg/4 ml Injection, 5 AMPOULE/BOX",2,"2026-04",0,0,0],
+      ["VULGA TABLET 55MG/1Tablet, 30TABLET/BOX",2,"2026-11",10,9,15],
+      ["URAGO 40 mg/tablet, 30 TABLET/BOX",2,"2026-08",33,31,51],
+      ["MIGROTAN 40 mg/tablet, 4 TABLET/BOX",2,"2026-09",5,7,0],
+      ["HAIR GROW topical spray 5%/1Applicator, 1App",2,"2026-01",0,0,0],
+      ["LISINO 20 mg/tablet, 30 TABLET/BOX",2,"2026-02",0,0,0],
+      ["EVENING PRIMROSE OIL Capsule /1CAPSULE, 30CA",2,"2026-10",0,0,0],
+      ["TEARS NATURALE FREE Eye drops 1MG/1Drop, 0.4",2,"2026-09",0,0,0],
+      ["DIOVAN Tablet 160MG/1Tablet, 28Tablet/Box",2,"2026-10",8,9,9],
+      ["HI-QUIN Cream 2%/1APPLY, 30GM/Tube",2,"2026-07",2,2,2],
+      ["YOCAIR 10 mg/tablet, 30 TABLET/BOX",2,"2026-11",24,26,34],
+      ["JALRA 50 mg/tablet, 28 TABLET/BOX",2,"2026-10",0,1,0],
+      ["VIZOL  0.21 %/drop, 10 ML/CONTAINER",2,"2026-10",5,0,0],
+      ["TEGRETOL CR Tablet 400MG/1Tablet, 30Tablet/B",2,"2026-10",2,2,0],
+      ["FEMADINE 10 %/ml Vaginal Wash, 200 ML/CONTAI",2,"2026-07",0,0,0],
+      ["NAFEES PHARMA NEUROBIT-B12 (1000 mcg/tablet)",2,"2026-09",0,0,0],
+      ["CONCOR Tablet 10MG/1Tablet, 30Tablet/Box",2,"2026-08",0,3,2],
+      ["NUTRO GUARD MASSAGE GEL /1APPLY, 100GM/Tube",2,"2026-12",0,0,0],
+      ["VOLTIC 75 mg/ampoule Injection, 5 AMPOULE/BO",2,"2026-11",2,2,2],
+      ["EMOLIA apply Cream, 200 GM/TUBE",2,"2026-11",3,3,2],
+      ["CONCOR Tablet 5MG/1Tablet, 30Tablet/Box",2,"2026-10",42,27,32],
+      ["TILAX Tablet 2MG/1Tablet, 30Tablet/Box",2,"2026-12",86,57,77],
+      ["AVALON ACTIVE 1 %/apply Cream, 100 GM/TUBE",2,"2026-12",0,0,0],
+      ["LORVAST Film coated tablet 20MG/1Tablet, 30T",2,"2026-10",0,0,0],
+      ["AGIOLAX POWDER /1SPOON, 250GM/Container",2,"2026-09",46,77,92],
+      ["SPASMOLYTE Tablet 20MG/1Tablet, 30Tablet/Box",2,"2026-12",0,1,0],
+      ["DIANE-35 Tablet /1Tablet, 21Tablet/Box",2,"2026-08",12,14,14],
+      ["LUNIA 10 mg/ 20 MG/tablet, 28 TABLET/BOX",2,"2026-07",7,5,34],
+      ["ANAFRANIL Tablet 25MG/1Tablet, 30Tablet/Box",2,"2026-12",5,1,3],
+      ["AVOBAN CREAM 2 %/apply Cream, 30 GM/TUBE",2,"2026-03",68,84,44],
+      ["DERMOVATE 0.05 %/apply Ointment , 25 GM/TUBE",2,"2026-06",6,7,6],
+      ["LEVOZAL 0.5 mg/ml Syrup, 200 ML/BOTTEL",2,"2026-09",35,15,43],
+      ["ANAFRANIL Tablet 10MG/1Tablet, 30Tablet/Box",2,"2026-10",0,1,0],
+      ["CLARITT Film coated tablet 250MG/1Tablet, 14",2,"2026-09",0,0,0],
+      ["UNI FRESH UD 5 %/drop, 30 SINGLE DOSE/BOX",2,"2026-10",0,0,0],
+      ["CELER 0.5 mg/ml Syrup, 150 ML/BOTTLE",2,"2026-12",2,0,3],
+      ["KLAVOX SUSPENTION 312MG/5ML, 100ML/Bottle",2,"2026-04",63,49,50],
+      ["BENZAFLEX 10 mg/tablet, 30 TABLET/BOX",2,"2026-01",10,8,10],
+      ["GLIM Tablet 1MG/1Tablet, 30Tablet/Box",2,"2026-01",11,6,10],
+      ["MARVELON Tablet /1Tablet, 21Tablet/Box",2,"2026-12",9,21,14],
+      ["PANADOL BABY Syrup 120MG/5ML, 100ML/Bottle",2,"2026-06",0,0,0],
+      ["PILOCIN 1 %/apply Cream, 30 GM/TUBE",2,"2026-11",43,46,62],
+      ["DEFOPAN 1 mg/ml Syrup, 100 ML/BOTTLE",2,"2026-12",20,8,10],
+      ["RISEK Powder for injection 40MG/1Vial, 1Vial",2,"2026-11",0,0,0],
+      ["RHINATHIOL PROMETHAZINE Syrup 1MG/1ML, 125ML",2,"2026-11",0,0,0],
+      ["MUCOGEL SUSPENTION /1ML, 125ML/Bottle",2,"2026-12",4,5,8],
+      ["10%MAGNESIUM SULFATE 10 mg/10 ml Ampoule, AM",2,"2026-01",0,0,0],
+      ["COLI-URINAL GRANULES /1BOTTEL, 60GM/BOX",2,"2026-10",154,143,127],
+      ["AMYDRAMINE ADULT ml Syrup, 120 ML/BOTTLE",2,"2026-09",70,12,22],
+      ["SITAVIC 50/1000 mg/tablet, 56 TABLET/BOX",2,"2026-10",8,12,12],
+      ["SITAVIC 50/850 mg/tablet, 56 TABLET/BOX",2,"2026-11",11,18,10],
+      ["MOUNJARO 12.5 mg/ml Ampoule, 4 AMPOULE/BOX",1,"2026-10",1,0,3],
+      ["SAXENDA Ampoule 6MG/1ML, 5ML/Box",1,"2026-07",0,0,0],
+      ["BOTOX Injection 1IU/1ML, 1ML/Vial",1,"2026-08",0,0,0],
+      ["RYZODEG 100 iu/ml Solution For Injection , 1",1,"2026-07",0,0,0],
+      ["TRESIBA FLEX TOUCH Solution for injection 10",1,"2026-11",0,0,0],
+      ["ZYPREXA Tablet 10MG/1Tablet, 28Tablet/BOX",1,"2026-09",0,0,0],
+      ["DEBREX 1 mg/tablet, 30 TABLET/BOX",1,"2026-07",0,1,0],
+      ["ENTRESTO 50 mg/tablet, 28 TABLET/BOX",1,"2026-06",6,2,5],
+      ["ARGITEST capsule Tablet, 30 TABLET/BOX",1,"2026-10",5,1,0],
+      ["MOTOVA C Advanced sachet, 30 SACHET/BOX",1,"2026-10",3,3,0],
+      ["ARGIREKT 7 gm Sachets, 30 SACHET/BOX",1,"2026-11",0,3,0],
+      ["MINIRIN MELT Tablet 120MG/1Tablet, 30Tablet/",1,"2026-09",1,1,0],
+      ["BRILINTA 90 mg/tablet, 56 TABLET/BOX",1,"2026-12",4,5,8],
+      ["ROVITAL Capsule /1CAPSULE, 30CAPSULE/BOX",1,"2026-09",0,0,0],
+      ["$$old$$SYNJARDY 12.5/1000 mg/tablet, 60 TABL",1,"2026-10",0,0,0],
+      ["PROLIFE PREMIUM box Sheets, 30 SHEET/BOX",1,"2026-02",3,1,0],
+      ["QUPENE capsule Soft Gel Cap, 30 CAPSULE/BOX",1,"2026-12",2,1,0],
+      ["GARCIMIUM 1 gm/tablet, 60 TABLET/BOX",1,"2026-11",1,0,1],
+      ["LEPONEX Tablet 100MG/1Tablet, 50Tablet/Box",1,"2026-09",1,0,0],
+      ["ARCON TISANE PLUS Capsule, 60 CAPSULE/BOX",1,"2026-07",1,1,0],
+      ["HELIABRINE HAIR NAIL Capsule /1Container, 1C",1,"2026-06",0,0,0],
+      ["RESVEMUNE Capsule, 30 CAPSULE/BOTTLE",1,"2026-12",0,0,0],
+      ["MOVACID 400 mg/tablet, 60 TABLET/BOX",1,"2026-09",20,11,14],
+      ["GALVUS Tablet 50MG/1Tablet, 56Tablet/Box",1,"2026-09",1,3,3],
+      ["SEVIKAR HCT Tablet 40/5/12.5MG/1Tablet, 28Ta",1,"2026-09",0,0,0],
+      ["SEROQUEL Tablet 100MG/1Tablet, 60Tablet/Box",1,"2026-09",0,1,0],
+      ["$$old$$PRAVOMAX Tablet, 30 TABLET/BOX",1,"2026-10",0,0,0],
+      ["METHOTREXATE SPC 2.5 mg/tablet, 100 TABLET/B",1,"2026-12",0,0,0],
+      ["GALVUS MET 50/1000MG/tablet, 60 TABLET/BOX",1,"2026-06",15,15,15],
+      ["$$old$$COVERAM Tablet 10 mg / 5 MG/1Tablet, ",1,"2026-10",0,0,0],
+      ["GALVUS MET Tablet 50/850MG/1Tablet, 60Tablet",1,"2026-08",5,5,12],
+      ["SEVIKAR Tablet 40/10MG/1Tablet, 28Tablet/Box",1,"2026-06",7,13,14],
+      ["WELLMOV tablet, 30 TABLET/BOX",1,"2026-11",0,3,7],
+      ["VERSATIS MEDICATED PLASTER 700 mg/ml/apply P",1,"2026-09",0,0,0],
+      ["OLMETEC PLUS Tablet 40/25MG/1Tablet, 28Table",1,"2026-11",0,0,0],
+      ["OLMETEC PLUS Tablet 40/12.5MG/1Tablet, 28Tab",1,"2026-08",0,0,0],
+      ["VALTREX 500 mg/tablet, 10 TABLET/BOX",1,"2026-08",0,0,0],
+      ["URILAX Film coated tablet 5MG/1Tablet, 30Tab",1,"2026-08",0,0,1],
+      ["FAVERIN Tablet 100MG/1Tablet, 30Tablet/Box",1,"2026-08",21,26,35],
+      ["QUETTA XR 200 mg/tablet Extended Release Tab",1,"2026-01",0,0,0],
+      ["RENALOF Capsule 1MG/1Tablet, 60Capsule/Box",1,"2026-11",2,1,0],
+      ["FOSTER PRESSURISED SOLUTION FOR INHALATION 1",1,"2026-06",0,0,0],
+      ["FEROSAC 20 MG/ML AMPOULE 5 AMPOULE",1,"2026-01",13,19,19],
+      ["VIOTOPIC Ointment 0.1%/1APPLY, 30GM/Tube'",1,"2026-07",26,31,35],
+      ["CYSBERRY 360 mg/capsule, 15 CAPSULE/BOX",1,"2026-12",0,0,0],
+      ["MARLON 10 mg/tablet, 30 TABLET/BOX",1,"2026-02",0,2,0],
+      ["CARPAZIO 600 mg/tablet, 50 TABLET/BOX",1,"2026-11",4,6,6],
+      ["AGOUT FC Film coated tablet 80MG/1Tablet, 30",1,"2026-09",0,0,0],
+      ["OLMETEC PLUS Tablet 20/12.5MG/1Tablet, 28Tab",1,"2026-08",0,0,0],
+      ["SALOFALK Tablet 500MG/1Tablet, 50Tablet/Box",1,"2026-11",1,0,0],
+      ["BUDIAIR 200 mcg/applicator Inhalation Spray,",1,"2026-08",0,0,0],
+      ["MICARDIS PLUS 80/12.5 mg/tablet, 28 TABLET/B",1,"2026-09",0,1,3],
+      ["ZORON 2 mg/1 ml Injection, 5 AMPOULE/BOX",1,"2026-07",0,0,0],
+      ["PAROXAT Tablet 30MG/1Tablet, 30Tablet/Box",1,"2026-01",13,24,15],
+      ["MELIGAMET 50 mg / 850 mg/tablet, 60 TABLET/B",1,"2026-09",1,2,1],
+      ["LOTEVAN 5/160MG//tablet, 30 TABLET/BOX",1,"2026-11",10,15,5],
+      ["CREVAST 20 mg/tablet, 30 TABLET/BOX",1,"2026-02",0,1,3],
+      ["ROLENIUM INHALATION SOLUTION 50/250MCG/1Cont",1,"2026-11",0,0,0],
+      ["GINKOSPAN 60 mg/capsule, 60 CAPSULE/BOX",1,"2026-09",3,1,3],
+      ["LAMICTAL Tablet 50MG/1Tablet, 30Tablet/Box",1,"2026-10",1,1,2],
+      ["MONTEL Tablet 10MG/1Tablet, 28Tablet/Box",1,"2026-10",4,0,6],
+      ["HUMULIN 70/30 Solution for injection 70/30MG",1,"2026-12",0,0,0],
+      ["ESOPOLE 20 mg/capsule, 28 CAPSULE/BOX",1,"2026-12",2,0,1],
+      ["DICYNONE Tablet 500MG/1Tablet, 20Tablet/Box",1,"2026-11",3,4,4],
+      ["LAMIFEN Tablet 250MG/1Tablet, 14Tablet/Box",1,"2026-07",10,17,12],
+      ["LICAN apply Cream, 30 GM/TUBE",1,"2026-11",30,28,48],
+      ["MYO REST PLUS Cream /1APPLY, 100GM/Tube",1,"2026-11",26,37,37],
+      ["RENITEC Tablet 10MG/1Tablet, 28Tablet/Box",1,"2026-06",0,0,0],
+      ["HERBA CARE VAGINAL WASH /1ML, 250ML/Containe",1,"2026-10",0,0,0],
+      ["LEVOX Film coated tablet 750MG/1Tablet, 5Tab",1,"2026-08",4,9,2],
+      ["DEVARIN ODT 10 mg/tablet, 4 TABLET/BOX",1,"2026-08",0,0,0],
+      ["ETORIA Tablet 90MG/1Tablet, 28Tablet/Box",1,"2026-10",89,50,83],
+      ["SELENIUM 100 mcg/tablet, 100 TABLET/CONTAINE",1,"2026-06",0,0,0],
+      ["CEFPROZ 250 mg/5 ml Suspention, 100 ML/BOTTL",1,"2026-11",12,10,7],
+      ["CO-DIOVAN  160/25MG/1Tablet, 28Tablet/Box",1,"2026-09",0,0,0],
+      ["TENORYL PLUS 5/5 mg/tablet, 30 TABLET/BOX",1,"2026-07",3,10,1],
+      ["TEGRETOL CR 200 mg/tablet, 50 TABLET/BOX",1,"2026-10",9,8,4],
+      ["GENGIGEL BABY 1 %/apply Gel, 15 GM/APPLY",1,"2026-12",1,4,3],
+      ["CLEXAN Injection 40MG/1Syringe, 1Syringe/Box",1,"2026-12",4,3,1],
+      ["NEUROBION 3 ml Solution For Injection , 10 A",1,"2026-10",0,0,0],
+      ["LUMIGAN Eye drops 0.3MG/1Drop, 3ML/Container",1,"2026-08",1,0,0],
+      ["LUMIFY 0.25 mg/drop, 7.5 ML/CONTAINER",1,"2026-07",2,0,1],
+      ["HEMICLAR Gel /1APPLY, 120ML/Tube",1,"2026-12",2,6,2],
+      ["STREPSILS LEMON SUGAR FREE 1 mg/tablet Lozen",1,"2026-09",0,0,0],
+      ["SUPRAX Capsule 400MG/1Capsule, 6Capsule/Box",1,"2026-12",13,7,17],
+      ["SUN-D 1000 iu/tablet, 90 TABLET/BOX",1,"2026-09",37,12,11],
+      ["MINOCET 125 mg/5 ml Suspention, 80 ML/BOTTLE",1,"2026-07",17,5,19],
+      ["ATROSOL 500 mg/2 ml Ampoule, 21 AMPOULE/BOX",1,"2026-11",9,6,3],
+      ["CROMA Eye drops 0.04MG/1Drop, 10ML/Container",1,"2026-06",0,0,1],
+      ["ACETAB Tablet 50MG/1Tablet, 30Tablet/Box",1,"2026-04",0,0,0],
+      ["AVOMEB extra 1 %/apply Ointment , 30 GM/TUBE",1,"2026-12",2,4,3],
+      ["COXICEL 200 mg/capsule, 30 CAPSULE/BOX",1,"2026-02",271,239,170],
+      ["FIXIT Capsule 150MG/1Capsule, 28Capsule/Box",1,"2026-12",0,0,1],
+      ["AVAMYS NASAL SPRAY /1Applicator, 1Applicator",1,"2026-08",0,0,0],
+      ["TEGRETOL Tablet 200MG/1Tablet, 50Tablet/Box",1,"2026-10",2,0,1],
+      ["GLADOS Tablet 15MG/1Tablet, 30Tablet/Contain",1,"2026-06",1,0,0],
+      ["HYMOX Film coated tablet 875MG/1Tablet, 14Ta",1,"2026-10",0,0,0],
+      ["ENDOSA 40 mg 2 SYRINGE/BOX",1,"2026-12",0,0,0],
+      ["NOLVADEX Tablet 10MG/1Tablet, 30Tablet/Box",1,"2026-08",1,0,1],
+      ["LIMITLESS ALLZYME Tablet, 30 TABLET/BOX",1,"2026-08",42,60,22],
+      ["CLARIMAC Film coated tablet 500MG/1Tablet, 1",1,"2026-12",0,0,0],
+      ["ACTIVLAB MAGNESIUM + VITAMIN B6 tablet, 20 T",1,"2026-10",0,0,0],
+      ["SEPTOFORT LEMON 2 mg/tablet Lozenges, 24 TAB",1,"2026-08",0,0,0],
+      ["SEPTOFORT LOZENGES 2MG/1Tablet, 24Tablet/Box",1,"2026-08",1,2,0],
+      ["GAVISCON SUSPENTION /1ML, 300ML/Bottle",1,"2026-01",15,2,22],
+      ["CORDARON Tablet 200MG/1Tablet, 30Tablet/Box",1,"2026-12",0,0,0],
+      ["NEO PROKTO Cream /1APPLY, 30GM/Tube",1,"2026-08",18,15,38],
+      ["AVALON UREA apply Cream, 100 ML/TUBE",1,"2026-09",4,3,4],
+      ["CALCINATE Film coated tablet 600MG/1Tablet, ",1,"2026-06",0,0,0],
+      ["UVAMIN Tablet 100MG/1Tablet, 20Tablet/Box",1,"2026-02",14,8,11],
+      ["AVALON VARA spray solution 1%/1APPLY, 50ML/B",1,"2026-11",0,0,0],
+      ["AVALON AVOCIN 2 % Vaginal Cream, 40 GM/TUBE",1,"2026-12",6,13,16],
+      ["EVRA TRANSDERMAL patch /1patch, 3patch/Box",1,"2026-09",4,1,2],
+      ["DIAMICRON MR Modified-release tablet 30MG/1T",1,"2026-11",0,0,0],
+      ["FLUCA 1 mg/drop, 5 ML/CONTAINER",1,"2026-07",24,12,12],
+      ["AERIUS Syrup 0.5MG/1ML, 150ML/Bottle",1,"2026-02",8,4,5],
+      ["DAPOX 60 mg/tablet, 4 TABLET/BOX",1,"2026-01",0,0,0],
+      ["ISOBID Modified-release capsule, soft 40MG/1",1,"2026-08",0,0,0],
+      ["AERIUS Tablet 5MG/1Tablet, 18Tablet/Box",1,"2026-09",0,0,0],
+      ["MEBO 1 %/apply Ointment , 15 GM/TUBE",1,"2026-11",9,8,1],
+      ["DIOVAN Tablet 40MG/1Tablet, 28Tablet/Box",1,"2026-12",1,2,2],
+      ["TRACON Capsule 100MG/1Capsule, 4Capsule/Box",1,"2026-01",5,19,8],
+      ["BETAGEN Tablet 16MG/1Tablet, 30Tablet/Box",1,"2026-10",0,0,0],
+      ["DOGMATIL 200 mg/tablet, 12 TABLET/BOX",1,"2026-10",0,0,0],
+      ["HY-SENSE Mouth Wash , 300 ML/BOTTLE",1,"2026-09",0,0,0],
+      ["NIZORAL shampoo 2%/1Container, 1Container/Co",1,"2026-09",0,0,0],
+      ["TOVAST Tablet 10MG/1Tablet, 30Tablet/Box",1,"2026-11",1,3,6],
+      ["XYZAL Tablet 5MG/1Tablet, 20Tablet/Box",1,"2026-12",3,0,0],
+      ["SNAFI Tablet 20MG/1Tablet, 4Tablet/Box",1,"2026-06",0,0,0],
+      ["SELECTA Film coated tablet 5MG/1Tablet, 30Ta",1,"2026-07",0,0,0],
+      ["GLUCOVANCE Tablet 5/500MG/1Tablet, 30Tablet/",1,"2026-12",0,0,0],
+      ["DEPAKINE Syrup 57.46MG/1ML, 150ML/Bottle",1,"2026-06",0,0,0],
+      ["OSTERRA 1500/800 mg/tablet, 30 TABLET/BOX",1,"2026-12",0,0,0],
+      ["FLAMAZINE Cream 1%/1APPLY, 50GM/Tube",1,"2026-12",0,0,0],
+      ["GLUCOPHAGE Tablet 1000MG/1Tablet, 30Tablet/B",1,"2026-12",7,9,8],
+      ["FEROGLOBIN Capsule /1Capsule, 30Capsule/Box",1,"2026-06",37,39,32],
+      ["BETAVERT 24 mg/tablet, 30 TABLET/BOX",1,"2026-04",0,1,0],
+      ["DURADOX Capsule 100MG/1Capsule, 10Capsule/Bo",1,"2026-09",0,0,0],
+      ["AVALON K JELLY Gel /1Container, 1Container/C",1,"2026-08",0,0,0],
+      ["CIPROCIN Tablet 500MG/1Tablet, 10Tablet/Box",1,"2026-12",4,1,1],
+      ["REDOXON Effervescent tablet 1000MG/1Tablet, ",1,"2026-06",0,0,0],
+      ["ACC Effervescent tablet 600MG/1Tablet, 10Tab",1,"2026-07",0,19,19],
+      ["BACTRIM Syrup 200/40MG/1ML, 100ML/Bottle",1,"2026-01",4,2,3],
+      ["PRED FORTE Eye drops 2MG/1Drop, 5ML/Containe",1,"2026-10",0,2,4],
+      ["XEFO Tablet 8MG/1Tablet, 20Tablet/Box",1,"2026-09",41,23,25],
+      ["KLAVOX Tablet 375MG/1Tablet, 20Tablet/Box",1,"2026-01",17,9,13],
+      ["ZENCIN 500 mg/tablet, 3 TABLET/BOX",1,"2026-08",46,49,43],
+      ["DAROXIME Film coated tablet 500MG/1Tablet, 1",1,"2026-01",0,0,0],
+      ["FUSIBACT-B 2.1 %/apply Cream, 30 GM/TUBE",1,"2026-01",41,44,30],
+      ["SELECTA Tablet 2.5MG/1Tablet, 30Tablet/Box",1,"2026-11",8,11,13],
+      ["ROFENAC 1 %/apply Gel, 50 GM/TUBE",1,"2026-01",140,92,229],
+      ["KETESSE Film coated tablet 25MG/1Tablet, 20T",1,"2026-09",0,0,0],
+      ["FAMODAR Tablet 40MG/1Tablet, 10Tablet/Box",1,"2026-01",2,2,0],
+      ["AMAGLIME 3 mg/tablet, 30 TABLET/BOX",1,"2026-11",0,0,0],
+      ["OXIRA RAPID 8 mg/tablet, 20 TABLET/BOX",1,"2026-08",0,0,0],
+      ["MICOCORT cream 2/1%/1APPLY, 30GM/Tube",1,"2026-11",0,2,0],
+      ["REPADERM 1 %/apply Gel, 100 GM/TUBE",1,"2026-08",128,65,107],
+      ["VERMOX SUSPENTION 0.02MG/1ML, 30ML/Bottle",1,"2026-12",5,8,3],
+      ["AVALON AVOCOM-M CREAM 30GM Cream 0.1/2%/1Con",1,"2026-12",0,0,0],
+      ["ETORIA Tablet 120MG/1Tablet, 7Tablet/Box",1,"2026-03",17,14,23],
+      ["RAFOL 1 mg/tablet, 50 TABLET/BOX",1,"2026-12",32,0,0],
+      ["DESLIN 1 mg/ml Syrup, 150 ML/BOTTLE",1,"2026-09",0,0,0],
+      ["CLARA Tablet 10MG/1Tablet, 10Tablet/Box",1,"2026-09",357,303,310],
+      ["PANADOL ACTIFAST Coated tablet 500MG/1Tablet",1,"2026-12",0,0,0],
+      ["IVY-CALM ml Syrup, 120 ML/BOTTLE",1,"2026-09",1,1,0],
+      ["NEGAZOL Tablet 500MG/1Tablet, 20Tablet/Box",1,"2026-02",1,0,3],
+      ["BUTALIN SUSPENTION 0.4MG/1ML, 120ML/Bottle",1,"2026-02",15,8,7],
+      ["JUSPRIN 81 mg/tablet, 30 TABLET/BOX",1,"2026-07",0,2,8],
+      ["GLIBIL Tablet 5MG/1Tablet, 30Tablet/Box",1,"2026-07",0,0,0],
+      ["COXICAM 15 mg/tablet, 10 TABLET/BOX",1,"2026-09",0,0,0],
+      ["PROFINAL XP 400 mg/tablet, 20 TABLET/BOX",1,"2026-08",20,21,32],
+      ["DEPOVIT B12 Injection 1000MG/1Ampoule, 2ML/A",1,"2026-11",0,0,0],
+      ["SAPOFEN 100 mg/ml Syrup, 100 ML/BOTTLE",1,"2026-01",2,0,0],
+      ["MEGAMOX SUSPENTION 156MG/5ML, 100ML/Bottle",1,"2026-04",2,21,17],
+      ["ACICAL PLUS tablet, 30 TABLET/BOX",1,"2026-08",2,0,0],
+      ["FOLIC ACID Tablet 5MG/1Tablet, 20Tablet/Box",1,"2026-08",3,11,8],
+      ["ADOL Suppository 250MG/1Suppository, 10Suppo",1,"2026-11",0,0,0],
+      ["PROF SUSPENTION 100MG/5ML, 110ML/Bottle",1,"2026-12",167,158,179],
+      ["GUAPHAN Syrup 20MG/1ML, 100ML/Bottle",1,"2026-11",26,20,15],
+      ["AMYDRAMINE SUGAR FREE Syrup, 120 ML/BOTTLE",1,"2026-12",2,41,33],
+      ["DEFADOL 160 mg/5 ml Syrup, 100 ML/BOTTLE",1,"2026-07",366,271,138],
+      ["DECOZAL 0.05 % nasal spray child, 10 ML/CONT",1,"2026-11",0,0,0],
+      ["EPICOGEL Oral suspension /1ML, 125ML/Bottle",1,"2026-09",3,9,3],
+      ["LYPFEN 200 mg/capsule, 30 CAPSULE/BOX",1,"2026-10",0,6,13],
+      ["APIGEN Eye ointment 0.3%/1APPLY, 5GM/Tube",1,"2026-12",0,0,0],
+      ["JOSPAN ml Syrup, 100 ML/BOTTLE",1,"2026-06",0,0,0],
+      ["APLEFIT PLUS Capsule, 60 CAPSULE/BOX",1,"2026-09",1,1,1],
+      ["MOTOVA PLUS 60 TAB 1500 MG BOTTEL",1,"2026-11",2,1,4],
+      ["RIDON Film coated tablet 4MG/1Tablet, 30Tabl",1,"2026-10",0,1,1],
+      ["DENACIF 125 mg/5 ml Suspention, 100 ML/BOTTL",1,"2026-10",1,0,0],
+      ["DRAMYLIN ADULT ml Syrup, 120 ML/BOTTLE",1,"2026-10",1,0,0],
+      ["PROLUTEX 25 mg/1.119 vial Injection, 7 VIAL/",0,"2026-11",13,17,2],
+      ["TOUJEO SOLOSTAR 300 iu/ml Solution For Injec",0,"2026-08",0,0,0],
+      ["LACTOSAT 125 mg/capsule, 30 CAPSULE/BOX",0,"2026-10",8,12,7],
+      ["EMANERA 40 mg/capsule, 28 CAPSULE/BOX",0,"2026-10",33,20,15],
+      ["Vicks vapodrops Berry menthol 36 lozenges",0,"2026-08",0,0,0]]
+  },
+
+  /* 💳 الأدوية آجل — مقارنة سنوية (قيمة بالريال) لشهور 05/06/07 */
+  credit:{
+    "2025":{"05":1612294,"06":1303473,"07":1290410},
+    "2026":{"05":1377517,"06":1378186,"07":1310669}
+  },
+
+  /* 🌿 PureHerb — مبيعات حقيقية (مورد شركة بيور هيرب 143711)
+     شهر 07: تفصيلي ص1/ص7/ص18 + إجمالي كل الصيدليات (تقرير مبيعات اصناف مورد).
+     u = وحدات مباعة · v = قيمة البيع (ريال) · all = إجمالي كل الفروع */
+  pureherbMonth:"07",
+  pureherb:[
+    {name:"ZINCOLIVE Syrup 150ML",        code:"1-03-186-085", u:{"1":9,  "7":null,"18":null,"all":25}, v:{"1":630,   "7":null,"18":null,"all":1750.001}, w:{"1":9, "7":0,"18":0}},
+    {name:"FAWARVIT Vit C 1000mg Eff.",    code:"1-03-044-039", u:{"1":2,  "7":null,"18":null,"all":34}, v:{"1":40,    "7":null,"18":null,"all":680},     w:{"1":0, "7":0,"18":0}},
+    {name:"FAWARVIT Vit C + Zinc",         code:"1-03-044-040", u:{"1":null,"7":null,"18":null,"all":23}, v:{"1":null,  "7":null,"18":null,"all":575},     w:{"1":0, "7":0,"18":0}},
+    {name:"PureFeel Tablet 30",           code:"1-03-187-269", u:{"1":2,  "7":2,   "18":2,   "all":17}, v:{"1":59,    "7":59,  "18":59,  "all":501.5},  w:{"1":0, "7":0,"18":2}},
+    {name:"PURE OMEGA-3 Syrup 240ML",     code:"1-03-186-084", u:{"1":1,  "7":1,   "18":null,"all":11}, v:{"1":150,   "7":150, "18":null,"all":1650},    w:{"1":1, "7":0,"18":0}},
+    {name:"CENTROZON WOMEN Tablet 30",    code:"1-03-187-267", u:{"1":15, "7":1,   "18":2,   "all":47}, v:{"1":600,   "7":40,  "18":80,  "all":1880},    w:{"1":9, "7":1,"18":0}},
+    {name:"CENTROZON Tablet 30",          code:"1-03-187-270", u:{"1":15, "7":6,   "18":6,   "all":63}, v:{"1":292.5, "7":117, "18":117, "all":1228.5},  w:{"1":15,"7":1,"18":6}},
+    {name:"BoneFriend Tablet 30",         code:"1-03-187-268", u:{"1":15, "7":4,   "18":3,   "all":26}, v:{"1":750,   "7":200, "18":150, "all":1300},    w:{"1":20,"7":5,"18":4}},
+    {name:"ARGIGROW Syrup 150ML",         code:"1-03-186-083", u:{"1":6,  "7":2,   "18":1,   "all":40}, v:{"1":510,   "7":170, "18":85,  "all":3400.002},w:{"1":2, "7":0,"18":0}}
+  ]
+};
+
+/* ==================== helpers ==================== */
+const M=DATA.months, ML=DATA.monthLabel;
+const CUR="07",PREV="06",FIRST="05";
+const COL={"05":"var(--c05)","06":"var(--c06)","07":"var(--c07)"};
+const state={tab:"sales",scope:"all",metric:"units"};
+const fmt=n=>n==null?"—":Number(n).toLocaleString("en-US",{maximumFractionDigits:0});
+function delta(cur,prev){
+  if(prev==null||prev===0) return {t:"—",c:"flat"};
+  const d=Math.round(((cur-prev)/prev)*100);
+  return {t:(d>0?"▲ +":d<0?"▼ ":"● ")+d+"%",c:d>0?"up":d<0?"down":"flat"};
+}
+const MK={units:"u",value:"v"};
+function itemVals(it,scope,metric){ return it[scope] ? it[scope][MK[metric]] : null; }
+function itemTotals(scope,metric){ // {05,06,07} totals across items for a scope
+  const o={}; M.forEach(m=>o[m]=DATA.nostriItems.reduce((a,it)=>{
+    const v=itemVals(it,scope,metric); return a+((v&&v[m])||0);},0)); return o;
+}
+function barChart(vals,unit){
+  const max=Math.max(...M.map(m=>vals[m]||0),1);
+  const bars=M.map(m=>{
+    const h=Math.max((vals[m]||0)/max*100,1.5);
+    return `<div class="chgroup"><div class="bar" style="height:${h}%;background:${COL[m]}">
+      <span class="cap" style="color:${COL[m]}">${fmt(vals[m])}</span></div></div>`;
+  }).join("");
+  const labels=M.map(m=>`<span>${ML[m]}</span>`).join("");
+  return `<div class="chart chart-monthly">${bars}</div><div class="chlabels">${labels}</div>`;
+}
+function scopeLabel(s){return s==="all"?"كل الصيدليات":"صيدلية "+s;}
+function metricLabel(){return state.metric==="units"?"وحدة":"ريال";}
+function convClass(p){return p>=90?"g":p>=60?"y":"r";}
+
+/* ==================== views ==================== */
+const V={};
+
+/* ---- 1. Sales (REAL) ---- */
+V.sales=()=>{
+  if(!DATA.pharmacyReady[state.scope]){
+    return `<div class="panel"><div class="pend"><div class="big">📄</div>
+      <h2>${scopeLabel(state.scope)} — بانتظار الملف</h2></div></div>`;
+  }
+  const mk=state.metric, unit=metricLabel(), scope=state.scope;
+  const tot=itemTotals(scope,mk);
+  const dCur=delta(tot[CUR],tot[PREV]), dTot=delta(tot[CUR],tot[FIRST]);
+  const srcTxt=scope==="all"?"لكل الصيدليات (الإجمالي العام)":scopeLabel(scope);
+  const note=`<div class="note real">✔ <b>بيانات حقيقية</b> — تقرير «مبيعات اصناف مورد نوستري»
+     — ${srcTxt}، 6 أصناف، شهور 05/06/07-2026. بدّل بين الوحدات والقيمة من فوق.</div>`;
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="lbl">${mk==="units"?"وحدات مباعة":"قيمة المبيعات"} — يوليو 07</div>
+      <div class="val">${fmt(tot[CUR])} <span class="unit">${unit}</span></div>
+      <div class="delta ${dCur.c}">${dCur.t} مقابل يونيو</div></div>
+    <div class="kpi"><div class="lbl">يونيو 06</div><div class="val">${fmt(tot[PREV])} <span class="unit">${unit}</span></div></div>
+    <div class="kpi"><div class="lbl">مايو 05</div><div class="val">${fmt(tot[FIRST])} <span class="unit">${unit}</span></div></div>
+    <div class="kpi"><div class="lbl">النمو 05 ← 07</div><div class="val ${dTot.c}">${dTot.t.replace(/[▲▼●] /,"")}</div>
+      <div class="delta ${dTot.c}">اتجاه ${dTot.c==="up"?"تصاعدي":dTot.c==="down"?"تنازلي":"ثابت"}</div></div></div>`;
+  const chart=`<div class="panel"><h2>تسلسل المبيعات — ${scopeLabel(state.scope)} (${unit})</h2>${barChart(tot,unit)}</div>`;
+  // per-item table
+  const rows=DATA.nostriItems.map(it=>{
+    const v=itemVals(it,scope,mk)||{}, d=delta(v[CUR],v[PREV]);
+    return `<tr><td>${it.name}<br><span style="color:var(--muted);font-weight:500;font-size:12px">${it.code}</span></td>
+      <td class="num">${fmt(v[FIRST])}</td><td class="num">${fmt(v[PREV])}</td>
+      <td class="num">${fmt(v[CUR])}</td><td class="trend ${d.c}">${d.t}</td></tr>`;
+  }).join("");
+  const table=`<div class="panel"><h2>تفصيلي الأصناف (${unit})</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>مايو</th><th>يونيو</th><th>يوليو</th><th>التغير ش/ش</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td>الإجمالي</td><td class="num">${fmt(tot[FIRST])}</td><td class="num">${fmt(tot[PREV])}</td>
+    <td class="num">${fmt(tot[CUR])}</td><td class="trend ${dCur.c}">${dCur.t}</td></tr></tfoot></table></div></div>`;
+  return kpis+chart+table;
+};
+
+/* ---- 1ب. Share: داخلي (1/7/18) مقابل خارجي من الإجمالي ---- */
+const INTERNAL=["1","7","18"];
+function internalTotals(metric){
+  const o={}; M.forEach(m=>o[m]=INTERNAL.reduce((a,p)=>a+itemTotals(p,metric)[m],0)); return o;
+}
+V.share=()=>{
+  const mk=state.metric, unit=metricLabel();
+  const all=itemTotals("all",mk), intr=internalTotals(mk);
+  const ext={},share={};
+  M.forEach(m=>{ext[m]=all[m]-intr[m]; share[m]=all[m]?intr[m]/all[m]*100:0;});
+  const sCur=Math.round(share[CUR]), sPrev=Math.round(share[PREV]), sFirst=Math.round(share[FIRST]);
+  const dShare=sCur-sPrev;
+  const note=`<div class="note info">🏬 <b>المشاركة</b> = نصيب الصيدليات الداخلية (1 + 7 + 18) من إجمالي
+     مبيعات نوستري (كل الفروع). الباقي = الصيدليات الخارجية. محسوبة من البيانات الحقيقية.</div>`;
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="lbl">مشاركة الداخلية — يوليو 07</div><div class="val">${sCur}%</div>
+      <div class="delta ${dShare>0?'up':dShare<0?'down':'flat'}">${dShare>0?'▲ +':dShare<0?'▼ ':'● '}${dShare} نقطة مقابل يونيو</div></div>
+    <div class="kpi"><div class="lbl">الداخلية (1+7+18) — 07</div><div class="val">${fmt(intr[CUR])} <span class="unit">${unit}</span></div>
+      <div class="delta flat">من ${fmt(all[CUR])} إجمالي</div></div>
+    <div class="kpi"><div class="lbl">الخارجية — 07</div><div class="val">${fmt(ext[CUR])} <span class="unit">${unit}</span></div>
+      <div class="delta flat">${100-sCur}% من الإجمالي</div></div>
+    <div class="kpi"><div class="lbl">اتجاه المشاركة 05→07</div>
+      <div class="val val-range ${sCur>=sFirst?'up':'down'}">من ${sFirst}% إلى ${sCur}%</div>
+      <div class="delta ${sCur>=sFirst?'up':'down'}">${sCur>=sFirst?'ارتفاع':'انخفاض'} النصيب</div></div></div>`;
+  // stacked bars per month
+  const maxT=Math.max(...M.map(m=>all[m]),1);
+  const bars=M.map(m=>{
+    const hI=intr[m]/maxT*100, hE=ext[m]/maxT*100;
+    return `<div class="chgroup"><div style="width:46px;height:100%;display:flex;flex-direction:column;justify-content:flex-end">
+      <div style="height:${hE}%;background:var(--c05);border-radius:8px 8px 0 0;position:relative">
+        <span class="cap" style="color:var(--muted);top:-20px">${Math.round(share[m])}%</span></div>
+      <div style="height:${hI}%;background:var(--c07)"></div></div></div>`;
+  }).join("");
+  const chart=`<div class="panel"><h2>الداخلية مقابل الخارجية — تسلسل شهري (${unit})</h2>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">
+      <span class="dot" style="background:var(--c07)"></span>داخلية (مشاركة %) &nbsp;·&nbsp;
+      <span class="dot" style="background:var(--c05)"></span>خارجية</div>
+    <div class="chart">${bars}</div><div class="chlabels">${M.map(m=>`<span>${ML[m]}</span>`).join("")}</div></div>`;
+  const rows=M.map(m=>{
+    const d=m===FIRST?{t:"—",c:"flat"}:(()=>{const p=m===CUR?PREV:FIRST;const dd=Math.round(share[m]-share[p]);
+      return {t:(dd>0?"▲ +":dd<0?"▼ ":"● ")+dd+" نقطة",c:dd>0?"up":dd<0?"down":"flat"};})();
+    return `<tr><td>${ML[m]}</td><td class="num">${fmt(intr[m])}</td><td class="num">${fmt(ext[m])}</td>
+      <td class="num">${fmt(all[m])}</td><td><span class="pill ${share[m]>=50?'g':share[m]>=35?'y':'r'}">${Math.round(share[m])}%</span></td>
+      <td class="trend ${d.c}">${d.t}</td></tr>`;
+  }).join("");
+  const table=`<div class="panel"><h2>جدول المشاركة الشهري (${unit})</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الشهر</th><th>الداخلية (1/7/18)</th><th>الخارجية</th>
+    <th>الإجمالي</th><th>مشاركة الداخلية</th><th>التغير</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  // internal breakdown by pharmacy for CUR
+  const brk=INTERNAL.map(p=>{
+    const t=itemTotals(p,mk)[CUR], sh=all[CUR]?Math.round(t/all[CUR]*100):0;
+    return `<tr><td>${scopeLabel(p)}</td><td class="num">${fmt(t)}</td>
+      <td><span class="pill ${sh>=15?'g':sh>=8?'y':'r'}">${sh}%</span></td></tr>`;}).join("");
+  const brkTable=`<div class="panel"><h2>تفصيل مشاركة كل صيدلية داخلية — يوليو 07 (${unit})</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الصيدلية</th><th>المبيعات</th><th>نصيبها من الإجمالي</th></tr></thead>
+    <tbody>${brk}</tbody>
+    <tfoot><tr><td>مجموع الداخلية</td><td class="num">${fmt(intr[CUR])}</td>
+    <td><span class="pill ${sCur>=50?'g':sCur>=35?'y':'r'}">${sCur}%</span></td></tr></tfoot></table></div></div>`;
+  return kpis+chart+table+brkTable;
+};
+
+/* ---- 1ج. Credit (الأدوية آجل) — مقارنة سنوية 2025 vs 2026 ---- */
+V.credit=()=>{
+  const C=DATA.credit, y5=C["2025"], y6=C["2026"];
+  const t5=M.reduce((a,m)=>a+y5[m],0), t6=M.reduce((a,m)=>a+y6[m],0);
+  const dTot=Math.round((t6-t5)/t5*1000)/10;
+  const note=`<div class="note info">💳 <b>الأدوية آجل</b> — مقارنة قيمة المبيعات الآجلة (بالريال) بين
+     <b>2025</b> و<b>2026</b> لنفس الشهور (05/06/07).</div>`;
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="lbl">إجمالي 2026 (05→07)</div><div class="val">${fmt(t6)} <span class="unit">ريال</span></div>
+      <div class="delta ${t6>=t5?'up':'down'}">${dTot>0?'▲ +':''}${dTot}% مقابل 2025</div></div>
+    <div class="kpi"><div class="lbl">إجمالي 2025 (05→07)</div><div class="val">${fmt(t5)} <span class="unit">ريال</span></div></div>
+    <div class="kpi"><div class="lbl">الفرق السنوي</div><div class="val ${t6>=t5?'up':'down'}">${t6-t5>0?'+':''}${fmt(t6-t5)}</div>
+      <div class="delta ${t6>=t5?'up':'down'}">ريال</div></div>
+    <div class="kpi"><div class="lbl">يوليو 2026</div><div class="val">${fmt(y6[CUR])}</div>
+      <div class="delta ${y6[CUR]>=y5[CUR]?'up':'down'}">${y6[CUR]-y5[CUR]>0?'▲ +':'▼ '}${Math.round((y6[CUR]-y5[CUR])/y5[CUR]*1000)/10}% مقابل يوليو 2025</div></div></div>`;
+  // grouped bars: per month 2025 vs 2026
+  const mx=Math.max(...M.map(m=>Math.max(y5[m],y6[m])),1);
+  const groups=M.map(m=>{
+    const h5=y5[m]/mx*100, h6=y6[m]/mx*100;
+    const d=Math.round((y6[m]-y5[m])/y5[m]*1000)/10;
+    return `<div class="chgroup">
+      <div class="bar" style="height:${h5}%;background:var(--c05)"><span class="cap" style="color:var(--muted);font-size:11px">${fmt(y5[m])}</span></div>
+      <div class="bar" style="height:${h6}%;background:var(--c07)"><span class="cap" style="color:var(--teal);font-size:11px">${fmt(y6[m])}</span></div>
+    </div>`;}).join("");
+  const chart=`<div class="panel"><h2>الأدوية آجل — 2025 مقابل 2026 (ريال)</h2>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">
+      <span class="dot" style="background:var(--c05)"></span>2025 &nbsp;·&nbsp;
+      <span class="dot" style="background:var(--c07)"></span>2026</div>
+    <div class="chart">${groups}</div>
+    <div class="chlabels">${M.map(m=>`<span>${ML[m]}</span>`).join("")}</div></div>`;
+  const rows=M.map(m=>{
+    const diff=y6[m]-y5[m], d=Math.round(diff/y5[m]*1000)/10, c=d>0?"up":d<0?"down":"flat";
+    return `<tr><td>${ML[m]}</td><td class="num">${fmt(y5[m])}</td><td class="num">${fmt(y6[m])}</td>
+      <td class="num ${c}">${diff>0?'+':''}${fmt(diff)}</td>
+      <td class="trend ${c}">${d>0?'▲ +':d<0?'▼ ':'● '}${d}%</td></tr>`;}).join("");
+  const dc=dTot>0?"up":dTot<0?"down":"flat";
+  const table=`<div class="panel"><h2>جدول المقارنة السنوية</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الشهر</th><th>2025</th><th>2026</th><th>الفرق</th><th>التغير %</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td>الإجمالي</td><td class="num">${fmt(t5)}</td><td class="num">${fmt(t6)}</td>
+    <td class="num ${dc}">${t6-t5>0?'+':''}${fmt(t6-t5)}</td><td class="trend ${dc}">${dTot>0?'▲ +':dTot<0?'▼ ':'● '}${dTot}%</td></tr></tfoot></table></div></div>`;
+  return kpis+chart+table;
+};
+
+/* ---- 2. Writings (REAL — ص1) ---- */
+function itemWr(it,scope){ return it.wr && it.wr[scope] ? it.wr[scope] : null; }
+function wrTotals(scope){ const o={}; M.forEach(m=>o[m]=DATA.nostriItems.reduce((a,it)=>{
+  const w=itemWr(it,scope); return a+((w&&w[m])||0);},0)); return o; }
+V.writings=()=>{
+  const scope=state.scope;
+  if(!DATA.writingsReady[scope]){
+    return `<div class="panel"><div class="pend"><div class="big">✍️</div>
+      <h2>كتابات ${scopeLabel(scope)} — بانتظار الملف</h2></div></div>`;
+  }
+  const w=wrTotals(scope), dCur=delta(w[CUR],w[PREV]), dTot=delta(w[CUR],w[FIRST]);
+  const note=`<div class="note real">✔ <b>كتابات حقيقية</b> — ${scopeLabel(scope)}، من ملفات الأطباء 05/06/07.
+     كل «كتابة» = سطر وصفة لأحد أصناف نوستري (كل الحالات).</div>`;
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="lbl">كتابات يوليو 07</div><div class="val">${fmt(w[CUR])}</div>
+      <div class="delta ${dCur.c}">${dCur.t} مقابل يونيو</div></div>
+    <div class="kpi"><div class="lbl">يونيو 06</div><div class="val">${fmt(w[PREV])}</div></div>
+    <div class="kpi"><div class="lbl">مايو 05</div><div class="val">${fmt(w[FIRST])}</div></div>
+    <div class="kpi"><div class="lbl">التغير 05←07</div><div class="val ${dTot.c}">${dTot.t.replace(/[▲▼●] /,"")}</div>
+      <div class="delta ${dTot.c}">${dTot.c==="up"?"تحسّن":dTot.c==="down"?"تراجع":"ثبات"} الكتابات</div></div></div>`;
+  const chart=`<div class="panel"><h2>تسلسل الكتابات — ${scopeLabel(scope)}</h2>${barChart(w)}</div>`;
+  const rows=DATA.nostriItems.map(it=>{
+    const x=itemWr(it,scope)||{}, d=delta(x[CUR],x[PREV]);
+    return `<tr><td>${it.name}</td><td class="num">${fmt(x[FIRST])}</td>
+      <td class="num">${fmt(x[PREV])}</td><td class="num">${fmt(x[CUR])}</td>
+      <td class="trend ${d.c}">${d.t}</td></tr>`;}).join("");
+  const table=`<div class="panel"><h2>الكتابات لكل صنف — ${scopeLabel(scope)}</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>مايو</th><th>يونيو</th><th>يوليو</th><th>التغير ش/ش</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td>الإجمالي</td><td class="num">${fmt(w[FIRST])}</td><td class="num">${fmt(w[PREV])}</td>
+    <td class="num">${fmt(w[CUR])}</td><td class="trend ${dCur.c}">${dCur.t}</td></tr></tfoot></table></div></div>`;
+  return kpis+chart+table;
+};
+
+/* ---- 3. Conversion (REAL — ص1 & ص18) ---- */
+V.conversion=()=>{
+  const scope=state.scope;
+  if(!DATA.writingsReady[scope]){
+    return `<div class="panel"><div class="pend"><div class="big">🔄</div>
+      <h2>تحويل ${scopeLabel(scope)} — بانتظار الكتابات</h2></div></div>`;
+  }
+  const note=`<div class="note real">🔄 <b>التحويل الفعلي — ${scopeLabel(scope)}</b> = (وحدات مباعة ÷ عدد الكتابات) × 100.
+    كلاهما حقيقي. أكثر من 100% يعني بيع أكبر من الكتابة (صرف متعدد الوحدات أو بيع بدون وصفة).
+    ⏳ باقي الصيدليات تدخل هنا فور وصول كتاباتها.</div>`;
+  const soldTot=itemTotals(scope,"units"), wr=wrTotals(scope);
+  // monthly totals
+  const mrows=M.map(m=>{
+    const cv=wr[m]?Math.round(soldTot[m]/wr[m]*100):0, c=convClass(cv);
+    return `<tr><td>${ML[m]}</td><td class="num">${fmt(wr[m])}</td><td class="num">${fmt(soldTot[m])}</td>
+      <td><span class="pill ${c}">${cv}%</span></td>
+      <td style="width:160px"><div class="conv"><div class="track">
+        <div class="fill" style="width:${Math.min(cv,150)/1.5}%;background:var(--${c==='g'?'up':c==='y'?'warn':'down'})"></div>
+      </div></div></td></tr>`;}).join("");
+  const cvCur=wr[CUR]?Math.round(soldTot[CUR]/wr[CUR]*100):0;
+  const cvPrev=wr[PREV]?Math.round(soldTot[PREV]/wr[PREV]*100):0;
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="lbl">تحويل يوليو 07</div><div class="val">${cvCur}%</div>
+      <div class="delta ${cvCur>=cvPrev?'up':'down'}">${cvCur-cvPrev>0?'▲ +':'▼ '}${cvCur-cvPrev} نقطة مقابل يونيو</div></div>
+    <div class="kpi"><div class="lbl">كتابات 07</div><div class="val">${fmt(wr[CUR])}</div></div>
+    <div class="kpi"><div class="lbl">وحدات مباعة 07</div><div class="val">${fmt(soldTot[CUR])}</div></div></div>`;
+  const mtable=`<div class="panel"><h2>التحويل الشهري — ${scopeLabel(scope)}</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الشهر</th><th>كتابات</th><th>وحدات مباعة</th>
+    <th>التحويل %</th><th></th></tr></thead><tbody>${mrows}</tbody></table></div></div>`;
+  // per-item July
+  const irows=DATA.nostriItems.map(it=>{
+    const wv=(itemWr(it,scope)||{})[CUR]||0, uv=(itemVals(it,scope,"units")||{})[CUR]||0;
+    const cv=wv?Math.round(uv/wv*100):0, c=convClass(cv);
+    return `<tr><td>${it.name}</td><td class="num">${fmt(wv)}</td><td class="num">${fmt(uv)}</td>
+      <td><span class="pill ${c}">${wv?cv+'%':'—'}</span></td></tr>`;}).join("");
+  const itable=`<div class="panel"><h2>التحويل لكل صنف — يوليو 07 (${scopeLabel(scope)})</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>كتابات</th><th>وحدات مباعة</th><th>التحويل %</th></tr></thead>
+    <tbody>${irows}</tbody></table></div></div>`;
+  return kpis+mtable+itable;
+};
+
+/* ---- 3ب. Doctors (REAL — ص1 & ص18) ---- */
+V.doctors=()=>{
+  const scope=state.scope;
+  if(!DATA.writingsReady[scope] || !DATA.doctorsNostri[scope]){
+    return `<div class="panel"><div class="pend"><div class="big">👨‍⚕️</div>
+      <h2>أطباء ${scopeLabel(scope)} — بانتظار الملف</h2></div></div>`;
+  }
+  const docs=DATA.doctorsNostri[scope], nDoc=DATA.doctorCount[scope]||docs.length;
+  const wTot=wrTotals(scope);
+  const t5=wTot[FIRST], t6=wTot[PREV], t7=wTot[CUR];
+  const dTop=docs[0];
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="lbl">أعلى طبيب (يوليو)</div><div class="val" style="font-size:18px">${dTop[0]}</div>
+      <div class="delta up">${dTop[3]} كتابة</div></div>
+    <div class="kpi"><div class="lbl">عدد الأطباء الكاتبين</div><div class="val">${nDoc}</div></div>
+    <div class="kpi"><div class="lbl">متوسط كتابة/طبيب (07)</div><div class="val">${(t7/nDoc).toFixed(1)}</div></div>
+    <div class="kpi"><div class="lbl">إجمالي الكتابات (07)</div><div class="val">${fmt(t7)}</div></div></div>`;
+  const chart=`<div class="panel"><h2>إجمالي الكتابات — ${scopeLabel(scope)}</h2>
+    ${barChart({"05":t5,"06":t6,"07":t7})}</div>`;
+  const max7=Math.max(...docs.map(d=>d[3]),1);
+  const rows=docs.map((d,i)=>{
+    const dd=delta(d[3],d[2]);
+    return `<tr><td>${i+1}. ${d[0]}</td><td class="num">${d[1]}</td><td class="num">${d[2]}</td>
+      <td class="num">${d[3]}</td><td class="trend ${dd.c}">${dd.t}</td>
+      <td style="width:120px"><div class="conv"><div class="track">
+        <div class="fill" style="width:${d[3]/max7*100}%;background:var(--teal)"></div></div></div></td></tr>`;}).join("");
+  const table=`<div class="panel"><h2>ترتيب الأطباء (أعلى ${docs.length}) — ${scopeLabel(scope)}</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الطبيب</th><th>مايو</th><th>يونيو</th><th>يوليو</th><th>التغير</th><th>يوليو</th></tr></thead>
+    <tbody>${rows}</tbody></table></div></div>`;
+  return kpis+chart+table;
+};
+
+/* ---- 4. Near-Expire (REAL) ---- */
+V.expire=()=>{
+  const NE=DATA.nearExpire, s=NE.summary, mo=NE.monthly;
+  const dCur=delta(mo[CUR],mo[PREV]);
+  const statusOf=w7=>w7===0?"none":w7<=5?"weak":"active";
+  const wpill=w7=>w7===0?'<span class="pill r">بدون كتابة</span>':w7<=5?'<span class="pill y">ضعيف</span>':'<span class="pill g">نشط</span>';
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="lbl">إجمالي أصناف النير اكسبير</div><div class="val">${fmt(s.items)}</div>
+      <div class="delta flat">${fmt(s.qty)} وحدة مخزون</div></div>
+    <div class="kpi"><div class="lbl">أصناف يكتبها الأطباء</div><div class="val" style="color:var(--up)">${fmt(s.prescribed)}</div>
+      <div class="delta flat">${Math.round(s.prescribed/s.items*100)}% من الأصناف</div></div>
+    <div class="kpi"><div class="lbl">أصناف بدون أي كتابة</div><div class="val" style="color:var(--down)">${fmt(s.risk)}</div>
+      <div class="delta down">بدون كتابة</div></div>
+    <div class="kpi"><div class="lbl">إجمالي كتاباتها (07)</div><div class="val">${fmt(mo[CUR])}</div>
+      <div class="delta ${dCur.c}">${dCur.t} مقابل يونيو</div></div></div>`;
+  const chart=`<div class="panel"><h2>إجمالي كتابات أصناف النير اكسبير — تسلسل شهري</h2>
+    ${barChart(mo)}</div>`;
+  const allRows=NE.all.map(r=>{
+    const[desc,qty,exp,w5,w6,w7]=r, d=delta(w7,w6), st=statusOf(w7);
+    return `<tr data-name="${desc.toLowerCase()}" data-status="${st}"><td>${desc}</td>
+      <td class="num" style="${qty>=200?'color:var(--down);font-weight:700':''}">${fmt(qty)}</td>
+      <td class="num">${w5}</td><td class="num">${w6}</td><td class="num">${w7}</td>
+      <td class="trend ${d.c}">${d.t}</td><td>${wpill(w7)}</td></tr>`;}).join("");
+  const table=`<div class="panel"><h2>كل أصناف النير اكسبير (${NE.all.length}) — مرتّبة بالمخزون</h2>
+    <div class="ne-tools">
+      <input id="neSearch" placeholder="ابحث باسم الصنف..." autocomplete="off">
+      <div class="chips ne-status" id="neStatus">
+        <button type="button" data-status="all" class="active">الكل</button>
+        <button type="button" data-status="none">بدون كتابة</button>
+        <button type="button" data-status="weak">ضعيف</button>
+        <button type="button" data-status="active">نشط</button>
+      </div>
+    </div>
+    <div id="neCount" style="font-size:12px;color:var(--muted);margin-bottom:8px"></div>
+    <div class="tbl-wrap" style="max-height:70vh;overflow-y:auto"><table><thead><tr>
+      <th>الصنف</th><th>المخزون</th><th>مايو</th><th>يونيو</th><th>يوليو</th>
+      <th>التغير</th><th>الحالة</th></tr></thead><tbody id="neBody">${allRows}</tbody></table></div></div>`;
+  setTimeout(()=>{
+    const inp=document.getElementById("neSearch"), body=document.getElementById("neBody"),
+          cnt=document.getElementById("neCount"), trs=[...body.querySelectorAll("tr")],
+          statusBox=document.getElementById("neStatus");
+    let status="all";
+    const upd=()=>{
+      const q=(inp.value||"").trim().toLowerCase(); let n=0;
+      trs.forEach(t=>{
+        const okName=!q||t.dataset.name.includes(q);
+        const okStatus=status==="all"||t.dataset.status===status;
+        const show=okName&&okStatus;
+        t.style.display=show?"":"none"; if(show)n++;
+      });
+      cnt.textContent="عدد الأصناف الظاهرة: "+n;
+    };
+    if(inp){inp.oninput=upd;}
+    if(statusBox){
+      statusBox.querySelectorAll("button").forEach(b=>{
+        b.onclick=()=>{
+          statusBox.querySelectorAll("button").forEach(x=>x.classList.remove("active"));
+          b.classList.add("active"); status=b.dataset.status; upd();
+        };
+      });
+    }
+    upd();
+  },0);
+  return kpis+chart+table;
+};
+
+/* ---- 5. PureHerb (REAL sales — 07: ص1/ص7/ص18 + إجمالي كل الصيدليات) ---- */
+V.pureherb=()=>{
+  const items=DATA.pureherb, PH=["1","7","18"];
+  const sumU=p=>items.reduce((a,it)=>a+(it.u[p]||0),0);
+  const sumV=p=>items.reduce((a,it)=>a+(it.v[p]||0),0);
+  const u1=sumU("1"),u7=sumU("7"),u18=sumU("18"),v1=sumV("1"),v7=sumV("7"),v18=sumV("18");
+  const uIntr=u1+u7+u18, vIntr=v1+v7+v18;
+  const uAll=sumU("all"), vAll=sumV("all");
+  const uExt=Math.max(uAll-uIntr,0), vExt=Math.max(vAll-vIntr,0);
+  const shUv=uAll?Math.round(uIntr/uAll*100):0;
+  const shVv=vAll?Math.round(vIntr/vAll*100):0;
+  // تقريب متسق بحيث مجموع الداخلية+الخارجية = الإجمالي المعروض
+  const vAllR=Math.round(vAll), vIntrR=Math.round(vIntr), vExtR=vAllR-vIntrR;
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="lbl">كل الصيدليات — يوليو 07</div><div class="val">${fmt(uAll)} <span class="unit">وحدة</span></div>
+      <div class="delta flat">${fmt(vAllR)} ريال</div></div>
+    <div class="kpi"><div class="lbl">الداخلية (1+7+18)</div><div class="val">${fmt(uIntr)} <span class="unit">وحدة</span></div>
+      <div class="delta flat">${fmt(vIntrR)} ريال · ${shUv}% وحدات</div></div>
+    <div class="kpi"><div class="lbl">الخارجية</div><div class="val">${fmt(uExt)} <span class="unit">وحدة</span></div>
+      <div class="delta flat">${fmt(vExtR)} ريال · ${100-shUv}% وحدات</div></div>
+    <div class="kpi"><div class="lbl">مشاركة الداخلية (قيمة)</div><div class="val">${shVv}%</div>
+      <div class="delta flat">الخارجية ${100-shVv}% من القيمة</div></div></div>`;
+  const mxShare=Math.max(uIntr,uExt,uAll,1);
+  const bar=(u,c)=>`<div class="chgroup"><div class="bar" style="height:${Math.max(u/mxShare*100,2)}%;background:${c}">
+        <span class="cap" style="color:${c}">${fmt(u)}</span></div></div>`;
+  const shareChart=`<div class="panel"><h2>PureHerb — الداخلية مقابل الخارجية (وحدات · يوليو 07)</h2>
+    <div class="chart">${bar(uIntr,'var(--c07)')}${bar(uExt,'var(--c05)')}${bar(uAll,'var(--c06)')}</div>
+    <div class="chlabels"><span>الداخلية ${shUv}%</span><span>الخارجية ${100-shUv}%</span><span>كل الصيدليات</span></div></div>`;
+  const mx=Math.max(u1,u7,u18,1);
+  const barP=(u,c)=>`<div class="chgroup"><div class="bar" style="height:${Math.max(u/mx*100,2)}%;background:${c}">
+        <span class="cap" style="color:${c}">${fmt(u)}</span></div></div>`;
+  const chart=`<div class="panel"><h2>مبيعات PureHerb حسب الصيدلية الداخلية — يوليو 07 (وحدات)</h2>
+    <div class="chart">${barP(u1,'var(--c05)')}${barP(u7,'var(--c06)')}${barP(u18,'var(--c07)')}</div>
+    <div class="chlabels"><span>صيدلية 1</span><span>صيدلية 7</span><span>صيدلية 18</span></div></div>`;
+  const cell=x=>x==null?"—":fmt(x);
+  const rows=items.map(it=>{
+    const tu=(it.u["1"]||0)+(it.u["7"]||0)+(it.u["18"]||0), tv=(it.v["1"]||0)+(it.v["7"]||0)+(it.v["18"]||0);
+    return `<tr><td>${it.name}<br><span style="color:var(--muted);font-weight:500;font-size:12px">${it.code}</span></td>
+      <td class="num">${cell(it.u["1"])}</td><td class="num">${cell(it.u["7"])}</td><td class="num">${cell(it.u["18"])}</td>
+      <td class="num">${fmt(tu)}</td><td class="num">${cell(it.u.all)}</td><td class="num">${cell(it.v.all)}</td></tr>`;}).join("");
+  const table=`<div class="panel"><h2>تفصيلي أصناف PureHerb — يوليو 07</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>ص1</th><th>ص7</th><th>ص18</th><th>داخلية</th><th>كل الصيدليات</th><th>قيمة الكل</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td>الإجمالي</td><td class="num">${fmt(u1)}</td><td class="num">${fmt(u7)}</td><td class="num">${fmt(u18)}</td>
+    <td class="num">${fmt(uIntr)}</td><td class="num">${fmt(uAll)}</td><td class="num">${fmt(vAll)}</td></tr></tfoot>
+    </table></div></div>`;
+  const sumW=p=>items.reduce((a,it)=>a+((it.w&&it.w[p])||0),0);
+  const convCell=(w,u)=>{
+    if(!w) return '<td class="num">'+(u==null?"—":fmt(u))+'</td><td><span class="pill y">—</span></td>';
+    const cv=Math.round((u||0)/w*100), c=convClass(cv);
+    return '<td class="num">'+(u==null?"—":fmt(u))+'</td><td><span class="pill '+c+'">'+cv+'%</span></td>';
+  };
+  const crows=items.map(it=>{
+    const w=it.w||{};
+    return `<tr><td>${it.name}</td>
+      <td class="num">${fmt(w["1"]||0)}</td>${convCell(w["1"]||0,it.u["1"])}
+      <td class="num">${fmt(w["7"]||0)}</td>${convCell(w["7"]||0,it.u["7"])}
+      <td class="num">${fmt(w["18"]||0)}</td>${convCell(w["18"]||0,it.u["18"])}</tr>`;}).join("");
+  const conv=`<div class="panel"><h2>كتابات وتحويل PureHerb — الصيدليات الداخلية (يوليو 07)</h2>
+    <div class="tbl-wrap"><table><thead>
+    <tr><th rowspan="2">الصنف</th><th colspan="3">صيدلية 1</th><th colspan="3">صيدلية 7</th><th colspan="3">صيدلية 18</th></tr>
+    <tr><th>كتابة</th><th>بيع</th><th>تحويل</th><th>كتابة</th><th>بيع</th><th>تحويل</th><th>كتابة</th><th>بيع</th><th>تحويل</th></tr></thead>
+    <tbody>${crows}</tbody></table></div></div>`;
+  return kpis+shareChart+chart+table+conv;
+};
+
+/* ==================== render ==================== */
+function needsScope(t){return t==="sales"||t==="writings"||t==="conversion"||t==="doctors";}
+function scopeReadyMap(t){return (t==="writings"||t==="conversion"||t==="doctors")?DATA.writingsReady:DATA.pharmacyReady;}
+function usesMetric(t){return t==="sales"||t==="share";}
+const TAB_META={
+  sales:{t:"مبيعات Nostri",s:"مقارنة مايو / يونيو / يوليو"},
+  share:{t:"المشاركة",s:"الداخلية (1 · 7 · 18) من إجمالي نوستري"},
+  writings:{t:"الكتابات",s:"كتابات الأطباء حسب الصيدلية"},
+  conversion:{t:"التحويل",s:"الكتابة مقابل الوحدات المباعة"},
+  pureherb:{t:"مبيعات Pure herb",s:"كل الصيدليات · الداخلية · الخارجية — يوليو"},
+  doctors:{t:"الأطباء",s:"ترتيب الأطباء حسب الكتابات"},
+  expire:{t:"Near-Expire",s:"المخزون قريب الانتهاء والكتابات"},
+  credit:{t:"الأدوية آجل",s:"2025 مقابل 2026"}
+};
+function sectionStage(tab){
+  const m=TAB_META[tab]||{t:tab,s:""};
+  return `<div class="section-stage">
+    <div><h2>${m.t}</h2><p class="sub">${m.s}</p></div>
+    <div class="stamp">مايو ← يوليو 2026</div></div>`;
+}
+function goTab(tab){
+  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===tab));
+  state.tab=tab;
+  if(tab==="sales") state.scope="all";
+  else if(needsScope(tab) && !scopeReadyMap(tab)[state.scope]) state.scope="1";
+  render();
+  try{document.getElementById("view").scrollIntoView({behavior:"smooth",block:"start"});}catch(e){}
+}
+function shortName(n){return (n||"").replace(/\s+/g," ").trim().slice(0,34);}
+function topItemByJuly(metric){
+  let best=null,bestV=-1;
+  DATA.nostriItems.forEach(it=>{
+    const v=(itemVals(it,"all",metric)||{})[CUR]||0;
+    if(v>bestV){bestV=v;best=it;}
+  });
+  return {it:best,v:bestV};
+}
+function topGrowthItem(){
+  let best=null,bestD=-Infinity,prev=0,cur=0;
+  DATA.nostriItems.forEach(it=>{
+    const u=itemVals(it,"all","units")||{};
+    const a=u[PREV]||0,b=u[CUR]||0;
+    if(!a) return;
+    const d=(b-a)/a;
+    if(d>bestD){bestD=d;best=it;prev=a;cur=b;}
+  });
+  return {it:best,d:bestD,prev,cur};
+}
+function insightsFor(tab){
+  const out=[];
+  if(tab==="sales"){
+    const tot=itemTotals("all",state.metric), d=delta(tot[CUR],tot[PREV]), d3=delta(tot[CUR],tot[FIRST]);
+    const unit=state.metric==="units"?"وحدة":"ريال";
+    out.push({c:d.c,t:`يوليو vs يونيو: ${d.t} — ${fmt(tot[CUR])} ${unit}`});
+    out.push({c:d3.c,t:`مايو ← يوليو: ${d3.t}`});
+    const g=topGrowthItem();
+    if(g.it) out.push({c:g.d>=0?"up":"down",t:`أعلى نمو شهري: ${shortName(g.it.name)} (${delta(g.cur,g.prev).t})`});
+  } else if(tab==="share"){
+    const all=itemTotals("all",state.metric), intr=internalTotals(state.metric);
+    const sCur=all[CUR]?Math.round(intr[CUR]/all[CUR]*100):0;
+    const sPrev=all[PREV]?Math.round(intr[PREV]/all[PREV]*100):0;
+    const dd=sCur-sPrev;
+    out.push({c:dd>0?"up":dd<0?"down":"flat",t:`مشاركة الداخلية يوليو: ${sCur}% (${dd>0?"+":""}${dd} نقطة vs يونيو)`});
+    out.push({c:"flat",t:`الخارجية: ${100-sCur}% من الإجمالي`});
+    let bestP="1",bestV=-1;
+    ["1","7","18"].forEach(p=>{const v=itemTotals(p,state.metric)[CUR]; if(v>bestV){bestV=v;bestP=p;}});
+    out.push({c:"up",t:`أعلى صيدلية داخلية: ص${bestP} — ${fmt(bestV)} ${metricLabel()}`});
+  } else if(tab==="writings"){
+    const scope=DATA.writingsReady[state.scope]?state.scope:"1";
+    const w=wrTotals(scope), d=delta(w[CUR],w[PREV]);
+    out.push({c:d.c,t:`${scopeLabel(scope)} يوليو: ${fmt(w[CUR])} كتابة (${d.t} vs يونيو)`});
+    out.push({c:delta(w[CUR],w[FIRST]).c,t:`مايو ← يوليو: ${delta(w[CUR],w[FIRST]).t}`});
+  } else if(tab==="conversion"){
+    const scope=DATA.writingsReady[state.scope]?state.scope:"1";
+    const sold=itemTotals(scope,"units"), wr=wrTotals(scope);
+    const cv=wr[CUR]?Math.round(sold[CUR]/wr[CUR]*100):0;
+    const cvP=wr[PREV]?Math.round(sold[PREV]/wr[PREV]*100):0;
+    out.push({c:cv>=cvP?"up":"down",t:`تحويل ${scopeLabel(scope)} يوليو: ${cv}% (${cv-cvP>0?"+":""}${cv-cvP} نقطة)`});
+    out.push({c:"flat",t:`${fmt(wr[CUR])} كتابة / ${fmt(sold[CUR])} وحدة`});
+  } else if(tab==="pureherb"){
+    const items=DATA.pureherb;
+    const sum=(k,p)=>items.reduce((a,it)=>a+(it[k][p]||0),0);
+    const uAll=sum("u","all"), uIntr=sum("u","1")+sum("u","7")+sum("u","18");
+    const sh=uAll?Math.round(uIntr/uAll*100):0;
+    out.push({c:"flat",t:`كل الصيدليات يوليو: ${fmt(uAll)} وحدة · ${fmt(sum("v","all"))} ريال`});
+    out.push({c:"up",t:`الداخلية (1+7+18): ${fmt(uIntr)} وحدة · ${sh}%`});
+    out.push({c:"down",t:`الخارجية: ${fmt(uAll-uIntr)} وحدة · ${100-sh}%`});
+  } else if(tab==="doctors"){
+    const scope=DATA.doctorsNostri[state.scope]?state.scope:"1";
+    const docs=DATA.doctorsNostri[scope]||[];
+    if(docs[0]) out.push({c:"up",t:`الأعلى يوليو (ص${scope}): ${shortName(docs[0][0])} — ${docs[0][3]}`});
+    out.push({c:"flat",t:`عدد الأطباء الكاتبين: ${DATA.doctorCount[scope]||docs.length}`});
+  } else if(tab==="credit"){
+    const y5=DATA.credit["2025"], y6=DATA.credit["2026"];
+    const t5=M.reduce((a,m)=>a+y5[m],0), t6=M.reduce((a,m)=>a+y6[m],0);
+    const d=Math.round((t6-t5)/t5*1000)/10;
+    out.push({c:t6>=t5?"up":"down",t:`إجمالي 2026 (05→07): ${fmt(t6)} ريال (${d>0?"+":""}${d}% vs 2025)`});
+    const dd=y6[CUR]-y5[CUR];
+    out.push({c:dd>=0?"up":"down",t:`يوليو 2026: ${fmt(y6[CUR])} · يوليو 2025: ${fmt(y5[CUR])}`});
+  }
+  return out;
+}
+function insightHTML(tab){
+  const list=insightsFor(tab);
+  if(!list.length) return "";
+  return `<div class="insights">${list.map(i=>`<div class="insight ${i.c}"><span class="idot"></span><div>${i.t}</div></div>`).join("")}</div>`;
+}
+function spotlightHTML(tab){
+  if(tab==="sales"){
+    const top=topItemByJuly(state.metric), g=topGrowthItem();
+    const unit=metricLabel();
+    const d=delta((itemVals(top.it,"all",state.metric)||{})[CUR],(itemVals(top.it,"all",state.metric)||{})[PREV]);
+    return `<div class="spotlight"><div class="spot-main">
+      <span class="tag">أعلى صنف — يوليو</span>
+      <h3>${shortName(top.it.name)}</h3>
+      <p class="spot-sub">إجمالي كل الصيدليات</p>
+    </div><div class="spot-side">
+      <div class="metric"><span class="ml">مبيعات يوليو</span><span class="mv">${fmt(top.v)} <span class="unit">${unit}</span></span>
+        <span class="md ${d.c}">${d.t} vs يونيو</span></div>
+      ${g.it?`<div class="metric"><span class="ml">أعلى نمو شهري</span><span class="mv" style="font-size:18px">${shortName(g.it.name)}</span>
+        <span class="md ${g.d>=0?"up":"down"}">${delta(g.cur,g.prev).t}</span></div>`:""}
+    </div></div>`;
+  }
+  if(tab==="share"){
+    const all=itemTotals("all",state.metric);
+    let bestP="1",bestV=-1;
+    ["1","7","18"].forEach(p=>{const v=itemTotals(p,state.metric)[CUR]; if(v>bestV){bestV=v;bestP=p;}});
+    const sh=all[CUR]?Math.round(bestV/all[CUR]*100):0;
+    return `<div class="spotlight"><div class="spot-main">
+      <span class="tag">أعلى صيدلية داخلية</span>
+      <h3>صيدلية ${bestP}</h3>
+      <p class="spot-sub">من إجمالي نوستري — يوليو</p>
+    </div><div class="spot-side">
+      <div class="metric"><span class="ml">مبيعات يوليو</span><span class="mv">${fmt(bestV)}</span>
+        <span class="md flat">${sh}% من الإجمالي</span></div>
+    </div></div>`;
+  }
+  if(tab==="doctors"){
+    const scope=DATA.doctorsNostri[state.scope]?state.scope:"1";
+    const docs=DATA.doctorsNostri[scope]||[]; if(!docs[0]) return "";
+    const d=docs[0], dd=delta(d[3],d[2]);
+    return `<div class="spotlight"><div class="spot-main">
+      <span class="tag">أعلى طبيب — يوليو</span>
+      <h3>${shortName(d[0])}</h3>
+      <p class="spot-sub">${scopeLabel(scope)}</p>
+    </div><div class="spot-side">
+      <div class="metric"><span class="ml">كتابات يوليو</span><span class="mv">${d[3]}</span>
+        <span class="md ${dd.c}">${dd.t} vs يونيو</span></div>
+      <div class="metric"><span class="ml">مايو → يوليو</span><span class="mv" style="font-size:20px">${d[1]} ← ${d[3]}</span></div>
+    </div></div>`;
+  }
+  if(tab==="pureherb"){
+    const items=DATA.pureherb;
+    let best=items[0];
+    items.forEach(it=>{if((it.u.all||0)>((best.u.all)||0)) best=it;});
+    const u1=(best.u["1"]||0)+(best.u["7"]||0)+(best.u["18"]||0);
+    return `<div class="spotlight"><div class="spot-main">
+      <span class="tag">أعلى صنف PureHerb</span>
+      <h3>${shortName(best.name)}</h3>
+      <p class="spot-sub">كل الصيدليات — يوليو</p>
+    </div><div class="spot-side">
+      <div class="metric"><span class="ml">كل الصيدليات</span><span class="mv">${fmt(best.u.all)} وحدة</span>
+        <span class="md flat">${fmt(best.v.all)} ريال</span></div>
+      <div class="metric"><span class="ml">الداخلية</span><span class="mv" style="font-size:22px">${fmt(u1)}</span></div>
+    </div></div>`;
+  }
+  return "";
+}
+function render(){
+  const host=document.getElementById("view");
+  let chips="";
+  if(needsScope(state.tab)){
+    const readyMap=scopeReadyMap(state.tab);
+    const scopes=(state.tab==="doctors")?["1","7","18"]:["1","7","18","all"];
+    chips=`<div class="chips">${scopes.map(s=>{
+      const pend=!readyMap[s];
+      return `<button data-scope="${s}" class="${state.scope===s?'active':''} ${pend?'pending':''}">${scopeLabel(s)}${pend?' ⏳':''}</button>`;
+    }).join("")}</div>`;
+  }
+  host.innerHTML=sectionStage(state.tab)+insightHTML(state.tab)+spotlightHTML(state.tab)+chips+V[state.tab]();
+  host.querySelectorAll(".chips button").forEach(b=>b.onclick=()=>{state.scope=b.dataset.scope;render();});
+  document.getElementById("metricToggle").style.display=usesMetric(state.tab)?"inline-flex":"none";
+}
+document.querySelectorAll("#tabs button").forEach(b=>{
+  b.onclick=()=>{ if(window.__stopStory) window.__stopStory(); goTab(b.dataset.tab); };
+});
+document.querySelectorAll("#metricToggle button").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll("#metricToggle button").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active"); state.metric=b.dataset.metric; render();
+  };
+});
+document.getElementById("menuToggle").onclick=()=>document.body.classList.toggle("nav-collapsed");
+render();
+
+/* ---- visual layer: theme + present + print ---- */
+(function(){
+  const html=document.documentElement, tb=document.getElementById("themeBtn"),
+        pb=document.getElementById("presentBtn");
+  function apply(t){html.setAttribute("data-theme",t);tb.textContent=t==="dark"?"☀":"◐";
+    tb.title=t==="dark"?"الوضع الفاتح":"الوضع الداكن";}
+  apply(localStorage.getItem("nostri-theme")||"light");
+  tb.onclick=()=>{const t=html.getAttribute("data-theme")==="dark"?"light":"dark";
+    localStorage.setItem("nostri-theme",t);apply(t);};
+  function setPresent(on){
+    document.body.classList.toggle("present",!!on); pb.classList.toggle("active",!!on);
+    pb.title=on?"إيقاف وضع العرض":"وضع عرض";
+    if(on){try{document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();}catch(e){}}
+    else if(document.fullscreenElement){try{document.exitFullscreen();}catch(e){}}
+  }
+  pb.onclick=()=>setPresent(!document.body.classList.contains("present"));
+  document.addEventListener("fullscreenchange",()=>{
+    if(!document.fullscreenElement){
+      document.body.classList.remove("present"); pb.classList.remove("active");
+      pb.title="وضع عرض";
+    }
+  });
+  document.getElementById("printBtn").onclick=()=>window.print();
+})();
+
+/* ---- Executive Story Mode: sales → share → pureherb (~75s) ---- */
+(function(){
+  const STEPS=[
+    {tab:"sales", title:"1 · مبيعات Nostri", sec:26},
+    {tab:"share", title:"2 · المشاركة", sec:24},
+    {tab:"pureherb", title:"3 · PureHerb", sec:24}
+  ];
+  const btn=document.getElementById("storyBtn");
+  const fill=document.getElementById("storyFill");
+  const title=document.getElementById("storyTitle");
+  const meta=document.getElementById("storyMeta");
+  let timer=null, raf=null, idx=0, started=0, stepDur=0, running=false;
+  function stop(){
+    running=false; document.body.classList.remove("storying");
+    btn.classList.remove("active"); btn.textContent="▶";
+    btn.title="عرض تلقائي";
+    if(timer){clearTimeout(timer);timer=null;}
+    if(raf){cancelAnimationFrame(raf);raf=null;}
+    fill.style.width="0%";
+  }
+  window.__stopStory=stop;
+  function progress(){
+    if(!running) return;
+    const p=Math.min(1,(performance.now()-started)/stepDur);
+    const base=idx/STEPS.length, slice=1/STEPS.length;
+    fill.style.width=((base+slice*p)*100).toFixed(1)+"%";
+    if(p<1) raf=requestAnimationFrame(progress);
+  }
+  function playStep(i){
+    if(!running) return;
+    if(i>=STEPS.length){ stop(); return; }
+    idx=i; const s=STEPS[i];
+    title.textContent=s.title;
+    meta.textContent=(i+1)+" / "+STEPS.length+" · "+s.sec+" ث";
+    goTab(s.tab);
+    stepDur=s.sec*1000; started=performance.now();
+    if(raf)cancelAnimationFrame(raf); raf=requestAnimationFrame(progress);
+    timer=setTimeout(()=>playStep(i+1), stepDur);
+  }
+  function start(){
+    if(running){stop();return;}
+    running=true; document.body.classList.add("storying","nav-collapsed");
+    btn.classList.add("active"); btn.textContent="■";
+    btn.title="إيقاف العرض التلقائي";
+    playStep(0);
+  }
+  btn.onclick=start;
+  document.getElementById("storyStop").onclick=stop;
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&running) stop(); });
+})();
+
+/* ---- visual layer: chart tooltip + trend chips + trend line + KPI polish ---- */
+(function(){
+  const view=document.getElementById("view");
+  const tip=document.createElement("div"); tip.id="barTip"; document.body.appendChild(tip);
+  view.addEventListener("mouseover",e=>{const b=e.target.closest(".bar");if(!b)return;
+    const c=b.querySelector(".cap");tip.textContent=c?c.textContent.trim():"";tip.style.opacity="1";});
+  view.addEventListener("mousemove",e=>{if(tip.style.opacity==="1"){
+    tip.style.left=e.clientX+"px";tip.style.top=(e.clientY-12)+"px";}});
+  view.addEventListener("mouseout",e=>{if(e.target.closest(".bar"))tip.style.opacity="0";});
+  function chipTrends(){
+    view.querySelectorAll("td.trend:not([data-chip])").forEach(td=>{
+      td.setAttribute("data-chip","1");
+      const txt=td.textContent.trim(); if(!txt||txt==="—")return;
+      const cls=td.classList.contains("up")?"up":td.classList.contains("down")?"down":"flat";
+      const sp=document.createElement("span"); sp.className="trend-chip "+cls; sp.textContent=txt;
+      td.textContent=""; td.appendChild(sp);
+    });
+  }
+  function heroKpi(){
+    const first=view.querySelector(".kpis .kpi"); if(first) first.classList.add("hero");
+  }
+  function countUp(){
+    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+    view.querySelectorAll(".kpi .val").forEach(el=>{
+      if(el.dataset.counted)return;
+      if(el.classList.contains("val-range")){el.dataset.counted="1";return;}
+      const unit=el.querySelector(".unit");
+      const unitHtml=unit?unit.outerHTML:"";
+      const probe=el.cloneNode(true);
+      probe.querySelectorAll(".unit").forEach(u=>u.remove());
+      const core=probe.textContent.replace(/\s+/g,"").trim();
+      // رقم واحد فقط (مع فاصلة/% اختيارية) — يتجاهل قيم مثل 46% ← 36%
+      if(!/^[+-]?\d{1,3}(?:,\d{3})*(?:\.\d+)?%?$/.test(core)) return;
+      const raw=core.replace(/[^\d.+-]/g,"");
+      const target=parseFloat(raw); if(!isFinite(target))return;
+      el.dataset.counted="1";
+      const isPct=/%/.test(core), decimals=String(raw).includes(".")?1:0;
+      const start=performance.now(), dur=700;
+      const tick=now=>{
+        const p=Math.min(1,(now-start)/dur), e=1-Math.pow(1-p,3), n=target*e;
+        const num=n.toLocaleString("en-US",{maximumFractionDigits:decimals,minimumFractionDigits:decimals});
+        el.innerHTML=num+(isPct?"%":"")+(unitHtml?" "+unitHtml:"");
+        if(p<1)requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+  }
+  function trendLines(){
+    view.querySelectorAll(".chart.chart-monthly").forEach(chart=>{
+      const old=chart.querySelector("svg.trendline"); if(old)old.remove();
+      const groups=[...chart.children].filter(c=>c.classList&&c.classList.contains("chgroup"));
+      if(groups.length!==3)return;
+      const bars=groups.map(g=>g.querySelectorAll(".bar"));
+      if(bars.some(b=>b.length!==1))return;
+      const cr=chart.getBoundingClientRect(); if(!cr.width)return;
+      const pts=bars.map(b=>{const r=b[0].getBoundingClientRect();
+        return[r.left+r.width/2-cr.left, r.top-cr.top];});
+      const NS="http://www.w3.org/2000/svg";
+      const svg=document.createElementNS(NS,"svg"); svg.setAttribute("class","trendline");
+      svg.setAttribute("width",cr.width); svg.setAttribute("height",cr.height);
+      svg.style.cssText="position:absolute;inset:0;pointer-events:none;z-index:2;overflow:visible";
+      const pl=document.createElementNS(NS,"polyline");
+      pl.setAttribute("points",pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" "));
+      pl.setAttribute("fill","none"); pl.setAttribute("stroke-width","2");
+      pl.setAttribute("stroke-linecap","round"); pl.setAttribute("stroke-linejoin","round");
+      svg.appendChild(pl);
+      pts.forEach(p=>{const c=document.createElementNS(NS,"circle");
+        c.setAttribute("cx",p[0].toFixed(1));c.setAttribute("cy",p[1].toFixed(1));
+        c.setAttribute("r","3.2");c.setAttribute("stroke-width","2");svg.appendChild(c);});
+      chart.appendChild(svg);
+    });
+  }
+  function enhance(){
+    try{chipTrends();heroKpi();countUp();}catch(e){}
+    setTimeout(()=>{try{trendLines();}catch(e){}},860);
+  }
+  try{new MutationObserver(enhance).observe(view,{childList:true});}catch(e){}
+  enhance();
+})();
+</script>
+</body>
+</html>
