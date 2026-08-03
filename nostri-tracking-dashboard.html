@@ -66,7 +66,7 @@ header.top{
   background:
     linear-gradient(120deg, rgba(94,234,212,.14), transparent 42%),
     radial-gradient(ellipse at 70% 0%, #12897f 0%, #0a4f48 42%, #052925 100%);
-  color:#fff;border-radius:22px;padding:26px 32px 24px 64px;
+  color:#fff;border-radius:22px;padding:26px 64px 24px 64px;
   box-shadow:0 18px 40px -20px rgba(6,51,46,.55), inset 0 1px 0 rgba(255,255,255,.12);
   display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
   min-height:108px;
@@ -84,8 +84,8 @@ header.top::after{
 .brand-block{text-align:center;position:relative;z-index:1;max-width:720px}
 .brand{
   font-family:'Alexandria','IBM Plex Sans Arabic',sans-serif;
-  font-size:clamp(34px,4.6vw,48px);font-weight:900;letter-spacing:.18em;
-  line-height:1;margin:0;
+  font-size:clamp(34px,4.6vw,48px);font-weight:900;letter-spacing:.34em;
+  line-height:1;margin:0;text-indent:.34em;
   background:linear-gradient(180deg,#ffffff 20%,#99f6e4 100%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
   filter:drop-shadow(0 2px 10px rgba(0,0,0,.18));
@@ -176,7 +176,7 @@ body.nav-collapsed .layout{gap:0}
   .sidebar button{width:auto;flex:1 1 auto;text-align:center}
 }
 
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;justify-content:center}
 .chips button{border:1px solid var(--line);background:var(--card);color:var(--muted);
   padding:8px 14px;border-radius:999px;font-family:inherit;font-size:13px;font-weight:600;
   cursor:pointer;transition:all .15s}
@@ -509,10 +509,7 @@ tfoot td{font-weight:700;background:var(--tfoot-bg);border-top:2px solid var(--t
       <button data-tab="conversion">التحويل</button>
       <button data-tab="pureherb">مبيعات Pure herb</button>
       <button data-tab="doctors">الأطباء</button>
-      <button data-tab="docprofile">الطبيب 360°</button>
       <button data-tab="expire">Near-Expire</button>
-      <button data-tab="alerts">تنبيهات</button>
-      <button data-tab="analytics">تحليلات</button>
       <button data-tab="credit">الأدوية آجل</button>
     </nav>
     <main class="main">
@@ -1318,9 +1315,7 @@ const DATA = {
     {name:"CENTROZON Tablet 30",          code:"1-03-187-270", u:{"1":15, "7":6,   "18":6,   "all":63}, v:{"1":292.5, "7":117, "18":117, "all":1228.5},  w:{"1":15,"7":1,"18":6}},
     {name:"BoneFriend Tablet 30",         code:"1-03-187-268", u:{"1":15, "7":4,   "18":3,   "all":26}, v:{"1":750,   "7":200, "18":150, "all":1300},    w:{"1":20,"7":5,"18":4}},
     {name:"ARGIGROW Syrup 150ML",         code:"1-03-186-083", u:{"1":6,  "7":2,   "18":1,   "all":40}, v:{"1":510,   "7":170, "18":85,  "all":3400.002},w:{"1":2, "7":0,"18":0}}
-  ],
-  doctorProfiles:{"Mohammed Shabaan Abdelhay Els":{"sec":"Orthopaedic","nostri":{"REFLEX":{"05":60,"06":93,"07":37}},"pure":{"BoneFriend":19},"neTotal":586,"neTop":[["COXICEL 200 mg/capsule, 30 CAPSULE/BOX",253],["LIMITLESS ALLZYME Tablet, 30 TABLET/BOX",86],["REPADERM 1 %/apply Gel, 100 GM/TUBE",50],["TILAX Tablet 2MG/1Tablet, 30Tablet/Box",43],["ROFENAC 1 %/apply Gel, 50 GM/TUBE",32],["ADOL 120 mg/5 ml Syrup, 100 ML/BOTTLE",23]]},"Hossameldin Mohamed Amin Bekh":{"sec":"Urology","nostri":{"NOSTRIDERM":{"05":58,"06":58,"07":60},"REFLEX":{"05":3,"06":3,"07":3}},"pure":{},"neTotal":186,"neTop":[["COLI-URINAL GRANULES /1BOTTEL, 60GM/BOX",74],["AVOMEB EXTRA OINTMENT 15 GM",45],["AGIOLAX POWDER /1SPOON, 250GM/Container",10],["PILOCIN 1 %/apply Cream, 30 GM/TUBE",9],["DOXIDA-M sachet, 30 SACHET/BOX",8],["FENSOLIN 5 mg/tablet, 30 TABLET/BOX",8]]},"Fatimah Abdulhafeez Mohamed K":{"sec":"Gynecology","nostri":{"INTIMO":{"05":21,"06":39,"07":37}},"pure":{},"neTotal":189,"neTop":[["ELICA-M Cream 0.1/2%/1APPLY, 30GM/Tube",35],["RAFOL 5 mg/tablet, 50 TABLET/BOX",29],["FEROGLOBIN Capsule /1Capsule, 30Capsule/Box",23],["AVALON AVOCIN 2 % Vaginal Cream, 40 GM/TUBE",16],["AVALON AVOBAN 2 %/apply Ointment , 30 GM/TUB",13],["DIANE-35 Tablet /1Tablet, 21Tablet/Box",12]]},"Nehad Farouk Abdallah Ramadan":{"sec":"Gynecology","nostri":{"INTIMO":{"05":15,"06":27,"07":54}},"pure":{},"neTotal":387,"neTop":[["DOXIDA-F sachet, 30 SACHET/BOX",61],["ELICA-M Cream 0.1/2%/1APPLY, 30GM/Tube",44],["FEMIC 500 mg/tablet, 60 TABLET/BOX",39],["AVOCOM-M Cream 0.1/2%/1APPLY, 50GM/Tube",33],["AVALON AVOMEB EXTRA 75 GM Ointment",16],["MARVELON Tablet /1Tablet, 21Tablet/Box",16]]},"Ahmad Mahmoud Mohammed Elad":{"sec":"Urology","nostri":{"NOSTRIDERM":{"05":18,"06":39,"07":27}},"pure":{},"neTotal":45,"neTop":[["QUERSA Capsule, 60 CAPSULE/BOTTLE",14],["DOXIDA-M sachet, 30 SACHET/BOX",6],["ARGITEST capsule Tablet, 30 TABLET/BOX",3],["COLI-URINAL GRANULES /1BOTTEL, 60GM/BOX",3],["LOVERA 5 mg/tablet, 30 TABLET/BOX",3],["NEVOTIC 500 mg/tablet, 7 TABLET/BOX",2]]},"Medhat Alashry Aladawy Goger":{"sec":"Orthopaedic","nostri":{"REFLEX":{"05":14,"06":27,"07":33}},"pure":{"BoneFriend":4},"neTotal":337,"neTop":[["MYO REST PLUS Cream /1APPLY, 100GM/Tube",84],["ROFENAC 1 %/apply Gel, 50 GM/TUBE",63],["CARTIMOV 50 mg/capsule, 20 CAPSULE/BOX",55],["GLUCAJONE 1000 mg/sachet, 30 SACHET/BOX",46],["MOVACID 400 mg/tablet, 60 TABLET/BOX",45],["SUN-D 1000 iu/tablet, 90 TABLET/BOX",25]]},"Samah Abdelkarim Ahmed Elbashi":{"sec":"Dental","nostri":{"ORACURE":{"05":30,"06":16,"07":22}},"pure":{},"neTotal":7,"neTop":[["VOLTIC  tablet 50MG/1Tablet, 20Tablet/Box",7]]},"Anwar Ali Abdullah Jwass":{"sec":"Dermatology","nostri":{"RIZER":{"05":0,"06":0,"07":32},"NOSTRIDERM":{"05":0,"06":0,"07":19},"NOSTRICURE":{"05":0,"06":0,"07":1}},"pure":{},"neTotal":88,"neTop":[["CLARA Tablet 10MG/1Tablet, 10Tablet/Box",13],["AVOBAN CREAM 2 %/apply Cream, 30 GM/TUBE",12],["FUSIBACT-B Cream 2/0.1%/1APPLY, 15GM/Tube",11],["ACRETIN C GEL 30 GM/TUBE",11],["FUSIBACT-B 2.1 %/apply Cream, 30 GM/TUBE",5],["VIOTOPIC Ointment 0.1%/1APPLY, 30GM/Tube'",5]]},"Mohamed Samir Abdelfattah Fara":{"sec":"Orthopaedic","nostri":{"REFLEX":{"05":15,"06":8,"07":23}},"pure":{"BoneFriend":1},"neTotal":1248,"neTop":[["ETORIA Tablet 90MG/1Tablet, 28Tablet/Box",198],["COXICEL 200 mg/capsule, 30 CAPSULE/BOX",194],["REPADERM 1 %/apply Gel, 100 GM/TUBE",181],["TILAX Tablet 2MG/1Tablet, 30Tablet/Box",138],["BENZAFLEX 5 mg/tablet, 30 TABLET/BOX",130],["CARTIMOV 50 mg/capsule, 20 CAPSULE/BOX",91]]},"Amira Mohamed Salem Eldaltouni":{"sec":"Dermatology","nostri":{"NOSTRIDERM":{"05":5,"06":3,"07":0},"RIZER":{"05":13,"06":16,"07":4}},"pure":{},"neTotal":55,"neTop":[["FUSIBACT-B Cream 2/0.1%/1APPLY, 15GM/Tube",15],["FORCAPIL Capsule, 180 CAPSULE/BOX",12],["FUSIBACT Ointment 2%/1APPLY, 15GM/Tube",4],["HYFRESH EYE GEL drop, 30 ML/BOTTEL",4],["FUSIBACT-B 2.1 %/apply Cream, 30 GM/TUBE",4],["FORCAPIL TOPICAL SPRAY",4]]},"Radwa Mohamed Mabrouk Abdalla":{"sec":"Dental","nostri":{"ORACURE":{"05":14,"06":7,"07":11}},"pure":{},"neTotal":62,"neTop":[["PROFINAL XP 400 mg/tablet, 20 TABLET/BOX",37],["VOLTIC  tablet 50MG/1Tablet, 20Tablet/Box",15],["CATAFAST SACHETS 50MG/1Sachet, 9sachet/Box",6],["KLAVOX Tablet 375MG/1Tablet, 20Tablet/Box",2],["AUGMENTIN Tablet 1000MG/1Tablet, 14Tablet/Bo",1],["KLAVOX SUSPENTION 312MG/5ML, 100ML/Bottle",1]]},"Ahmad Abdelrahman Abdallah Ha":{"sec":"General Surgery","nostri":{"NOSTRIDERM":{"05":3,"06":16,"07":8},"RIZER":{"05":1,"06":3,"07":0},"NOSTRICURE":{"05":0,"06":1,"07":0}},"pure":{},"neTotal":495,"neTop":[["COXICEL 200 mg/capsule, 30 CAPSULE/BOX",185],["AVOBAN CREAM 2 %/apply Cream, 30 GM/TUBE",58],["RECTACURE 2% /apply Cream, 30 GM/TUBE",56],["MAXEVA 400 mg/tablet, 10 TABLET/BOX",55],["AGIOLAX POWDER /1SPOON, 250GM/Container",49],["LIMITLESS ALLZYME Tablet, 30 TABLET/BOX",31]]},"Mona Farid Elmandouh Abdelrahm":{"sec":"Dermatology","nostri":{"RIZER":{"05":5,"06":10,"07":11}},"pure":{"CENTROZON WOMEN":4},"neTotal":551,"neTop":[["VIOTOPIC Ointment 0.1%/1APPLY, 30GM/Tube'",60],["ZENCIN 500 mg/tablet, 3 TABLET/BOX",50],["LICAN apply Cream, 30 GM/TUBE",38],["ELIDEL Cream 1%/1APPLY, 30GM/Tube",34],["VIOTOPIC Ointment 0.3%/1APPLY, 30GM/Tube'",32],["LEVOZAL 0.5 mg/ml Syrup, 200 ML/BOTTEL",31]]},"Ahmed Hassanin Mohamed Hassan":{"sec":"General Paracitioner","nostri":{"REFLEX":{"05":11,"06":10,"07":6},"ORACURE":{"05":3,"06":0,"07":0}},"pure":{},"neTotal":218,"neTop":[["CLARA Tablet 10MG/1Tablet, 10Tablet/Box",46],["COLI-URINAL GRANULES /1BOTTEL, 60GM/BOX",44],["AMYDRAMINE SUGAR FREE Syrup, 120 ML/BOTTLE",41],["AMYDRAMINE ADULT ml Syrup, 120 ML/BOTTLE",14],["KLAVOX Tablet 375MG/1Tablet, 20Tablet/Box",9],["GLIPTAMET Tablet 50/1000MG/1Tablet, 56Tablet",8]]},"Ahmed Taher Mokhtar Mashaly":{"sec":"Neurology","nostri":{"REFLEX":{"05":14,"06":13,"07":3}},"pure":{},"neTotal":189,"neTop":[["PROLAX Capsule 15MG/1Capsule, 30Capsule/Box",19],["TEGRETOL CR 200 mg/tablet, 50 TABLET/BOX",19],["PROFINAL XP 400 mg/tablet, 20 TABLET/BOX",13],["ETORIA Tablet 90MG/1Tablet, 28Tablet/Box",10],["BENZAFLEX 5 mg/tablet, 30 TABLET/BOX",10],["MIRZAGEN Tablet 15MG/1Tablet, 30Tablet/Box",10]]},"Mugahid Khalid Zainelabdin Elfak":{"sec":"General Paracitioner","nostri":{"ORACURE":{"05":1,"06":3,"07":10},"REFLEX":{"05":0,"06":1,"07":2},"NOSTRIDERM":{"05":0,"06":1,"07":1},"NOSTRICURE":{"05":0,"06":0,"07":3}},"pure":{"CENTROZON":6,"PureFeel":2},"neTotal":1071,"neTop":[["DESTAMIN 5 mg/tablet, 20 TABLET/BOX",290],["MUCOSOLVAN Fort 6 mg/ml Syrup, 250 ML/BOTTLE",102],["ADOL 120 mg/5 ml Syrup, 100 ML/BOTTLE",71],["CLARIXIN Tablet 500MG/1Tablet, 14Tablet/Box",43],["VOLTIC  tablet 50MG/1Tablet, 20Tablet/Box",32],["NEORIN Syrup 0.5MG/1ML, 150ML/Bottle",28]]},"Heba Mohsen Mohamed Khalil":{"sec":"Gynecology","nostri":{"INTIMO":{"05":7,"06":16,"07":7}},"pure":{},"neTotal":100,"neTop":[["COLI-URINAL GRANULES /1BOTTEL, 60GM/BOX",25],["LACTOSAT 125 mg/capsule, 30 CAPSULE/BOX",13],["SUN-D 1000 iu/tablet, 90 TABLET/BOX",8],["ELICA-M Cream 0.1/2%/1APPLY, 30GM/Tube",8],["MOTOVA C Advanced sachet, 30 SACHET/BOX",5],["CLARA Tablet 10MG/1Tablet, 10Tablet/Box",5]]},"Nesreen Mohammed Hassan Amash":{"sec":"Dental","nostri":{"ORACURE":{"05":14,"06":5,"07":10},"NOSTRICURE":{"05":1,"06":0,"07":0}},"pure":{},"neTotal":25,"neTop":[["CATAFAST SACHETS 50MG/1Sachet, 9sachet/Box",13],["ADOL 120 mg/5 ml Syrup, 100 ML/BOTTLE",6],["ZENCIN 500 mg/tablet, 3 TABLET/BOX",4],["KLAVOX SUSPENTION 312MG/5ML, 100ML/Bottle",2]]},"Rafik Elsayed Aboelhythim Ereba":{"sec":"Paediatric","nostri":{"NOSTRICURE":{"05":8,"06":13,"07":5}},"pure":{"ZINCOLIVE":1},"neTotal":42,"neTop":[["BABYCOOL ml Syrup, 100 ML/BOTTLE",7],["AZI-ONCE SUSPENTION 200MG/5ML, 15ML/Bottle",5],["PULMICORT 0.5 mg/ml Ampoule, 20 AMPOULE/BOX",5],["VIDA-IRON  Spray, 60 ML/BOTTLE",4],["NEORIN Syrup 0.5MG/1ML, 150ML/Bottle",4],["CELER 0.5 mg/ml Syrup, 150 ML/BOTTLE",4]]},"Soha Mohamed Salaheldeen Solima":{"sec":"Gynecology","nostri":{"INTIMO":{"05":8,"06":9,"07":9}},"pure":{},"neTotal":100,"neTop":[["MARVELON Tablet /1Tablet, 21Tablet/Box",15],["RAFOL 5 mg/tablet, 50 TABLET/BOX",14],["VIDROP drops 2800IU/1Drop, 15ML/Container",14],["DIANE-35 Tablet /1Tablet, 21Tablet/Box",11],["LACTOSAT 125 mg/capsule, 30 CAPSULE/BOX",6],["ARKOCAPS CALCOS 500 mg/tablet, 60 TABLET/BOX",6]]},"Said Tolba Elsayed Elbedewy":{"sec":"General Paracitioner","nostri":{"ORACURE":{"05":8,"06":3,"07":2},"REFLEX":{"05":6,"06":0,"07":1},"NOSTRIDERM":{"05":1,"06":0,"07":0}},"pure":{"CENTROZON WOMEN":1},"neTotal":967,"neTop":[["MUCOSOLVAN Fort 6 mg/ml Syrup, 250 ML/BOTTLE",266],["CEFIM Capsule 400MG/1Capsule, 6Capsule/Box",177],["DESLOR 5 mg/tablet, 20 TABLET/BOX",110],["EMILOK Capsule 20MG/1Capsule, 14Capsule/Box",77],["ROFENAC 1 %/apply Gel, 50 GM/TUBE",29],["BUTALIN SUSPENTION 0.4MG/1ML, 120ML/Bottle",27]]},"Hala Fathi Ewis Mansur":{"sec":"Gynecology","nostri":{"INTIMO":{"05":4,"06":10,"07":3},"REFLEX":{"05":0,"06":1,"07":1},"RIZER":{"05":0,"06":1,"07":0}},"pure":{},"neTotal":90,"neTop":[["FEROGLOBIN Capsule /1Capsule, 30Capsule/Box",12],["DOXIDA-F sachet, 30 SACHET/BOX",12],["NEO HEALAR Ointment /1APPLY, 30GM/Tube",10],["XEFO Tablet 8MG/1Tablet, 20Tablet/Box",7],["COLI-URINAL GRANULES /1BOTTEL, 60GM/BOX",6],["TRACON Capsule 100MG/1Capsule, 4Capsule/Box",5]]},"Ibrahim Abdelrazeq Ibrahim Desou":{"sec":"Dental","nostri":{"ORACURE":{"05":9,"06":6,"07":3}},"pure":{},"neTotal":16,"neTop":[["TILAX Tablet 2MG/1Tablet, 30Tablet/Box",6],["AUGMENTIN Tablet 1000MG/1Tablet, 14Tablet/Bo",4],["ROFENAC 1 %/apply Gel, 50 GM/TUBE",2],["CATAFAST SACHETS 50MG/1Sachet, 9sachet/Box",1],["KLENDAM 300 mg/capsule, 16 CAPSULE/BOX",1],["GENGIGEL BABY 1 %/apply Gel, 15 GM/APPLY",1]]},"Shivapriya Nair":{"sec":"Dental","nostri":{"ORACURE":{"05":9,"06":2,"07":6}},"pure":{},"neTotal":28,"neTop":[["ADOL 120 mg/5 ml Syrup, 100 ML/BOTTLE",22],["CATAFAST SACHETS 50MG/1Sachet, 9sachet/Box",2],["FLAZOL Syrup 125MG/5ML, 120ML/Bottle",1],["KLAVOX SUSPENTION 312MG/5ML, 100ML/Bottle",1],["XEFO Tablet 8MG/1Tablet, 20Tablet/Box",1],["PROF SUSPENTION 100MG/5ML, 110ML/Bottle",1]]},"Zaid Abdulrahman Zaid Alogaily":{"sec":"Dental","nostri":{"ORACURE":{"05":5,"06":1,"07":3},"NOSTRICURE":{"05":4,"06":2,"07":0}},"pure":{},"neTotal":6,"neTop":[["PROFINAL XP 400 mg/tablet, 20 TABLET/BOX",3],["PROF SUSPENTION 100MG/5ML, 110ML/Bottle",2],["AUGMENTIN Tablet 1000MG/1Tablet, 14Tablet/Bo",1]]},"Abdullah Ahmed Mohamede Ahm":{"sec":"General Paracitioner","nostri":{"REFLEX":{"05":0,"06":1,"07":0},"ORACURE":{"05":0,"06":1,"07":0}},"pure":{"CENTROZON":7,"CENTROZON WOMEN":4},"neTotal":427,"neTop":[["DESLOR 5 mg/tablet, 20 TABLET/BOX",125],["CLARA Tablet 10MG/1Tablet, 10Tablet/Box",124],["DENACIF 300 mg/capsule, 10 CAPSULE",24],["NEVOTIC 500 mg/tablet, 7 TABLET/BOX",21],["CATAFAST SACHETS 50MG/1Sachet, 9sachet/Box",19],["HYFRESH EYE GEL drop, 30 ML/BOTTEL",16]]},"Mohamed Hatem Abdelsamie Nour":{"sec":"General Paracitioner","nostri":{"REFLEX":{"05":1,"06":8,"07":1},"ORACURE":{"05":0,"06":1,"07":0}},"pure":{},"neTotal":852,"neTop":[["ADOL 120 mg/5 ml Syrup, 100 ML/BOTTLE",67],["DEFADOL 160 mg/5 ml Syrup, 100 ML/BOTTLE",61],["RESPRED SYRUP 5MG/5ML, 120ML/BOTTLE",46],["ROFENAC 1 %/apply Gel, 50 GM/TUBE",44],["MINOCET 125 mg/5 ml Suspention, 80 ML/BOTTLE",41],["PULMICORT 0.5 mg/ml Ampoule, 20 AMPOULE/BOX",40]]},"Salama Mahdy Morshed Rashed":{"sec":"Paediatric","nostri":{},"pure":{"ZINCOLIVE":8,"ARGIGROW":2,"PURE OMEGA-3":1},"neTotal":329,"neTop":[["ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE",49],["VIDA-IRON  Spray, 60 ML/BOTTLE",48],["RESPRED SYRUP 5MG/5ML, 120ML/BOTTLE",44],["PULMICORT 0.5 mg/ml Ampoule, 20 AMPOULE/BOX",41],["VIDROP drops 2800IU/1Drop, 15ML/Container",41],["ADOL 120 mg/5 ml Syrup, 100 ML/BOTTLE",37]]},"Sara Ibrahim Elabd Eldegla":{"sec":"Dermatology","nostri":{"RIZER":{"05":6,"06":3,"07":0}},"pure":{},"neTotal":137,"neTop":[["DESLOR 5 mg/tablet, 20 TABLET/BOX",61],["ALFACORT Cream 0.1%/1APPLY, 15GM/Tube",13],["FUSIBACT-B 2.1 %/apply Cream, 30 GM/TUBE",8],["ELIDEL Cream 1%/1APPLY, 30GM/Tube",8],["FORCAPIL Capsule, 180 CAPSULE/BOX",7],["FUSIBACT Ointment 2%/1APPLY, 15GM/Tube",7]]},"Lujina Wahid Mohamed Abdelwah":{"sec":"Dental","nostri":{"ORACURE":{"05":3,"06":3,"07":0},"NOSTRICURE":{"05":0,"06":2,"07":0}},"pure":{},"neTotal":0,"neTop":[]},"Hatem Abdelmageed Elsayed Mata":{"sec":"Internal Medicine","nostri":{},"pure":{"CENTROZON":8},"neTotal":454,"neTop":[["EMILOK Capsule 20MG/1Capsule, 14Capsule/Box",47],["COLI-URINAL GRANULES /1BOTTEL, 60GM/BOX",34],["LUNIA 10 mg/ 20 MG/tablet, 28 TABLET/BOX",27],["SITAVIC 50/1000 mg/tablet, 56 TABLET/BOX",26],["PROTON 40 mg/tablet, 14 TABLET/BOX",25],["FORMIT XR Tablet 750MG/1Tablet, 30Tablet/BOX",18]]},"Mohamed Muhiddeen Abd Al Gde":{"sec":"Paediatric","nostri":{"NOSTRICURE":{"05":7,"06":1,"07":0}},"pure":{},"neTotal":629,"neTop":[["NEORIN Syrup 0.5MG/1ML, 150ML/Bottle",117],["FLAZOL Syrup 125MG/5ML, 120ML/Bottle",78],["PULMICORT 0.5 mg/ml Ampoule, 20 AMPOULE/BOX",75],["SINEO 1 mg/drop, 20 ML/CONTAINER",61],["VIDROP drops 2800IU/1Drop, 15ML/Container",48],["FENISTIL Oral drops 1MG/1Drop, 20ML/Containe",36]]},"Ahmed Gamal Abdelnasser Abdelm":{"sec":"Orthopaedic","nostri":{"REFLEX":{"05":0,"06":1,"07":1}},"pure":{"BoneFriend":5},"neTotal":34,"neTop":[["OSTEOCARE Syrup 100MG/1ML, 200ML/Bottle",10],["HEMICLAR Gel /1APPLY, 120ML/Tube",8],["WELLMOV tablet, 30 TABLET/BOX",6],["LIMITLESS ALLZYME Tablet, 30 TABLET/BOX",3],["THIOTACID 600 mg/tablet, 30 TABLET/BOX",2],["TORICOX 120 mg/tablet, 10 TABLET/BOX",2]]},"Wafaa Abdelrazig Mukhtar Moham":{"sec":"Gynecology","nostri":{"INTIMO":{"05":1,"06":5,"07":0}},"pure":{},"neTotal":293,"neTop":[["AVOCOM-M Cream 0.1/2%/1APPLY, 50GM/Tube",77],["EPIFASI Injection 5000IU/1Vial, 1Vial/Box",45],["RAFOL 1 mg/tablet, 50 TABLET/BOX",27],["PROLUTEX 25 mg/1.119 vial Injection, 7 VIAL/",21],["FEROGLOBIN Capsule /1Capsule, 30Capsule/Box",19],["FIXIT 150 mg/capsule, 14 CAPSULE/BOX",17]]},"Sara Mohammed Ahmed Albashee":{"sec":"Paediatric","nostri":{"NOSTRIDERM":{"05":0,"06":3,"07":0},"ORACURE":{"05":0,"06":0,"07":1},"NOSTRICURE":{"05":0,"06":0,"07":1}},"pure":{},"neTotal":288,"neTop":[["PROF SUSPENTION 100MG/5ML, 110ML/Bottle",54],["ZINCOVIT drop, 60 ML/CONTAINER",37],["NEORIN Syrup 0.5MG/1ML, 150ML/Bottle",35],["LEVOZAL 0.5 mg/ml Syrup, 200 ML/BOTTEL",27],["CEFPROZ 250 mg/5 ml Suspention, 100 ML/BOTTL",24],["SINEO 1 mg/drop, 20 ML/CONTAINER",18]]},"Nesrin Ibrahim Mohamed Elmokad":{"sec":"General Paracitioner","nostri":{"REFLEX":{"05":1,"06":0,"07":0},"RIZER":{"05":2,"06":0,"07":0},"NOSTRICURE":{"05":0,"06":0,"07":2}},"pure":{},"neTotal":13,"neTop":[["COLI-URINAL GRANULES /1BOTTEL, 60GM/BOX",4],["SUN-D 1000 iu/tablet, 90 TABLET/BOX",3],["ELICA-M Cream 0.1/2%/1APPLY, 30GM/Tube",1],["AGIOLAX POWDER /1SPOON, 250GM/Container",1],["LACTOSAT 125 mg/capsule, 30 CAPSULE/BOX",1],["NEORIN Syrup 0.5MG/1ML, 150ML/Bottle",1]]},"Huda Mohamed Khedr Ghali":{"sec":"Internal Medicine","nostri":{"ORACURE":{"05":0,"06":3,"07":0},"NOSTRICURE":{"05":0,"06":1,"07":0}},"pure":{"CENTROZON WOMEN":1},"neTotal":6,"neTop":[["MEBO 1 %/apply Ointment , 15 GM/TUBE",2],["VITALIFE Soft Gel Cap /1Capsule, 30Capsule/B",1],["MOTOVA PLUS 60 TAB 1500 MG BOTTEL",1],["LEVOX Film coated tablet 750MG/1Tablet, 5Tab",1],["COLI-URINAL GRANULES /1BOTTEL, 60GM/BOX",1]]},"Mohamed Adel Saudi Gabr":{"sec":"Paediatric","nostri":{"NOSTRICURE":{"05":0,"06":2,"07":2}},"pure":{},"neTotal":1963,"neTop":[["DEFADOL 160 mg/5 ml Syrup, 100 ML/BOTTLE",684],["PROF SUSPENTION 100MG/5ML, 110ML/Bottle",333],["NEORIN Syrup 0.5MG/1ML, 150ML/Bottle",258],["PULMICORT 0.5 mg/ml Ampoule, 20 AMPOULE/BOX",226],["RESPRED SYRUP 5MG/5ML, 120ML/BOTTLE",80],["KLAVOX SUSPENTION 312MG/5ML, 100ML/Bottle",66]]},"Khalid Ghalib Masar Alharbi":{"sec":"Dental","nostri":{"NOSTRICURE":{"05":1,"06":1,"07":1},"ORACURE":{"05":0,"06":0,"07":1}},"pure":{},"neTotal":1,"neTop":[["ZENCIN 500 mg/tablet, 3 TABLET/BOX",1]]},"Maysa Sayed Abdullah Abdeltawa":{"sec":"Internal Medicine","nostri":{"REFLEX":{"05":0,"06":1,"07":1}},"pure":{},"neTotal":512,"neTop":[["FORMIT XR Tablet 750MG/1Tablet, 30Tablet/BOX",34],["FEROSAC 20 MG/ML AMPOULE 5 AMPOULE",27],["LINTRA 5 mg/tablet, 30 TABLET/BOX",25],["EMANERA 40 mg/capsule, 28 CAPSULE/BOX",22],["COLI-URINAL GRANULES /1BOTTEL, 60GM/BOX",19],["ROFENAC 1 %/apply Gel, 50 GM/TUBE",18]]},"Gazala Gholam Mir":{"sec":"General Paracitioner","nostri":{"REFLEX":{"05":0,"06":1,"07":0}},"pure":{},"neTotal":229,"neTop":[["CLARA Tablet 10MG/1Tablet, 10Tablet/Box",52],["ROFENAC 1 %/apply Gel, 50 GM/TUBE",23],["CLARIXIN Tablet 500MG/1Tablet, 14Tablet/Box",20],["MUCOSOLVAN Fort 6 mg/ml Syrup, 250 ML/BOTTLE",16],["AGIOLAX POWDER /1SPOON, 250GM/Container",11],["ZENCIN 500 mg/tablet, 3 TABLET/BOX",7]]},"Abdulaziz Fahad Abdullah Alharbi":{"sec":"Dental","nostri":{"ORACURE":{"05":1,"06":0,"07":0}},"pure":{},"neTotal":33,"neTop":[["CATAFAST SACHETS 50MG/1Sachet, 9sachet/Box",31],["KLAVOX Tablet 375MG/1Tablet, 20Tablet/Box",1],["AUGMENTIN Tablet 1000MG/1Tablet, 14Tablet/Bo",1]]},"Ayman Othman Youssef Othman":{"sec":"Paediatric","nostri":{"NOSTRICURE":{"05":1,"06":0,"07":0}},"pure":{},"neTotal":78,"neTop":[["FLAZOL Syrup 125MG/5ML, 120ML/Bottle",15],["RESPRED SYRUP 5MG/5ML, 120ML/BOTTLE",11],["TOBREX Eye drops 0.3MG/1Drop, 5ML/Container",8],["PULMICORT 0.5 mg/ml Ampoule, 20 AMPOULE/BOX",5],["ELICA-M Cream 0.1/2%/1APPLY, 30GM/Tube",5],["FUSIBACT Ointment 2%/1APPLY, 15GM/Tube",5]]},"Mohamed Abdelaziz Abdelmoneem":{"sec":"General Paracitioner","nostri":{},"pure":{"CENTROZON":1},"neTotal":141,"neTop":[["AMYDRAMINE ADULT ml Syrup, 120 ML/BOTTLE",22],["AMYDRAMINE PED ml Syrup, 120 ML/BOTTLE",13],["KLAVOX Tablet 375MG/1Tablet, 20Tablet/Box",12],["FEXODINE 120 mg/tablet, 14 TABLET/BOX",10],["PULMICORT 0.5 mg/ml Ampoule, 20 AMPOULE/BOX",8],["AZI-ONCE SUSPENTION 200MG/5ML, 15ML/Bottle",7]]}},
-  sectionItem:{"Orthopaedic":{"items":{"REFLEX":312},"total":312},"Gynecology":{"items":{"INTIMO":272,"REFLEX":2,"RIZER":1},"total":275},"Urology":{"items":{"NOSTRIDERM":260,"REFLEX":9},"total":269},"Dental":{"items":{"ORACURE":181,"NOSTRICURE":12},"total":193},"Dermatology":{"items":{"RIZER":100,"NOSTRIDERM":27,"NOSTRICURE":1},"total":128},"General Paracitioner":{"items":{"REFLEX":50,"ORACURE":32,"NOSTRIDERM":3,"RIZER":2,"NOSTRICURE":5},"total":92},"Paediatric":{"items":{"NOSTRICURE":40,"NOSTRIDERM":3,"ORACURE":1},"total":44},"General Surgery":{"items":{"NOSTRIDERM":27,"RIZER":4,"NOSTRICURE":1},"total":32},"Neurology":{"items":{"REFLEX":30},"total":30},"Internal Medicine":{"items":{"REFLEX":2,"ORACURE":3,"NOSTRICURE":1},"total":6}}
+  ]
 };
 
 /* ==================== helpers ==================== */
@@ -1740,123 +1735,6 @@ V.pureherb=()=>{
 };
 
 /* ==================== render ==================== */
-/* ================= NEW REPORTS (A & B) ================= */
-function setDoc(v){state.doc=v;render();}
-
-/* --- #2 Doctor 360° --- */
-V.docprofile=()=>{
-  const names=Object.keys(DATA.doctorProfiles||{});
-  if(!names.length) return `<div class="panel"><div class="pend"><div class="big">🩺</div><h2>لا توجد بيانات أطباء</h2></div></div>`;
-  if(!state.doc || !DATA.doctorProfiles[state.doc]) state.doc=names[0];
-  const p=DATA.doctorProfiles[state.doc];
-  const opts=names.map(n=>`<option value="${n.replace(/"/g,'&quot;')}" ${n===state.doc?'selected':''}>${n}</option>`).join("");
-  const picker=`<div class="panel"><h2>اختر الطبيب (${names.length} طبيب يكتبون العلامات)</h2>
-    <select onchange="setDoc(this.value)" style="width:100%;max-width:520px;padding:11px 14px;border:1px solid var(--line);border-radius:12px;font-family:inherit;font-size:15px;background:var(--card);color:var(--ink);direction:rtl">${opts}</select></div>`;
-  const nTot={};M.forEach(m=>nTot[m]=Object.values(p.nostri).reduce((a,v)=>a+(v[m]||0),0));
-  const pTot=Object.values(p.pure||{}).reduce((a,v)=>a+v,0);
-  const dCur=delta(nTot[CUR],nTot[PREV]);
-  const kpis=`<div class="kpis">
-    <div class="kpi"><div class="lbl">القسم</div><div class="val" style="font-size:18px">${p.sec}</div></div>
-    <div class="kpi"><div class="lbl">كتابات نوستري (يوليو)</div><div class="val">${fmt(nTot[CUR])}</div>
-      <div class="delta ${dCur.c}">${dCur.t} مقابل يونيو</div></div>
-    <div class="kpi"><div class="lbl">كتابات PureHerb</div><div class="val">${fmt(pTot)}</div></div>
-    <div class="kpi"><div class="lbl">كتابات نير اكسبير</div><div class="val">${fmt(p.neTotal||0)}</div></div></div>`;
-  const nrows=Object.entries(p.nostri).sort((a,b)=>(b[1][CUR]||0)-(a[1][CUR]||0)).map(([k,v])=>{
-    const d=delta(v[CUR]||0,v[PREV]||0);
-    return `<tr><td>${k}</td><td class="num">${v["05"]||0}</td><td class="num">${v["06"]||0}</td><td class="num">${v["07"]||0}</td><td class="trend ${d.c}">${d.t}</td></tr>`;}).join("");
-  const ntable=`<div class="panel"><h2>أصناف نوستري اللي بيكتبها</h2>
-    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>مايو</th><th>يونيو</th><th>يوليو</th><th>التغير</th></tr></thead>
-    <tbody>${nrows||'<tr><td colspan="5">—</td></tr>'}</tbody></table></div></div>`;
-  const purearr=Object.entries(p.pure||{}).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
-  const ptable=purearr.length?`<div class="panel"><h2>أصناف PureHerb</h2>
-    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>كتابات</th></tr></thead>
-    <tbody>${purearr.map(x=>`<tr><td>${x[0]}</td><td class="num">${x[1]}</td></tr>`).join("")}</tbody></table></div></div>`:"";
-  const ne=p.neTop||[];
-  const netable=ne.length?`<div class="panel"><h2>أصناف نير اكسبير اللي بيكتبها — فرص تحريك المخزون</h2>
-    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>عدد الكتابات</th></tr></thead>
-    <tbody>${ne.map(x=>`<tr><td>${x[0]}</td><td class="num">${x[1]}</td></tr>`).join("")}</tbody></table></div></div>`:"";
-  return picker+kpis+ntable+ptable+netable;
-};
-
-/* --- #1 priorities + #3 churn + #4 conversion leak --- */
-V.alerts=()=>{
-  const itemChurn=DATA.nostriItems.map(it=>{
-    const u=itemVals(it,"all","units")||{}, a=u[PREV]||0,b=u[CUR]||0;
-    return {name:it.name,a,b,d:a?(b-a)/a*100:0};
-  }).filter(x=>x.d<=-10).sort((x,y)=>x.d-y.d);
-  const docChurn=Object.entries(DATA.doctorProfiles).map(([n,p])=>{
-    let m6=0,m7=0;Object.values(p.nostri).forEach(v=>{m6+=v["06"]||0;m7+=v["07"]||0;});
-    return {n,sec:p.sec,m6,m7,d:m6?(m7-m6)/m6*100:0};
-  }).filter(x=>x.m6>=8&&x.d<=-30).sort((x,y)=>x.d-y.d).slice(0,12);
-  const leak=DATA.nostriItems.map(it=>{
-    const w=INTERNAL.reduce((s,pp)=>s+((itemWr(it,pp)||{})[CUR]||0),0);
-    const u=INTERNAL.reduce((s,pp)=>s+((itemVals(it,pp,"units")||{})[CUR]||0),0);
-    return {name:it.name,w,u,conv:w?Math.round(u/w*100):0};
-  }).filter(x=>x.w>=10).sort((x,y)=>x.conv-y.conv);
-  const monthsLeft=exp=>{ if(!exp) return 99; const a=exp.split("-").map(Number); return (a[0]-2026)*12+(a[1]-8); };
-  const prio=DATA.nearExpire.all.map(r=>{
-    const[desc,qty,exp,w5,w6,w7]=r, ml=Math.max(monthsLeft(exp),0);
-    return {desc,qty,exp,w7,score:qty*(1/(ml+1))/(w7+1),doc:(DATA.nearExpire.topDocs&&DATA.nearExpire.topDocs[desc])||"—"};
-  }).sort((x,y)=>y.score-x.score).slice(0,20);
-  const chip=d=>`<span class="pill ${d<=-30?'r':d<0?'y':'g'}">${d>0?'▲ +':'▼ '}${Math.round(Math.abs(d))}%</span>`;
-  const prioT=`<div class="panel"><h2>🎯 أولويات النير اكسبير — أعلى 20 صنف راكد يحتاج تحريك</h2>
-    <p class="hint">الأولوية = المخزون × قرب الانتهاء ÷ (الكتابة الحالية+1) — والطبيب المقترح للتنشيط</p>
-    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>المخزون</th><th>ينتهي</th><th>كتابة يوليو</th><th>أكثر طبيب يكتبه</th></tr></thead>
-    <tbody>${prio.map(x=>`<tr><td>${x.desc}</td><td class="num" style="color:var(--down);font-weight:700">${fmt(x.qty)}</td>
-      <td class="num" style="font-size:12px">${x.exp}</td><td class="num">${x.w7}</td>
-      <td style="font-size:12px;color:var(--muted)">${x.doc}</td></tr>`).join("")}</tbody></table></div></div>`;
-  const leakT=`<div class="panel"><h2>💧 تسرّب التحويل — كتابة عالية وتحويل منخفض (داخلي · يوليو)</h2>
-    <p class="hint">وصفات بتتكتب وما بتتحوّلش بيع بنفس المعدل — فرصة متابعة صرف</p>
-    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>كتابات داخلي</th><th>وحدات داخلي</th><th>التحويل %</th></tr></thead>
-    <tbody>${leak.map(x=>`<tr><td>${x.name}</td><td class="num">${x.w}</td><td class="num">${x.u}</td>
-      <td><span class="pill ${convClass(x.conv)}">${x.conv}%</span></td></tr>`).join("")}</tbody></table></div></div>`;
-  const docT=`<div class="panel"><h2>📉 أطباء تراجعت كتابتهم (يوليو مقابل يونيو ≥ 30%)</h2>
-    <div class="tbl-wrap"><table><thead><tr><th>الطبيب</th><th>القسم</th><th>يونيو</th><th>يوليو</th><th>التغير</th></tr></thead>
-    <tbody>${docChurn.length?docChurn.map(x=>`<tr><td>${x.n}</td><td style="font-size:12px;color:var(--muted)">${x.sec}</td>
-      <td class="num">${x.m6}</td><td class="num">${x.m7}</td><td>${chip(x.d)}</td></tr>`).join(""):'<tr><td colspan="5">لا يوجد تراجع ملحوظ</td></tr>'}</tbody></table></div></div>`;
-  const itemT=`<div class="panel"><h2>🔻 أصناف نوستري مبيعاتها متراجعة (كل الصيدليات · يوليو مقابل يونيو)</h2>
-    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>يونيو</th><th>يوليو</th><th>التغير</th></tr></thead>
-    <tbody>${itemChurn.length?itemChurn.map(x=>`<tr><td>${x.name}</td><td class="num">${fmt(x.a)}</td><td class="num">${fmt(x.b)}</td><td>${chip(x.d)}</td></tr>`).join(""):'<tr><td colspan="4">لا يوجد تراجع</td></tr>'}</tbody></table></div></div>`;
-  return prioT+docT+itemT+leakT;
-};
-
-/* --- #5 item share + #6 section matrix + #7 concentration --- */
-V.analytics=()=>{
-  const totU=itemTotals("all","units")[CUR], totV=itemTotals("all","value")[CUR];
-  const shareRows=DATA.nostriItems.map(it=>{
-    const u=(itemVals(it,"all","units")||{})[CUR]||0, v=(itemVals(it,"all","value")||{})[CUR]||0;
-    return {name:it.name,u,v,sv:totV?v/totV*100:0};
-  }).sort((a,b)=>b.v-a.v);
-  const maxSv=Math.max(...shareRows.map(r=>r.sv),1);
-  const shareT=`<div class="panel"><h2>📦 حصة كل صنف من محفظة نوستري — يوليو (بالقيمة)</h2>
-    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>وحدات</th><th>ريال</th><th>الحصة</th><th></th></tr></thead>
-    <tbody>${shareRows.map(r=>`<tr><td>${r.name}</td><td class="num">${fmt(r.u)}</td><td class="num">${fmt(r.v)}</td>
-      <td class="num">${r.sv.toFixed(1)}%</td>
-      <td style="width:150px"><div class="conv"><div class="track"><div class="fill" style="width:${r.sv/maxSv*100}%;background:var(--c07)"></div></div></div></td></tr>`).join("")}</tbody></table></div></div>`;
-  const SI=DATA.sectionItem, items6=["RIZER","NOSTRICURE","REFLEX","INTIMO","NOSTRIDERM","ORACURE"];
-  const secRows=Object.entries(SI).map(([sec,o])=>{
-    const mx=Math.max(...items6.map(i=>o.items[i]||0),1);
-    const tds=items6.map(i=>{const c=o.items[i]||0;const a=c?(0.08+0.4*c/mx).toFixed(2):0;
-      return `<td class="num" style="background:rgba(15,118,110,${a})">${c||'·'}</td>`;}).join("");
-    return `<tr><td>${sec}</td>${tds}<td class="num" style="font-weight:700">${o.total}</td></tr>`;}).join("");
-  const secT=`<div class="panel"><h2>🏥 القسم × الصنف — أي قسم بيكتب أي صنف (إجمالي)</h2>
-    <p class="hint">كل ما اللون أغمق كل ما القسم بيكتب الصنف أكتر</p>
-    <div class="tbl-wrap"><table><thead><tr><th>القسم</th>${items6.map(i=>`<th>${i}</th>`).join("")}<th>الإجمالي</th></tr></thead>
-    <tbody>${secRows}</tbody></table></div></div>`;
-  const conc=INTERNAL.map(pp=>{
-    const docs=DATA.doctorsNostri[pp]||[], tot=wrTotals(pp)[CUR];
-    const top3=docs.slice(0,3).reduce((a,d)=>a+(d[3]||0),0);
-    return {p:pp,tot,top3,share:tot?Math.round(top3/tot*100):0,top:docs[0]?docs[0][0]:"—"};
-  });
-  const concT=`<div class="panel"><h2>🎯 تركيز الأطباء — اعتماد كل صيدلية على أعلى 3 أطباء (يوليو)</h2>
-    <p class="hint">نسبة عالية = خطر: معظم الكتابة معتمدة على عدد قليل من الأطباء</p>
-    <div class="tbl-wrap"><table><thead><tr><th>الصيدلية</th><th>كتابات أعلى 3</th><th>إجمالي الكتابات</th><th>نسبة التركيز</th><th>أعلى طبيب</th></tr></thead>
-    <tbody>${conc.map(c=>`<tr><td>${scopeLabel(c.p)}</td><td class="num">${c.top3}</td><td class="num">${c.tot}</td>
-      <td><span class="pill ${c.share>=60?'r':c.share>=40?'y':'g'}">${c.share}%</span></td>
-      <td style="font-size:12px;color:var(--muted)">${c.top}</td></tr>`).join("")}</tbody></table></div></div>`;
-  return shareT+secT+concT;
-};
-
 function needsScope(t){return t==="sales"||t==="writings"||t==="conversion"||t==="doctors";}
 function scopeReadyMap(t){return (t==="writings"||t==="conversion"||t==="doctors")?DATA.writingsReady:DATA.pharmacyReady;}
 function usesMetric(t){return t==="sales"||t==="share";}
@@ -1867,10 +1745,7 @@ const TAB_META={
   conversion:{t:"التحويل",s:"الكتابة مقابل الوحدات المباعة"},
   pureherb:{t:"مبيعات Pure herb",s:"كل الصيدليات · الداخلية · الخارجية — يوليو"},
   doctors:{t:"الأطباء",s:"ترتيب الأطباء حسب الكتابات"},
-  docprofile:{t:"الطبيب 360°",s:"ملف الطبيب: أصنافه · أقسامه · النير اكسبير"},
   expire:{t:"Near-Expire",s:"المخزون قريب الانتهاء والكتابات"},
-  alerts:{t:"تنبيهات",s:"تراجع الكتابة · تسرّب التحويل · أولويات النير اكسبير"},
-  analytics:{t:"تحليلات",s:"حصة الأصناف · القسم × الصنف · تركيز الأطباء"},
   credit:{t:"الأدوية آجل",s:"2025 مقابل 2026"}
 };
 function sectionStage(tab){
