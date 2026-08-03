@@ -1,163 +1,417 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>الإدارة التجارية — د. السيد حسن</title>
+<meta name="color-scheme" content="light dark">
+<title>NOSTRI — متابعة الأداء التجاري | مايو–يوليو 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   NOSTRI Tracking Dashboard — single file, offline, RTL
+   NOSTRI Tracking Dashboard — board presentation polish
    يتابع: المبيعات · الكتابات · التحويل · Near-Expire · PureHerb
-   المبيعات = بيانات حقيقية (تقرير مبيعات اصناف مورد نوستري 05/06/07-2026)
-   الباقي = بيانات نموذجية لحين وصول ملفاتها
    ============================================================ */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
-
 :root{
-  --teal:#0f766e; --teal-d:#06332e; --teal-l:#5eead4; --heading:#06332e;
-  --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f1f5f9; --card:#ffffff;
-  --up:#16a34a; --down:#dc2626; --warn:#d97706;
+  --teal:#0f766e; --teal-d:#06332e; --teal-m:#0b5c55; --teal-l:#5eead4; --heading:#06332e;
+  --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#eef3f6; --card:#ffffff;
+  --up:#15803d; --down:#b91c1c; --warn:#c2410c;
   --c05:#99f6e4; --c06:#2dd4bf; --c07:#0f766e;
-  --grid:rgba(148,163,184,.20);
-  --th-bg:#f5f8fc; --zebra:rgba(148,163,184,.06); --row-hover:#f1f6fb; --tfoot-bg:#effdf8;
+  --grid:rgba(148,163,184,.18);
+  --th-bg:#f3f7fa; --zebra:rgba(15,118,110,.035); --row-hover:#eef8f6; --tfoot-bg:#ecfdf5;
   --trend-line-color:rgba(15,23,42,.38);
-  --mesh1:rgba(45,212,191,.10); --mesh2:rgba(13,148,136,.06);
-  --sh-ambient:0 12px 32px -14px rgba(15,23,42,.16);
-  --sh-direct:0 2px 6px -2px rgba(15,23,42,.08);
-  --shadow:0 1px 3px rgba(15,23,42,.08),0 1px 2px rgba(15,23,42,.04);
+  --mesh1:rgba(45,212,191,.12); --mesh2:rgba(6,51,46,.05); --mesh3:rgba(14,116,144,.06);
+  --sh-ambient:0 14px 36px -18px rgba(15,23,42,.18);
+  --sh-direct:0 1px 2px rgba(15,23,42,.05);
+  --shadow:0 1px 2px rgba(15,23,42,.05),0 4px 12px -6px rgba(15,23,42,.08);
+  --radius:18px; --ease:cubic-bezier(.22,1,.36,1);
 }
 :root[data-theme="dark"]{
-  --teal-d:#062a26; --heading:#5eead4;
-  --ink:#e7eef7; --muted:#9fb1c4; --line:#26344c; --bg:#0b1220; --card:#131f33;
+  --teal-d:#041f1c; --heading:#99f6e4;
+  --ink:#e8eef7; --muted:#9fb1c4; --line:#243247; --bg:#081018; --card:#101b2c;
   --c05:#5eead4; --c06:#2dd4bf; --c07:#14b8a6;
-  --grid:rgba(148,163,184,.16);
-  --th-bg:#182740; --zebra:rgba(255,255,255,.03); --row-hover:#1b2942; --tfoot-bg:#123029;
-  --trend-line-color:rgba(226,232,240,.6);
-  --mesh1:rgba(45,212,191,.07); --mesh2:rgba(13,148,136,.10);
-  --sh-ambient:0 14px 34px -14px rgba(0,0,0,.55);
-  --sh-direct:0 2px 6px -2px rgba(0,0,0,.5);
-  --shadow:0 1px 3px rgba(0,0,0,.4);
+  --grid:rgba(148,163,184,.14);
+  --th-bg:#162437; --zebra:rgba(255,255,255,.025); --row-hover:#1a2b42; --tfoot-bg:#123029;
+  --trend-line-color:rgba(226,232,240,.55);
+  --mesh1:rgba(45,212,191,.08); --mesh2:rgba(20,184,166,.06); --mesh3:rgba(56,189,248,.05);
+  --sh-ambient:0 16px 40px -18px rgba(0,0,0,.55);
+  --sh-direct:0 1px 2px rgba(0,0,0,.35);
+  --shadow:0 1px 3px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;
+body{
+  font-family:'IBM Plex Sans Arabic',Tahoma,sans-serif;
   background:
-    radial-gradient(900px 420px at 100% -5%, var(--mesh1), transparent 60%),
-    radial-gradient(760px 420px at -5% 15%, var(--mesh2), transparent 55%),
-    var(--bg);
+    radial-gradient(980px 460px at 100% -8%, var(--mesh1), transparent 58%),
+    radial-gradient(820px 440px at -8% 12%, var(--mesh2), transparent 52%),
+    radial-gradient(700px 380px at 55% 100%, var(--mesh3), transparent 55%),
+    linear-gradient(180deg, #f7fafb 0%, var(--bg) 38%, var(--bg) 100%);
   background-attachment:fixed;
-  color:var(--ink);direction:rtl;-webkit-font-smoothing:antialiased}
-.wrap{max-width:1440px;margin:0 auto;padding:22px 24px 60px}
+  color:var(--ink);direction:rtl;-webkit-font-smoothing:antialiased;
+  line-height:1.55;
+}
+:root[data-theme="dark"] body{
+  background:
+    radial-gradient(980px 460px at 100% -8%, var(--mesh1), transparent 58%),
+    radial-gradient(820px 440px at -8% 12%, var(--mesh2), transparent 52%),
+    radial-gradient(700px 380px at 55% 100%, var(--mesh3), transparent 55%),
+    var(--bg);
+}
+.wrap{max-width:1680px;margin:0 auto;padding:18px 28px 56px}
 
-header.top{background:radial-gradient(ellipse at 50% 0%,#0f766e 0%,#06332e 75%);
-  color:#fff;border-radius:20px;padding:24px;box-shadow:0 8px 24px rgba(6,51,46,.22);
-  display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-header.top::after{content:"";position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent,rgba(94,234,212,.06),transparent);pointer-events:none}
-header.top h1{margin:0;font-size:23px;font-weight:700;letter-spacing:.3px;text-align:center}
-header.top .sub{color:var(--teal-l);font-size:13px;margin-top:4px}
+/* --- Board header --- */
+header.top{
+  background:
+    linear-gradient(120deg, rgba(94,234,212,.14), transparent 42%),
+    radial-gradient(ellipse at 70% 0%, #12897f 0%, #0a4f48 42%, #052925 100%);
+  color:#fff;border-radius:22px;padding:26px 32px 24px 64px;
+  box-shadow:0 18px 40px -20px rgba(6,51,46,.55), inset 0 1px 0 rgba(255,255,255,.12);
+  display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+  min-height:108px;
+}
+header.top::before{
+  content:"";position:absolute;inset:auto -10% -55% auto;width:280px;height:280px;border-radius:50%;
+  background:radial-gradient(circle, rgba(94,234,212,.18), transparent 68%);pointer-events:none;
+}
+header.top::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(105deg, transparent 30%, rgba(255,255,255,.05) 48%, transparent 66%);
+  pointer-events:none;animation:sheen 7s var(--ease) infinite;
+}
+@keyframes sheen{0%,70%{transform:translateX(8%)}100%{transform:translateX(-55%)}}
+.brand-block{text-align:center;position:relative;z-index:1;max-width:720px}
+.brand{
+  font-family:'Alexandria','IBM Plex Sans Arabic',sans-serif;
+  font-size:clamp(34px,4.6vw,48px);font-weight:900;letter-spacing:.18em;
+  line-height:1;margin:0;
+  background:linear-gradient(180deg,#ffffff 20%,#99f6e4 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 2px 10px rgba(0,0,0,.18));
+}
+header.top h1{
+  margin:10px 0 0;font-size:clamp(15px,1.7vw,18px);font-weight:600;letter-spacing:.2px;
+  text-align:center;color:rgba(240,253,250,.92);
+}
+.period{
+  display:inline-flex;align-items:center;gap:8px;margin-top:12px;
+  padding:5px 14px;border-radius:999px;font-size:12.5px;font-weight:700;
+  color:#ecfeff;background:rgba(4,30,27,.35);border:1px solid rgba(153,246,228,.28);
+  letter-spacing:.2px;
+}
+.period::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--teal-l);box-shadow:0 0 0 3px rgba(94,234,212,.2)}
 .badge{background:#dcfce7;color:#166534;font-weight:700;font-size:12px;padding:5px 12px;border-radius:999px}
 
-.mlegend{display:flex;gap:14px;flex-wrap:wrap;margin:18px 2px 4px;font-size:13px;color:var(--muted);align-items:center}
-.mlegend b{color:var(--ink)}
-.dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-left:5px;vertical-align:middle}
+/* --- Toolbar --- */
+.mlegend{
+  display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 0;font-size:13px;color:var(--muted);
+  align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:16px;
+  background:color-mix(in srgb,var(--card) 88%, transparent);
+  backdrop-filter:blur(8px);box-shadow:var(--sh-direct);
+}
+.mlegend b{color:var(--ink);font-weight:700}
+.month-chip{
+  display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;
+  background:color-mix(in srgb,var(--card) 70%, var(--bg));border:1px solid var(--line);
+  font-weight:600;color:var(--ink);font-size:12.5px;
+}
+.month-chip.current{border-color:color-mix(in srgb,var(--teal) 45%, var(--line));
+  background:color-mix(in srgb,var(--teal) 10%, var(--card))}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle;
+  box-shadow:inset 0 0 0 1px rgba(15,23,42,.08)}
 .spacer{flex:1}
 .toggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--card)}
-.toggle button{border:0;background:transparent;padding:7px 16px;font-family:inherit;font-size:13px;
-  font-weight:600;color:var(--muted);cursor:pointer}
+.toggle button{border:0;background:transparent;padding:8px 16px;font-family:inherit;font-size:13px;
+  font-weight:600;color:var(--muted);cursor:pointer;transition:background .15s,color .15s}
 .toggle button.active{background:var(--teal);color:#fff}
+.toggle button:hover:not(.active){color:var(--teal)}
 
-#menuToggle{position:absolute;right:20px;top:50%;transform:translateY(-50%);
-  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;
-  width:44px;height:44px;border-radius:12px;font-size:20px;line-height:1;cursor:pointer;
-  z-index:2;transition:.15s}
-#menuToggle:hover{background:rgba(255,255,255,.28)}
-.layout{display:flex;gap:18px;align-items:flex-start;margin-top:18px}
+/* --- Edge sidebar + collapse --- */
+#menuToggle{
+  position:absolute;inset-inline-start:14px;top:50%;transform:translateY(-50%);
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;
+  width:42px;height:42px;border-radius:12px;font-size:18px;line-height:1;cursor:pointer;
+  z-index:2;transition:background .15s,transform .15s;backdrop-filter:blur(6px)
+}
+#menuToggle:hover{background:rgba(255,255,255,.26);transform:translateY(-50%) scale(1.04)}
+.layout{display:flex;gap:14px;align-items:flex-start;margin-top:16px}
 .main{flex:1;min-width:0}
-.sidebar{flex:0 0 210px;display:flex;flex-direction:column;gap:6px;position:sticky;top:16px}
-.sidebar button{border:1px solid var(--line);background:var(--card);color:var(--muted);
-  padding:12px 16px;border-radius:12px;font-family:inherit;font-size:14px;font-weight:600;
-  cursor:pointer;transition:.15s;box-shadow:var(--shadow);text-align:right;width:100%}
-.sidebar button:hover{color:var(--teal);border-color:var(--teal-l);transform:translateX(-2px)}
-.sidebar button.active{background:linear-gradient(135deg,#0f766e,#0b5c55);color:#fff;
-  border-color:var(--teal);box-shadow:0 4px 12px rgba(15,118,110,.28)}
+.sidebar{
+  flex:0 0 168px;display:flex;flex-direction:column;gap:4px;position:sticky;top:12px;
+  margin-inline-start:-6px;padding:8px 6px;border:1px solid var(--line);border-radius:16px;
+  background:color-mix(in srgb,var(--card) 94%, transparent);box-shadow:var(--sh-direct);
+}
+.sidebar .nav-label{
+  font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.06em;
+  padding:2px 8px 6px;
+}
+.sidebar button{
+  border:1px solid transparent;background:transparent;color:var(--muted);
+  padding:10px 10px;border-radius:11px;font-family:inherit;font-size:12.5px;font-weight:700;
+  cursor:pointer;transition:all .18s var(--ease);text-align:right;width:100%;position:relative;
+}
+.sidebar button::before{
+  content:"";position:absolute;inset-inline-start:0;top:22%;bottom:22%;width:3px;border-radius:0 3px 3px 0;
+  background:transparent;transition:background .18s
+}
+.sidebar button:hover{color:var(--teal);background:color-mix(in srgb,var(--teal) 8%, transparent)}
+.sidebar button:hover::before{background:var(--teal-l)}
+.sidebar button.active{
+  color:#fff;background:linear-gradient(135deg,var(--teal) 0%,var(--teal-m) 100%);
+  box-shadow:0 8px 16px -10px rgba(15,118,110,.7);
+}
+.sidebar button.active::before{background:var(--teal-l)}
 body.nav-collapsed .sidebar{display:none}
+body.nav-collapsed .layout{gap:0}
 @media(max-width:820px){
+  .wrap{padding:14px 14px 48px}
+  header.top{padding:22px 56px 20px;min-height:96px;border-radius:18px}
   .layout{flex-direction:column}
-  .sidebar{flex-basis:auto;width:100%;flex-direction:row;flex-wrap:wrap;position:static}
-  .sidebar button{width:auto}
+  .sidebar{
+    flex-basis:auto;width:100%;flex-direction:row;flex-wrap:wrap;position:static;
+    margin:0;padding:8px;
+  }
+  .sidebar .nav-label{width:100%}
+  .sidebar button{width:auto;flex:1 1 auto;text-align:center}
 }
 
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
 .chips button{border:1px solid var(--line);background:var(--card);color:var(--muted);
-  padding:7px 14px;border-radius:999px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
-.chips button.active{background:var(--teal-d);color:#fff;border-color:var(--teal-d)}
+  padding:8px 14px;border-radius:999px;font-family:inherit;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .15s}
+.chips button:hover{color:var(--teal);border-color:var(--teal-l)}
+.chips button.active{background:var(--teal-d);color:#fff;border-color:var(--teal-d);
+  box-shadow:0 6px 14px -8px rgba(6,51,46,.55)}
 .chips button.pending{opacity:.55}
 
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:20px}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;
-  box-shadow:var(--sh-ambient),var(--sh-direct);position:relative;overflow:hidden;transition:transform .18s,box-shadow .18s}
-.kpi::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:var(--teal-l);opacity:.7}
-.kpi:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(15,23,42,.10)}
-.kpi .lbl{font-size:13px;color:var(--muted);font-weight:600}
-.kpi .val{font-size:27px;font-weight:700;margin-top:7px;line-height:1;letter-spacing:-.5px}
-.kpi .unit{font-size:14px;color:var(--muted);font-weight:600}
-.kpi .delta{font-size:13px;font-weight:700;margin-top:8px;display:inline-flex;align-items:center;gap:4px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px 16px;
+  box-shadow:var(--sh-ambient),var(--sh-direct);position:relative;overflow:hidden;
+  transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+.kpi::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;
+  background:linear-gradient(180deg,var(--teal-l),var(--teal))}
+.kpi::after{content:"";position:absolute;inset-inline-end:-30px;top:-30px;width:90px;height:90px;
+  border-radius:50%;background:radial-gradient(circle, color-mix(in srgb,var(--teal) 10%, transparent), transparent 70%);
+  pointer-events:none}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 16px 28px -18px rgba(15,23,42,.22),var(--sh-direct)}
+.kpi .lbl{font-size:12.5px;color:var(--muted);font-weight:600;letter-spacing:.1px}
+.kpi .val{font-family:'Alexandria','IBM Plex Sans Arabic',sans-serif;
+  font-size:clamp(24px,2.4vw,30px);font-weight:800;margin-top:8px;line-height:1.05;letter-spacing:-.4px;
+  color:var(--ink)}
+.kpi .val .rng{margin:0 .35em;opacity:.7;font-weight:700}
+.kpi .delta{font-size:12.5px;font-weight:700;margin-top:10px;display:inline-flex;align-items:center;gap:4px}
 .kpi .delta.up{color:var(--up)} .kpi .delta.down{color:var(--down)} .kpi .delta.flat{color:var(--muted)}
+.kpi.hero{
+  background:linear-gradient(145deg, color-mix(in srgb,var(--teal) 12%, var(--card)) 0%, var(--card) 55%);
+  border-color:color-mix(in srgb,var(--teal) 35%, var(--line));
+}
+.kpi.hero .val{font-size:clamp(28px,3vw,34px);color:var(--heading)}
+.kpi.hero::before{width:5px;background:linear-gradient(180deg,#99f6e4,#0f766e)}
 
-.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;
-  box-shadow:var(--sh-ambient),var(--sh-direct);margin-bottom:18px;transition:box-shadow .18s}
-.panel:hover{box-shadow:0 16px 34px -16px rgba(15,23,42,.22),var(--sh-direct)}
-.panel h2{margin:0 0 4px;font-size:17px;color:var(--heading);font-weight:700}
+/* --- Section stage (board storytelling) --- */
+.section-stage{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  margin:0 0 16px;padding:16px 18px;border-radius:16px;position:relative;overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--teal) 22%, var(--line));
+  background:
+    linear-gradient(120deg, color-mix(in srgb,var(--teal) 10%, var(--card)), var(--card) 55%),
+    var(--card);
+  box-shadow:var(--sh-direct);
+  animation:fadeRise .4s var(--ease) both;
+}
+.section-stage::after{
+  content:"";position:absolute;inset-inline-end:-40px;top:-50px;width:160px;height:160px;border-radius:50%;
+  background:radial-gradient(circle, color-mix(in srgb,var(--teal-l) 35%, transparent), transparent 70%);
+  pointer-events:none;
+}
+.section-stage .eyebrow{
+  font-size:11px;font-weight:700;color:var(--teal);letter-spacing:.08em;margin-bottom:4px;
+}
+.section-stage h2{
+  margin:0;font-family:'Alexandria','IBM Plex Sans Arabic',sans-serif;font-size:clamp(20px,2.2vw,26px);
+  font-weight:800;color:var(--heading);letter-spacing:.2px;line-height:1.2;
+}
+.section-stage .sub{margin:6px 0 0;color:var(--muted);font-size:13px;font-weight:500;max-width:52ch}
+.section-stage .stamp{
+  flex:0 0 auto;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:700;
+  color:var(--teal-d);background:color-mix(in srgb,var(--teal-l) 28%, transparent);
+  border:1px solid color-mix(in srgb,var(--teal) 25%, transparent);white-space:nowrap;
+}
+:root[data-theme="dark"] .section-stage .stamp{color:var(--teal-l)}
+#view{animation:viewIn .35s var(--ease)}
+@keyframes viewIn{from{opacity:.35;translate:0 6px}to{opacity:1;translate:0 0}}
+
+/* --- Presentation / board projector mode --- */
+body.present{
+  --bg:#071310;
+}
+body.present .wrap{max-width:1780px;padding:14px 18px 40px}
+body.present .sidebar{flex-basis:150px}
+body.present .kpi .val{font-size:clamp(28px,3.2vw,36px)}
+body.present .section-stage h2{font-size:clamp(24px,2.8vw,30px)}
+body.present .chart{height:270px}
+body.present .mlegend,.section-stage .stamp{font-size:13px}
+body.present header.top{min-height:96px}
+#presentBtn.active,#storyBtn.active{color:#fff;background:var(--teal);border-color:var(--teal)}
+
+/* --- Live insights --- */
+.insights{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 14px}
+.insight{
+  flex:1 1 220px;display:flex;align-items:flex-start;gap:10px;padding:12px 14px;
+  border-radius:14px;border:1px solid var(--line);background:var(--card);
+  box-shadow:var(--sh-direct);font-size:13px;font-weight:600;line-height:1.45;
+  animation:fadeRise .45s var(--ease) both;
+}
+.insight .idot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex:0 0 auto}
+.insight.up{border-color:color-mix(in srgb,var(--up) 35%, var(--line));
+  background:color-mix(in srgb,var(--up) 7%, var(--card))}
+.insight.up .idot{background:var(--up);box-shadow:0 0 0 3px color-mix(in srgb,var(--up) 18%, transparent)}
+.insight.down{border-color:color-mix(in srgb,var(--down) 35%, var(--line));
+  background:color-mix(in srgb,var(--down) 7%, var(--card))}
+.insight.down .idot{background:var(--down);box-shadow:0 0 0 3px color-mix(in srgb,var(--down) 18%, transparent)}
+.insight.flat{border-color:color-mix(in srgb,var(--teal) 30%, var(--line));
+  background:color-mix(in srgb,var(--teal) 6%, var(--card))}
+.insight.flat .idot{background:var(--teal);box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 16%, transparent)}
+.insights .insight:nth-child(2){animation-delay:.05s}
+.insights .insight:nth-child(3){animation-delay:.1s}
+
+/* --- Spotlight hero --- */
+.spotlight{
+  display:grid;grid-template-columns:1.15fr .85fr;gap:0;margin:0 0 16px;
+  border-radius:20px;overflow:hidden;border:1px solid color-mix(in srgb,var(--teal) 28%, var(--line));
+  box-shadow:var(--sh-ambient),var(--sh-direct);animation:fadeRise .5s var(--ease) both;
+  background:var(--card);
+}
+.spotlight .spot-main{
+  padding:22px 24px;position:relative;overflow:hidden;
+  background:
+    radial-gradient(420px 180px at 100% 0%, color-mix(in srgb,var(--teal-l) 28%, transparent), transparent 70%),
+    linear-gradient(135deg, #06332e 0%, #0f766e 55%, #12897f 100%);
+  color:#fff;
+}
+.spotlight .spot-main::after{
+  content:"";position:absolute;inset-inline-start:-30px;bottom:-40px;width:140px;height:140px;border-radius:50%;
+  background:rgba(255,255,255,.06);pointer-events:none;
+}
+.spotlight .tag{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;
+  font-size:11px;font-weight:800;letter-spacing:.06em;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:#ecfeff;
+}
+.spotlight .tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--teal-l)}
+.spotlight h3{
+  margin:12px 0 6px;font-family:'Alexandria','IBM Plex Sans Arabic',sans-serif;
+  font-size:clamp(22px,2.6vw,30px);font-weight:900;line-height:1.2;letter-spacing:.2px;
+}
+.spotlight .spot-sub{margin:0;color:rgba(236,254,250,.85);font-size:13.5px;font-weight:500;max-width:40ch}
+.spotlight .spot-side{
+  padding:20px 22px;display:flex;flex-direction:column;justify-content:center;gap:12px;
+  background:linear-gradient(180deg, color-mix(in srgb,var(--teal) 6%, var(--card)), var(--card));
+}
+.spotlight .metric{display:flex;flex-direction:column;gap:2px}
+.spotlight .metric .ml{font-size:12px;color:var(--muted);font-weight:700}
+.spotlight .metric .mv{
+  font-family:'Alexandria','IBM Plex Sans Arabic',sans-serif;font-size:clamp(22px,2.4vw,28px);
+  font-weight:800;color:var(--heading);line-height:1.1;
+}
+.spotlight .metric .md{font-size:12.5px;font-weight:700}
+@media(max-width:820px){.spotlight{grid-template-columns:1fr}}
+
+/* --- Executive story mode --- */
+.story-bar{
+  position:fixed;inset-inline:16px 16px;bottom:16px;z-index:80;display:none;
+  padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.18);
+  background:rgba(6,51,46,.92);color:#ecfeff;backdrop-filter:blur(10px);
+  box-shadow:0 16px 40px -18px rgba(0,0,0,.55);
+}
+body.storying .story-bar{display:block;animation:fadeRise .35s var(--ease) both}
+body.storying .sidebar{opacity:.55}
+.story-bar .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.story-bar .stitle{font-weight:800;font-size:13.5px;flex:1}
+.story-bar .smeta{font-size:12px;opacity:.85;font-weight:600}
+.story-bar .track{width:100%;height:6px;border-radius:999px;background:rgba(255,255,255,.16);margin-top:10px;overflow:hidden}
+.story-bar .fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#5eead4,#99f6e4);
+  transition:width .25s linear}
+.story-bar button{
+  border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;
+  border-radius:10px;padding:7px 12px;font-family:inherit;font-weight:700;font-size:12px;cursor:pointer;
+}
+.story-bar button:hover{background:rgba(255,255,255,.2)}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 22px 20px;
+  box-shadow:var(--sh-ambient),var(--sh-direct);margin-bottom:16px;transition:box-shadow .2s var(--ease)}
+.panel:hover{box-shadow:0 18px 36px -20px rgba(15,23,42,.2),var(--sh-direct)}
+.panel h2{
+  margin:0 0 14px;font-size:16px;color:var(--heading);font-weight:700;
+  font-family:'Alexandria','IBM Plex Sans Arabic',sans-serif;letter-spacing:.1px;
+  display:flex;align-items:center;gap:10px;
+}
+.panel h2::before{
+  content:"";width:8px;height:8px;border-radius:50%;flex:0 0 auto;
+  background:var(--teal);box-shadow:0 0 0 4px color-mix(in srgb,var(--teal) 16%, transparent);
+}
 .panel .hint{color:var(--muted);font-size:13px;margin:0 0 16px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media(max-width:820px){.grid2{grid-template-columns:1fr}}
 
-.chart{display:flex;align-items:flex-end;gap:18px;height:220px;padding:26px 6px 0;
-  border-bottom:2px solid var(--line);position:relative}
-.chart::before{content:"";position:absolute;left:6px;right:6px;top:26px;bottom:0;z-index:0;pointer-events:none;
+.chart{display:flex;align-items:flex-end;gap:18px;height:236px;padding:28px 8px 0;
+  border-bottom:2px solid var(--line);position:relative;border-radius:4px}
+.chart::before{content:"";position:absolute;left:8px;right:8px;top:28px;bottom:0;z-index:0;pointer-events:none;
   background:repeating-linear-gradient(to top,var(--grid) 0 1px,transparent 1px 25%)}
 .chgroup{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:8px;height:100%;position:relative;z-index:1}
-.bar{width:38px;border-radius:8px 8px 0 0;position:relative;transition:height .4s ease;min-height:2px;
-  box-shadow:0 6px 10px -6px rgba(15,23,42,.35)}
+.bar{width:40px;border-radius:10px 10px 3px 3px;position:relative;transition:height .45s var(--ease);min-height:2px;
+  box-shadow:0 8px 14px -8px rgba(15,23,42,.35)}
 .bar::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-  background:linear-gradient(180deg,rgba(255,255,255,.32),rgba(255,255,255,0) 42%,rgba(0,0,0,.12))}
-.bar .cap{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:700;white-space:nowrap}
-.chlabels{display:flex;gap:18px;margin-top:8px}
-.chlabels span{flex:1;text-align:center;font-size:13px;font-weight:600;color:var(--muted)}
+  background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,0) 40%,rgba(0,0,0,.1))}
+.bar .cap{position:absolute;top:-24px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:700;white-space:nowrap}
+.chlabels{display:flex;gap:18px;margin-top:10px}
+.chlabels span{flex:1;text-align:center;font-size:13px;font-weight:700;color:var(--muted)}
 
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line)}
-th{background:var(--th-bg);font-weight:700;color:var(--muted);font-size:13px}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px}
+th,td{padding:11px 13px;text-align:right;border-bottom:1px solid var(--line)}
+th{background:var(--th-bg);font-weight:700;color:var(--muted);font-size:12px;letter-spacing:.02em;
+  position:sticky;top:0;z-index:1}
 tbody tr:nth-child(even){background:var(--zebra)}
 tbody tr:hover{background:var(--row-hover)}
-tfoot td{font-weight:700;background:var(--tfoot-bg);border-top:3px solid var(--teal-l)}
+tbody td:first-child{font-weight:600}
+tfoot td{font-weight:700;background:var(--tfoot-bg);border-top:2px solid var(--teal-l);border-bottom:0}
 .num{font-variant-numeric:tabular-nums;font-weight:600}
-.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--line)}
+.tbl-wrap{overflow:auto;border-radius:14px;border:1px solid var(--line);max-width:100%}
 
 .conv{display:flex;align-items:center;gap:10px}
-.conv .track{flex:1;height:12px;background:var(--line);border-radius:999px;overflow:hidden}
+.conv .track{flex:1;height:10px;background:color-mix(in srgb,var(--line) 80%, transparent);
+  border-radius:999px;overflow:hidden}
 .conv .fill{height:100%;border-radius:999px}
-.pill{font-weight:700;font-size:13px;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill{font-weight:700;font-size:12px;padding:4px 10px;border-radius:999px;white-space:nowrap}
 .pill.g{background:#dcfce7;color:#166534}.pill.y{background:#fef9c3;color:#854d0e}.pill.r{background:#fee2e2;color:#991b1b}
+:root[data-theme="dark"] .pill.g{background:#14532d;color:#bbf7d0}
+:root[data-theme="dark"] .pill.y{background:#713f12;color:#fde68a}
+:root[data-theme="dark"] .pill.r{background:#7f1d1d;color:#fecaca}
 .trend{font-size:12px;font-weight:700}
 .up{color:var(--up)}.down{color:var(--down)}.flat{color:var(--muted)}
-.foot{color:var(--muted);font-size:12px;text-align:center;margin-top:30px;line-height:1.7}
-.note{border-radius:12px;padding:12px 16px;font-size:13px;margin-bottom:18px}
+.foot{color:var(--muted);font-size:12px;text-align:center;margin-top:28px;line-height:1.8;
+  padding-top:18px;border-top:1px solid var(--line)}
+.note{border-radius:14px;padding:12px 16px;font-size:13px;margin-bottom:16px}
 .note.demo{background:#fffbeb;border:1px solid #fde68a;color:#854d0e}
 .note.real{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
 .note.info{background:#ecfeff;border:1px solid #a5f3fc;color:#155e75}
-.pend{text-align:center;color:var(--muted);padding:40px 20px}
-.pend .big{font-size:40px}
+.pend{text-align:center;color:var(--muted);padding:48px 20px}
+.pend .big{font-size:36px;opacity:.7}
 
 /* --- entrance motion --- */
-@keyframes fadeRise{from{opacity:0;translate:0 10px}to{opacity:1;translate:0 0}}
-@keyframes barRise{from{opacity:0;translate:0 14px}to{opacity:1;translate:0 0}}
-.kpi{animation:fadeRise .45s ease both}
+@keyframes fadeRise{from{opacity:0;translate:0 12px}to{opacity:1;translate:0 0}}
+@keyframes barRise{from{opacity:0;translate:0 16px}to{opacity:1;translate:0 0}}
+@keyframes brandIn{from{opacity:0;letter-spacing:.32em;filter:blur(4px)}to{opacity:1;letter-spacing:.18em;filter:blur(0)}}
+.brand{animation:brandIn .7s var(--ease) both}
+.kpi{animation:fadeRise .45s var(--ease) both}
 .kpis .kpi:nth-child(2){animation-delay:.05s}
 .kpis .kpi:nth-child(3){animation-delay:.10s}
 .kpis .kpi:nth-child(4){animation-delay:.15s}
 .kpis .kpi:nth-child(5){animation-delay:.20s}
 .kpis .kpi:nth-child(6){animation-delay:.25s}
-.panel{animation:fadeRise .5s ease both}
-.bar{animation:barRise .5s cubic-bezier(.2,.75,.2,1) both}
+.panel{animation:fadeRise .5s var(--ease) both}
+.bar{animation:barRise .55s cubic-bezier(.2,.75,.2,1) both}
 .chart .chgroup:nth-child(1) .bar{animation-delay:.04s}
 .chart .chgroup:nth-child(2) .bar{animation-delay:.12s}
 .chart .chgroup:nth-child(3) .bar{animation-delay:.20s}
@@ -168,74 +422,111 @@ tfoot td{font-weight:700;background:var(--tfoot-bg);border-top:3px solid var(--t
 /* --- trend delta chips --- */
 .trend-chip{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:999px;
   font-weight:700;font-size:12px;white-space:nowrap;line-height:1.5}
-.trend-chip.up{background:color-mix(in srgb,var(--up) 16%,transparent);color:var(--up)}
-.trend-chip.down{background:color-mix(in srgb,var(--down) 16%,transparent);color:var(--down)}
-.trend-chip.flat{background:color-mix(in srgb,var(--muted) 15%,transparent);color:var(--muted)}
+.trend-chip.up{background:color-mix(in srgb,var(--up) 14%,transparent);color:var(--up)}
+.trend-chip.down{background:color-mix(in srgb,var(--down) 14%,transparent);color:var(--down)}
+.trend-chip.flat{background:color-mix(in srgb,var(--muted) 14%,transparent);color:var(--muted)}
 
 /* --- control buttons / inputs --- */
 .ctrlbtn{border:1px solid var(--line);background:var(--card);color:var(--muted);width:38px;height:38px;
-  border-radius:12px;font-size:16px;cursor:pointer;line-height:1;transition:.15s}
-.ctrlbtn:hover{color:var(--teal);border-color:var(--teal-l)}
-#neSearch{background:var(--card);color:var(--ink)}
+  border-radius:12px;font-size:15px;cursor:pointer;line-height:1;transition:.15s}
+.ctrlbtn:hover{color:var(--teal);border-color:var(--teal-l);transform:translateY(-1px)}
+#neSearch{background:var(--card);color:var(--ink);outline:none;
+  width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:12px;
+  font-family:inherit;font-size:14px;direction:rtl}
+#neSearch:focus{border-color:var(--teal)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 18%, transparent)}
+.ne-tools{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.ne-tools .ne-status{margin:0}
+@media(min-width:720px){
+  .ne-tools{flex-direction:row;align-items:center}
+  .ne-tools #neSearch{flex:1;min-width:0}
+  .ne-tools .ne-status{flex:0 0 auto}
+}
 
 /* --- chart tooltip + trend line --- */
 #barTip{position:fixed;z-index:50;pointer-events:none;background:var(--teal-d);color:#fff;
-  padding:5px 10px;border-radius:8px;font-size:12px;font-weight:700;opacity:0;transition:opacity .12s;
+  padding:6px 11px;border-radius:9px;font-size:12px;font-weight:700;opacity:0;transition:opacity .12s;
   transform:translate(-50%,-100%);white-space:nowrap;box-shadow:var(--sh-direct)}
 .trendline polyline{stroke:var(--trend-line-color)}
 .trendline circle{stroke:var(--trend-line-color);fill:var(--card)}
 
-@media (prefers-reduced-motion:reduce){.kpi,.panel,.bar{animation:none}}
+@media (prefers-reduced-motion:reduce){
+  .kpi,.panel,.bar,.brand,header.top::after,.insight,.spotlight,#view,.section-stage{animation:none}
+}
 @media print{
-  body{background:#fff}
-  #menuToggle,.sidebar,.chips,#metricToggle,#themeBtn,#printBtn,.spacer{display:none!important}
-  .layout{display:block;margin-top:0}
+  body{background:#fff!important;color:#0f172a}
+  #menuToggle,.sidebar,.chips,#metricToggle,#themeBtn,#printBtn,#presentBtn,#storyBtn,.story-bar,.spacer,.mlegend .toggle{display:none!important}
+  .section-stage,.spotlight,.insight{box-shadow:none;break-inside:avoid}
+  .layout{display:block;margin-top:8px}
   .main{width:100%}
-  header.top,.panel,.kpi{box-shadow:none}
-  .panel,.kpi{break-inside:avoid;border:1px solid #cbd5e1}
-  .kpi:hover,.panel:hover{translate:none;box-shadow:none}
-  .tbl-wrap{overflow:visible}
+  .mlegend{box-shadow:none;backdrop-filter:none;border-color:#cbd5e1;background:#fff;padding:8px 0;border:0}
+  header.top{
+    background:#06332e!important;color:#fff;box-shadow:none;border-radius:12px;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;min-height:auto;padding:18px
+  }
+  header.top::before,header.top::after{display:none}
+  .brand{-webkit-text-fill-color:#fff;background:none;filter:none;color:#fff}
+  .panel,.kpi{box-shadow:none;break-inside:avoid;border:1px solid #cbd5e1}
+  .kpi:hover,.panel:hover{transform:none;box-shadow:none}
+  .tbl-wrap{overflow:visible;border-color:#cbd5e1}
+  th{position:static}
+  .foot{border:0}
 }
 </style>
+</head>
+<body>
 
 <div class="wrap">
   <header class="top">
     <button id="menuToggle" aria-label="طي القائمة" title="طي / فتح القائمة">☰</button>
-    <div>
+    <div class="brand-block">
+      <div class="brand">NOSTRI</div>
       <h1>الإدارة التجارية — د. السيد حسن</h1>
+      <div class="period">متابعة الأداء · مايو ← يوليو 2026</div>
     </div>
   </header>
 
   <div class="mlegend">
-    <span><span class="dot" style="background:var(--c05)"></span><b>مايو 05</b></span>
-    <span><span class="dot" style="background:var(--c06)"></span><b>يونيو 06</b></span>
-    <span><span class="dot" style="background:var(--c07)"></span><b>يوليو 07 (الحالي)</b></span>
+    <span class="month-chip"><span class="dot" style="background:var(--c05)"></span><b>مايو 05</b></span>
+    <span class="month-chip"><span class="dot" style="background:var(--c06)"></span><b>يونيو 06</b></span>
+    <span class="month-chip current"><span class="dot" style="background:var(--c07)"></span><b>يوليو 07 · الحالي</b></span>
     <span class="spacer"></span>
     <span class="toggle" id="metricToggle">
       <button data-metric="units" class="active">وحدات مباعة</button>
       <button data-metric="value">قيمة (ريال)</button>
     </span>
-    <button id="themeBtn" class="ctrlbtn" title="الوضع الداكن" aria-label="تبديل الوضع الداكن">🌙</button>
-    <button id="printBtn" class="ctrlbtn" title="طباعة / PDF" aria-label="طباعة">🖨️</button>
+    <button id="themeBtn" class="ctrlbtn" title="الوضع الداكن" aria-label="تبديل الوضع الداكن">◐</button>
+    <button id="storyBtn" class="ctrlbtn" title="عرض تلقائي" aria-label="عرض تلقائي">▶</button>
+    <button id="presentBtn" class="ctrlbtn" title="وضع عرض" aria-label="وضع عرض">▣</button>
+    <button id="printBtn" class="ctrlbtn" title="طباعة / PDF" aria-label="طباعة">⎙</button>
   </div>
 
   <div class="layout">
-    <nav class="sidebar" id="tabs">
-      <button data-tab="sales" class="active">📈 مبيعات Nostri</button>
-      <button data-tab="share">🏬 المشاركة</button>
-      <button data-tab="writings">✍️ الكتابات</button>
-      <button data-tab="conversion">🔄 التحويل</button>
-      <button data-tab="pureherb">🌿 مبيعات Pure herb</button>
-      <button data-tab="doctors">👨‍⚕️ الأطباء</button>
-      <button data-tab="expire">⏳ Near-Expire</button>
-      <button data-tab="credit">💳 الأدوية آجل</button>
+    <nav class="sidebar" id="tabs" aria-label="أقسام التقرير">
+      <div class="nav-label">أقسام التقرير</div>
+      <button data-tab="sales" class="active">مبيعات Nostri</button>
+      <button data-tab="share">المشاركة</button>
+      <button data-tab="writings">الكتابات</button>
+      <button data-tab="conversion">التحويل</button>
+      <button data-tab="pureherb">مبيعات Pure herb</button>
+      <button data-tab="doctors">الأطباء</button>
+      <button data-tab="expire">Near-Expire</button>
+      <button data-tab="credit">الأدوية آجل</button>
     </nav>
     <main class="main">
       <section id="view"></section>
     </main>
   </div>
 
-  <div class="foot"></div>
+  <div class="foot">NOSTRI · مايو–يوليو 2026 · الإدارة التجارية</div>
+</div>
+
+<div class="story-bar" id="storyBar" aria-live="polite">
+  <div class="row">
+    <div class="stitle" id="storyTitle">عرض تلقائي</div>
+    <div class="smeta" id="storyMeta">0 / 3</div>
+    <button type="button" id="storyStop">إيقاف</button>
+  </div>
+  <div class="track"><div class="fill" id="storyFill"></div></div>
 </div>
 
 <script>
@@ -1000,7 +1291,8 @@ const DATA = {
       ["TOUJEO SOLOSTAR 300 iu/ml Solution For Injec",0,"2026-08",0,0,0],
       ["LACTOSAT 125 mg/capsule, 30 CAPSULE/BOX",0,"2026-10",8,12,7],
       ["EMANERA 40 mg/capsule, 28 CAPSULE/BOX",0,"2026-10",33,20,15],
-      ["Vicks vapodrops Berry menthol 36 lozenges",0,"2026-08",0,0,0]]
+      ["Vicks vapodrops Berry menthol 36 lozenges",0,"2026-08",0,0,0]],
+    topDocs:{"ROFENAC 1 %/apply Gel, 50 GM/TUBE":"Mohamed Samir Abdelfattah Faraj (79) · Medhat Alashry Aladawy Goger (63)","CEFIM Capsule 400MG/1Capsule, 6Capsule/Box":"Said Tolba Elsayed Elbedewy (177) · Mugahid Khalid Zainelabdin Elfak (15)","SALOFALK Tablet 500MG/1Tablet, 50Tablet/Box":"Abdulaziz Ibrahim Abdullah Aljura (1)","CONCOR Tablet 5MG/1Tablet, 30Tablet/Box":"Hanan Mohamed Naguib Elgendi (24) · Abdulaziz Ibrahim Abdullah Aljura (22)","GLIPTAMET Tablet 50/850MG/1Tablet, 56Tablet/":"Summera Aman Solangi (35) · Mugahid Khalid Zainelabdin Elfak (21)","DESLOR 5 mg/tablet, 20 TABLET/BOX":"Mohamed Hasan Badr Moussa (167) · Abdullah Ahmed Mohamede Ahme (125)","MUCOSOLVAN Fort 6 mg/ml Syrup, 250 ML/BOTTLE":"Said Tolba Elsayed Elbedewy (266) · Mugahid Khalid Zainelabdin Elfak (102)","ESIDREX Tablet 25MG/1Tablet, 20Tablet/Box":"Nahed Mohammed Hassona Bahage (1)","RECTACURE 2% /apply Cream, 30 GM/TUBE":"Ahmad Abdelrahman Abdallah Ha (56) · Mohamed Hatem Abdelsamie Nour (13)","HYFRESH EYE GEL drop, 30 ML/BOTTEL":"Ahmed Zakaria Abdelmohsen Zaye (132) · Dina Mahmoud Abdelazim Mahme (113)","AGIOLAX POWDER /1SPOON, 250GM/Container":"Ahmad Abdelrahman Abdallah Ha (49) · Ibrahim Ali Ismail Heggy (33)","OLMETEC Tablet 20MG/1Tablet, 28Tablet/Box":"Hanan Mohamed Naguib Elgendi (34) · Maysa Sayed Abdullah Abdeltawab (8)","ADAZIO 25 mg/tablet, (new price )30 TABLET/B":"Ahmed Taher Mokhtar Mashaly (3) · Mohamed Emad Kamal Ismail (1)","JARDIANCE Coated tablet 25MG/1Tablet, 30Tabl":"Mugahid Khalid Zainelabdin Elfak (15) · Summera Aman Solangi (14)","VAROXA 20 mg/tablet, 30 TABLET/BOX":"Abdulaziz Ibrahim Abdullah Aljura (2) · Mohamed Hatem Abdelsamie Nour (2)","FORXIGA Tablet 10MG/1Tablet, 28Tablet/Box":"Hanan Mohamed Naguib Elgendi (16) · Abdulaziz Ibrahim Abdullah Aljura (15)","PILOCIN 1 %/apply Cream, 30 GM/TUBE":"Ibrahim Ali Ismail Heggy (72) · Khaled Ahmed Ali Abdurrahman (17)","AVOBAN CREAM 2 %/apply Cream, 30 GM/TUBE":"Ibrahim Ali Ismail Heggy (60) · Ahmad Abdelrahman Abdallah Ha (58)","SETAPRO 10 mg/tablet, 30 TABLET/BOX":"Mohamed Emad Kamal Ismail (96) · Said Tolba Elsayed Elbedewy (4)","OLENZA TABLET 15MG/1Tablet, 30Tablet/BOX":"Mohamed Emad Kamal Ismail (22)","REPADERM 1 %/apply Gel, 100 GM/TUBE":"Mohamed Samir Abdelfattah Faraj (181) · Mohammed Shabaan Abdelhay Els (50)","COXICEL 200 mg/capsule, 30 CAPSULE/BOX":"Mohammed Shabaan Abdelhay Els (253) · Mohamed Samir Abdelfattah Faraj (194)","TRAJENTA Coated tablet 5MG/1Tablet, 30Tablet":"Abdalla Basbar Dafaallah Basbar (7) · Hatem Abdelmageed Elsayed Mata (5)","COLI-URINAL GRANULES /1BOTTEL, 60GM/BOX":"Khaled Ahmed Ali Abdurrahman (120) · Hossameldin Mohamed Amin Bekh (74)","LINTRA 5 mg/tablet, 30 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (25) · Summera Aman Solangi (17)","BIOSOFT PLUS drop, 10 ML/CONTAINER":"Dina Mahmoud Abdelazim Mahme (14) · Mohamed Mohamed Arafa Abo Ob (7)","GALVUS MET 50/1000MG/tablet, 60 TABLET/BOX":"Said Tolba Elsayed Elbedewy (7) · Ali Mohamed Elameen Ahmed (6)","VEDOXIN 500 mg/tablet, 5 TABLET/BOX":"Nahed Mohammed Hassona Bahage (158) · Mohamed Hasan Badr Moussa (154)","SITAVIC 50/850 mg/tablet, 56 TABLET/BOX":"Hatem Abdelmageed Elsayed Mata (18) · Maysa Sayed Abdullah Abdeltawab (12)","DIOVAN Tablet 160MG/1Tablet, 28Tablet/Box":"Maysa Sayed Abdullah Abdeltawab (7) · Abdulaziz Ibrahim Abdullah Aljura (5)","ELIDEL Cream 1%/1APPLY, 30GM/Tube":"Mona Farid Elmandouh Abdelrahm (34) · Nasser Abdelaziz Ragab Sakr (17)","RAFOL 1 mg/tablet, 50 TABLET/BOX":"Wafaa Abdelrazig Mukhtar Moham (27) · Fatimah Abdulhafeez Mohamed K (2)","LASIX Tablet 40MG/1Tablet, 20Tablet/Box":"Maysa Sayed Abdullah Abdeltawab (7) · Gazala Gholam Mir (3)","AVODART Capsule 0.5MG/1Capsule, 30Capsule/Bo":"Nahed Mohammed Hassona Bahage (3) · Hossameldin Mohamed Amin Bekh (2)","BUTALIN SUSPENTION 0.4MG/1ML, 120ML/Bottle":"Said Tolba Elsayed Elbedewy (27) · Ayman Othman Youssef Othman (1)","PULMICORT 0.5 mg/ml Ampoule, 20 AMPOULE/BOX":"Mohamed Adel Saudi Gabr (226) · Mohamed Muhiddeen Abd Al Gde (75)","SEROXAT Tablet 20MG/1Tablet, 30Tablet/Box":"Mohamed Emad Kamal Ismail (14)","ARAVA TABLET 20MG/1Tablet, 30Tablet/BOX":"Mohammed Shabaan Abdelhay Els (8)","ELICA-M Cream 0.1/2%/1APPLY, 30GM/Tube":"Nasser Abdelaziz Ragab Sakr (72) · Nehad Farouk Abdallah Ramadan (44)","TILAX Tablet 2MG/1Tablet, 30Tablet/Box":"Mohamed Samir Abdelfattah Faraj (138) · Mohammed Shabaan Abdelhay Els (43)","VOLTIC 75 mg/ampoule Injection, 5 AMPOULE/BO":"Mohammed Shabaan Abdelhay Els (2) · Abdalla Basbar Dafaallah Basbar (1)","ZENCIN 500 mg/tablet, 3 TABLET/BOX":"Mona Farid Elmandouh Abdelrahm (50) · Arwa Mohammed Osman Taha (25)","CLARA Tablet 10MG/1Tablet, 10Tablet/Box":"Summera Aman Solangi (413) · Nasser Abdelaziz Ragab Sakr (139)","DEFADOL 160 mg/5 ml Syrup, 100 ML/BOTTLE":"Mohamed Adel Saudi Gabr (684) · Mohamed Hatem Abdelsamie Nour (61)","FUSIBACT-B Cream 2/0.1%/1APPLY, 15GM/Tube":"Nasser Abdelaziz Ragab Sakr (61) · Mohamed Muhiddeen Abd Al Gde (24)","CARPAZIO 600 mg/tablet, 50 TABLET/BOX":"Mohamed Emad Kamal Ismail (10) · Ahmed Taher Mokhtar Mashaly (6)","LAMIRA 50 mg/tablet, 30 TABLET/BOX":"Ahmed Taher Mokhtar Mashaly (5) · Mohamed Emad Kamal Ismail (3)","PROLAX Capsule 15MG/1Capsule, 30Capsule/Box":"Mohamed Samir Abdelfattah Faraj (23) · Ahmed Taher Mokhtar Mashaly (19)","FEROGLOBIN Capsule /1Capsule, 30Capsule/Box":"Fatimah Abdulhafeez Mohamed K (23) · Wafaa Abdelrazig Mukhtar Moham (19)","AMYDRAMINE ADULT ml Syrup, 120 ML/BOTTLE":"Nahed Mohammed Hassona Bahage (26) · Mohamed Hatem Abdelsamie Nour (22)","GLIPTAMET Tablet 50/1000MG/1Tablet, 56Tablet":"Summera Aman Solangi (67) · Mugahid Khalid Zainelabdin Elfak (27)","URAGO 40 mg/tablet, 30 TABLET/BOX":"Mohamed Samir Abdelfattah Faraj (60) · Summera Aman Solangi (17)","JANUMET Tablet 50/850MG/1Tablet, 56Tablet/Bo":"Ali Mohamed Elameen Ahmed (6) · Abdalla Basbar Dafaallah Basbar (4)","NEORIN Syrup 0.5MG/1ML, 150ML/Bottle":"Mohamed Adel Saudi Gabr (258) · Mohamed Muhiddeen Abd Al Gde (117)","EMANERA 20 mg/capsule, 28 CAPSULE/BOX":"Mohamed Hatem Abdelsamie Nour (33) · Mohamed Mostafa Ali Abdelkader (4)","ADOL 120 mg/5 ml Syrup, 100 ML/BOTTLE":"Mugahid Khalid Zainelabdin Elfak (71) · Mohamed Hatem Abdelsamie Nour (67)","DEFOPAN 1 mg/ml Syrup, 100 ML/BOTTLE":"Mohamed Adel Saudi Gabr (21) · Summera Aman Solangi (11)","AUGMENTIN Tablet 1000MG/1Tablet, 14Tablet/Bo":"Mohamed Hatem Abdelsamie Nour (10) · Nahed Mohammed Hassona Bahage (8)","TENORYL 10 mg/tablet, 30 TABLET/BOX":"Abdullah Ahmed Mohamede Ahme (1) · Gazala Gholam Mir (1)","EULAX sachet Powder For Oral Soln, 30 SACHET":"Ibrahim Ali Ismail Heggy (15) · Hatem Abdelmageed Elsayed Mata (13)","GUAPHAN Syrup 20MG/1ML, 100ML/Bottle":"Nahed Mohammed Hassona Bahage (29) · Mohamed Hatem Abdelsamie Nour (21)","OTRI ALLERGY 0.05 mg/applicator Nasal Spray":"Mohamed Mostafa Ali Abdelkader (27) · Mohamed Hasan Badr Moussa (14)","MIGROTAN 40 mg/tablet, 4 TABLET/BOX":"Ahmed Taher Mokhtar Mashaly (7) · Maysa Sayed Abdullah Abdeltawab (2)","FLUCA 1 mg/drop, 5 ML/CONTAINER":"Dina Mahmoud Abdelazim Mahme (44) · Ahmed Zakaria Abdelmohsen Zaye (1)","ROSALUS 20 mg/tablet, 28 TABLET/BOX":"Mugahid Khalid Zainelabdin Elfak (6) · Maysa Sayed Abdullah Abdeltawab (4)","SEFARIX 300 mg/capsule, 10 CAPSULE/BOX":"Said Tolba Elsayed Elbedewy (7)","EMANERA 40 mg/capsule, 28 CAPSULE/BOX":"Maysa Sayed Abdullah Abdeltawab (22) · Abdullah Ahmed Mohamede Ahme (11)","EUTHYROX Tablet 150MG/1Tablet, 100Tablet/Box":"Maysa Sayed Abdullah Abdeltawab (6) · Mugahid Khalid Zainelabdin Elfak (3)","CARTIMOV 50 mg/capsule, 20 CAPSULE/BOX":"Mohamed Samir Abdelfattah Faraj (91) · Medhat Alashry Aladawy Goger (55)","JARDIANCE Coated tablet 10MG/1Tablet, 30Tabl":"Mohamed Abdelaziz Abdelmoneem (3) · Maysa Sayed Abdullah Abdeltawab (2)","FEMIC 500 mg/tablet, 60 TABLET/BOX":"Nehad Farouk Abdallah Ramadan (39) · Mohamed Hasan Badr Moussa (14)","VIOTOPIC Ointment 0.1%/1APPLY, 30GM/Tube'":"Mona Farid Elmandouh Abdelrahm (60) · Nasser Abdelaziz Ragab Sakr (23)","ZOLAN 5 mg/tablet, 30 TABLET/BOX":"Mohamed Emad Kamal Ismail (49) · Ahmed Taher Mokhtar Mashaly (2)","KLAVOX Tablet 375MG/1Tablet, 20Tablet/Box":"Mohamed Abdelaziz Abdelmoneem (12) · Ahmed Hassanin Mohamed Hassan (9)","VIDA-IRON  Spray, 60 ML/BOTTLE":"Salama Mahdy Morshed Rashed (48) · Nehad Farouk Abdallah Ramadan (13)","EPIFASI Injection 5000IU/1Vial, 1Vial/Box":"Wafaa Abdelrazig Mukhtar Moham (45) · Nehad Farouk Abdallah Ramadan (7)","CATAFAST SACHETS 50MG/1Sachet, 9sachet/Box":"Summera Aman Solangi (113) · Nahed Mohammed Hassona Bahage (62)","GLUCOPHAGE Tablet 1000MG/1Tablet, 30Tablet/B":"Mohamed Hatem Abdelsamie Nour (6) · Wafaa Abdelrazig Mukhtar Moham (3)","RENALOF Capsule 1MG/1Tablet, 60Capsule/Box":"Maysa Sayed Abdullah Abdeltawab (1) · Hossameldin Mohamed Amin Bekh (1)","NEO PROKTO Cream /1APPLY, 30GM/Tube":"Ibrahim Ali Ismail Heggy (57) · Ahmad Abdelrahman Abdallah Ha (9)","DICYNONE Tablet 500MG/1Tablet, 20Tablet/Box":"Ahmad Abdelrahman Abdallah Ha (4) · Hossameldin Mohamed Amin Bekh (2)","RAVIXA 75 mg/tablet, 30 TABLET/BOX":"Hanan Mohamed Naguib Elgendi (31) · Mohamed Abdelaziz Abdelmoneem (2)","REFLEX MASSAGE Emulgel, 100 ML/TUBE":"Mohammed Shabaan Abdelhay Els (190) · Medhat Alashry Aladawy Goger (74)","QUERSA Capsule, 60 CAPSULE/BOTTLE":"Ahmad Mahmoud Mohammed Elad (14) · Medhat Alashry Aladawy Goger (7)","DIANE-35 Tablet /1Tablet, 21Tablet/Box":"Fatimah Abdulhafeez Mohamed K (12) · Soha Mohamed Salaheldeen Solima (11)","DERMO Ointment /1APPLY, 30GM/Tube":"Ibrahim Ali Ismail Heggy (163) · Khaled Ahmed Ali Abdurrahman (31)","FORCAPIL Capsule, 180 CAPSULE/BOX":"Mona Farid Elmandouh Abdelrahm (16) · Amira Mohamed Salem Eldaltouni (12)","AZIMAC Film coated tablet 250MG/1Tablet, 6Ta":"Nahed Mohammed Hassona Bahage (2) · Mayada Farah Obaid Ali (2)","FUSIBACT Ointment 2%/1APPLY, 15GM/Tube":"Nasser Abdelaziz Ragab Sakr (48) · Mona Farid Elmandouh Abdelrahm (21)","KLAVOX SUSPENTION 312MG/5ML, 100ML/Bottle":"Mohamed Adel Saudi Gabr (66) · Ibrahim Ali Ismail Heggy (29)","PROF SUSPENTION 100MG/5ML, 110ML/Bottle":"Mohamed Adel Saudi Gabr (333) · Ibrahim Ali Ismail Heggy (59)","OSTEOCARE Syrup 100MG/1ML, 200ML/Bottle":"Ahmed Gamal Abdelnasser Abdelm (10) · Mohamed Muhiddeen Abd Al Gde (4)","AVOMEB extra 1 %/apply Ointment , 30 GM/TUBE":"Sara Mohammed Ahmed Albasheer (4) · Nasser Abdelaziz Ragab Sakr (2)","ROSALUS 10 mg/tablet, 28 TABLET/BOX":"Abdalla Basbar Dafaallah Basbar (5) · Mugahid Khalid Zainelabdin Elfak (5)","PROFINAL XP 400 mg/tablet, 20 TABLET/BOX":"Radwa Mohamed Mabrouk Abdalla (37) · Ahmed Taher Mokhtar Mashaly (13)","SEVIKAR Tablet 40/10MG/1Tablet, 28Tablet/Box":"Mugahid Khalid Zainelabdin Elfak (7) · Maysa Sayed Abdullah Abdeltawab (6)","FAVERIN Tablet 50MG/1Tablet, 60Tablet/Box":"Mohamed Emad Kamal Ismail (15) · Mugahid Khalid Zainelabdin Elfak (1)","TENORYL PLUS 10/10 mg/tablet, 30 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (1)","EMILOK Capsule 20MG/1Capsule, 14Capsule/Box":"Said Tolba Elsayed Elbedewy (77) · Hatem Abdelmageed Elsayed Mata (47)","VULGA XR Tablet 105MG/1Tablet, 30TABLET/BOX":"Nasser Abdelaziz Ragab Sakr (19) · Mona Farid Elmandouh Abdelrahm (6)","AVOCOM-M Cream 0.1/2%/1APPLY, 50GM/Tube":"Wafaa Abdelrazig Mukhtar Moham (77) · Nehad Farouk Abdallah Ramadan (33)","FUSIBACT-B 2.1 %/apply Cream, 30 GM/TUBE":"Mohamed Muhiddeen Abd Al Gde (35) · Nasser Abdelaziz Ragab Sakr (21)","LINAJENT 5 mg/tablet, 30 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (4) · Mugahid Khalid Zainelabdin Elfak (2)","LUNIA 10 mg/ 20 MG/tablet, 28 TABLET/BOX":"Hatem Abdelmageed Elsayed Mata (27) · Maysa Sayed Abdullah Abdeltawab (15)","OFLAM 50 mg/sachet, 10 SACHET/BOX":"Nahed Mohammed Hassona Bahage (8) · Nehad Farouk Abdallah Ramadan (8)","GAVISCON SUSPENTION /1ML, 300ML/Bottle":"Subohi Sultana Muhammad Farouq (10) · Abdalla Basbar Dafaallah Basbar (5)","FIXIT 150 mg/capsule, 14 CAPSULE/BOX":"Wafaa Abdelrazig Mukhtar Moham (17) · Nehad Farouk Abdallah Ramadan (2)","XEFO Tablet 8MG/1Tablet, 20Tablet/Box":"Nahed Mohammed Hassona Bahage (36) · Mohamed Samir Abdelfattah Faraj (26)","KEPPRA 1000 mg/tablet, 30 TABLET/BOX":"Ahmed Taher Mokhtar Mashaly (3) · Maysa Sayed Abdullah Abdeltawab (1)","LAXATROL 50/8.6 mg/tablet, 100 TABLET/BOX":"Ibrahim Ali Ismail Heggy (12) · Khaled Ahmed Ali Abdurrahman (9)","SUN-D 1000 iu/tablet, 90 TABLET/BOX":"Medhat Alashry Aladawy Goger (25) · Nehad Farouk Abdallah Ramadan (8)","VIDROP drops 2800IU/1Drop, 15ML/Container":"Mohamed Muhiddeen Abd Al Gde (48) · Salama Mahdy Morshed Rashed (41)","AMYDRAMINE PED ml Syrup, 120 ML/BOTTLE":"Mohamed Abdelaziz Abdelmoneem (13) · Mohamed Adel Saudi Gabr (9)","ALFACORT Cream 0.1%/1APPLY, 15GM/Tube":"Sara Ibrahim Elabd Eldegla (13) · Mona Farid Elmandouh Abdelrahm (7)","OPTIPRED Eye drops 1%/1Drop, 5ML/Container":"Mohamed Mohamed Arafa Abo Ob (1)","BENZAFLEX 5 mg/tablet, 30 TABLET/BOX":"Mohamed Samir Abdelfattah Faraj (130) · Mohammed Shabaan Abdelhay Els (13)","ENTRESTO 50 mg/tablet, 28 TABLET/BOX":"Hanan Mohamed Naguib Elgendi (11) · Abdalla Basbar Dafaallah Basbar (1)","LAMIRA 100 mg/tablet, 30 TABLET/BOX":"Mohamed Emad Kamal Ismail (21) · Ahmed Taher Mokhtar Mashaly (4)","CLEXAN Injection 40MG/1Syringe, 1Syringe/Box":"Nehad Farouk Abdallah Ramadan (5) · Wafaa Abdelrazig Mukhtar Moham (3)","IVY-CALM ml Syrup, 120 ML/BOTTLE":"Wafaa Abdelrazig Mukhtar Moham (1) · Mayada Farah Obaid Ali (1)","ETORIA Tablet 90MG/1Tablet, 28Tablet/Box":"Mohamed Samir Abdelfattah Faraj (198) · Ahmed Taher Mokhtar Mashaly (10)","DIVINUS 10 mg/tablet, 30 TABLET/BOX":"Summera Aman Solangi (21) · Mugahid Khalid Zainelabdin Elfak (11)","THIOTACID 600 mg/tablet, 30 TABLET/BOX":"Mohamed Hasan Badr Moussa (6) · Ahmed Taher Mokhtar Mashaly (5)","MELIGAMET 50 mg / 850 mg/tablet, 60 TABLET/B":"Abdalla Basbar Dafaallah Basbar (3) · Ali Mohamed Elameen Ahmed (1)","LEVOX Film coated tablet 750MG/1Tablet, 5Tab":"Maysa Sayed Abdullah Abdeltawab (4) · Gazala Gholam Mir (4)","MINOCET 125 mg/5 ml Suspention, 80 ML/BOTTLE":"Mohamed Hatem Abdelsamie Nour (41)","BIOCAL D 500 mg/tablet, 60 TABLET/BOX":"Mohammed Shabaan Abdelhay Els (15) · Mohamed Samir Abdelfattah Faraj (9)","ROLIP Ointment 1%/1APPLY, 30GM/Tube":"Mona Farid Elmandouh Abdelrahm (4) · Nasser Abdelaziz Ragab Sakr (4)","PEXAPAN 5 mg/tablet, 60 TABLET/BOX":"Hanan Mohamed Naguib Elgendi (6)","TOBRADEX Eye drops /1Drop, 5ML/Container":"Mohamed Hasan Badr Moussa (27) · Mohamed Adel Saudi Gabr (20)","DERMOVATE 0.05 %/apply Ointment , 25 GM/TUBE":"Nasser Abdelaziz Ragab Sakr (11) · Mona Farid Elmandouh Abdelrahm (5)","PROLUTEX 25 mg/1.119 vial Injection, 7 VIAL/":"Wafaa Abdelrazig Mukhtar Moham (21) · Nehad Farouk Abdallah Ramadan (10)","VULGA TABLET 55MG/1Tablet, 30TABLET/BOX":"Mona Farid Elmandouh Abdelrahm (28) · Nasser Abdelaziz Ragab Sakr (6)","FAVERIN Tablet 100MG/1Tablet, 30Tablet/Box":"Mohamed Emad Kamal Ismail (82)","VOLTIC  tablet 50MG/1Tablet, 20Tablet/Box":"Mugahid Khalid Zainelabdin Elfak (32) · Mohamed Hatem Abdelsamie Nour (16)","MONTEL Tablet 10MG/1Tablet, 28Tablet/Box":"Said Tolba Elsayed Elbedewy (7) · Mohamed Mostafa Ali Abdelkader (1)","MELIGLPTIN 100 mg/tablet, 30 TABLET/BOX":"Abdalla Basbar Dafaallah Basbar (4)","ONDANS 4 mg/tablet, 10 TABLET/BOX":"Mohamed Hatem Abdelsamie Nour (23)","CIPRODAR Tablet 500MG/1Tablet, 10Tablet/Box":"Wafaa Abdelrazig Mukhtar Moham (1)","LICAN apply Cream, 30 GM/TUBE":"Nasser Abdelaziz Ragab Sakr (47) · Mona Farid Elmandouh Abdelrahm (38)","FEROSAC 20 MG/ML AMPOULE 5 AMPOULE":"Maysa Sayed Abdullah Abdeltawab (27) · Mugahid Khalid Zainelabdin Elfak (7)","ARTELAC ADV Eye drops 2%/1Drop, 0.4ML/Contai":"Ahmed Zakaria Abdelmohsen Zaye (11) · Dina Mahmoud Abdelazim Mahme (1)","MEBO 1 %/apply Ointment , 15 GM/TUBE":"Wafaa Abdelrazig Mukhtar Moham (5) · Rafik Elsayed Aboelhythim Ereba (3)","VIZOL  0.21 %/drop, 10 ML/CONTAINER":"Ahmed Taher Mokhtar Mashaly (5)","RESPRED SYRUP 5MG/5ML, 120ML/BOTTLE":"Mohamed Adel Saudi Gabr (80) · Mohamed Hatem Abdelsamie Nour (46)","FORCAPIL TOPICAL SPRAY":"Mona Farid Elmandouh Abdelrahm (5) · Amira Mohamed Salem Eldaltouni (4)","BUFOMIX 1 mg/inhaler Inhalation Spray, INHAL":"Mayada Farah Obaid Ali (6) · Abdullah Ahmed Mohamede Ahme (1)","AVALON AVOMEB EXTERA Ointment , 50 GM/TUBE":"Nehad Farouk Abdallah Ramadan (7) · Sara Ibrahim Elabd Eldegla (3)","ATROSOL 500 mg/2 ml Ampoule, 21 AMPOULE/BOX":"Mohamed Adel Saudi Gabr (13) · Mayada Farah Obaid Ali (4)","MARVELON Tablet /1Tablet, 21Tablet/Box":"Nehad Farouk Abdallah Ramadan (16) · Soha Mohamed Salaheldeen Solima (15)","FLAZOL Syrup 125MG/5ML, 120ML/Bottle":"Mohamed Muhiddeen Abd Al Gde (78) · Nahed Mohammed Hassona Bahage (26)","LEVOZAL 0.5 mg/ml Syrup, 200 ML/BOTTEL":"Mona Farid Elmandouh Abdelrahm (31) · Sara Mohammed Ahmed Albasheer (27)","PAROXAT Tablet 30MG/1Tablet, 30Tablet/Box":"Mohamed Emad Kamal Ismail (50) · Ahmed Hassanin Mohamed Hassan (1)","AVALON UREA apply Cream, 100 ML/TUBE":"Mona Farid Elmandouh Abdelrahm (10) · Amira Mohamed Salem Eldaltouni (1)","MUCOGEL SUSPENTION /1ML, 125ML/Bottle":"Said Tolba Elsayed Elbedewy (14) · Maysa Sayed Abdullah Abdeltawab (1)","FORMIT XR Tablet 750MG/1Tablet, 30Tablet/BOX":"Maysa Sayed Abdullah Abdeltawab (34) · Hatem Abdelmageed Elsayed Mata (18)","YOCAIR 10 mg/tablet, 30 TABLET/BOX":"Summera Aman Solangi (51) · Mohamed Hatem Abdelsamie Nour (15)","MIXTARD Injection 30IU/1ML, 10ML/Vial":"Abdalla Basbar Dafaallah Basbar (6) · Abdulaziz Ibrahim Abdullah Aljura (1)","TOVAST Tablet 10MG/1Tablet, 30Tablet/Box":"Mugahid Khalid Zainelabdin Elfak (3) · Hatem Abdelmageed Elsayed Mata (3)","EPICOGEL Oral suspension /1ML, 125ML/Bottle":"Summera Aman Solangi (6) · Mohamed Hatem Abdelsamie Nour (3)","LIMITLESS ALLZYME Tablet, 30 TABLET/BOX":"Mohammed Shabaan Abdelhay Els (86) · Ahmad Abdelrahman Abdallah Ha (31)","ADZOY 0.1% / 2.5% apply Gel, 30 GM/TUBE":"Mona Farid Elmandouh Abdelrahm (5) · Nasser Abdelaziz Ragab Sakr (3)","DOXIDA-M sachet, 30 SACHET/BOX":"Khaled Ahmed Ali Abdurrahman (13) · Said Tolba Elsayed Elbedewy (10)","SILOMES 100 mg/tablet, 30 TABLET/BOX":"Mohamed Emad Kamal Ismail (3) · Ahmed Taher Mokhtar Mashaly (1)","EMOLIA apply Cream, 200 GM/TUBE":"Mona Farid Elmandouh Abdelrahm (8)","ARGITEST capsule Tablet, 30 TABLET/BOX":"Ahmad Mahmoud Mohammed Elad (3) · Hossameldin Mohamed Amin Bekh (3)","AVOMEB EXTRA OINTMENT 15 GM":"Nasser Abdelaziz Ragab Sakr (53) · Hossameldin Mohamed Amin Bekh (45)","SEPTOFORT LOZENGES 2MG/1Tablet, 24Tablet/Box":"Mohamed Hatem Abdelsamie Nour (1) · Ahmed Hassanin Mohamed Hassan (1)","FENISTIL Oral drops 1MG/1Drop, 20ML/Containe":"Mohamed Muhiddeen Abd Al Gde (36) · Mohamed Adel Saudi Gabr (17)","PEPTAZOL 30 mg/capsule, 28 CAPSULE/BOX":"Mohamed Hasan Badr Moussa (14) · Maysa Sayed Abdullah Abdeltawab (4)","ANAFRANIL Tablet 25MG/1Tablet, 30Tablet/Box":"Mohamed Emad Kamal Ismail (9)","ROYAL JELLY 1000 mg/capsule, 30 CAPSULE/BOX":"Hossameldin Mohamed Amin Bekh (1)","GENTAPLEX Capsule /1Capsule, 36Capsule/Box":"Said Tolba Elsayed Elbedewy (10) · Hossameldin Mohamed Amin Bekh (3)","JALRA M Tablet 50/1000MG/1Tablet, 60Tablet/B":"Summera Aman Solangi (28) · Maysa Sayed Abdullah Abdeltawab (9)","MOUNJARO 5 mg/ml Ampoule, 4 AMPOULE/BOX":"Hatem Abdelmageed Elsayed Mata (5) · Hatem Mohamed Mohamed Ramad (2)","TEGRETOL CR 200 mg/tablet, 50 TABLET/BOX":"Ahmed Taher Mokhtar Mashaly (19) · Mohamed Abdelaziz Abdelmoneem (2)","RHINATHIOL ENF Syrup 2%/1ML, 125ML/Bottle":"Ahmed Hassanin Mohamed Hassan (5) · Said Tolba Elsayed Elbedewy (5)","ISOLONE 20 mg/tablet, 20 Effervescent Tablet":"Mohamed Mostafa Ali Abdelkader (52) · Mohamed Hasan Badr Moussa (48)","CLARIXIN Tablet 500MG/1Tablet, 14Tablet/Box":"Mugahid Khalid Zainelabdin Elfak (43) · Summera Aman Solangi (24)","GLADOS Tablet 15MG/1Tablet, 30Tablet/Contain":"Amany Moaaz Abdrabbou Sayed (1)","SUPRAX Capsule 400MG/1Capsule, 6Capsule/Box":"Nehad Farouk Abdallah Ramadan (8) · Wafaa Abdelrazig Mukhtar Moham (8)","GALVUS MET Tablet 50/850MG/1Tablet, 60Tablet":"Hanan Mohamed Naguib Elgendi (6) · Summera Aman Solangi (4)","DOXIDA-F sachet, 30 SACHET/BOX":"Nehad Farouk Abdallah Ramadan (61) · Hala Fathi Ewis Mansur (12)","RAFOL 5 mg/tablet, 50 TABLET/BOX":"Fatimah Abdulhafeez Mohamed K (29) · Soha Mohamed Salaheldeen Solima (14)","FORTIFERRUM sachet Powder, 14 SACHET/BOX":"Nahed Mohammed Hassona Bahage (13) · Fatma Mohamed Abdelhameed Ab (4)","CONTRACTUBEX 1 %/apply Gel, 50 GM/TUBE":"Ahmad Abdelrahman Abdallah Ha (14) · Nasser Abdelaziz Ragab Sakr (8)","NEVOTIC 500 mg/tablet, 7 TABLET/BOX":"Abdullah Ahmed Mohamede Ahme (21) · Mohamed Hatem Abdelsamie Nour (4)","ZOVIRAX Tablet 400MG/1Tablet, 70Tablet/Box":"Mohamed Hatem Abdelsamie Nour (1) · Ahmed Taher Mokhtar Mashaly (1)","TYMER Eye drops 0.3MG/1Drop, 5ML/Container":"Ahmed Zakaria Abdelmohsen Zaye (1) · Mohamed Hatem Abdelsamie Nour (1)","BEFOLVIT 5 mg/tablet, 30 TABLET/BOX":"Fatimah Abdulhafeez Mohamed K (8) · Summera Aman Solangi (6)","LUMIFY 0.25 mg/drop, 7.5 ML/CONTAINER":"Ahmed Zakaria Abdelmohsen Zaye (1) · Dina Mahmoud Abdelazim Mahme (1)","FEXODINE 120 mg/tablet, 14 TABLET/BOX":"Mohamed Abdelaziz Abdelmoneem (10) · Summera Aman Solangi (5)","CEFPROZ 250 mg/5 ml Suspention, 100 ML/BOTTL":"Sara Mohammed Ahmed Albasheer (24) · Mohamed Muhiddeen Abd Al Gde (3)","LOTEVAN 5/160MG//tablet, 30 TABLET/BOX":"Mugahid Khalid Zainelabdin Elfak (10) · Maysa Sayed Abdullah Abdeltawab (6)","MOUNJARO 7.5 mg/ml Ampoule, 4 AMPOULE/BOX":"Hatem Abdelmageed Elsayed Mata (4) · Hatem Mohamed Mohamed Ramad (3)","TOBREX Eye drops 0.3MG/1Drop, 5ML/Container":"Mohamed Adel Saudi Gabr (12) · Ayman Othman Youssef Othman (8)","DEPAKINE Tablet 500MG/1Tablet, 30Tablet/Box":"Mohamed Emad Kamal Ismail (1)","CONESTAL 2 mg/tablet, 28 TABLET/BOX":"Abdalla Basbar Dafaallah Basbar (7) · Mugahid Khalid Zainelabdin Elfak (7)","ACRETIN C GEL 30 GM/TUBE":"Anwar Ali Abdullah Jwass (11) · Mona Farid Elmandouh Abdelrahm (10)","DENACIF 300 mg/capsule, 10 CAPSULE":"Abdullah Ahmed Mohamede Ahme (24)","ETORIA Tablet 120MG/1Tablet, 7Tablet/Box":"Mohamed Samir Abdelfattah Faraj (37) · Ahmed Taher Mokhtar Mashaly (9)","DENACIF 125 mg/5 ml Suspention, 100 ML/BOTTL":"Mohamed Adel Saudi Gabr (1)","DAKTARIN 2 %/apply Cream, 30 GM/TUBE":"Mona Farid Elmandouh Abdelrahm (10) · Nasser Abdelaziz Ragab Sakr (2)","LAMIFEN Tablet 250MG/1Tablet, 14Tablet/Box":"Nasser Abdelaziz Ragab Sakr (18) · Mona Farid Elmandouh Abdelrahm (6)","BILAXTEN Tablet 20MG/1Tablet, 20Tablet/Box":"Mona Farid Elmandouh Abdelrahm (2) · Abdulaziz Ibrahim Abdullah Aljura (1)","PROLIFE PREMIUM box Sheets, 30 SHEET/BOX":"Maysa Sayed Abdullah Abdeltawab (2) · Hatem Mohamed Mohamed Ramad (1)","PURGE Solution /1APPLY, 250ML/Container":"Nehad Farouk Abdallah Ramadan (2)","OSTEOFLEX Tablet, 60 TABLET/BOX":"Mohammed Shabaan Abdelhay Els (10)","CIPROCIN Tablet 500MG/1Tablet, 10Tablet/Box":"Mohamed Hatem Abdelsamie Nour (2) · Fatimah Abdulhafeez Mohamed K (2)","XIGDUO XR 5/1000 mg/tablet, 56 TABLET/BOX":"Abdulaziz Ibrahim Abdullah Aljura (5) · Mohamed Hatem Abdelsamie Nour (1)","TEGRETOL CR Tablet 400MG/1Tablet, 30Tablet/B":"Ahmed Taher Mokhtar Mashaly (4)","TRIOLITE CREAM apply Cream, 30 GM/TUBE":"Mona Farid Elmandouh Abdelrahm (18) · Nasser Abdelaziz Ragab Sakr (14)","PROTON 40 mg/tablet, 14 TABLET/BOX":"Hatem Abdelmageed Elsayed Mata (25) · Ibrahim Ali Ismail Heggy (11)","TEGRETOL Tablet 200MG/1Tablet, 50Tablet/Box":"Mohamed Mostafa Ali Abdelkader (2) · Summera Aman Solangi (1)","DRAMYLIN ADULT ml Syrup, 120 ML/BOTTLE":"Mohamed Hatem Abdelsamie Nour (1)","AVALON AVOBAN 2 %/apply Ointment , 30 GM/TUB":"Nasser Abdelaziz Ragab Sakr (14) · Fatimah Abdulhafeez Mohamed K (13)","ADOL SINUS Tablet /1Capsule, 20Tablet/Box":"Mohamed Hatem Abdelsamie Nour (1) · Mohamed Hasan Badr Moussa (1)","GYNERA Tablet /1Tablet, 21Tablet/Box":"Nehad Farouk Abdallah Ramadan (3) · Wafaa Abdelrazig Mukhtar Moham (1)","VITALIFE Soft Gel Cap /1Capsule, 30Capsule/B":"Maysa Sayed Abdullah Abdeltawab (9) · Heba Mohsen Mohamed Khalil (1)","AZI-ONCE SUSPENTION 200MG/5ML, 15ML/Bottle":"Mohamed Adel Saudi Gabr (24) · Mohamed Muhiddeen Abd Al Gde (8)","DIOVAN Tablet 40MG/1Tablet, 28Tablet/Box":"Summera Aman Solangi (2) · Ali Mohamed Elameen Ahmed (1)","ARKOCAPS CALCOS 500 mg/tablet, 60 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (9) · Soha Mohamed Salaheldeen Solima (6)","C-LACT Solution /1ML, 220ML/Container":"Nehad Farouk Abdallah Ramadan (10) · Fatimah Abdulhafeez Mohamed K (1)","KOZAMOD 5 % Cream, 12 sachet/box":"Nasser Abdelaziz Ragab Sakr (5) · Mona Farid Elmandouh Abdelrahm (4)","DUODART Capsule 0.5/0.4MG/1Capsule, 30Capsul":"Hossameldin Mohamed Amin Bekh (1)","OUTRIGHT Capsule, 30 CAPSULE/BOX":"Ali Mohamed Elameen Ahmed (4) · Nehad Farouk Abdallah Ramadan (3)","ZINCOVIT drop, 60 ML/CONTAINER":"Sara Mohammed Ahmed Albasheer (37)","TORICOX 120 mg/tablet, 10 TABLET/BOX":"Ahmed Gamal Abdelnasser Abdelm (2) · Ahmed Taher Mokhtar Mashaly (1)","AVALON AVOMEB EXTRA 75 GM Ointment":"Nehad Farouk Abdallah Ramadan (16)","OXIRA 8 mg/tablet, 20 TABLET/BOX":"Mohamed Samir Abdelfattah Faraj (15) · Ibrahim Ali Ismail Heggy (8)","ESOPOLE 20 mg/capsule, 28 CAPSULE/BOX":"Mohamed Hatem Abdelsamie Nour (2) · Sara Mohammed Ahmed Albasheer (1)","LEVOGAND 50 mcg/tablet, 100 TABLET/BOX":"Arwa Mohammed Osman Taha (1) · Maysa Sayed Abdullah Abdeltawab (1)","EMOLIA apply Cream, 100 GM/TUBE":"Sara Ibrahim Elabd Eldegla (5) · Mona Farid Elmandouh Abdelrahm (5)","FEMI BIOTIC box Sachets, 20 SACHET/BOX":"Nehad Farouk Abdallah Ramadan (10) · Heba Mohsen Mohamed Khalil (1)","ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE":"Salama Mahdy Morshed Rashed (49) · Mohamed Adel Saudi Gabr (26)","MYO REST PLUS Cream /1APPLY, 100GM/Tube":"Medhat Alashry Aladawy Goger (84) · Soha Mohamed Salaheldeen Solima (5)","LUMIGAN Eye drops 0.3MG/1Drop, 3ML/Container":"Mohamed Mohamed Arafa Abo Ob (1)","FOLIC ACID Tablet 5MG/1Tablet, 20Tablet/Box":"Said Tolba Elsayed Elbedewy (7) · Abdulaziz Ibrahim Abdullah Aljura (3)","EVRA TRANSDERMAL patch /1patch, 3patch/Box":"Wafaa Abdelrazig Mukhtar Moham (2) · Nehad Farouk Abdallah Ramadan (2)","DICETEL Tablet 50MG/1Tablet, 20Tablet/Box":"Maysa Sayed Abdullah Abdeltawab (6)","SELECTA Tablet 2.5MG/1Tablet, 30Tablet/Box":"Hanan Mohamed Naguib Elgendi (8) · Hatem Abdelmageed Elsayed Mata (5)","ZOLINDA Tablet 5MG/1Tablet, 30TABLET/BOX":"Mohamed Emad Kamal Ismail (11)","GINKOSPAN 60 mg/capsule, 60 CAPSULE/BOX":"Ahmed Taher Mokhtar Mashaly (2) · Hatem Abdelmageed Elsayed Mata (2)","OMIZ Capsule 20MG/1Capsule, 14Capsule/Box":"Wafaa Abdelrazig Mukhtar Moham (3) · Abdalla Basbar Dafaallah Basbar (3)","OMEGA 3 FORT Capsule, 60 CAPSULE/BOX":"Ahmed Hassanin Mohamed Hassan (1) · Arwa Mohammed Osman Taha (1)","VERMOX SUSPENTION 0.02MG/1ML, 30ML/Bottle":"Mohamed Muhiddeen Abd Al Gde (7) · Mohamed Adel Saudi Gabr (4)","KLAVOX SUSPENTION 156MG/5ML, 100ML/Bottle":"Ibrahim Ali Ismail Heggy (57) · Mohamed Hatem Abdelsamie Nour (14)","ARCON TISANE PLUS Capsule, 60 CAPSULE/BOX":"Nasser Abdelaziz Ragab Sakr (2)","GLIM Tablet 1MG/1Tablet, 30Tablet/Box":"Hatem Abdelmageed Elsayed Mata (12) · Mugahid Khalid Zainelabdin Elfak (9)","BABYCOOL ml Syrup, 100 ML/BOTTLE":"Sara Mohammed Ahmed Albasheer (16) · Rafik Elsayed Aboelhythim Ereba (7)","RYBELSUS 3 mg/tablet, 30 TABLET/BOX":"Ali Mohamed Elameen Ahmed (3) · Mugahid Khalid Zainelabdin Elfak (2)","BEPANTHENE 5 %/apply Cream, 100 GM/TUBE":"Nasser Abdelaziz Ragab Sakr (2) · Ayman Othman Youssef Othman (1)","MOTOVA C Advanced sachet, 30 SACHET/BOX":"Heba Mohsen Mohamed Khalil (5) · Nehad Farouk Abdallah Ramadan (1)","VIOTOPIC Ointment 0.3%/1APPLY, 30GM/Tube'":"Mona Farid Elmandouh Abdelrahm (32) · Nasser Abdelaziz Ragab Sakr (4)","GALVUS Tablet 50MG/1Tablet, 56Tablet/Box":"Abdalla Basbar Dafaallah Basbar (3) · Maysa Sayed Abdullah Abdeltawab (2)","GONAL-F Injection 300IU/1pen, 0.5ML/Pen":"Wafaa Abdelrazig Mukhtar Moham (1)","LODIPAM 10 mg/tablet, 30 TABLET/BOX":"Ahmed Hassanin Mohamed Hassan (2)","LIPANTHYL Capsule 200MG/1Capsule, 30Capsule/":"Summera Aman Solangi (13) · Gazala Gholam Mir (5)","PICO Oral drops 7.5MG/1Drop, 30ML/Container":"Mohamed Muhiddeen Abd Al Gde (7) · Salama Mahdy Morshed Rashed (3)","CELER 0.5 mg/ml Syrup, 150 ML/BOTTLE":"Rafik Elsayed Aboelhythim Ereba (4) · Mugahid Khalid Zainelabdin Elfak (1)","RYBELSUS 7 mg/tablet, 30 TABLET/BOX":"Ali Mohamed Elameen Ahmed (5) · Nahed Mohammed Hassona Bahage (1)","DENACIF 125 mg/5 ml Suspention, 50 ML/BOTTLE":"Mohamed Hatem Abdelsamie Nour (38) · Mohamed Adel Saudi Gabr (13)","LEVOGAND 100 mcg/tablet, 100 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (1)","LEVOGAND 25 mcg/tablet, 100 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (1) · Arwa Mohammed Osman Taha (1)","ZETRON SUSPENTION 200MG/1ML, 15ML/Bottle":"Mohamed Adel Saudi Gabr (17) · Summera Aman Solangi (10)","BRILINTA 90 mg/tablet, 56 TABLET/BOX":"Hanan Mohamed Naguib Elgendi (7) · Ali Mohamed Elameen Ahmed (3)","NEGAZOL Tablet 500MG/1Tablet, 20Tablet/Box":"Gazala Gholam Mir (2) · Ali Mohamed Elameen Ahmed (1)","FAMODAR Tablet 40MG/1Tablet, 10Tablet/Box":"Wafaa Abdelrazig Mukhtar Moham (4)","BENZAFLEX 10 mg/tablet, 30 TABLET/BOX":"Mohamed Samir Abdelfattah Faraj (17) · Ahmed Taher Mokhtar Mashaly (6)","MIRZAGEN Tablet 15MG/1Tablet, 30Tablet/Box":"Ahmed Taher Mokhtar Mashaly (10) · Mohamed Emad Kamal Ismail (5)","HI-QUIN Cream 2%/1APPLY, 30GM/Tube":"Mona Farid Elmandouh Abdelrahm (4) · Sara Ibrahim Elabd Eldegla (1)","KLACID 125 mg/5 ml Suspention, 100 ML/BOTTLE":"Mohamed Muhiddeen Abd Al Gde (21) · Sara Mohammed Ahmed Albasheer (11)","CLARINASE Tablet 5/120MG/1Tablet, 14Tablet/B":"Mohamed Mostafa Ali Abdelkader (6) · Said Tolba Elsayed Elbedewy (2)","SINEO 1 mg/drop, 20 ML/CONTAINER":"Mohamed Muhiddeen Abd Al Gde (61) · Sara Mohammed Ahmed Albasheer (18)","NEO HEALAR Ointment /1APPLY, 30GM/Tube":"Hala Fathi Ewis Mansur (10) · Nahed Mohammed Hassona Bahage (9)","SEFARIX 125 mg/5 ml Suspention, 50 ML/BOTTLE":"Mohamed Hatem Abdelsamie Nour (1)","CITICOLINE Capsule, 30 CAPSULE/BOX":"Ahmed Taher Mokhtar Mashaly (5)","MELATONIN Tablet 3MG/1Tablet, 100Tablet/Box":"Abdalla Basbar Dafaallah Basbar (2) · Mahfooz Ali Hafez Ali (2)","EPICURE PLUS Ointment /1APPLY, 30ML/Tube":"Khaled Ahmed Ali Abdurrahman (4) · Nasser Abdelaziz Ragab Sakr (1)","MOUNJARO 12.5 mg/ml Ampoule, 4 AMPOULE/BOX":"Ali Mohamed Elameen Ahmed (2) · Abdalla Basbar Dafaallah Basbar (1)","BACTRIM Syrup 200/40MG/1ML, 100ML/Bottle":"Khaled Ahmed Ali Abdurrahman (5) · Mohamed Muhiddeen Abd Al Gde (3)","REMOX SUSPENTION 125MG/5ML, 70ML/Bottle":"Khaled Ahmed Ali Abdurrahman (67) · Mohamed Muhiddeen Abd Al Gde (9)","LAMICTAL Tablet 50MG/1Tablet, 30Tablet/Box":"Mohamed Emad Kamal Ismail (3) · Ahmed Taher Mokhtar Mashaly (1)","NOLVADEX Tablet 10MG/1Tablet, 30Tablet/Box":"Ahmad Mahmoud Mohammed Elad (2)","OPTIFLOX Eye drops 0.3MG/1Drop,  5 ML/Contai":"Mohamed Adel Saudi Gabr (1)","LEPONEX Tablet 100MG/1Tablet, 50Tablet/Box":"Ahmed Taher Mokhtar Mashaly (1)","XEVANEER 125 mg/5 ml Suspention, 40 ML/BOTTL":"Mohamed Hatem Abdelsamie Nour (2)","DESTAMIN 5 mg/tablet, 20 TABLET/BOX":"Mugahid Khalid Zainelabdin Elfak (290) · Summera Aman Solangi (16)","AROX 0.5 %/drop, 5 ML/CONTAINER":"Summera Aman Solangi (1) · Dina Mahmoud Abdelazim Mahme (1)","ISOLONE 5 mg/TABLET, 30 Effervescent Tablet":"Mohamed Hasan Badr Moussa (163) · Mohamed Mostafa Ali Abdelkader (1)","ROXIL SUSPENTION 250MG/5ML, 100ML/Bottle":"Mohamed Muhiddeen Abd Al Gde (8)","ACICAL PLUS tablet, 30 TABLET/BOX":"Summera Aman Solangi (2)","BETMIGA 50 mg/tablet, 30 TABLET/BOX":"Khaled Ahmed Ali Abdurrahman (3) · Mohamed Abdelaziz Abdelmoneem (3)","TRACON Capsule 100MG/1Capsule, 4Capsule/Box":"Fatimah Abdulhafeez Mohamed K (9) · Khaled Ahmed Ali Abdurrahman (7)","HEMICLAR Gel /1APPLY, 120ML/Tube":"Ahmed Gamal Abdelnasser Abdelm (8) · Mohamed Samir Abdelfattah Faraj (2)","MAXEVA 400 mg/tablet, 10 TABLET/BOX":"Ahmad Abdelrahman Abdallah Ha (55) · Mariam Ezzeldin Abdelmonem Sh (1)","VIGAMOX Eye drops 0.5MG/1Drop, 5ML/Container":"Dina Mahmoud Abdelazim Mahme (159) · Mohamed Muhiddeen Abd Al Gde (13)","AVALON AVOCIN 2 % Vaginal Cream, 40 GM/TUBE":"Fatimah Abdulhafeez Mohamed K (16) · Nehad Farouk Abdallah Ramadan (13)","ZOVIRAX 200 mg/tablet, 25 TABLET/BOX":"Khaled Ahmed Ali Abdurrahman (1)","SAPOFEN 100 mg/ml Syrup, 100 ML/BOTTLE":"Summera Aman Solangi (2)","AERIUS Syrup 0.5MG/1ML, 150ML/Bottle":"Summera Aman Solangi (14) · Mohamed Muhiddeen Abd Al Gde (3)","LACTOSAT 125 mg/capsule, 30 CAPSULE/BOX":"Heba Mohsen Mohamed Khalil (13) · Soha Mohamed Salaheldeen Solima (6)","UVAMIN Tablet 100MG/1Tablet, 20Tablet/Box":"Khaled Ahmed Ali Abdurrahman (18) · Hatem Abdelmageed Elsayed Mata (13)","VAGINECALM ANTIAGING tube Gel, 50 ML/TUBE":"Fatimah Abdulhafeez Mohamed K (3) · Wafaa Abdelrazig Mukhtar Moham (1)","FENSOLIN 5 mg/tablet, 30 TABLET/BOX":"Khaled Ahmed Ali Abdurrahman (13) · Hossameldin Mohamed Amin Bekh (8)","DIGESTCARE ml Syrup, 125 ML/BOTTLE":"Mahfooz Ali Hafez Ali (2)","LAVISTINA 24 mg/tablet, 50 TABLET/BOX":"Hatem Abdelmageed Elsayed Mata (1)","SITAVIC 50/1000 mg/tablet, 56 TABLET/BOX":"Hatem Abdelmageed Elsayed Mata (26) · Summera Aman Solangi (3)","NERVAN 500 mg/tablet, 30 TABLET/BOX":"Mohamed Samir Abdelfattah Faraj (6) · Fatimah Abdulhafeez Mohamed K (1)","CORTRIEF 1 mg/applicator Nasal Spray, APPLIC":"Mohamed Hasan Badr Moussa (5)","XYZAL Tablet 5MG/1Tablet, 20Tablet/Box":"Mariam Ezzeldin Abdelmonem Sh (2) · Mugahid Khalid Zainelabdin Elfak (1)","PANADREX 120 mg/5 ml Syrup, 60 ML/BOTTLE":"Mohamed Samir Abdelfattah Faraj (1)","GENGIGEL BABY 1 %/apply Gel, 15 GM/APPLY":"Mohamed Muhiddeen Abd Al Gde (4) · Ibrahim Abdelrazeq Ibrahim Deso (1)","APLEFIT PLUS Capsule, 60 CAPSULE/BOX":"Maysa Sayed Abdullah Abdeltawab (2) · Mohamed Samir Abdelfattah Faraj (1)","TENORYL PLUS 5/5 mg/tablet, 30 TABLET/BOX":"Hatem Abdelmageed Elsayed Mata (6) · Mohamed Hatem Abdelsamie Nour (2)","AMYDRAMINE SUGAR FREE Syrup, 120 ML/BOTTLE":"Ahmed Hassanin Mohamed Hassan (41) · Mugahid Khalid Zainelabdin Elfak (8)","SORTIVA-H Tablet 100/12.5MG/1Tablet, 30Table":"Mugahid Khalid Zainelabdin Elfak (2)","MINIRIN MELT Tablet 120MG/1Tablet, 30Tablet/":"Khaled Ahmed Ali Abdurrahman (1) · Hossameldin Mohamed Amin Bekh (1)","MOTOVA PLUS 60 TAB 1500 MG BOTTEL":"Khaled Ahmed Ali Abdurrahman (3) · Heba Mohsen Mohamed Khalil (2)","MEGAMOX SUSPENTION 156MG/5ML, 100ML/Bottle":"Ibrahim Ali Ismail Heggy (34) · Mugahid Khalid Zainelabdin Elfak (6)","MOVACID 400 mg/tablet, 60 TABLET/BOX":"Medhat Alashry Aladawy Goger (45)","GLUCAJONE 1000 mg/sachet, 30 SACHET/BOX":"Medhat Alashry Aladawy Goger (46)","GARCIMIUM 1 gm/tablet, 60 TABLET/BOX":"Medhat Alashry Aladawy Goger (2)","QUPENE capsule Soft Gel Cap, 30 CAPSULE/BOX":"Soha Mohamed Salaheldeen Solima (3)","G1000 3 gm/sachet, 30 SACHET/BOX":"Fatimah Abdulhafeez Mohamed K (2) · Amira Mohamed Salem Eldaltouni (1)","VAGINECALM GEL CALM tube Gel, 50 ML/TUBE":"Hala Fathi Ewis Mansur (3) · Soha Mohamed Salaheldeen Solima (1)","LOGYNON Tablet /1Tablet, 21Tablet/Box":"Soha Mohamed Salaheldeen Solima (2) · Hala Fathi Ewis Mansur (2)","ACC Effervescent tablet 600MG/1Tablet, 10Tab":"Mohamed Mostafa Ali Abdelkader (17) · Mayada Farah Obaid Ali (11)","ECHILIB CHewable tablet, 20 TABLET/BOX":"Nehad Farouk Abdallah Ramadan (4)","ARENA Tablet 150MG/1Tablet, 30Tablet/Box":"Nahed Mohammed Hassona Bahage (2) · Ahmed Hassanin Mohamed Hassan (1)","MELIGAMET 50 mg / 1000 mg/tablet, 60 TABLET/":"Ahmed Hassanin Mohamed Hassan (1) · Abdullah Ahmed Mohamede Ahme (1)","JUSPRIN 81 mg/tablet, 30 TABLET/BOX":"Mugahid Khalid Zainelabdin Elfak (3) · Hala Fathi Ewis Mansur (2)","TRENTAL Tablet 400MG/1Tablet, 20Tablet/Box":"Ali Mohamed Elameen Ahmed (1) · Ahmed Taher Mokhtar Mashaly (1)","SEROXAT CR Tablet 25MG/1Tablet, 30Tablet/Box":"Mohamed Emad Kamal Ismail (4) · Ahmed Taher Mokhtar Mashaly (1)","AMOVAC enema Solution, 120 ML/CONTAINER":"Hossameldin Mohamed Amin Bekh (1)","CYANOSEPT 6 tube Vaginal Gel, 6 TUBE/BOX":"Nehad Farouk Abdallah Ramadan (10) · Hala Fathi Ewis Mansur (3)","LYPFEN 200 mg/capsule, 30 CAPSULE/BOX":"Maysa Sayed Abdullah Abdeltawab (11) · Hatem Abdelmageed Elsayed Mata (7)","JULEEN 100 mg/tablet, 30 TABLET/BOX":"Abdalla Basbar Dafaallah Basbar (2)","CONCOR Tablet 10MG/1Tablet, 30Tablet/Box":"Hanan Mohamed Naguib Elgendi (3) · Mohamed Hatem Abdelsamie Nour (1)","MEGAROY Capsule, 30 CAPSULE/BOX":"Hossameldin Mohamed Amin Bekh (2) · Said Tolba Elsayed Elbedewy (1)","MARLON 10 mg/tablet, 30 TABLET/BOX":"Ahmed Taher Mokhtar Mashaly (1) · Mohamed Emad Kamal Ismail (1)","DIFFERIN Gel 0.1%/1APPLY, 30GM/Tube":"Mona Farid Elmandouh Abdelrahm (2)","DAONIL Tablet 5MG/1Tablet, 30Tablet/Box":"Maysa Sayed Abdullah Abdeltawab (1)","SIMVA Film coated tablet 10MG/1Tablet, 30Tab":"Hanan Mohamed Naguib Elgendi (1)","CIPROCIN Eye drops 0.3MG/1Drop, 5ML/Containe":"Gazala Gholam Mir (2)","MICARDIS PLUS 80/12.5 mg/tablet, 28 TABLET/B":"Ahmed Hassanin Mohamed Hassan (1) · Nahed Mohammed Hassona Bahage (1)","ELEVIT Tablet, 30 TABLET/BOX":"Nehad Farouk Abdallah Ramadan (1)","HAEMOVIT Tablet, 30 TABLET/BOX":"Arwa Mohammed Osman Taha (2) · Nehad Farouk Abdallah Ramadan (1)","GONAL-F Injection 450IU/1pen, 1ML/Pen":"Wafaa Abdelrazig Mukhtar Moham (2)","SEROXAT CR 12.5 MG 30Tablet/Box":"Mohamed Emad Kamal Ismail (1)","SPASMOLYTE Tablet 20MG/1Tablet, 30Tablet/Box":"Maysa Sayed Abdullah Abdeltawab (1)","HEMAGEL Gel /1APPLY, 30GM/Tube":"Mohamed Hatem Abdelsamie Nour (5) · Said Tolba Elsayed Elbedewy (1)","SORTIVA H Tablet 50/12.5MG/1Tablet, 28Tablet":"Maysa Sayed Abdullah Abdeltawab (1)","DEBREX 1 mg/tablet, 30 TABLET/BOX":"Mohamed Emad Kamal Ismail (1)","TACROZ 0.03 %/apply Ointment , 10 GM/TUBE":"Sara Ibrahim Elabd Eldegla (1) · Mona Farid Elmandouh Abdelrahm (1)","ARGIREKT 7 gm Sachets, 30 SACHET/BOX":"Hossameldin Mohamed Amin Bekh (2) · Ahmad Mahmoud Mohammed Elad (1)","FENSOLIN 10 mg/tablet, 30 TABLET/BOX":"Mohamed Hatem Abdelsamie Nour (1)","DAIVOBET apply Ointment , 60 GM/TUBE":"Mona Farid Elmandouh Abdelrahm (2)","LOCASONE Cream 0.1%/1APPLY, 100GM/Tube":"Mona Farid Elmandouh Abdelrahm (5)","LOVERA 5 mg/tablet, 30 TABLET/BOX":"Ahmad Mahmoud Mohammed Elad (3)","GAMCET 0.4 mg/tablet, 30 TABLET/BOX":"Ahmad Mahmoud Mohammed Elad (1)","KLENDAM 300 mg/capsule, 16 CAPSULE/BOX":"Ibrahim Abdelrazeq Ibrahim Deso (1)","ZOLONIA 10 mg/tablet, 28 TABLET/BOX":"Mohamed Emad Kamal Ismail (1)","SEROQUEL Tablet 100MG/1Tablet, 60Tablet/Box":"Mohamed Emad Kamal Ismail (1)","ANAFRANIL Tablet 10MG/1Tablet, 30Tablet/Box":"Ahmed Taher Mokhtar Mashaly (1)","CREVAST 20 mg/tablet, 30 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (4)","IRO-VIT drop, 30 ML/CONTAINER":"Mohamed Hatem Abdelsamie Nour (1) · Rafik Elsayed Aboelhythim Ereba (1)","RYBELSUS 14 mg/tablet, 30 TABLET/BOX":"Ali Mohamed Elameen Ahmed (1) · Hatem Abdelmageed Elsayed Mata (1)","OLNEDA 20 /10mg/tablet, 30 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (2)","LAZURE 50 mg/tablet, 60 TABLET/BOX":"Ahmed Taher Mokhtar Mashaly (2) · Mohamed Hatem Abdelsamie Nour (1)","OMEGA MIND 1200 mg/5 ml Syrup, 100 ML/BOTTLE":"Ayman Othman Youssef Othman (1)","AVALON ALPHA PLUS apply Cream, 30 GM/TUBE":"Mona Farid Elmandouh Abdelrahm (1)","PRED FORTE Eye drops 2MG/1Drop, 5ML/Containe":"Mohamed Mohamed Arafa Abo Ob (3) · Dina Mahmoud Abdelazim Mahme (2)","NAFEES PHARMA BIOTIN Tablet, 60 TABLET/BOX":"Mona Farid Elmandouh Abdelrahm (1)","RIDON Film coated tablet 4MG/1Tablet, 30Tabl":"Ahmed Taher Mokhtar Mashaly (1) · Mohamed Emad Kamal Ismail (1)","BETAVERT 24 mg/tablet, 30 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (1)","AVALON AVOCOM Cream 0.1%/1APPLY, 30GM/Tube":"Mugahid Khalid Zainelabdin Elfak (10) · Mona Farid Elmandouh Abdelrahm (1)","RIAXINE Syrup 0.8MG/1ML, 100ML/Bottle":"Mugahid Khalid Zainelabdin Elfak (5)","OZEMPIC 0.25 mg/ml Ampoule, 4 AMPOULE/BOX":"Hatem Abdelmageed Elsayed Mata (3) · Mugahid Khalid Zainelabdin Elfak (1)","ZINNAT SUSPENTION 250MG/5ML, 50ML/Bottle":"Mohamed Muhiddeen Abd Al Gde (1)","JUVAMOX Capsule 500MG/1Capsule, 20Capsule/Bo":"Mugahid Khalid Zainelabdin Elfak (1)","JALRA 50 mg/tablet, 28 TABLET/BOX":"Summera Aman Solangi (1)","EVERT Capsule, 30 CAPSULE/BOX":"Medhat Alashry Aladawy Goger (5) · Soha Mohamed Salaheldeen Solima (1)","WELLMOV tablet, 30 TABLET/BOX":"Ahmed Gamal Abdelnasser Abdelm (6) · Medhat Alashry Aladawy Goger (4)","MICOCORT cream 2/1%/1APPLY, 30GM/Tube":"Amira Mohamed Salem Eldaltouni (2)","URILAX Tablet 10MG/1Tablet, 30Tablet/Box":"Nahed Mohammed Hassona Bahage (1)","URILAX Film coated tablet 5MG/1Tablet, 30Tab":"Nahed Mohammed Hassona Bahage (1)","ROXIL Capsule 500MG/1Capsule, 20Capsule/Box":"Abdullah Ahmed Mohamede Ahme (4) · Mohamed Hatem Abdelsamie Nour (4)","DAONIL-M Tablet 5/500MG/1Tablet, 30Tablet/Bo":"Hatem Abdelmageed Elsayed Mata (1)","MONTEL Chewable tablet 5MG/1Tablet, 28Tablet":"Mohamed Hatem Abdelsamie Nour (1)","MARLON 20 mg/tablet, 30 TABLET/BOX":"Ahmed Taher Mokhtar Mashaly (1)","ZYPREXA Tablet 5MG/1Tablet, 28Tablet/Box":"Mohamed Emad Kamal Ismail (1)","DAMESTA 20 mg/tablet, 30 TABLET/BOX":"Mohamed Emad Kamal Ismail (3)","AVALON FOOT Cream /1APPLY, 90GM/Tube":"Mona Farid Elmandouh Abdelrahm (1)","OZEMPIC 0.5 mg/ml Ampoule, 4 AMPOULE/BOX":"Hatem Abdelmageed Elsayed Mata (1)","ACRETIN Cream 0.05%/1APPLY, 30GM/Tube":"Nasser Abdelaziz Ragab Sakr (2) · Mona Farid Elmandouh Abdelrahm (2)","APIDRA SOLOSTAR 100 iu/ml Injection, 5 VIAL/":"Abdalla Basbar Dafaallah Basbar (1)","ALDACTONE Tablet 100MG/1Tablet, 10Tablet/Box":"Said Tolba Elsayed Elbedewy (1)","CROMA Eye drops 0.04MG/1Drop, 10ML/Container":"Mohamed Mohamed Arafa Abo Ob (1)","MEGATOP SYRUP /1ML, 125ML/BOTTLE":"Mohamed Hatem Abdelsamie Nour (1)","OPTICIN Eye drops 0.3MG/1Drop, 5ML/Container":"Gazala Gholam Mir (1)","ZOLIX 5 mg/tablet, 20 TABLET/BOX":"Nahed Mohammed Hassona Bahage (1)","SIMVA Film coated tablet 20MG/1Tablet, 30Tab":"Ahmed Taher Mokhtar Mashaly (1)","DONIFOXATE 80 mg/tablet, 30 TABLET/BOX":"Mugahid Khalid Zainelabdin Elfak (1)","CREVAST 10 mg/tablet, 30 TABLET/BOX":"Hatem Abdelmageed Elsayed Mata (1) · Mohamed Abdelaziz Abdelmoneem (1)","FIXIT Capsule 150MG/1Capsule, 28Capsule/Box":"Mugahid Khalid Zainelabdin Elfak (1)","LODIAB XR 750 mg/tablet, 60 TABLET/BOX":"Mugahid Khalid Zainelabdin Elfak (1)"}
   },
 
   /* 💳 الأدوية آجل — مقارنة سنوية (قيمة بالريال) لشهور 05/06/07 */
@@ -1010,18 +1302,19 @@ const DATA = {
   },
 
   /* 🌿 PureHerb — مبيعات حقيقية (مورد شركة بيور هيرب 143711)
-     ملاحظة: شهر 07 فقط · ص1 و ص7 فقط · الكتابات لسه لم تصل.
-     u = وحدات مباعة · v = قيمة البيع (ريال) لكل صيدلية في يوليو 07 */
+     شهر 07: تفصيلي ص1/ص7/ص18 + إجمالي كل الصيدليات (تقرير مبيعات اصناف مورد).
+     u = وحدات مباعة · v = قيمة البيع (ريال) · all = إجمالي كل الفروع */
   pureherbMonth:"07",
   pureherb:[
-    {name:"ZINCOLIVE Syrup 150ML",        code:"1-03-186-085", u:{"1":9,  "7":null,"18":null}, v:{"1":630,   "7":null,"18":null}, w:{"1":9, "7":0,"18":0}},
-    {name:"FAWARVIT Vit C 1000mg Eff.",    code:"1-03-044-039", u:{"1":2,  "7":null,"18":null}, v:{"1":40,    "7":null,"18":null}, w:{"1":0, "7":0,"18":0}},
-    {name:"PureFeel Tablet 30",           code:"1-03-187-269", u:{"1":2,  "7":2,   "18":2},    v:{"1":59,    "7":59,  "18":59},  w:{"1":0, "7":0,"18":2}},
-    {name:"PURE OMEGA-3 Syrup 240ML",     code:"1-03-186-084", u:{"1":1,  "7":1,   "18":null}, v:{"1":150,   "7":150, "18":null}, w:{"1":1, "7":0,"18":0}},
-    {name:"CENTROZON WOMEN Tablet 30",    code:"1-03-187-267", u:{"1":15, "7":1,   "18":2},    v:{"1":600,   "7":40,  "18":80},  w:{"1":9, "7":1,"18":0}},
-    {name:"CENTROZON Tablet 30",          code:"1-03-187-270", u:{"1":15, "7":6,   "18":6},    v:{"1":292.5, "7":117, "18":117}, w:{"1":15,"7":1,"18":6}},
-    {name:"BoneFriend Tablet 30",         code:"1-03-187-268", u:{"1":15, "7":4,   "18":3},    v:{"1":750,   "7":200, "18":150}, w:{"1":20,"7":5,"18":4}},
-    {name:"ARGIGROW Syrup 150ML",         code:"1-03-186-083", u:{"1":6,  "7":2,   "18":1},    v:{"1":510,   "7":170, "18":85},  w:{"1":2, "7":0,"18":0}}
+    {name:"ZINCOLIVE Syrup 150ML",        code:"1-03-186-085", u:{"1":9,  "7":null,"18":null,"all":25}, v:{"1":630,   "7":null,"18":null,"all":1750.001}, w:{"1":9, "7":0,"18":0}},
+    {name:"FAWARVIT Vit C 1000mg Eff.",    code:"1-03-044-039", u:{"1":2,  "7":null,"18":null,"all":34}, v:{"1":40,    "7":null,"18":null,"all":680},     w:{"1":0, "7":0,"18":0}},
+    {name:"FAWARVIT Vit C + Zinc",         code:"1-03-044-040", u:{"1":null,"7":null,"18":null,"all":23}, v:{"1":null,  "7":null,"18":null,"all":575},     w:{"1":0, "7":0,"18":0}},
+    {name:"PureFeel Tablet 30",           code:"1-03-187-269", u:{"1":2,  "7":2,   "18":2,   "all":17}, v:{"1":59,    "7":59,  "18":59,  "all":501.5},  w:{"1":0, "7":0,"18":2}},
+    {name:"PURE OMEGA-3 Syrup 240ML",     code:"1-03-186-084", u:{"1":1,  "7":1,   "18":null,"all":11}, v:{"1":150,   "7":150, "18":null,"all":1650},    w:{"1":1, "7":0,"18":0}},
+    {name:"CENTROZON WOMEN Tablet 30",    code:"1-03-187-267", u:{"1":15, "7":1,   "18":2,   "all":47}, v:{"1":600,   "7":40,  "18":80,  "all":1880},    w:{"1":9, "7":1,"18":0}},
+    {name:"CENTROZON Tablet 30",          code:"1-03-187-270", u:{"1":15, "7":6,   "18":6,   "all":63}, v:{"1":292.5, "7":117, "18":117, "all":1228.5},  w:{"1":15,"7":1,"18":6}},
+    {name:"BoneFriend Tablet 30",         code:"1-03-187-268", u:{"1":15, "7":4,   "18":3,   "all":26}, v:{"1":750,   "7":200, "18":150, "all":1300},    w:{"1":20,"7":5,"18":4}},
+    {name:"ARGIGROW Syrup 150ML",         code:"1-03-186-083", u:{"1":6,  "7":2,   "18":1,   "all":40}, v:{"1":510,   "7":170, "18":85,  "all":3400.002},w:{"1":2, "7":0,"18":0}}
   ]
 };
 
@@ -1050,7 +1343,7 @@ function barChart(vals,unit){
       <span class="cap" style="color:${COL[m]}">${fmt(vals[m])}</span></div></div>`;
   }).join("");
   const labels=M.map(m=>`<span>${ML[m]}</span>`).join("");
-  return `<div class="chart">${bars}</div><div class="chlabels">${labels}</div>`;
+  return `<div class="chart chart-monthly">${bars}</div><div class="chlabels">${labels}</div>`;
 }
 function scopeLabel(s){return s==="all"?"كل الصيدليات":"صيدلية "+s;}
 function metricLabel(){return state.metric==="units"?"وحدة":"ريال";}
@@ -1117,7 +1410,7 @@ V.share=()=>{
     <div class="kpi"><div class="lbl">الخارجية — 07</div><div class="val">${fmt(ext[CUR])} <span class="unit">${unit}</span></div>
       <div class="delta flat">${100-sCur}% من الإجمالي</div></div>
     <div class="kpi"><div class="lbl">اتجاه المشاركة 05→07</div>
-      <div class="val ${sCur>=sFirst?'up':'down'}">${sFirst}% ← ${sCur}%</div>
+      <div class="val val-range ${sCur>=sFirst?'up':'down'}">من ${sFirst}% إلى ${sCur}%</div>
       <div class="delta ${sCur>=sFirst?'up':'down'}">${sCur>=sFirst?'ارتفاع':'انخفاض'} النصيب</div></div></div>`;
   // stacked bars per month
   const maxT=Math.max(...M.map(m=>all[m]),1);
@@ -1129,6 +1422,9 @@ V.share=()=>{
       <div style="height:${hI}%;background:var(--c07)"></div></div></div>`;
   }).join("");
   const chart=`<div class="panel"><h2>الداخلية مقابل الخارجية — تسلسل شهري (${unit})</h2>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">
+      <span class="dot" style="background:var(--c07)"></span>داخلية (مشاركة %) &nbsp;·&nbsp;
+      <span class="dot" style="background:var(--c05)"></span>خارجية</div>
     <div class="chart">${bars}</div><div class="chlabels">${M.map(m=>`<span>${ML[m]}</span>`).join("")}</div></div>`;
   const rows=M.map(m=>{
     const d=m===FIRST?{t:"—",c:"flat"}:(()=>{const p=m===CUR?PREV:FIRST;const dd=Math.round(share[m]-share[p]);
@@ -1280,10 +1576,8 @@ V.doctors=()=>{
       <h2>أطباء ${scopeLabel(scope)} — بانتظار الملف</h2></div></div>`;
   }
   const docs=DATA.doctorsNostri[scope], nDoc=DATA.doctorCount[scope]||docs.length;
-  const tot=m=>docs.reduce((a,d)=>a+d[m],0);
-  const t5=tot(1),t6=tot(2),t7=tot(3);
-  const note=`<div class="note real">👨‍⚕️ <b>أعلى الأطباء كتابةً لأصناف نوستري — ${scopeLabel(scope)}</b>.
-     من ملفات الكتابات 05/06/07 (أسماء موحّدة). إجمالي الأطباء الكاتبين: ${nDoc} طبيب.</div>`;
+  const wTot=wrTotals(scope);
+  const t5=wTot[FIRST], t6=wTot[PREV], t7=wTot[CUR];
   const dTop=docs[0];
   const kpis=`<div class="kpis">
     <div class="kpi"><div class="lbl">أعلى طبيب (يوليو)</div><div class="val" style="font-size:18px">${dTop[0]}</div>
@@ -1291,7 +1585,7 @@ V.doctors=()=>{
     <div class="kpi"><div class="lbl">عدد الأطباء الكاتبين</div><div class="val">${nDoc}</div></div>
     <div class="kpi"><div class="lbl">متوسط كتابة/طبيب (07)</div><div class="val">${(t7/nDoc).toFixed(1)}</div></div>
     <div class="kpi"><div class="lbl">إجمالي الكتابات (07)</div><div class="val">${fmt(t7)}</div></div></div>`;
-  const chart=`<div class="panel"><h2>إجمالي كتابات الأطباء — تسلسل شهري (ص1)</h2>
+  const chart=`<div class="panel"><h2>إجمالي الكتابات — ${scopeLabel(scope)}</h2>
     ${barChart({"05":t5,"06":t6,"07":t7})}</div>`;
   const max7=Math.max(...docs.map(d=>d[3]),1);
   const rows=docs.map((d,i)=>{
@@ -1300,7 +1594,7 @@ V.doctors=()=>{
       <td class="num">${d[3]}</td><td class="trend ${dd.c}">${dd.t}</td>
       <td style="width:120px"><div class="conv"><div class="track">
         <div class="fill" style="width:${d[3]/max7*100}%;background:var(--teal)"></div></div></div></td></tr>`;}).join("");
-  const table=`<div class="panel"><h2>ترتيب الأطباء (أعلى 12) — كتابات نوستري</h2>
+  const table=`<div class="panel"><h2>ترتيب الأطباء (أعلى ${docs.length}) — ${scopeLabel(scope)}</h2>
     <div class="tbl-wrap"><table><thead><tr><th>الطبيب</th><th>مايو</th><th>يونيو</th><th>يوليو</th><th>التغير</th><th>يوليو</th></tr></thead>
     <tbody>${rows}</tbody></table></div></div>`;
   return kpis+chart+table;
@@ -1309,88 +1603,118 @@ V.doctors=()=>{
 /* ---- 4. Near-Expire (REAL) ---- */
 V.expire=()=>{
   const NE=DATA.nearExpire, s=NE.summary, mo=NE.monthly;
-  const dCur=delta(mo[CUR],mo[PREV]), dTot=delta(mo[CUR],mo[FIRST]);
-  const expShort=e=>e?e.slice(0,7):"—";
+  const dCur=delta(mo[CUR],mo[PREV]);
+  const statusOf=w7=>w7===0?"none":w7<=5?"weak":"active";
   const wpill=w7=>w7===0?'<span class="pill r">بدون كتابة</span>':w7<=5?'<span class="pill y">ضعيف</span>':'<span class="pill g">نشط</span>';
-  const note=`<div class="note real">⏳ <b>Near-Expire حقيقي</b> — ملف الأصناف قريبة الانتهاء (حتى 31-12-2026)
-     مقاطَع مع كتابات الأطباء للتعاونات الثلاثة (ص1+ص7+ص18). الهدف: رفع كتابة الأصناف الراكدة قبل انتهائها.
-     <br><small>تواريخ الانتهاء كما وردت في الملف (سنة-شهر).</small></div>`;
   const kpis=`<div class="kpis">
     <div class="kpi"><div class="lbl">إجمالي أصناف النير اكسبير</div><div class="val">${fmt(s.items)}</div>
       <div class="delta flat">${fmt(s.qty)} وحدة مخزون</div></div>
     <div class="kpi"><div class="lbl">أصناف يكتبها الأطباء</div><div class="val" style="color:var(--up)">${fmt(s.prescribed)}</div>
       <div class="delta flat">${Math.round(s.prescribed/s.items*100)}% من الأصناف</div></div>
-    <div class="kpi"><div class="lbl">أصناف بدون أي كتابة ⚠️</div><div class="val" style="color:var(--down)">${fmt(s.risk)}</div>
-      <div class="delta down">خطر ركود</div></div>
+    <div class="kpi"><div class="lbl">أصناف بدون أي كتابة</div><div class="val" style="color:var(--down)">${fmt(s.risk)}</div>
+      <div class="delta down">بدون كتابة</div></div>
     <div class="kpi"><div class="lbl">إجمالي كتاباتها (07)</div><div class="val">${fmt(mo[CUR])}</div>
       <div class="delta ${dCur.c}">${dCur.t} مقابل يونيو</div></div></div>`;
   const chart=`<div class="panel"><h2>إجمالي كتابات أصناف النير اكسبير — تسلسل شهري</h2>
     ${barChart(mo)}</div>`;
   const allRows=NE.all.map(r=>{
-    const[desc,qty,exp,w5,w6,w7]=r, d=delta(w7,w6);
-    return `<tr data-name="${desc.toLowerCase()}"><td>${desc}</td>
+    const[desc,qty,exp,w5,w6,w7]=r, d=delta(w7,w6), st=statusOf(w7);
+    const doc=(NE.topDocs&&NE.topDocs[desc])?NE.topDocs[desc]:"—";
+    return `<tr data-name="${desc.toLowerCase()}" data-status="${st}"><td>${desc}</td>
       <td class="num" style="${qty>=200?'color:var(--down);font-weight:700':''}">${fmt(qty)}</td>
-      <td class="num" style="font-size:12px">${expShort(exp)}</td>
       <td class="num">${w5}</td><td class="num">${w6}</td><td class="num">${w7}</td>
-      <td class="trend ${d.c}">${d.t}</td><td>${wpill(w7)}</td></tr>`;}).join("");
+      <td class="trend ${d.c}">${d.t}</td><td>${wpill(w7)}</td>
+      <td style="font-size:12px;min-width:180px;color:var(--muted)">${doc}</td></tr>`;}).join("");
   const table=`<div class="panel"><h2>كل أصناف النير اكسبير (${NE.all.length}) — مرتّبة بالمخزون</h2>
-    <input id="neSearch" placeholder="🔎 ابحث باسم الصنف..." autocomplete="off"
-      style="width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:12px;
-      font-family:inherit;font-size:14px;margin-bottom:14px;direction:rtl">
+    <div class="ne-tools">
+      <input id="neSearch" placeholder="ابحث باسم الصنف..." autocomplete="off">
+      <div class="chips ne-status" id="neStatus">
+        <button type="button" data-status="all" class="active">الكل</button>
+        <button type="button" data-status="none">بدون كتابة</button>
+        <button type="button" data-status="weak">ضعيف</button>
+        <button type="button" data-status="active">نشط</button>
+      </div>
+    </div>
     <div id="neCount" style="font-size:12px;color:var(--muted);margin-bottom:8px"></div>
     <div class="tbl-wrap" style="max-height:70vh;overflow-y:auto"><table><thead><tr>
-      <th>الصنف</th><th>المخزون</th><th>ينتهي</th><th>مايو</th><th>يونيو</th><th>يوليو</th>
-      <th>التغير</th><th>الحالة</th></tr></thead><tbody id="neBody">${allRows}</tbody></table></div></div>`;
+      <th>الصنف</th><th>المخزون</th><th>مايو</th><th>يونيو</th><th>يوليو</th>
+      <th>التغير</th><th>الحالة</th><th>أكثر طبيب يكتبه</th></tr></thead><tbody id="neBody">${allRows}</tbody></table></div></div>`;
   setTimeout(()=>{
     const inp=document.getElementById("neSearch"), body=document.getElementById("neBody"),
-          cnt=document.getElementById("neCount"), trs=[...body.querySelectorAll("tr")];
-    const upd=()=>{const q=(inp.value||"").trim().toLowerCase();let n=0;
-      trs.forEach(t=>{const show=!q||t.dataset.name.includes(q);t.style.display=show?"":"none";if(show)n++;});
-      cnt.textContent="عدد الأصناف الظاهرة: "+n;};
-    if(inp){inp.oninput=upd;upd();}
+          cnt=document.getElementById("neCount"), trs=[...body.querySelectorAll("tr")],
+          statusBox=document.getElementById("neStatus");
+    let status="all";
+    const upd=()=>{
+      const q=(inp.value||"").trim().toLowerCase(); let n=0;
+      trs.forEach(t=>{
+        const okName=!q||t.dataset.name.includes(q);
+        const okStatus=status==="all"||t.dataset.status===status;
+        const show=okName&&okStatus;
+        t.style.display=show?"":"none"; if(show)n++;
+      });
+      cnt.textContent="عدد الأصناف الظاهرة: "+n;
+    };
+    if(inp){inp.oninput=upd;}
+    if(statusBox){
+      statusBox.querySelectorAll("button").forEach(b=>{
+        b.onclick=()=>{
+          statusBox.querySelectorAll("button").forEach(x=>x.classList.remove("active"));
+          b.classList.add("active"); status=b.dataset.status; upd();
+        };
+      });
+    }
+    upd();
   },0);
   return kpis+chart+table;
 };
 
-/* ---- 5. PureHerb (REAL sales — 07 only, ص1 & ص7 & ص18) ---- */
+/* ---- 5. PureHerb (REAL sales — 07: ص1/ص7/ص18 + إجمالي كل الصيدليات) ---- */
 V.pureherb=()=>{
   const items=DATA.pureherb, PH=["1","7","18"];
   const sumU=p=>items.reduce((a,it)=>a+(it.u[p]||0),0);
   const sumV=p=>items.reduce((a,it)=>a+(it.v[p]||0),0);
   const u1=sumU("1"),u7=sumU("7"),u18=sumU("18"),v1=sumV("1"),v7=sumV("7"),v18=sumV("18");
-  const uT=u1+u7+u18, vT=v1+v7+v18;
-  const note=`<div class="note real">✔ <b>مبيعات حقيقية</b> — مورد «شركة بيور هيرب» (143711)، <b>شهر يوليو 07 فقط</b>،
-     صيدليات 1 و 7 و 18. ⏳ مبيعات باقي الشهور، وكتابات PureHerb متاحة لـ ص1.</div>`;
+  const uIntr=u1+u7+u18, vIntr=v1+v7+v18;
+  const uAll=sumU("all"), vAll=sumV("all");
+  const uExt=Math.max(uAll-uIntr,0), vExt=Math.max(vAll-vIntr,0);
+  const shUv=uAll?Math.round(uIntr/uAll*100):0;
+  const shVv=vAll?Math.round(vIntr/vAll*100):0;
+  // تقريب متسق بحيث مجموع الداخلية+الخارجية = الإجمالي المعروض
+  const vAllR=Math.round(vAll), vIntrR=Math.round(vIntr), vExtR=vAllR-vIntrR;
   const kpis=`<div class="kpis">
-    <div class="kpi"><div class="lbl">وحدات ص1 (07)</div><div class="val">${fmt(u1)} <span class="unit">وحدة</span></div>
-      <div class="delta flat">${fmt(v1)} ريال</div></div>
-    <div class="kpi"><div class="lbl">وحدات ص7 (07)</div><div class="val">${fmt(u7)} <span class="unit">وحدة</span></div>
-      <div class="delta flat">${fmt(v7)} ريال</div></div>
-    <div class="kpi"><div class="lbl">وحدات ص18 (07)</div><div class="val">${fmt(u18)} <span class="unit">وحدة</span></div>
-      <div class="delta flat">${fmt(v18)} ريال</div></div>
-    <div class="kpi"><div class="lbl">الإجمالي (ص1+7+18)</div><div class="val">${fmt(uT)}</div>
-      <div class="delta flat">${fmt(vT)} ريال</div></div></div>`;
-  const mx=Math.max(u1,u7,u18,1);
-  const bar=(u,c,lbl)=>`<div class="chgroup"><div class="bar" style="height:${Math.max(u/mx*100,2)}%;background:${c}">
+    <div class="kpi"><div class="lbl">كل الصيدليات — يوليو 07</div><div class="val">${fmt(uAll)} <span class="unit">وحدة</span></div>
+      <div class="delta flat">${fmt(vAllR)} ريال</div></div>
+    <div class="kpi"><div class="lbl">الداخلية (1+7+18)</div><div class="val">${fmt(uIntr)} <span class="unit">وحدة</span></div>
+      <div class="delta flat">${fmt(vIntrR)} ريال · ${shUv}% وحدات</div></div>
+    <div class="kpi"><div class="lbl">الخارجية</div><div class="val">${fmt(uExt)} <span class="unit">وحدة</span></div>
+      <div class="delta flat">${fmt(vExtR)} ريال · ${100-shUv}% وحدات</div></div>
+    <div class="kpi"><div class="lbl">مشاركة الداخلية (قيمة)</div><div class="val">${shVv}%</div>
+      <div class="delta flat">الخارجية ${100-shVv}% من القيمة</div></div></div>`;
+  const mxShare=Math.max(uIntr,uExt,uAll,1);
+  const bar=(u,c)=>`<div class="chgroup"><div class="bar" style="height:${Math.max(u/mxShare*100,2)}%;background:${c}">
         <span class="cap" style="color:${c}">${fmt(u)}</span></div></div>`;
-  const chart=`<div class="panel"><h2>مبيعات PureHerb حسب الصيدلية — يوليو 07 (وحدات)</h2>
-    <div class="chart">${bar(u1,'var(--c05)')}${bar(u7,'var(--c06)')}${bar(u18,'var(--c07)')}</div>
+  const shareChart=`<div class="panel"><h2>PureHerb — الداخلية مقابل الخارجية (وحدات · يوليو 07)</h2>
+    <div class="chart">${bar(uIntr,'var(--c07)')}${bar(uExt,'var(--c05)')}${bar(uAll,'var(--c06)')}</div>
+    <div class="chlabels"><span>الداخلية ${shUv}%</span><span>الخارجية ${100-shUv}%</span><span>كل الصيدليات</span></div></div>`;
+  const mx=Math.max(u1,u7,u18,1);
+  const barP=(u,c)=>`<div class="chgroup"><div class="bar" style="height:${Math.max(u/mx*100,2)}%;background:${c}">
+        <span class="cap" style="color:${c}">${fmt(u)}</span></div></div>`;
+  const chart=`<div class="panel"><h2>مبيعات PureHerb حسب الصيدلية الداخلية — يوليو 07 (وحدات)</h2>
+    <div class="chart">${barP(u1,'var(--c05)')}${barP(u7,'var(--c06)')}${barP(u18,'var(--c07)')}</div>
     <div class="chlabels"><span>صيدلية 1</span><span>صيدلية 7</span><span>صيدلية 18</span></div></div>`;
   const cell=x=>x==null?"—":fmt(x);
   const rows=items.map(it=>{
     const tu=(it.u["1"]||0)+(it.u["7"]||0)+(it.u["18"]||0), tv=(it.v["1"]||0)+(it.v["7"]||0)+(it.v["18"]||0);
     return `<tr><td>${it.name}<br><span style="color:var(--muted);font-weight:500;font-size:12px">${it.code}</span></td>
       <td class="num">${cell(it.u["1"])}</td><td class="num">${cell(it.u["7"])}</td><td class="num">${cell(it.u["18"])}</td>
-      <td class="num">${fmt(tu)}</td><td class="num">${fmt(tv)}</td></tr>`;}).join("");
-  const table=`<div class="panel"><h2>تفصيلي أصناف PureHerb — يوليو 07 (وحدات)</h2>
-    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>ص1</th><th>ص7</th><th>ص18</th><th>إجمالي وحدات</th><th>إجمالي ريال</th></tr></thead>
+      <td class="num">${fmt(tu)}</td><td class="num">${cell(it.u.all)}</td><td class="num">${cell(it.v.all)}</td></tr>`;}).join("");
+  const table=`<div class="panel"><h2>تفصيلي أصناف PureHerb — يوليو 07</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>ص1</th><th>ص7</th><th>ص18</th><th>داخلية</th><th>كل الصيدليات</th><th>قيمة الكل</th></tr></thead>
     <tbody>${rows}</tbody>
     <tfoot><tr><td>الإجمالي</td><td class="num">${fmt(u1)}</td><td class="num">${fmt(u7)}</td><td class="num">${fmt(u18)}</td>
-    <td class="num">${fmt(uT)}</td><td class="num">${fmt(vT)}</td></tr></tfoot>
+    <td class="num">${fmt(uIntr)}</td><td class="num">${fmt(uAll)}</td><td class="num">${fmt(vAll)}</td></tr></tfoot>
     </table></div></div>`;
-  // كتابات + تحويل PureHerb لكل صيدلية (يوليو)
   const sumW=p=>items.reduce((a,it)=>a+((it.w&&it.w[p])||0),0);
-  const w1t=sumW("1"),w7t=sumW("7"),w18t=sumW("18");
   const convCell=(w,u)=>{
     if(!w) return '<td class="num">'+(u==null?"—":fmt(u))+'</td><td><span class="pill y">—</span></td>';
     const cv=Math.round((u||0)/w*100), c=convClass(cv);
@@ -1402,18 +1726,182 @@ V.pureherb=()=>{
       <td class="num">${fmt(w["1"]||0)}</td>${convCell(w["1"]||0,it.u["1"])}
       <td class="num">${fmt(w["7"]||0)}</td>${convCell(w["7"]||0,it.u["7"])}
       <td class="num">${fmt(w["18"]||0)}</td>${convCell(w["18"]||0,it.u["18"])}</tr>`;}).join("");
-  const conv=`<div class="panel"><h2>كتابات وتحويل PureHerb — كل الصيدليات (يوليو 07)</h2>
+  const conv=`<div class="panel"><h2>كتابات وتحويل PureHerb — الصيدليات الداخلية (يوليو 07)</h2>
     <div class="tbl-wrap"><table><thead>
     <tr><th rowspan="2">الصنف</th><th colspan="3">صيدلية 1</th><th colspan="3">صيدلية 7</th><th colspan="3">صيدلية 18</th></tr>
     <tr><th>كتابة</th><th>بيع</th><th>تحويل</th><th>كتابة</th><th>بيع</th><th>تحويل</th><th>كتابة</th><th>بيع</th><th>تحويل</th></tr></thead>
     <tbody>${crows}</tbody></table></div></div>`;
-  return kpis+chart+table+conv;
+  return kpis+shareChart+chart+table+conv;
 };
 
 /* ==================== render ==================== */
 function needsScope(t){return t==="sales"||t==="writings"||t==="conversion"||t==="doctors";}
 function scopeReadyMap(t){return (t==="writings"||t==="conversion"||t==="doctors")?DATA.writingsReady:DATA.pharmacyReady;}
 function usesMetric(t){return t==="sales"||t==="share";}
+const TAB_META={
+  sales:{t:"مبيعات Nostri",s:"مقارنة مايو / يونيو / يوليو"},
+  share:{t:"المشاركة",s:"الداخلية (1 · 7 · 18) من إجمالي نوستري"},
+  writings:{t:"الكتابات",s:"كتابات الأطباء حسب الصيدلية"},
+  conversion:{t:"التحويل",s:"الكتابة مقابل الوحدات المباعة"},
+  pureherb:{t:"مبيعات Pure herb",s:"كل الصيدليات · الداخلية · الخارجية — يوليو"},
+  doctors:{t:"الأطباء",s:"ترتيب الأطباء حسب الكتابات"},
+  expire:{t:"Near-Expire",s:"المخزون قريب الانتهاء والكتابات"},
+  credit:{t:"الأدوية آجل",s:"2025 مقابل 2026"}
+};
+function sectionStage(tab){
+  const m=TAB_META[tab]||{t:tab,s:""};
+  return `<div class="section-stage">
+    <div><h2>${m.t}</h2><p class="sub">${m.s}</p></div>
+    <div class="stamp">مايو ← يوليو 2026</div></div>`;
+}
+function goTab(tab){
+  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===tab));
+  state.tab=tab;
+  if(tab==="sales") state.scope="all";
+  else if(needsScope(tab) && !scopeReadyMap(tab)[state.scope]) state.scope="1";
+  render();
+  try{document.getElementById("view").scrollIntoView({behavior:"smooth",block:"start"});}catch(e){}
+}
+function shortName(n){return (n||"").replace(/\s+/g," ").trim().slice(0,34);}
+function topItemByJuly(metric){
+  let best=null,bestV=-1;
+  DATA.nostriItems.forEach(it=>{
+    const v=(itemVals(it,"all",metric)||{})[CUR]||0;
+    if(v>bestV){bestV=v;best=it;}
+  });
+  return {it:best,v:bestV};
+}
+function topGrowthItem(){
+  let best=null,bestD=-Infinity,prev=0,cur=0;
+  DATA.nostriItems.forEach(it=>{
+    const u=itemVals(it,"all","units")||{};
+    const a=u[PREV]||0,b=u[CUR]||0;
+    if(!a) return;
+    const d=(b-a)/a;
+    if(d>bestD){bestD=d;best=it;prev=a;cur=b;}
+  });
+  return {it:best,d:bestD,prev,cur};
+}
+function insightsFor(tab){
+  const out=[];
+  if(tab==="sales"){
+    const tot=itemTotals("all",state.metric), d=delta(tot[CUR],tot[PREV]), d3=delta(tot[CUR],tot[FIRST]);
+    const unit=state.metric==="units"?"وحدة":"ريال";
+    out.push({c:d.c,t:`يوليو vs يونيو: ${d.t} — ${fmt(tot[CUR])} ${unit}`});
+    out.push({c:d3.c,t:`مايو ← يوليو: ${d3.t}`});
+    const g=topGrowthItem();
+    if(g.it) out.push({c:g.d>=0?"up":"down",t:`أعلى نمو شهري: ${shortName(g.it.name)} (${delta(g.cur,g.prev).t})`});
+  } else if(tab==="share"){
+    const all=itemTotals("all",state.metric), intr=internalTotals(state.metric);
+    const sCur=all[CUR]?Math.round(intr[CUR]/all[CUR]*100):0;
+    const sPrev=all[PREV]?Math.round(intr[PREV]/all[PREV]*100):0;
+    const dd=sCur-sPrev;
+    out.push({c:dd>0?"up":dd<0?"down":"flat",t:`مشاركة الداخلية يوليو: ${sCur}% (${dd>0?"+":""}${dd} نقطة vs يونيو)`});
+    out.push({c:"flat",t:`الخارجية: ${100-sCur}% من الإجمالي`});
+    let bestP="1",bestV=-1;
+    ["1","7","18"].forEach(p=>{const v=itemTotals(p,state.metric)[CUR]; if(v>bestV){bestV=v;bestP=p;}});
+    out.push({c:"up",t:`أعلى صيدلية داخلية: ص${bestP} — ${fmt(bestV)} ${metricLabel()}`});
+  } else if(tab==="writings"){
+    const scope=DATA.writingsReady[state.scope]?state.scope:"1";
+    const w=wrTotals(scope), d=delta(w[CUR],w[PREV]);
+    out.push({c:d.c,t:`${scopeLabel(scope)} يوليو: ${fmt(w[CUR])} كتابة (${d.t} vs يونيو)`});
+    out.push({c:delta(w[CUR],w[FIRST]).c,t:`مايو ← يوليو: ${delta(w[CUR],w[FIRST]).t}`});
+  } else if(tab==="conversion"){
+    const scope=DATA.writingsReady[state.scope]?state.scope:"1";
+    const sold=itemTotals(scope,"units"), wr=wrTotals(scope);
+    const cv=wr[CUR]?Math.round(sold[CUR]/wr[CUR]*100):0;
+    const cvP=wr[PREV]?Math.round(sold[PREV]/wr[PREV]*100):0;
+    out.push({c:cv>=cvP?"up":"down",t:`تحويل ${scopeLabel(scope)} يوليو: ${cv}% (${cv-cvP>0?"+":""}${cv-cvP} نقطة)`});
+    out.push({c:"flat",t:`${fmt(wr[CUR])} كتابة / ${fmt(sold[CUR])} وحدة`});
+  } else if(tab==="pureherb"){
+    const items=DATA.pureherb;
+    const sum=(k,p)=>items.reduce((a,it)=>a+(it[k][p]||0),0);
+    const uAll=sum("u","all"), uIntr=sum("u","1")+sum("u","7")+sum("u","18");
+    const sh=uAll?Math.round(uIntr/uAll*100):0;
+    out.push({c:"flat",t:`كل الصيدليات يوليو: ${fmt(uAll)} وحدة · ${fmt(sum("v","all"))} ريال`});
+    out.push({c:"up",t:`الداخلية (1+7+18): ${fmt(uIntr)} وحدة · ${sh}%`});
+    out.push({c:"down",t:`الخارجية: ${fmt(uAll-uIntr)} وحدة · ${100-sh}%`});
+  } else if(tab==="doctors"){
+    const scope=DATA.doctorsNostri[state.scope]?state.scope:"1";
+    const docs=DATA.doctorsNostri[scope]||[];
+    if(docs[0]) out.push({c:"up",t:`الأعلى يوليو (ص${scope}): ${shortName(docs[0][0])} — ${docs[0][3]}`});
+    out.push({c:"flat",t:`عدد الأطباء الكاتبين: ${DATA.doctorCount[scope]||docs.length}`});
+  } else if(tab==="credit"){
+    const y5=DATA.credit["2025"], y6=DATA.credit["2026"];
+    const t5=M.reduce((a,m)=>a+y5[m],0), t6=M.reduce((a,m)=>a+y6[m],0);
+    const d=Math.round((t6-t5)/t5*1000)/10;
+    out.push({c:t6>=t5?"up":"down",t:`إجمالي 2026 (05→07): ${fmt(t6)} ريال (${d>0?"+":""}${d}% vs 2025)`});
+    const dd=y6[CUR]-y5[CUR];
+    out.push({c:dd>=0?"up":"down",t:`يوليو 2026: ${fmt(y6[CUR])} · يوليو 2025: ${fmt(y5[CUR])}`});
+  }
+  return out;
+}
+function insightHTML(tab){
+  const list=insightsFor(tab);
+  if(!list.length) return "";
+  return `<div class="insights">${list.map(i=>`<div class="insight ${i.c}"><span class="idot"></span><div>${i.t}</div></div>`).join("")}</div>`;
+}
+function spotlightHTML(tab){
+  if(tab==="sales"){
+    const top=topItemByJuly(state.metric), g=topGrowthItem();
+    const unit=metricLabel();
+    const d=delta((itemVals(top.it,"all",state.metric)||{})[CUR],(itemVals(top.it,"all",state.metric)||{})[PREV]);
+    return `<div class="spotlight"><div class="spot-main">
+      <span class="tag">أعلى صنف — يوليو</span>
+      <h3>${shortName(top.it.name)}</h3>
+      <p class="spot-sub">إجمالي كل الصيدليات</p>
+    </div><div class="spot-side">
+      <div class="metric"><span class="ml">مبيعات يوليو</span><span class="mv">${fmt(top.v)} <span class="unit">${unit}</span></span>
+        <span class="md ${d.c}">${d.t} vs يونيو</span></div>
+      ${g.it?`<div class="metric"><span class="ml">أعلى نمو شهري</span><span class="mv" style="font-size:18px">${shortName(g.it.name)}</span>
+        <span class="md ${g.d>=0?"up":"down"}">${delta(g.cur,g.prev).t}</span></div>`:""}
+    </div></div>`;
+  }
+  if(tab==="share"){
+    const all=itemTotals("all",state.metric);
+    let bestP="1",bestV=-1;
+    ["1","7","18"].forEach(p=>{const v=itemTotals(p,state.metric)[CUR]; if(v>bestV){bestV=v;bestP=p;}});
+    const sh=all[CUR]?Math.round(bestV/all[CUR]*100):0;
+    return `<div class="spotlight"><div class="spot-main">
+      <span class="tag">أعلى صيدلية داخلية</span>
+      <h3>صيدلية ${bestP}</h3>
+      <p class="spot-sub">من إجمالي نوستري — يوليو</p>
+    </div><div class="spot-side">
+      <div class="metric"><span class="ml">مبيعات يوليو</span><span class="mv">${fmt(bestV)}</span>
+        <span class="md flat">${sh}% من الإجمالي</span></div>
+    </div></div>`;
+  }
+  if(tab==="doctors"){
+    const scope=DATA.doctorsNostri[state.scope]?state.scope:"1";
+    const docs=DATA.doctorsNostri[scope]||[]; if(!docs[0]) return "";
+    const d=docs[0], dd=delta(d[3],d[2]);
+    return `<div class="spotlight"><div class="spot-main">
+      <span class="tag">أعلى طبيب — يوليو</span>
+      <h3>${shortName(d[0])}</h3>
+      <p class="spot-sub">${scopeLabel(scope)}</p>
+    </div><div class="spot-side">
+      <div class="metric"><span class="ml">كتابات يوليو</span><span class="mv">${d[3]}</span>
+        <span class="md ${dd.c}">${dd.t} vs يونيو</span></div>
+      <div class="metric"><span class="ml">مايو → يوليو</span><span class="mv" style="font-size:20px">${d[1]} ← ${d[3]}</span></div>
+    </div></div>`;
+  }
+  if(tab==="pureherb"){
+    const items=DATA.pureherb;
+    let best=items[0];
+    items.forEach(it=>{if((it.u.all||0)>((best.u.all)||0)) best=it;});
+    const u1=(best.u["1"]||0)+(best.u["7"]||0)+(best.u["18"]||0);
+    return `<div class="spotlight"><div class="spot-main">
+      <span class="tag">أعلى صنف PureHerb</span>
+      <h3>${shortName(best.name)}</h3>
+      <p class="spot-sub">كل الصيدليات — يوليو</p>
+    </div><div class="spot-side">
+      <div class="metric"><span class="ml">كل الصيدليات</span><span class="mv">${fmt(best.u.all)} وحدة</span>
+        <span class="md flat">${fmt(best.v.all)} ريال</span></div>
+      <div class="metric"><span class="ml">الداخلية</span><span class="mv" style="font-size:22px">${fmt(u1)}</span></div>
+    </div></div>`;
+  }
+  return "";
+}
 function render(){
   const host=document.getElementById("view");
   let chips="";
@@ -1425,19 +1913,12 @@ function render(){
       return `<button data-scope="${s}" class="${state.scope===s?'active':''} ${pend?'pending':''}">${scopeLabel(s)}${pend?' ⏳':''}</button>`;
     }).join("")}</div>`;
   }
-  host.innerHTML=chips+V[state.tab]();
+  host.innerHTML=sectionStage(state.tab)+insightHTML(state.tab)+spotlightHTML(state.tab)+chips+V[state.tab]();
   host.querySelectorAll(".chips button").forEach(b=>b.onclick=()=>{state.scope=b.dataset.scope;render();});
-  // show/hide metric toggle
   document.getElementById("metricToggle").style.display=usesMetric(state.tab)?"inline-flex":"none";
 }
 document.querySelectorAll("#tabs button").forEach(b=>{
-  b.onclick=()=>{
-    document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("active"));
-    b.classList.add("active"); state.tab=b.dataset.tab;
-    if(state.tab==="sales") state.scope="all";
-    else if(needsScope(state.tab) && !scopeReadyMap(state.tab)[state.scope]) state.scope="1";
-    render();
-  };
+  b.onclick=()=>{ if(window.__stopStory) window.__stopStory(); goTab(b.dataset.tab); };
 });
 document.querySelectorAll("#metricToggle button").forEach(b=>{
   b.onclick=()=>{
@@ -1448,18 +1929,83 @@ document.querySelectorAll("#metricToggle button").forEach(b=>{
 document.getElementById("menuToggle").onclick=()=>document.body.classList.toggle("nav-collapsed");
 render();
 
-/* ---- visual layer: theme toggle + print (no data/logic touched) ---- */
+/* ---- visual layer: theme + present + print ---- */
 (function(){
-  const html=document.documentElement, tb=document.getElementById("themeBtn");
-  function apply(t){html.setAttribute("data-theme",t);tb.textContent=t==="dark"?"☀️":"🌙";
+  const html=document.documentElement, tb=document.getElementById("themeBtn"),
+        pb=document.getElementById("presentBtn");
+  function apply(t){html.setAttribute("data-theme",t);tb.textContent=t==="dark"?"☀":"◐";
     tb.title=t==="dark"?"الوضع الفاتح":"الوضع الداكن";}
   apply(localStorage.getItem("nostri-theme")||"light");
   tb.onclick=()=>{const t=html.getAttribute("data-theme")==="dark"?"light":"dark";
     localStorage.setItem("nostri-theme",t);apply(t);};
+  function setPresent(on){
+    document.body.classList.toggle("present",!!on); pb.classList.toggle("active",!!on);
+    pb.title=on?"إيقاف وضع العرض":"وضع عرض";
+    if(on){try{document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();}catch(e){}}
+    else if(document.fullscreenElement){try{document.exitFullscreen();}catch(e){}}
+  }
+  pb.onclick=()=>setPresent(!document.body.classList.contains("present"));
+  document.addEventListener("fullscreenchange",()=>{
+    if(!document.fullscreenElement){
+      document.body.classList.remove("present"); pb.classList.remove("active");
+      pb.title="وضع عرض";
+    }
+  });
   document.getElementById("printBtn").onclick=()=>window.print();
 })();
 
-/* ---- visual layer: chart tooltip + trend chips + trend line (runs after each render) ---- */
+/* ---- Executive Story Mode: sales → share → pureherb (~75s) ---- */
+(function(){
+  const STEPS=[
+    {tab:"sales", title:"1 · مبيعات Nostri", sec:26},
+    {tab:"share", title:"2 · المشاركة", sec:24},
+    {tab:"pureherb", title:"3 · PureHerb", sec:24}
+  ];
+  const btn=document.getElementById("storyBtn");
+  const fill=document.getElementById("storyFill");
+  const title=document.getElementById("storyTitle");
+  const meta=document.getElementById("storyMeta");
+  let timer=null, raf=null, idx=0, started=0, stepDur=0, running=false;
+  function stop(){
+    running=false; document.body.classList.remove("storying");
+    btn.classList.remove("active"); btn.textContent="▶";
+    btn.title="عرض تلقائي";
+    if(timer){clearTimeout(timer);timer=null;}
+    if(raf){cancelAnimationFrame(raf);raf=null;}
+    fill.style.width="0%";
+  }
+  window.__stopStory=stop;
+  function progress(){
+    if(!running) return;
+    const p=Math.min(1,(performance.now()-started)/stepDur);
+    const base=idx/STEPS.length, slice=1/STEPS.length;
+    fill.style.width=((base+slice*p)*100).toFixed(1)+"%";
+    if(p<1) raf=requestAnimationFrame(progress);
+  }
+  function playStep(i){
+    if(!running) return;
+    if(i>=STEPS.length){ stop(); return; }
+    idx=i; const s=STEPS[i];
+    title.textContent=s.title;
+    meta.textContent=(i+1)+" / "+STEPS.length+" · "+s.sec+" ث";
+    goTab(s.tab);
+    stepDur=s.sec*1000; started=performance.now();
+    if(raf)cancelAnimationFrame(raf); raf=requestAnimationFrame(progress);
+    timer=setTimeout(()=>playStep(i+1), stepDur);
+  }
+  function start(){
+    if(running){stop();return;}
+    running=true; document.body.classList.add("storying","nav-collapsed");
+    btn.classList.add("active"); btn.textContent="■";
+    btn.title="إيقاف العرض التلقائي";
+    playStep(0);
+  }
+  btn.onclick=start;
+  document.getElementById("storyStop").onclick=stop;
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&running) stop(); });
+})();
+
+/* ---- visual layer: chart tooltip + trend chips + trend line + KPI polish ---- */
 (function(){
   const view=document.getElementById("view");
   const tip=document.createElement("div"); tip.id="barTip"; document.body.appendChild(tip);
@@ -1477,8 +2023,37 @@ render();
       td.textContent=""; td.appendChild(sp);
     });
   }
+  function heroKpi(){
+    const first=view.querySelector(".kpis .kpi"); if(first) first.classList.add("hero");
+  }
+  function countUp(){
+    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches)return;
+    view.querySelectorAll(".kpi .val").forEach(el=>{
+      if(el.dataset.counted)return;
+      if(el.classList.contains("val-range")){el.dataset.counted="1";return;}
+      const unit=el.querySelector(".unit");
+      const unitHtml=unit?unit.outerHTML:"";
+      const probe=el.cloneNode(true);
+      probe.querySelectorAll(".unit").forEach(u=>u.remove());
+      const core=probe.textContent.replace(/\s+/g,"").trim();
+      // رقم واحد فقط (مع فاصلة/% اختيارية) — يتجاهل قيم مثل 46% ← 36%
+      if(!/^[+-]?\d{1,3}(?:,\d{3})*(?:\.\d+)?%?$/.test(core)) return;
+      const raw=core.replace(/[^\d.+-]/g,"");
+      const target=parseFloat(raw); if(!isFinite(target))return;
+      el.dataset.counted="1";
+      const isPct=/%/.test(core), decimals=String(raw).includes(".")?1:0;
+      const start=performance.now(), dur=700;
+      const tick=now=>{
+        const p=Math.min(1,(now-start)/dur), e=1-Math.pow(1-p,3), n=target*e;
+        const num=n.toLocaleString("en-US",{maximumFractionDigits:decimals,minimumFractionDigits:decimals});
+        el.innerHTML=num+(isPct?"%":"")+(unitHtml?" "+unitHtml:"");
+        if(p<1)requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+  }
   function trendLines(){
-    view.querySelectorAll(".chart").forEach(chart=>{
+    view.querySelectorAll(".chart.chart-monthly").forEach(chart=>{
       const old=chart.querySelector("svg.trendline"); if(old)old.remove();
       const groups=[...chart.children].filter(c=>c.classList&&c.classList.contains("chgroup"));
       if(groups.length!==3)return;
@@ -1502,8 +2077,13 @@ render();
       chart.appendChild(svg);
     });
   }
-  function enhance(){try{chipTrends();}catch(e){} setTimeout(()=>{try{trendLines();}catch(e){}},860);}
+  function enhance(){
+    try{chipTrends();heroKpi();countUp();}catch(e){}
+    setTimeout(()=>{try{trendLines();}catch(e){}},860);
+  }
   try{new MutationObserver(enhance).observe(view,{childList:true});}catch(e){}
   enhance();
 })();
 </script>
+</body>
+</html>
