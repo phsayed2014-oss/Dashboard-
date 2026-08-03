@@ -1412,6 +1412,9 @@ V.share=()=>{
       <div style="height:${hI}%;background:var(--c07)"></div></div></div>`;
   }).join("");
   const chart=`<div class="panel"><h2>الداخلية مقابل الخارجية — تسلسل شهري (${unit})</h2>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">
+      <span class="dot" style="background:var(--c07)"></span>داخلية (مشاركة %) &nbsp;·&nbsp;
+      <span class="dot" style="background:var(--c05)"></span>خارجية</div>
     <div class="chart">${bars}</div><div class="chlabels">${M.map(m=>`<span>${ML[m]}</span>`).join("")}</div></div>`;
   const rows=M.map(m=>{
     const d=m===FIRST?{t:"—",c:"flat"}:(()=>{const p=m===CUR?PREV:FIRST;const dd=Math.round(share[m]-share[p]);
@@ -1563,10 +1566,8 @@ V.doctors=()=>{
       <h2>أطباء ${scopeLabel(scope)} — بانتظار الملف</h2></div></div>`;
   }
   const docs=DATA.doctorsNostri[scope], nDoc=DATA.doctorCount[scope]||docs.length;
-  const tot=m=>docs.reduce((a,d)=>a+d[m],0);
-  const t5=tot(1),t6=tot(2),t7=tot(3);
-  const note=`<div class="note real">👨‍⚕️ <b>أعلى الأطباء كتابةً لأصناف نوستري — ${scopeLabel(scope)}</b>.
-     من ملفات الكتابات 05/06/07 (أسماء موحّدة). إجمالي الأطباء الكاتبين: ${nDoc} طبيب.</div>`;
+  const wTot=wrTotals(scope);
+  const t5=wTot[FIRST], t6=wTot[PREV], t7=wTot[CUR];
   const dTop=docs[0];
   const kpis=`<div class="kpis">
     <div class="kpi"><div class="lbl">أعلى طبيب (يوليو)</div><div class="val" style="font-size:18px">${dTop[0]}</div>
@@ -1574,7 +1575,7 @@ V.doctors=()=>{
     <div class="kpi"><div class="lbl">عدد الأطباء الكاتبين</div><div class="val">${nDoc}</div></div>
     <div class="kpi"><div class="lbl">متوسط كتابة/طبيب (07)</div><div class="val">${(t7/nDoc).toFixed(1)}</div></div>
     <div class="kpi"><div class="lbl">إجمالي الكتابات (07)</div><div class="val">${fmt(t7)}</div></div></div>`;
-  const chart=`<div class="panel"><h2>إجمالي كتابات الأطباء — تسلسل شهري (ص1)</h2>
+  const chart=`<div class="panel"><h2>إجمالي الكتابات — ${scopeLabel(scope)}</h2>
     ${barChart({"05":t5,"06":t6,"07":t7})}</div>`;
   const max7=Math.max(...docs.map(d=>d[3]),1);
   const rows=docs.map((d,i)=>{
@@ -1583,7 +1584,7 @@ V.doctors=()=>{
       <td class="num">${d[3]}</td><td class="trend ${dd.c}">${dd.t}</td>
       <td style="width:120px"><div class="conv"><div class="track">
         <div class="fill" style="width:${d[3]/max7*100}%;background:var(--teal)"></div></div></div></td></tr>`;}).join("");
-  const table=`<div class="panel"><h2>ترتيب الأطباء (أعلى 12) — كتابات نوستري</h2>
+  const table=`<div class="panel"><h2>ترتيب الأطباء (أعلى ${docs.length}) — ${scopeLabel(scope)}</h2>
     <div class="tbl-wrap"><table><thead><tr><th>الطبيب</th><th>مايو</th><th>يونيو</th><th>يوليو</th><th>التغير</th><th>يوليو</th></tr></thead>
     <tbody>${rows}</tbody></table></div></div>`;
   return kpis+chart+table;
