@@ -1575,7 +1575,27 @@ V.writings=()=>{
     <tbody>${rows}</tbody>
     <tfoot><tr><td>الإجمالي</td><td class="num">${fmt(w[FIRST])}</td><td class="num">${fmt(w[PREV])}</td>
     <td class="num">${fmt(w[CUR])}</td><td class="trend ${dCur.c}">${dCur.t}</td></tr></tfoot></table></div></div>`;
-  return kpis+chart+table;
+  // ===== إجمالي الصيدليات الثلاث معًا (1+7+18) =====
+  const P3=["1","7","18"];
+  const comb={}; M.forEach(m=>comb[m]=P3.reduce((a,p)=>a+(wrTotals(p)[m]||0),0));
+  const cd=delta(comb[CUR],comb[PREV]), cd3=delta(comb[CUR],comb[FIRST]);
+  const combKpis=`<div class="kpis">
+    <div class="kpi hero"><div class="lbl">إجمالي الصيدليات الثلاث (1+7+18) — يوليو</div>
+      <div class="val">${fmt(comb[CUR])}</div><div class="delta ${cd.c}">${cd.t} مقابل يونيو</div></div>
+    <div class="kpi"><div class="lbl">يونيو</div><div class="val">${fmt(comb[PREV])}</div></div>
+    <div class="kpi"><div class="lbl">مايو</div><div class="val">${fmt(comb[FIRST])}</div></div>
+    <div class="kpi"><div class="lbl">التغير 05←07</div><div class="val ${cd3.c}">${cd3.t.replace(/[▲▼●] /,"")}</div>
+      <div class="delta ${cd3.c}">${cd3.c==="up"?"تحسّن":cd3.c==="down"?"تراجع":"ثبات"}</div></div></div>`;
+  const brk=P3.map(p=>{const x=wrTotals(p), d=delta(x[CUR],x[PREV]);
+    return `<tr><td>${scopeLabel(p)}</td><td class="num">${fmt(x[FIRST])}</td><td class="num">${fmt(x[PREV])}</td>
+      <td class="num">${fmt(x[CUR])}</td><td class="trend ${d.c}">${d.t}</td></tr>`;}).join("");
+  const combPanel=`<div class="panel"><h2>🏥 إجمالي الصيدليات الثلاث معًا — الكتابات</h2>
+    ${barChart(comb)}
+    <div class="tbl-wrap" style="margin-top:14px"><table><thead><tr><th>الصيدلية</th><th>مايو</th><th>يونيو</th><th>يوليو</th><th>التغير ش/ش</th></tr></thead>
+    <tbody>${brk}</tbody>
+    <tfoot><tr><td>المجموع (1+7+18)</td><td class="num">${fmt(comb[FIRST])}</td><td class="num">${fmt(comb[PREV])}</td>
+    <td class="num">${fmt(comb[CUR])}</td><td class="trend ${cd.c}">${cd.t}</td></tr></tfoot></table></div></div>`;
+  return combKpis+combPanel+`<div class="section-stage" style="margin-top:6px"><div><h2 style="font-size:16px">تفصيل ${scopeLabel(scope)}</h2></div></div>`+kpis+chart+table;
 };
 
 /* ---- 3. Conversion (REAL — ص1 & ص18) ---- */
