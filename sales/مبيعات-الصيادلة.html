@@ -749,7 +749,8 @@ function hbar(el, data, opts={}){
   const h=data.length*rowH+pad*2;
   const max=Math.max(1,...data.map(value));
   const barW=w-labelW-valW-pad*2;
-  let s=`<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" font-family="inherit">`;
+  // direction=ltr مهم: الصفحة RTL وبدونه ينقلب text-anchor=end فتختفي الأسماء خارج الرسم
+  let s=`<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" font-family="inherit" direction="ltr">`;
   data.forEach((d,i)=>{
     const y=pad+i*rowH, v=value(d), bw=Math.max(2,v/max*barW);
     const nm=label(d); const short=nm.length>26?nm.slice(0,25)+'…':nm;
