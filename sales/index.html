@@ -135,6 +135,10 @@
   .barfill{position:absolute;inset-block:6px;inset-inline-start:0;border-radius:6px;
     background:linear-gradient(90deg,rgba(56,189,248,.28),rgba(34,211,238,.5));z-index:0}
   .barcell span{position:relative;z-index:1}
+  td.items{white-space:normal;max-width:340px;line-height:1.9}
+  .ipill{display:inline-block;padding:2px 8px;margin:2px 0;border-radius:20px;font-size:11.5px;
+    background:#0e2033;border:1px solid var(--line2);color:#cfe0f7}
+  .ipill b{color:var(--brand2);font-variant-numeric:tabular-nums}
   .link{cursor:pointer;color:var(--brand);text-decoration:none}
   .link:hover{text-decoration:underline}
   .money{color:var(--good);font-weight:700}
@@ -330,6 +334,8 @@ const fmt = (n)=> (Math.round((n||0)*100)/100).toLocaleString('en-US',{minimumFr
 const money = (n)=> fmt(n);
 function arDate(iso){ if(!iso) return '—'; const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; }
 function initials(name){ const p=(name||'').trim().split(/\s+/); return ((p[0]||'؟')[0]||'؟')+((p[1]||'')[0]||''); }
+// اسم صنف مختصر (الاسم التجاري) للعرض داخل الجدول
+function shortItem(name){ const t=(name||'').trim().split(/[,\/]/)[0].trim().split(/\s+/); return (t[0]||name||'').slice(0,16); }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
 let toastTimer;
@@ -490,6 +496,7 @@ function renderRank(sel){
   let html=`<thead><tr>
     <th class="no-sort">#</th>
     <th class="no-sort">الصيدلي</th>
+    <th class="no-sort">الأصناف المباعة</th>
     ${th('sell','قيمة البيع','num')}
     ${th('qty','الكمية','num')}
     ${th('cost','التكلفة','num')}
@@ -499,10 +506,12 @@ function renderRank(sel){
   rows.forEach((r,i)=>{
     const g=i<3?`g${i+1}`:'';
     const w=Math.round(r[sortKey]/max*100);
+    const itemsHtml=(r.items||[]).map(it=>`<span class="ipill" title="${esc(it.name)} — ${money(it.sell)} ﷼">${esc(shortItem(it.name))} <b>×${fmt(it.qty)}</b></span>`).join(' ') || '<span class="muted">—</span>';
     html+=`<tr>
       <td><span class="rank ${g}">${i+1}</span></td>
       <td><span class="who"><span class="ava">${esc(initials(r.name))}</span>
         <span><a class="link nm" data-ph="${r.code}">${esc(r.name)}</a><br><span class="cd">${r.code}</span></span></span></td>
+      <td class="items">${itemsHtml}</td>
       <td class="num barcell"><div class="barfill" style="width:${sortKey==='sell'?w:0}%"></div><span class="money">${money(r.sell)}</span></td>
       <td class="num">${fmt(r.qty)}</td>
       <td class="num">${money(r.cost)}</td>
@@ -510,7 +519,7 @@ function renderRank(sel){
       <td class="num">${fmt(r.daysCount)}</td>
     </tr>`;
   });
-  if(!rows.length) html+=`<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">لا نتائج</td></tr>`;
+  if(!rows.length) html+=`<tr><td colspan="8" class="muted" style="text-align:center;padding:24px">لا نتائج</td></tr>`;
   html+='</tbody>';
   $('#rankTable').innerHTML=html;
   $$('#rankTable thead th[data-k]').forEach(th=>th.onclick=()=>{
