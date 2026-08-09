@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0f172a" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="vendor/icon-192.png" />
+<link rel="apple-touch-icon" href="vendor/icon-192.png" />
+<title>مبيعات الصيادلة | لوحة المتابعة اليومية</title>
+<style>
+  :root{
+    --bg:#0b1220; --bg2:#0f172a; --card:#111c33; --card2:#0e1830;
+    --line:#1e2b47; --line2:#26375c;
+    --txt:#e6edf7; --muted:#93a4c3; --muted2:#6f82a6;
+    --brand:#38bdf8; --brand2:#22d3ee; --good:#34d399; --warn:#fbbf24;
+    --bad:#fb7185; --gold:#fcd34d; --silver:#cbd5e1; --bronze:#f0a868;
+    --chip:#16233d;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+    --r:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:"Segoe UI",Tahoma,system-ui,-apple-system,"Noto Naskh Arabic",Arial,sans-serif;
+    background:radial-gradient(1200px 600px at 90% -10%,#12243f 0,transparent 60%),
+               radial-gradient(1000px 500px at -10% 0,#101d38 0,transparent 55%),var(--bg);
+    color:var(--txt); -webkit-text-size-adjust:100%;
+    padding:0 0 60px;
+  }
+  a{color:var(--brand)}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+
+  header.top{
+    position:sticky;top:0;z-index:30;
+    background:linear-gradient(180deg,rgba(11,18,32,.96),rgba(11,18,32,.82));
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+  }
+  .top .wrap{display:flex;align-items:center;gap:14px;padding:12px 16px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px;min-width:220px}
+  .logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#0ea5e9,#22d3ee);
+    display:grid;place-items:center;font-size:22px;box-shadow:var(--shadow)}
+  .brand h1{font-size:18px;margin:0;line-height:1.2}
+  .brand p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-inline-start:auto}
+  .btn{
+    appearance:none;border:1px solid var(--line2);background:var(--chip);color:var(--txt);
+    padding:9px 14px;border-radius:11px;font-size:13.5px;font-weight:600;cursor:pointer;
+    display:inline-flex;align-items:center;gap:7px;transition:.15s;white-space:nowrap;
+  }
+  .btn:hover{border-color:var(--brand);background:#182742}
+  .btn.primary{background:linear-gradient(135deg,#0284c7,#0891b2);border-color:transparent;color:#fff}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.ghost{background:transparent}
+  .btn.danger:hover{border-color:var(--bad);color:var(--bad)}
+  input[type=file]{display:none}
+
+  /* Dropzone */
+  .drop{
+    margin:18px 0 8px;border:1.6px dashed var(--line2);border-radius:var(--r);
+    background:linear-gradient(180deg,var(--card),var(--card2));padding:22px;
+    text-align:center;transition:.15s;cursor:pointer;position:relative;overflow:hidden;
+  }
+  .drop:hover,.drop.hot{border-color:var(--brand);background:#12213c}
+  .drop .big{font-size:34px}
+  .drop h3{margin:8px 0 4px;font-size:16px}
+  .drop p{margin:0;color:var(--muted);font-size:13px}
+  .drop small{color:var(--muted2)}
+
+  .toast{
+    position:fixed;inset-inline:0;bottom:18px;margin:auto;width:max-content;max-width:92vw;z-index:60;
+    background:#0b213b;border:1px solid var(--line2);color:var(--txt);padding:11px 16px;border-radius:12px;
+    box-shadow:var(--shadow);opacity:0;transform:translateY(14px);transition:.25s;pointer-events:none;font-size:13.5px}
+  .toast.show{opacity:1;transform:none}
+  .toast.err{border-color:var(--bad);background:#2a1420}
+  .toast.ok{border-color:var(--good);background:#0d2a22}
+
+  /* KPI cards */
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:14px 0}
+  .kpi{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);
+    border-radius:var(--r);padding:14px 15px;position:relative;overflow:hidden}
+  .kpi .lab{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .kpi .val{font-size:23px;font-weight:800;margin-top:6px;letter-spacing:.3px}
+  .kpi .sub{font-size:11.5px;color:var(--muted2);margin-top:3px}
+  .kpi::after{content:"";position:absolute;inset-inline-end:-30px;top:-30px;width:90px;height:90px;
+    border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,.16),transparent 70%)}
+
+  /* Filter bar */
+  .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0 14px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:11.5px;color:var(--muted)}
+  select,input[type=date],input[type=search]{
+    background:var(--card);border:1px solid var(--line2);color:var(--txt);border-radius:10px;
+    padding:8px 10px;font-size:13.5px;font-family:inherit;min-width:120px}
+  select:focus,input:focus{outline:none;border-color:var(--brand)}
+
+  /* Tabs */
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:14px}
+  .tab{padding:9px 15px;border-radius:11px 11px 0 0;font-size:14px;font-weight:600;color:var(--muted);
+    cursor:pointer;border:1px solid transparent;border-bottom:none;transition:.15s}
+  .tab:hover{color:var(--txt)}
+  .tab.active{color:var(--txt);background:var(--card);border-color:var(--line)}
+
+  .panel{display:none;animation:fade .25s}
+  .panel.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+
+  .card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);
+    border-radius:var(--r);padding:16px;margin-bottom:16px}
+  .card h2{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:8px}
+  .card .hint{color:var(--muted);font-size:12.5px;margin:0 0 12px}
+
+  /* Table */
+  .tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--line)}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px}
+  th,td{padding:10px 12px;text-align:right;white-space:nowrap}
+  thead th{background:#0c1730;color:var(--muted);font-weight:700;position:sticky;top:0;
+    border-bottom:1px solid var(--line2);cursor:pointer;user-select:none}
+  thead th.no-sort{cursor:default}
+  tbody tr{border-bottom:1px solid var(--line)}
+  tbody tr:hover{background:#12203a}
+  tbody tr:last-child{border-bottom:none}
+  td.num,th.num{font-variant-numeric:tabular-nums;text-align:left;direction:ltr}
+  .rank{width:34px;height:26px;display:inline-grid;place-items:center;border-radius:8px;
+    font-weight:800;background:var(--chip);color:var(--muted)}
+  .rank.g1{background:linear-gradient(135deg,#a16207,#fcd34d);color:#3a2a00}
+  .rank.g2{background:linear-gradient(135deg,#64748b,#e2e8f0);color:#20293a}
+  .rank.g3{background:linear-gradient(135deg,#7c3f1d,#f0a868);color:#2a1405}
+  .who{display:flex;align-items:center;gap:10px}
+  .ava{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-weight:800;
+    font-size:12px;color:#04121f;background:linear-gradient(135deg,#38bdf8,#22d3ee);flex:none}
+  .who .nm{font-weight:600}
+  .who .cd{font-size:11px;color:var(--muted2)}
+  .barcell{position:relative;min-width:120px}
+  .barfill{position:absolute;inset-block:6px;inset-inline-start:0;border-radius:6px;
+    background:linear-gradient(90deg,rgba(56,189,248,.28),rgba(34,211,238,.5));z-index:0}
+  .barcell span{position:relative;z-index:1}
+  .link{cursor:pointer;color:var(--brand);text-decoration:none}
+  .link:hover{text-decoration:underline}
+  .money{color:var(--good);font-weight:700}
+  .muted{color:var(--muted)}
+
+  /* Chart */
+  .chart{width:100%;overflow-x:auto}
+  svg{display:block}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
+  .legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:5px}
+
+  .empty{text-align:center;padding:44px 16px;color:var(--muted)}
+  .empty .big{font-size:40px;opacity:.7}
+
+  .pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;background:var(--chip);
+    color:var(--muted);border:1px solid var(--line2)}
+  .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .grow{flex:1}
+  @media (max-width:900px){ .kpis{grid-template-columns:repeat(2,1fr)} .kpi:nth-child(5){grid-column:1/-1} }
+  @media (max-width:560px){ .brand h1{font-size:16px} .kpi .val{font-size:20px} }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <div class="logo">💊</div>
+      <div>
+        <h1>مبيعات الصيادلة</h1>
+        <p>لوحة متابعة يومية · شركة مصنع العناية الوحيدة</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="btnUpload">⬆️ رفع تقرير اليوم</button>
+      <button class="btn ghost" id="btnExport" title="حفظ نسخة احتياطية من كل الأيام">💾 تصدير</button>
+      <button class="btn ghost" id="btnImport" title="استيراد نسخة احتياطية">📥 استيراد</button>
+      <button class="btn ghost danger" id="btnClear" title="مسح كل البيانات المخزّنة">🗑️ مسح</button>
+    </div>
+    <input type="file" id="fileInput" accept="application/pdf,.pdf" multiple />
+    <input type="file" id="importInput" accept="application/json,.json" />
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="drop" id="drop">
+    <div class="big">📄⬇️</div>
+    <h3>اسحب ملف/ملفات الـ PDF هنا أو اضغط للرفع</h3>
+    <p>ارفع تقرير «مبيعات أصناف المورد» يوميًا — يتم قراءته تلقائيًا وحفظه حسب تاريخ التقرير.</p>
+    <small>يمكن رفع أكثر من يوم مرة واحدة · إعادة رفع نفس اليوم تُحدِّث بياناته · كل البيانات تُخزَّن على جهازك فقط.</small>
+  </div>
+
+  <section id="hasData" style="display:none">
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="bar">
+      <div class="field">
+        <label>الفترة</label>
+        <select id="period">
+          <option value="all">كل الأيام</option>
+          <option value="last7">آخر 7 أيام</option>
+          <option value="last30">آخر 30 يوم</option>
+          <option value="month">شهر محدّد</option>
+          <option value="day">يوم محدّد</option>
+          <option value="range">فترة مخصّصة</option>
+        </select>
+      </div>
+      <div class="field" id="fMonth" style="display:none">
+        <label>الشهر</label><select id="monthSel"></select>
+      </div>
+      <div class="field" id="fDay" style="display:none">
+        <label>اليوم</label><select id="daySel"></select>
+      </div>
+      <div class="field" id="fFrom" style="display:none">
+        <label>من</label><input type="date" id="fromDate" />
+      </div>
+      <div class="field" id="fTo" style="display:none">
+        <label>إلى</label><input type="date" id="toDate" />
+      </div>
+      <div class="grow"></div>
+      <div class="field">
+        <label>الترتيب حسب</label>
+        <select id="metric">
+          <option value="sell">قيمة البيع</option>
+          <option value="qty">الكمية المباعة</option>
+          <option value="profit">الربح (بيع − تكلفة)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>بحث بالاسم</label>
+        <input type="search" id="search" placeholder="اسم الصيدلي…" />
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="rank">🏆 ترتيب الصيادلة</div>
+      <div class="tab" data-tab="trend">📈 الاتجاه اليومي</div>
+      <div class="tab" data-tab="items">🧴 الأصناف</div>
+      <div class="tab" data-tab="log">🗓️ سجل الأيام</div>
+    </div>
+
+    <!-- ترتيب الصيادلة -->
+    <div class="panel active" data-panel="rank">
+      <div class="card">
+        <h2>🏆 لوحة ترتيب الصيادلة <span class="pill" id="rankPeriodLbl"></span></h2>
+        <p class="hint">اضغط على اسم أي صيدلي لعرض تفاصيله واتجاهه اليومي. اضغط على رأس العمود للترتيب.</p>
+        <div class="tbl-wrap"><table id="rankTable"></table></div>
+      </div>
+      <div class="card">
+        <h2>📊 أعلى 12 صيدلي</h2>
+        <div class="chart" id="rankChart"></div>
+      </div>
+    </div>
+
+    <!-- الاتجاه اليومي -->
+    <div class="panel" data-panel="trend">
+      <div class="card">
+        <h2>📈 إجمالي المبيعات اليومي</h2>
+        <p class="hint">تطوّر إجمالي قيمة البيع والكمية عبر الأيام التي رفعتها.</p>
+        <div class="chart" id="trendChart"></div>
+        <div class="legend">
+          <span><b style="background:#38bdf8"></b>قيمة البيع (ريال)</span>
+          <span><b style="background:#fbbf24"></b>الكمية المباعة</span>
+        </div>
+      </div>
+      <div class="card" id="drillCard" style="display:none">
+        <h2 id="drillTitle">اتجاه الصيدلي</h2>
+        <p class="hint" id="drillSub"></p>
+        <div class="chart" id="drillChart"></div>
+        <div class="tbl-wrap" style="margin-top:12px"><table id="drillItems"></table></div>
+      </div>
+    </div>
+
+    <!-- الأصناف -->
+    <div class="panel" data-panel="items">
+      <div class="card">
+        <h2>🧴 أداء الأصناف <span class="pill" id="itemsPeriodLbl"></span></h2>
+        <p class="hint">مبيعات كل صنف خلال الفترة المختارة، وأكثر صيدلي باعه.</p>
+        <div class="tbl-wrap"><table id="itemsTable"></table></div>
+      </div>
+      <div class="card">
+        <h2>📊 توزيع البيع على الأصناف</h2>
+        <div class="chart" id="itemsChart"></div>
+      </div>
+    </div>
+
+    <!-- سجل الأيام -->
+    <div class="panel" data-panel="log">
+      <div class="card">
+        <h2>🗓️ سجل الأيام المرفوعة</h2>
+        <p class="hint">كل يوم رفعته وإجمالياته. يمكنك حذف يوم معيّن إن رُفع بالخطأ.</p>
+        <div class="tbl-wrap"><table id="logTable"></table></div>
+      </div>
+    </div>
+
+  </section>
+
+  <section id="noData" class="empty">
+    <div class="big">📊</div>
+    <h3>لا توجد بيانات بعد</h3>
+    <p>ارفع أول تقرير PDF لتبدأ متابعة مبيعات الصيادلة.</p>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="vendor/pdf.min.js"></script>
+<script src="parser.js"></script>
+<script>
+/* ============================ إعداد pdf.js ============================ */
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.js';
+
+/* ============================ التخزين المحلي ============================ */
+const STORE_KEY = 'pharma_sales_v1';
+const state = { days: {} }; // dateISO -> {date, fileName, uploadedAt, totals, pharmacists}
+
+function load(){
+  try{ const raw = localStorage.getItem(STORE_KEY); if(raw) state.days = JSON.parse(raw).days || {}; }
+  catch(e){ console.warn('load failed', e); }
+}
+function save(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify({v:1, days:state.days})); }
+  catch(e){ toast('تعذّر الحفظ — المساحة ممتلئة؟','err'); }
+}
+
+/* ============================ أدوات مساعدة ============================ */
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const fmt = (n)=> (Math.round((n||0)*100)/100).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});
+const money = (n)=> fmt(n);
+function arDate(iso){ if(!iso) return '—'; const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; }
+function initials(name){ const p=(name||'').trim().split(/\s+/); return ((p[0]||'؟')[0]||'؟')+((p[1]||'')[0]||''); }
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+let toastTimer;
+function toast(msg,type=''){
+  const t=$('#toast'); t.textContent=msg; t.className='toast show '+type;
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.className='toast',3200);
+}
+
+/* ============================ رفع ومعالجة ============================ */
+async function handleFiles(fileList){
+  const files=[...fileList].filter(f=>/\.pdf$/i.test(f.name)||f.type==='application/pdf');
+  if(!files.length){ toast('لم يتم اختيار ملفات PDF','err'); return; }
+  let ok=0, fail=0, dates=[];
+  for(const f of files){
+    try{
+      const buf=await f.arrayBuffer();
+      const res=await PharmaSalesParser.parsePdfBuffer(buf, pdfjsLib);
+      if(!res.date){ toast(`تعذّر إيجاد تاريخ في «${f.name}»`,'err'); fail++; continue; }
+      if(!res.pharmacists.length){ toast(`لا توجد مبيعات في «${f.name}»`,'err'); fail++; continue; }
+      state.days[res.date]={
+        date:res.date, fileName:f.name, uploadedAt:new Date().toISOString(),
+        totals:res.totals, pharmacists:res.pharmacists
+      };
+      dates.push(res.date); ok++;
+    }catch(e){ console.error(e); toast(`خطأ في قراءة «${f.name}»`,'err'); fail++; }
+  }
+  if(ok){ save(); render();
+    const last=dates.sort().pop();
+    toast(`تم حفظ ${ok} تقرير${ok>1?'ات':''} · آخرها ${arDate(last)}`,'ok');
+  }
+}
+
+/* ============================ التجميع حسب الفترة ============================ */
+function allDatesSorted(){ return Object.keys(state.days).sort(); }
+
+function selectedDates(){
+  const dates=allDatesSorted();
+  if(!dates.length) return [];
+  const p=$('#period').value;
+  if(p==='all') return dates;
+  if(p==='day'){ const d=$('#daySel').value; return d?[d]:[]; }
+  if(p==='month'){ const m=$('#monthSel').value; return dates.filter(d=>d.startsWith(m)); }
+  if(p==='last7'||p==='last30'){
+    const n=p==='last7'?7:30; return dates.slice(-n);
+  }
+  if(p==='range'){
+    const a=$('#fromDate').value, b=$('#toDate').value;
+    return dates.filter(d=>(!a||d>=a)&&(!b||d<=b));
+  }
+  return dates;
+}
+
+// يجمع مبيعات الصيادلة عبر مجموعة أيام
+function aggregate(dates){
+  const map={}; // code -> {code,name,qty,sell,cost,days:Set,items:{}}
+  for(const d of dates){
+    const day=state.days[d]; if(!day) continue;
+    for(const p of day.pharmacists){
+      const e=map[p.code]||(map[p.code]={code:p.code,name:p.name,qty:0,sell:0,cost:0,days:new Set(),items:{}});
+      if(p.name && p.name.length>e.name.length) e.name=p.name;
+      e.qty+=p.qty; e.sell+=p.sell; e.cost+=p.cost; e.days.add(d);
+      for(const it of (p.items||[])){
+        const ie=e.items[it.code]||(e.items[it.code]={code:it.code,name:it.name,qty:0,sell:0});
+        ie.qty+=it.qty; ie.sell+=it.sell;
+      }
+    }
+  }
+  return Object.values(map).map(e=>({...e,profit:e.sell-e.cost,daysCount:e.days.size,
+    items:Object.values(e.items).sort((a,b)=>b.sell-a.sell)}));
+}
+
+function itemsAggregate(dates){
+  const map={}; // itemCode -> {code,name,qty,sell,byPh:{code:{name,sell}}}
+  for(const d of dates){
+    const day=state.days[d]; if(!day) continue;
+    for(const p of day.pharmacists){
+      for(const it of (p.items||[])){
+        const e=map[it.code]||(map[it.code]={code:it.code,name:it.name,qty:0,sell:0,byPh:{}});
+        e.qty+=it.qty; e.sell+=it.sell;
+        const b=e.byPh[p.code]||(e.byPh[p.code]={name:p.name,sell:0,qty:0});
+        b.sell+=it.sell; b.qty+=it.qty;
+      }
+    }
+  }
+  return Object.values(map).map(e=>{
+    const top=Object.values(e.byPh).sort((a,b)=>b.sell-a.sell)[0];
+    return {...e, top};
+  }).sort((a,b)=>b.sell-a.sell);
+}
+
+/* ============================ الرسم ============================ */
+let sortKey='sell', sortDir=-1, activePharm=null;
+
+function render(){
+  const dates=allDatesSorted();
+  $('#hasData').style.display = dates.length? 'block':'none';
+  $('#noData').style.display = dates.length? 'none':'block';
+  $('#drop').style.display = 'block';
+  if(!dates.length) return;
+
+  buildPeriodSelectors(dates);
+  const sel=selectedDates();
+  renderKPIs(sel, dates);
+  renderRank(sel);
+  renderRankChart(sel);
+  renderTrend(dates);
+  renderItems(sel);
+  renderLog(dates);
+  if(activePharm) renderDrill(activePharm);
+}
+
+function buildPeriodSelectors(dates){
+  const daySel=$('#daySel');
+  if(daySel.dataset.n!==String(dates.length)){
+    daySel.innerHTML=dates.slice().reverse().map(d=>`<option value="${d}">${arDate(d)}</option>`).join('');
+    daySel.dataset.n=String(dates.length);
+    const months=[...new Set(dates.map(d=>d.slice(0,7)))].sort().reverse();
+    $('#monthSel').innerHTML=months.map(m=>{const[y,mm]=m.split('-');return `<option value="${m}">${mm}/${y}</option>`;}).join('');
+    if(!$('#fromDate').value) $('#fromDate').value=dates[0];
+    if(!$('#toDate').value) $('#toDate').value=dates[dates.length-1];
+  }
+}
+
+function periodLabel(){
+  const p=$('#period').value, sel=selectedDates();
+  if(!sel.length) return 'لا يوجد';
+  if(p==='day') return arDate(sel[0]);
+  if(sel.length===1) return arDate(sel[0]);
+  return `${arDate(sel[0])} — ${arDate(sel[sel.length-1])} · ${sel.length} يوم`;
+}
+
+function renderKPIs(sel, allDates){
+  const rows=aggregate(sel);
+  const tot=rows.reduce((t,r)=>({qty:t.qty+r.qty,sell:t.sell+r.sell,cost:t.cost+r.cost}),{qty:0,sell:0,cost:0});
+  const top=rows.slice().sort((a,b)=>b.sell-a.sell)[0];
+  const profit=tot.sell-tot.cost;
+  const margin=tot.sell? (profit/tot.sell*100):0;
+  const kpis=[
+    {lab:'💰 إجمالي البيع',val:money(tot.sell)+' ﷼',sub:periodLabel()},
+    {lab:'📦 الكمية المباعة',val:fmt(tot.qty),sub:`${rows.length} صيدلي نشِط`},
+    {lab:'📈 الربح',val:money(profit)+' ﷼',sub:`هامش ${margin.toFixed(1)}%`},
+    {lab:'🏆 المتصدّر',val:top?esc(top.name.split(' ').slice(0,2).join(' ')):'—',sub:top?money(top.sell)+' ﷼':''},
+    {lab:'🗓️ الأيام المرفوعة',val:fmt(allDates.length),sub:`${arDate(allDates[0])} ← ${arDate(allDates[allDates.length-1])}`},
+  ];
+  $('#kpis').innerHTML=kpis.map(k=>`<div class="kpi"><div class="lab">${k.lab}</div>
+    <div class="val">${k.val}</div><div class="sub">${esc(k.sub||'')}</div></div>`).join('');
+}
+
+function renderRank(sel){
+  $('#rankPeriodLbl').textContent=periodLabel();
+  let rows=aggregate(sel);
+  const q=$('#search').value.trim();
+  if(q) rows=rows.filter(r=>r.name.includes(q)||r.code.includes(q));
+  // sortDir = -1 تنازلي (الافتراضي)، +1 تصاعدي
+  rows.sort((a,b)=> sortDir*(a[sortKey]-b[sortKey]));
+  const max=Math.max(1,...rows.map(r=>r[sortKey]));
+  const th=(k,label,cls='')=>`<th class="${cls} ${k===sortKey?'':''}" data-k="${k}">${label}${k===sortKey?(sortDir<0?' ▾':' ▴'):''}</th>`;
+  let html=`<thead><tr>
+    <th class="no-sort">#</th>
+    <th class="no-sort">الصيدلي</th>
+    ${th('sell','قيمة البيع','num')}
+    ${th('qty','الكمية','num')}
+    ${th('cost','التكلفة','num')}
+    ${th('profit','الربح','num')}
+    ${th('daysCount','أيام النشاط','num')}
+  </tr></thead><tbody>`;
+  rows.forEach((r,i)=>{
+    const g=i<3?`g${i+1}`:'';
+    const w=Math.round(r[sortKey]/max*100);
+    html+=`<tr>
+      <td><span class="rank ${g}">${i+1}</span></td>
+      <td><span class="who"><span class="ava">${esc(initials(r.name))}</span>
+        <span><a class="link nm" data-ph="${r.code}">${esc(r.name)}</a><br><span class="cd">${r.code}</span></span></span></td>
+      <td class="num barcell"><div class="barfill" style="width:${sortKey==='sell'?w:0}%"></div><span class="money">${money(r.sell)}</span></td>
+      <td class="num">${fmt(r.qty)}</td>
+      <td class="num">${money(r.cost)}</td>
+      <td class="num">${money(r.profit)}</td>
+      <td class="num">${fmt(r.daysCount)}</td>
+    </tr>`;
+  });
+  if(!rows.length) html+=`<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">لا نتائج</td></tr>`;
+  html+='</tbody>';
+  $('#rankTable').innerHTML=html;
+  $$('#rankTable thead th[data-k]').forEach(th=>th.onclick=()=>{
+    const k=th.dataset.k; if(k===sortKey) sortDir*=-1; else {sortKey=k; sortDir=-1;}
+    renderRank(selectedDates());
+  });
+  $$('#rankTable .link[data-ph]').forEach(a=>a.onclick=()=>openPharm(a.dataset.ph));
+}
+
+/* رسم أعمدة أفقية بسيط (SVG) */
+function hbar(el, data, opts={}){
+  const {label=d=>d.name, value=d=>d.value, color='#38bdf8', unit='', fmtV=money}=opts;
+  const w=Math.max(560, el.clientWidth||700), rowH=30, pad=8, labelW=190, valW=90;
+  const h=data.length*rowH+pad*2;
+  const max=Math.max(1,...data.map(value));
+  const barW=w-labelW-valW-pad*2;
+  let s=`<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" font-family="inherit">`;
+  data.forEach((d,i)=>{
+    const y=pad+i*rowH, v=value(d), bw=Math.max(2,v/max*barW);
+    const nm=label(d); const short=nm.length>26?nm.slice(0,25)+'…':nm;
+    s+=`<text x="${w-pad}" y="${y+rowH/2+4}" text-anchor="end" fill="#cdd8ee" font-size="12.5">${esc(short)}</text>`;
+    s+=`<rect x="${valW}" y="${y+6}" width="${bw}" height="${rowH-12}" rx="5" fill="${color}" opacity=".85"/>`;
+    s+=`<text x="${pad}" y="${y+rowH/2+4}" text-anchor="start" fill="#9fb2d4" font-size="12" direction="ltr">${fmtV(v)}${unit}</text>`;
+  });
+  s+='</svg>';
+  el.innerHTML=s;
+}
+
+function renderRankChart(sel){
+  const rows=aggregate(sel).sort((a,b)=>b[sortKey]-a[sortKey]).slice(0,12)
+    .map(r=>({name:r.name, value:r[sortKey]}));
+  const unit=sortKey==='qty'?'':' ﷼';
+  hbar($('#rankChart'), rows, {color:'#38bdf8', unit, value:d=>d.value, label:d=>d.name});
+}
+
+/* رسم خطي/عمودي مزدوج للاتجاه اليومي */
+function renderTrend(dates){
+  const el=$('#trendChart');
+  const series=dates.map(d=>({d, sell:state.days[d].totals.sell, qty:state.days[d].totals.qty}));
+  const w=Math.max(600, el.clientWidth||760), h=260, pad=38;
+  const maxS=Math.max(1,...series.map(s=>s.sell)), maxQ=Math.max(1,...series.map(s=>s.qty));
+  const n=series.length;
+  const X=i=> n<=1? w/2 : pad + i*(w-2*pad)/(n-1);
+  const Yl=v=> h-pad - v/maxS*(h-2*pad);
+  const Yq=v=> h-pad - v/maxQ*(h-2*pad);
+  let s=`<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" font-family="inherit">`;
+  // grid
+  for(let g=0;g<=4;g++){const y=pad+g*(h-2*pad)/4; s+=`<line x1="${pad}" y1="${y}" x2="${w-pad}" y2="${y}" stroke="#1e2b47"/>`;
+    s+=`<text x="${w-pad+4}" y="${y+4}" fill="#5f7297" font-size="10" direction="ltr">${money(maxS*(1-g/4))}</text>`;}
+  // qty bars
+  const bw=Math.max(3,(w-2*pad)/n*0.45);
+  series.forEach((p,i)=>{const x=X(i),y=Yq(p.qty); s+=`<rect x="${x-bw/2}" y="${y}" width="${bw}" height="${h-pad-y}" rx="3" fill="#fbbf24" opacity=".45"/>`;});
+  // sell line
+  let dpath=series.map((p,i)=>`${i?'L':'M'}${X(i)},${Yl(p.sell)}`).join(' ');
+  s+=`<path d="${dpath}" fill="none" stroke="#38bdf8" stroke-width="2.5"/>`;
+  series.forEach((p,i)=>{s+=`<circle cx="${X(i)}" cy="${Yl(p.sell)}" r="3.5" fill="#0b1220" stroke="#38bdf8" stroke-width="2"><title>${arDate(p.d)} · بيع ${money(p.sell)} ﷼ · كمية ${fmt(p.qty)}</title></circle>`;});
+  // x labels (thin out)
+  const step=Math.ceil(n/8);
+  series.forEach((p,i)=>{ if(i%step===0||i===n-1){const x=X(i); s+=`<text x="${x}" y="${h-pad+16}" text-anchor="middle" fill="#7f92b6" font-size="10" direction="ltr">${p.d.slice(5)}</text>`;}});
+  s+='</svg>';
+  el.innerHTML=s;
+}
+
+function renderItems(sel){
+  $('#itemsPeriodLbl').textContent=periodLabel();
+  const items=itemsAggregate(sel);
+  let html=`<thead><tr><th class="no-sort">الصنف</th><th class="no-sort">كود</th>
+    <th class="num no-sort">قيمة البيع</th><th class="num no-sort">الكمية</th>
+    <th class="no-sort">أكثر صيدلي باعه</th></tr></thead><tbody>`;
+  const max=Math.max(1,...items.map(i=>i.sell));
+  items.forEach(it=>{
+    const w=Math.round(it.sell/max*100);
+    html+=`<tr>
+      <td>${esc(it.name)}</td>
+      <td class="muted" style="direction:ltr;text-align:left">${esc(it.code)}</td>
+      <td class="num barcell"><div class="barfill" style="width:${w}%"></div><span class="money">${money(it.sell)}</span></td>
+      <td class="num">${fmt(it.qty)}</td>
+      <td>${it.top?`<span class="who"><span class="ava" style="width:24px;height:24px;font-size:10px">${esc(initials(it.top.name))}</span> <span>${esc(it.top.name)}<br><span class="cd">${money(it.top.sell)} ﷼</span></span></span>`:'—'}</td>
+    </tr>`;
+  });
+  if(!items.length) html+=`<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">لا نتائج</td></tr>`;
+  html+='</tbody>';
+  $('#itemsTable').innerHTML=html;
+  hbar($('#itemsChart'), items.slice(0,10).map(i=>({name:i.name,value:i.sell})),
+    {color:'#22d3ee', unit:' ﷼'});
+}
+
+function renderLog(dates){
+  const rows=dates.slice().reverse();
+  let html=`<thead><tr><th class="no-sort">التاريخ</th><th class="num no-sort">صيادلة</th>
+    <th class="num no-sort">قيمة البيع</th><th class="num no-sort">الكمية</th>
+    <th class="num no-sort">التكلفة</th><th class="no-sort">الملف</th><th class="no-sort"></th></tr></thead><tbody>`;
+  rows.forEach(d=>{const day=state.days[d];
+    html+=`<tr>
+      <td><b>${arDate(d)}</b></td>
+      <td class="num">${fmt(day.pharmacists.length)}</td>
+      <td class="num money">${money(day.totals.sell)}</td>
+      <td class="num">${fmt(day.totals.qty)}</td>
+      <td class="num">${money(day.totals.cost)}</td>
+      <td class="muted" title="${esc(day.fileName||'')}">${esc((day.fileName||'').slice(0,26))}</td>
+      <td><button class="btn ghost danger" data-del="${d}" style="padding:5px 10px">حذف</button></td>
+    </tr>`;
+  });
+  html+='</tbody>';
+  $('#logTable').innerHTML=html;
+  $$('#logTable [data-del]').forEach(b=>b.onclick=()=>{
+    if(confirm(`حذف بيانات يوم ${arDate(b.dataset.del)}؟`)){ delete state.days[b.dataset.del]; save(); render(); toast('تم حذف اليوم','ok'); }
+  });
+}
+
+/* تفاصيل صيدلي */
+function openPharm(code){
+  activePharm=code;
+  $$('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab==='trend'));
+  $$('.panel').forEach(p=>p.classList.toggle('active',p.dataset.panel==='trend'));
+  renderDrill(code);
+  $('#drillCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function renderDrill(code){
+  const dates=allDatesSorted();
+  const series=dates.map(d=>{
+    const p=(state.days[d].pharmacists||[]).find(x=>x.code===code);
+    return {d, sell:p?p.sell:0, qty:p?p.qty:0};
+  });
+  const agg=aggregate(dates).find(x=>x.code===code);
+  if(!agg){ $('#drillCard').style.display='none'; return; }
+  $('#drillCard').style.display='block';
+  $('#drillTitle').innerHTML=`👤 ${esc(agg.name)} <span class="pill">${code}</span>`;
+  $('#drillSub').textContent=`إجمالي البيع ${money(agg.sell)} ﷼ · الكمية ${fmt(agg.qty)} · نشِط في ${agg.daysCount} يوم من ${dates.length}`;
+  // line chart of this pharmacist's daily sell
+  const el=$('#drillChart');
+  const w=Math.max(560, el.clientWidth||720), h=220, pad=34;
+  const maxS=Math.max(1,...series.map(s=>s.sell)), n=series.length;
+  const X=i=> n<=1? w/2 : pad+i*(w-2*pad)/(n-1);
+  const Y=v=> h-pad - v/maxS*(h-2*pad);
+  let s=`<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" font-family="inherit">`;
+  for(let g=0;g<=3;g++){const y=pad+g*(h-2*pad)/3;s+=`<line x1="${pad}" y1="${y}" x2="${w-pad}" y2="${y}" stroke="#1e2b47"/>`;}
+  const area=`M${X(0)},${h-pad} `+series.map((p,i)=>`L${X(i)},${Y(p.sell)}`).join(' ')+` L${X(n-1)},${h-pad} Z`;
+  s+=`<path d="${area}" fill="#38bdf8" opacity=".12"/>`;
+  s+=`<path d="${series.map((p,i)=>`${i?'L':'M'}${X(i)},${Y(p.sell)}`).join(' ')}" fill="none" stroke="#34d399" stroke-width="2.5"/>`;
+  series.forEach((p,i)=>{s+=`<circle cx="${X(i)}" cy="${Y(p.sell)}" r="3.4" fill="#0b1220" stroke="#34d399" stroke-width="2"><title>${arDate(p.d)} · ${money(p.sell)} ﷼ · ${fmt(p.qty)} حبة</title></circle>`;});
+  const step=Math.ceil(n/8);
+  series.forEach((p,i)=>{if(i%step===0||i===n-1)s+=`<text x="${X(i)}" y="${h-pad+15}" text-anchor="middle" fill="#7f92b6" font-size="10" direction="ltr">${p.d.slice(5)}</text>`;});
+  s+='</svg>';
+  el.innerHTML=s;
+  // items table
+  let ih=`<thead><tr><th class="no-sort">الصنف</th><th class="num no-sort">قيمة البيع</th><th class="num no-sort">الكمية</th></tr></thead><tbody>`;
+  agg.items.forEach(it=>{ ih+=`<tr><td>${esc(it.name)}</td><td class="num money">${money(it.sell)}</td><td class="num">${fmt(it.qty)}</td></tr>`; });
+  ih+='</tbody>';
+  $('#drillItems').innerHTML=ih;
+}
+
+/* ============================ الأحداث ============================ */
+$('#btnUpload').onclick=()=>$('#fileInput').click();
+$('#drop').onclick=()=>$('#fileInput').click();
+$('#fileInput').onchange=e=>{ handleFiles(e.target.files); e.target.value=''; };
+
+const drop=$('#drop');
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('hot');}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('hot');}));
+drop.addEventListener('drop',e=>{ if(e.dataTransfer?.files?.length) handleFiles(e.dataTransfer.files); });
+window.addEventListener('dragover',e=>e.preventDefault());
+window.addEventListener('drop',e=>e.preventDefault());
+
+$('#period').onchange=()=>{
+  const p=$('#period').value;
+  $('#fMonth').style.display=p==='month'?'flex':'none';
+  $('#fDay').style.display=p==='day'?'flex':'none';
+  $('#fFrom').style.display=p==='range'?'flex':'none';
+  $('#fTo').style.display=p==='range'?'flex':'none';
+  render();
+};
+['monthSel','daySel','fromDate','toDate'].forEach(id=>$('#'+id).onchange=render);
+$('#metric').onchange=()=>{ sortKey=$('#metric').value; sortDir=-1; render(); };
+let searchT; $('#search').oninput=()=>{ clearTimeout(searchT); searchT=setTimeout(()=>renderRank(selectedDates()),180); };
+
+$$('.tab').forEach(t=>t.onclick=()=>{
+  $$('.tab').forEach(x=>x.classList.remove('active')); t.classList.add('active');
+  $$('.panel').forEach(p=>p.classList.toggle('active',p.dataset.panel===t.dataset.tab));
+});
+
+/* تصدير / استيراد / مسح */
+$('#btnExport').onclick=()=>{
+  const blob=new Blob([JSON.stringify({v:1,exportedAt:new Date().toISOString(),days:state.days},null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`pharma-sales-backup-${new Date().toISOString().slice(0,10)}.json`; a.click();
+  URL.revokeObjectURL(a.href); toast('تم تصدير نسخة احتياطية','ok');
+};
+$('#btnImport').onclick=()=>$('#importInput').click();
+$('#importInput').onchange=async e=>{
+  const f=e.target.files[0]; e.target.value=''; if(!f) return;
+  try{
+    const data=JSON.parse(await f.text());
+    const days=data.days||{}; let n=0;
+    for(const k in days){ state.days[k]=days[k]; n++; }
+    save(); render(); toast(`تم استيراد ${n} يوم`,'ok');
+  }catch(err){ toast('ملف غير صالح','err'); }
+};
+$('#btnClear').onclick=()=>{
+  if(confirm('سيتم مسح كل الأيام المخزّنة على هذا الجهاز. متأكد؟')){
+    state.days={}; save(); activePharm=null; render(); toast('تم مسح كل البيانات','ok');
+  }
+};
+
+window.addEventListener('resize',()=>{ if(allDatesSorted().length) render(); });
+
+/* ============================ إقلاع ============================ */
+load();
+sortKey=$('#metric').value;
+render();
+
+/* Service worker (اختياري للعمل بدون إنترنت) */
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+</script>
+</body>
+</html>
