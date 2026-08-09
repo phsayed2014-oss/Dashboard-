@@ -139,6 +139,8 @@
   .ipill{display:inline-block;padding:2px 8px;margin:2px 0;border-radius:20px;font-size:11.5px;
     background:#0e2033;border:1px solid var(--line2);color:#cfe0f7}
   .ipill b{color:var(--brand2);font-variant-numeric:tabular-nums}
+  .ipill.ret{background:#2a1420;border-color:#5b2130}
+  .ipill.ret b{color:#fda4af}
   .delta{display:inline-flex;align-items:center;gap:4px;font-variant-numeric:tabular-nums;font-weight:700;font-size:12.5px;white-space:nowrap}
   .delta small{font-weight:600;opacity:.85}
   .delta.up{color:#34d399}
@@ -361,7 +363,8 @@
 
   const ITEMCODE = /^\d-\d{2}-\d{3}-\d{3}$/;          // مثال: 1-09-118-050
   const USERCODE = /^\d{6}$/;                          // مثال: 107003
-  const NUMERIC  = /^[\d,]+\.\d+$|^\d+$/;              // 65.000 أو 1,292.00 أو 1
+  // يقبل الأرقام الموجبة والسالبة (المرتجعات): 65.000 · 1,292.00 · 1 · -65.000 · -1
+  const NUMERIC  = /^-?[\d,]+\.\d+$|^-?\d+$/;
   const ARABIC   = /[؀-ۿﭐ-﷿ﹰ-﻿]/;
 
   // مراكز الأعمدة الرقمية (إحداثي x) — مستنتجة من التقرير
@@ -770,7 +773,9 @@ function renderRank(sel){
   rows.forEach((r,i)=>{
     const g=i<3?`g${i+1}`:'';
     const w=Math.round(r[sortKey]/max*100);
-    const itemsHtml=(r.items||[]).map(it=>`<span class="ipill" title="${esc(it.name)} — ${money(it.sell)} ﷼">${esc(shortItem(it.name))} <b>×${fmt(it.qty)}</b></span>`).join(' ') || '<span class="muted">—</span>';
+    const itemsHtml=(r.items||[]).map(it=>{const neg=it.qty<0;
+      return `<span class="ipill${neg?' ret':''}" title="${esc(it.name)} — ${money(it.sell)} ﷼${neg?' (مرتجع)':''}">${esc(shortItem(it.name))} <b>×${fmt(it.qty)}</b></span>`;
+    }).join(' ') || '<span class="muted">—</span>';
     html+=`<tr>
       <td><span class="rank ${g}">${i+1}</span></td>
       <td><span class="who"><span class="ava">${esc(initials(r.name))}</span>
