@@ -734,7 +734,7 @@ function renderKPIs(sel, allDates){
   if(kp&&kl){
     const a=state.days[kp].totals.sell, b=state.days[kl].totals.sell, diff=b-a, pct=a?diff/a*100:(b?100:0);
     const up=diff>=0, cls=up?'up':'down', ar=up?'▲':'▼', sg=up?'+':'−';
-    sellSub=`<span class="delta ${cls}">${ar} ${sg}${Math.abs(pct).toFixed(0)}%</span><span class="muted">${arDate(kl)} مقابل ${arDate(kp)}</span>`;
+    sellSub=`<span class="delta ${cls}">${ar} ${sg}${Math.abs(pct).toFixed(0)}%</span> <span class="muted">${arDate(kl)} مقابل ${arDate(kp)}</span>`;
   }
   const kpis=[
     {lab:'💰 إجمالي البيع',val:money(tot.sell)+' ﷼',sub:sellSub},
@@ -883,9 +883,11 @@ function renderLog(dates){
   let html=`<thead><tr><th class="no-sort">التاريخ</th><th class="num no-sort">صيادلة</th>
     <th class="num no-sort">قيمة البيع</th><th class="num no-sort">الكمية</th>
     <th class="num no-sort">التكلفة</th><th class="no-sort">الملف</th><th class="no-sort"></th></tr></thead><tbody>`;
-  rows.forEach(d=>{const day=state.days[d];
+  rows.forEach((d,i)=>{const day=state.days[d];
+    const tag = i===0 ? ' <span class="pill" style="background:#0d2a22;border-color:#1f5a45;color:#34d399">● الأحدث</span>'
+              : (i===rows.length-1 && rows.length>1 ? ' <span class="pill">الأقدم</span>' : '');
     html+=`<tr>
-      <td><b>${arDate(d)}</b></td>
+      <td><b>${arDate(d)}</b>${tag}</td>
       <td class="num">${fmt(day.pharmacists.length)}</td>
       <td class="num money">${money(day.totals.sell)}</td>
       <td class="num">${fmt(day.totals.qty)}</td>
