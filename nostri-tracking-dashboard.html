@@ -17,7 +17,7 @@
   --teal:#0f766e; --teal-d:#06332e; --teal-m:#0b5c55; --teal-l:#5eead4; --heading:#06332e;
   --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#eef3f6; --card:#ffffff;
   --up:#15803d; --down:#b91c1c; --warn:#c2410c;
-  --c05:#99f6e4; --c06:#2dd4bf; --c07:#0f766e;
+  --c05:#99f6e4; --c06:#2dd4bf; --c07:#0f766e; --c08:#0e7490;
   --grid:rgba(148,163,184,.18);
   --th-bg:#f3f7fa; --zebra:rgba(15,118,110,.035); --row-hover:#eef8f6; --tfoot-bg:#ecfdf5;
   --trend-line-color:rgba(15,23,42,.38);
@@ -30,7 +30,7 @@
 :root[data-theme="dark"]{
   --teal-d:#041f1c; --heading:#99f6e4;
   --ink:#e8eef7; --muted:#9fb1c4; --line:#243247; --bg:#081018; --card:#101b2c;
-  --c05:#5eead4; --c06:#2dd4bf; --c07:#14b8a6;
+  --c05:#5eead4; --c06:#2dd4bf; --c07:#14b8a6; --c08:#22d3ee;
   --grid:rgba(148,163,184,.14);
   --th-bg:#162437; --zebra:rgba(255,255,255,.025); --row-hover:#1a2b42; --tfoot-bg:#123029;
   --trend-line-color:rgba(226,232,240,.55);
@@ -539,7 +539,8 @@ th{background:color-mix(in srgb,var(--glass) 78%, transparent)}
   <div class="mlegend">
     <span class="month-chip"><span class="dot" style="background:var(--c05)"></span><b>مايو 05</b></span>
     <span class="month-chip"><span class="dot" style="background:var(--c06)"></span><b>يونيو 06</b></span>
-    <span class="month-chip current"><span class="dot" style="background:var(--c07)"></span><b>يوليو 07 · الحالي</b></span>
+    <span class="month-chip"><span class="dot" style="background:var(--c07)"></span><b>يوليو 07</b></span>
+    <span class="month-chip current"><span class="dot" style="background:var(--c08)"></span><b>أغسطس 08 · الأحدث</b></span>
     <span class="spacer"></span>
     <span class="toggle" id="metricToggle">
       <button data-metric="units" class="active">وحدات مباعة</button>
@@ -586,44 +587,13 @@ th{background:color-mix(in srgb,var(--glass) 78%, transparent)}
    ============================================================ */
 const DATA = {
   months:["05","06","07"],
-  monthLabel:{"05":"مايو","06":"يونيو","07":"يوليو"},
+  monthLabel:{"05":"مايو","06":"يونيو","07":"يوليو","08":"أغسطس"},
 
   /* ★ مبيعات NOSTRI — حقيقية من تقارير «مبيعات اصناف مورد» 05/06/07-2026 ★
      لكل صنف: بيانات لكل صيدلية (all = الإجمالي · 1/7/18 = صيدليات).
      u = الكمية المباعة · v = القيمة بسعر البيع (ريال).
      ملاحظة: all هو إجمالي كل الفروع من التقرير العام (ليس مجموع 1+7+18). */
-  nostriItems:[
-    {name:"RIZER apply Cream 75ML", code:"2-09-031-483",
-     all:{u:{"05":123,"06":108,"07":168}, v:{"05":7380,"06":6480,"07":10080}},
-     "1":{u:{"05":24, "06":24, "07":13 }, v:{"05":1440,"06":1440,"07":780}},
-     "7":{u:{"05":11,"06":10,"07":3}, v:{"05":660,"06":600,"07":180}},
-     "18":{u:{"05":9,"06":6,"07":26}, v:{"05":540,"06":360,"07":1560}}, wr:{"1":{"05":11,"06":13,"07":11},"18":{"05":6,"06":7,"07":33},"7":{"05":10,"06":13,"07":3}}},
-    {name:"NOSTRICURE Oral Gel 30ML", code:"1-09-066-046",
-     all:{u:{"05":230,"06":194,"07":255}, v:{"05":9200,"06":7760,"07":10200}},
-     "1":{u:{"05":33, "06":24, "07":17 }, v:{"05":1320,"06":960,"07":680}},
-     "7":{u:{"05":7,"06":6,"07":9}, v:{"05":280,"06":240,"07":360}},
-     "18":{u:{"05":20,"06":12,"07":15}, v:{"05":800,"06":480,"07":600}}, wr:{"1":{"05":13,"06":19,"07":8},"18":{"05":7,"06":2,"07":4},"7":{"05":2,"06":2,"07":3}}},
-    {name:"REFLEX MASSAGE Emulgel 100ML", code:"1-02-066-034",
-     all:{u:{"05":367,"06":355,"07":359}, v:{"05":23855,"06":23075,"07":23335}},
-     "1":{u:{"05":128,"06":160,"07":79 }, v:{"05":8320,"06":10400,"07":5135}},
-     "7":{u:{"05":22,"06":35,"07":15}, v:{"05":1430,"06":2275,"07":975}},
-     "18":{u:{"05":34,"06":19,"07":44}, v:{"05":2210,"06":1235,"07":2860}}, wr:{"1":{"05":95,"06":131,"07":74},"18":{"05":15,"06":9,"07":34},"7":{"05":15,"06":28,"07":4}}},
-    {name:"INTIMO Vaginal Wash 250ML", code:"1-14-166-032",
-     all:{u:{"05":116,"06":147,"07":212}, v:{"05":8700,"06":11025,"07":15900}},
-     "1":{u:{"05":17, "06":33, "07":45 }, v:{"05":1275,"06":2475,"07":3375}},
-     "7":{u:{"05":17,"06":19,"07":17}, v:{"05":1275,"06":1425,"07":1275}},
-     "18":{u:{"05":53,"06":57,"07":48}, v:{"05":3975,"06":4275,"07":3600}}, wr:{"1":{"05":16,"06":32,"07":54},"18":{"05":28,"06":55,"07":44},"7":{"05":12,"06":19,"07":12}}},
-    {name:"NOSTRIDERM Ointment 50ML", code:"1-09-118-050",
-     all:{u:{"05":168,"06":171,"07":279}, v:{"05":10920,"06":11115,"07":18135}},
-     "1":{u:{"05":78, "06":88, "07":81 }, v:{"05":5070,"06":5720,"07":5265}},
-     "7":{u:{"05":7,"06":1,"07":2}, v:{"05":455,"06":65,"07":130}},
-     "18":{u:{"05":37,"06":39,"07":64}, v:{"05":2405,"06":2535,"07":4160}}, wr:{"1":{"05":77,"06":100,"07":87},"18":{"05":4,"06":19,"07":28},"7":{"05":4,"06":1,"07":0}}},
-    {name:"ORACURE Mouth Wash 300ML", code:"1-12-109-038",
-     all:{u:{"05":330,"06":177,"07":284}, v:{"05":11550.033,"06":6195.018,"07":9940.021}},
-     "1":{u:{"05":81, "06":49, "07":47 }, v:{"05":2835.008,"06":1715.005,"07":1645.005}},
-     "7":{u:{"05":23,"06":13,"07":11}, v:{"05":805.002,"06":455.001,"07":385.001}},
-     "18":{u:{"05":13,"06":14,"07":23}, v:{"05":455.001,"06":490.001,"07":805.002}}, wr:{"1":{"05":73,"06":38,"07":42},"18":{"05":10,"06":5,"07":16},"7":{"05":14,"06":8,"07":11}}}
-  ],
+  nostriItems:[{"1":{"u":{"05":24,"06":24,"07":13},"v":{"05":1440,"06":1440,"07":780}},"7":{"u":{"05":11,"06":10,"07":3},"v":{"05":660,"06":600,"07":180}},"18":{"u":{"05":9,"06":6,"07":26},"v":{"05":540,"06":360,"07":1560}},"name":"RIZER apply Cream 75ML","code":"2-09-031-483","all":{"u":{"05":123,"06":108,"07":168},"v":{"05":7380,"06":6480,"07":10080}},"wr":{"1":{"05":11,"06":13,"07":11,"08":4},"7":{"05":10,"06":13,"07":3,"08":0},"18":{"05":6,"06":7,"07":33,"08":29}}},{"1":{"u":{"05":33,"06":24,"07":17},"v":{"05":1320,"06":960,"07":680}},"7":{"u":{"05":7,"06":6,"07":9},"v":{"05":280,"06":240,"07":360}},"18":{"u":{"05":20,"06":12,"07":15},"v":{"05":800,"06":480,"07":600}},"name":"NOSTRICURE Oral Gel 30ML","code":"1-09-066-046","all":{"u":{"05":230,"06":194,"07":255},"v":{"05":9200,"06":7760,"07":10200}},"wr":{"1":{"05":13,"06":19,"07":8,"08":11},"7":{"05":2,"06":2,"07":3,"08":1},"18":{"05":7,"06":2,"07":4,"08":7}}},{"1":{"u":{"05":128,"06":160,"07":79},"v":{"05":8320,"06":10400,"07":5135}},"7":{"u":{"05":22,"06":35,"07":15},"v":{"05":1430,"06":2275,"07":975}},"18":{"u":{"05":34,"06":19,"07":44},"v":{"05":2210,"06":1235,"07":2860}},"name":"REFLEX MASSAGE Emulgel 100ML","code":"1-02-066-034","all":{"u":{"05":367,"06":355,"07":359},"v":{"05":23855,"06":23075,"07":23335}},"wr":{"1":{"05":95,"06":131,"07":74,"08":77},"7":{"05":15,"06":28,"07":4,"08":3},"18":{"05":15,"06":9,"07":34,"08":24}}},{"1":{"u":{"05":17,"06":33,"07":45},"v":{"05":1275,"06":2475,"07":3375}},"7":{"u":{"05":17,"06":19,"07":17},"v":{"05":1275,"06":1425,"07":1275}},"18":{"u":{"05":53,"06":57,"07":48},"v":{"05":3975,"06":4275,"07":3600}},"name":"INTIMO Vaginal Wash 250ML","code":"1-14-166-032","all":{"u":{"05":116,"06":147,"07":212},"v":{"05":8700,"06":11025,"07":15900}},"wr":{"1":{"05":16,"06":32,"07":54,"08":20},"7":{"05":12,"06":19,"07":12,"08":19},"18":{"05":28,"06":55,"07":44,"08":14}}},{"1":{"u":{"05":78,"06":88,"07":81},"v":{"05":5070,"06":5720,"07":5265}},"7":{"u":{"05":7,"06":1,"07":2},"v":{"05":455,"06":65,"07":130}},"18":{"u":{"05":37,"06":39,"07":64},"v":{"05":2405,"06":2535,"07":4160}},"name":"NOSTRIDERM Ointment 50ML","code":"1-09-118-050","all":{"u":{"05":168,"06":171,"07":279},"v":{"05":10920,"06":11115,"07":18135}},"wr":{"1":{"05":77,"06":100,"07":87,"08":105},"7":{"05":4,"06":1,"07":0,"08":2},"18":{"05":4,"06":19,"07":28,"08":56}}},{"1":{"u":{"05":81,"06":49,"07":47},"v":{"05":2835.008,"06":1715.005,"07":1645.005}},"7":{"u":{"05":23,"06":13,"07":11},"v":{"05":805.002,"06":455.001,"07":385.001}},"18":{"u":{"05":13,"06":14,"07":23},"v":{"05":455.001,"06":490.001,"07":805.002}},"name":"ORACURE Mouth Wash 300ML","code":"1-12-109-038","all":{"u":{"05":330,"06":177,"07":284},"v":{"05":11550.033,"06":6195.018,"07":9940.021}},"wr":{"1":{"05":73,"06":38,"07":42,"08":49},"7":{"05":14,"06":8,"07":11,"08":10},"18":{"05":10,"06":5,"07":16,"08":8}}}],
 
   /* كل الصيدليات (1/7/18) + الإجمالي = مبيعات حقيقية كاملة */
   pharmacyReady:{"all":true,"1":true,"7":true,"18":true},
@@ -634,715 +604,14 @@ const DATA = {
   doctorCount:{"1":26,"7":9,"18":10},
 
   /* أعلى الأطباء كتابةً لأصناف نوستري لكل صيدلية — [الاسم, 05, 06, 07] */
-  doctorsNostri:{
-    "1":[
-      ["Hossameldin Mohamed Amin Bekh",61,61,63],
-      ["Nehad Farouk Abdallah Ramadan",15,27,54],
-      ["Mohammed Shabaan Abdelhay Els",60,93,37],
-      ["Ahmad Mahmoud Mohammed Elad",18,39,27],
-      ["Samah Abdelkarim Ahmed Elbashi",30,16,22],
-      ["Mohamed Samir Abdelfattah Fara",0,0,22],
-      ["Radwa Mohamed Mabrouk Abdalla",14,7,11],
-      ["Mona Farid Elmandouh Abdelrahm",5,10,11],
-      ["Ahmed Hassanin Mohamed Hassan",14,10,6],
-      ["Rafik Elsayed Aboelhythim Ereba",8,13,5],
-      ["Ahmed Taher Mokhtar Mashaly",14,13,3],
-      ["Said Tolba Elsayed Elbedewy",15,3,3]
-    ],
-    "18":[
-      ["Anwar Ali Abdullah Jwass",0,0,52],
-      ["Fatimah Abdulhafeez Mohamed K",21,39,37],
-      ["Medhat Alashry Aladawy Goger",0,0,31],
-      ["Mugahid Khalid Zainelabdin Elfak",1,5,16],
-      ["Ahmad Abdelrahman Abdallah Ha",4,20,8],
-      ["Heba Mohsen Mohamed Khalil",7,16,7],
-      ["Shivapriya Nair",9,2,6],
-      ["Mohamed Samir Abdelfattah Fara",15,8,1],
-      ["Amira Mohamed Salem Eldaltoun",6,6,1],
-      ["Mohamed Muhiddeen Abd Al Gde",7,1,0]
-    ],
-    "7":[
-      ["Nesreen Mohammed Hassan Amash",15,5,10],
-      ["Soha Mohamed Salaheldeen Solima",8,9,9],
-      ["Hala Fathi Ewis Mansur",4,12,4],
-      ["Amira Mohamed Salem Eldaltouni",12,13,3],
-      ["Medhat Alashry Aladawy Goger",14,27,2],
-      ["Nesrin Ibrahim Mohamed Elmokad",3,0,2],
-      ["Khalid Ghalib Masar Alharbi",1,1,2],
-      ["Ahmed Gamal Abdelnasser Abdelm",0,0,1],
-      ["Huda Mohamed Khedr Ghali",0,4,0]
-    ]
-  },
+  doctorsNostri:{"1":[["Hossameldin Mohamed Amin Bekh",61,61,63,69],["Nehad Farouk Abdallah Ramadan",15,27,54,20],["Mohammed Shabaan Abdelhay Els",60,93,37,48],["Ahmad Mahmoud Mohammed Elad",18,39,27,37],["Samah Abdelkarim Ahmed Elbashi",30,16,22,32],["Mohamed Samir Abdelfattah Fara",0,0,22,3],["Radwa Mohamed Mabrouk Abdalla",14,7,11,0],["Mona Farid Elmandouh Abdelrahm",5,10,11,0],["Ahmed Hassanin Mohamed Hassan",14,10,6,15],["Rafik Elsayed Aboelhythim Ereba",8,13,5,5],["Ahmed Taher Mokhtar Mashaly",14,13,3,12],["Said Tolba Elsayed Elbedewy",15,3,3,3]],"7":[["Nesreen Mohammed Hassan Amash",15,5,10,10],["Soha Mohamed Salaheldeen Solima",8,9,9,10],["Hala Fathi Ewis Mansur",4,12,4,9],["Amira Mohamed Salem Eldaltouni",12,13,3,2],["Medhat Alashry Aladawy Goger",14,27,2,0],["Nesrin Ibrahim Mohamed Elmokad",3,0,2,0],["Khalid Ghalib Masar Alharbi",1,1,2,0],["Ahmed Gamal Abdelnasser Abdelm",0,0,1,3],["Huda Mohamed Khedr Ghali",0,4,0,0]],"18":[["Anwar Ali Abdullah Jwass",0,0,52,58],["Fatimah Abdulhafeez Mohamed K",21,39,37,0],["Medhat Alashry Aladawy Goger",0,0,31,23],["Mugahid Khalid Zainelabdin Elfak",1,5,16,10],["Ahmad Abdelrahman Abdallah Ha",4,20,8,19],["Heba Mohsen Mohamed Khalil",7,16,7,14],["Shivapriya Nair",9,2,6,5],["Mohamed Samir Abdelfattah Fara",15,8,1,0],["Amira Mohamed Salem Eldaltoun",6,6,1,0],["Mohamed Muhiddeen Abd Al Gde",7,1,0,0]]},
 
   /* ⏳ Near-Expire — حقيقي (ملف Near Expire till 31-12-2026 + كتابات التعاونات الثلاثة)
      كل صف: [الوصف, المخزون, تاريخ الانتهاء, كتابات 05, 06, 07] */
   nearExpire:{
     summary:{items:664, qty:17374, prescribed:407, risk:257},
-    monthly:{"05":7260,"06":6666,"07":6598},
-    all:[["HYMOX FORTE SUSPENTION 250MG/5ML, 100ML/Bott",2594,"2026-01",0,0,0],
-      ["EMILOK Capsule 20MG/1Capsule, 14Capsule/Box",1434,"2026-02",43,76,32],
-      ["ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE",929,"2026-08",9,21,56],
-      ["FORMIT XR Tablet 750MG/1Tablet, 30Tablet/BOX",734,"2026-01",23,33,35],
-      ["AVALON AVOCOM 0.1 %/apply Ointment , 50 GM/T",581,"2026-06",0,0,0],
-      ["VOLTIC  tablet 50MG/1Tablet, 20Tablet/Box",431,"2026-07",22,80,7],
-      ["EMIDOL 120 mg/5 ml Syrup, 100 ML/BOTTLE",364,"2026-10",0,0,0],
-      ["OPTIFLOX Eye drops 0.3MG/1Drop,  5 ML/Contai",331,"2026-06",1,0,0],
-      ["DAONIL Tablet 5MG/1Tablet, 30Tablet/Box",321,"2026-07",0,1,0],
-      ["BIOCAL D 500 mg/tablet, 60 TABLET/BOX",258,"2026-01",24,1,0],
-      ["PANADREX 120 mg/5 ml Syrup, 60 ML/BOTTLE",245,"2026-12",1,0,0],
-      ["SETAPRO 10 mg/tablet, 30 TABLET/BOX",233,"2026-01",38,41,26],
-      ["AVALON AVOMEB EXTERA Ointment , 50 GM/TUBE",205,"2026-06",8,1,1],
-      ["TRENTAL Tablet 400MG/1Tablet, 20Tablet/Box",175,"2026-10",0,2,1],
-      ["JARDIANCE Coated tablet 10MG/1Tablet, 30Tabl",166,"2026-09",12,1,2],
-      ["SERETIDE EVOHALER125MG INHALATION SPRAY /1In",147,"2026-06",0,0,0],
-      ["MIXTARD Injection 30IU/1ML, 10ML/Vial",147,"2026-07",2,3,3],
-      ["PEXAPAN 2.5 mg/tablet, 60 TABLET/BOX",146,"2026-11",0,0,0],
-      ["ROLIP Ointment 1%/1APPLY, 30GM/Tube",141,"2026-06",4,2,8],
-      ["ECHILIB CHewable tablet, 20 TABLET/BOX",139,"2026-09",0,4,0],
-      ["LEVOGAND 50 mcg/tablet, 100 TABLET/BOX",129,"2026-09",2,0,0],
-      ["JP VITAMIN D3 Soft Gel Cap 1000IU/1Capsule, ",125,"2026-03",0,0,0],
-      ["REMOX SUSPENTION 125MG/5ML, 70ML/Bottle",119,"2026-07",16,21,41],
-      ["AMYDRAMINE PED ml Syrup, 120 ML/BOTTLE",116,"2026-01",25,1,1],
-      ["OPTICIN Eye drops 0.3MG/1Drop, 5ML/Container",116,"2026-01",0,0,1],
-      ["AVALON SALINOSE BABY 0.9 ml/drop, 20 ML/BOTT",112,"2026-08",0,0,0],
-      ["RINOFED COLD&ALLERGY Tablet, 30 TABLET/BOX",109,"2026-10",0,0,0],
-      ["VIDA-IRON  Spray, 60 ML/BOTTLE",107,"2026-12",30,20,26],
-      ["OPTILONE Eye drops 0.1MG/1Drop, 5ML/Containe",103,"2026-02",0,0,0],
-      ["INHIXA 40 mg/syringe Injection, 1 SYRINGE/BO",101,"2026-08",0,0,0],
-      ["CIPROCIN Eye drops 0.3MG/1Drop, 5ML/Containe",90,"2026-12",0,1,1],
-      ["FARCOLIN Solution 0.5MG/1ML, 20ML/Bottle",83,"2026-03",0,0,0],
-      ["CLARINASE Tablet 5/120MG/1Tablet, 14Tablet/B",82,"2026-09",1,4,9],
-      ["AVALON AVOCOM AQU NASAL SPRAY 0.05%/1Applica",82,"2026-11",0,0,0],
-      ["LEVOGAND 100 mcg/tablet, 100 TABLET/BOX",80,"2026-08",1,0,0],
-      ["CITICOLINE Capsule, 30 CAPSULE/BOX",79,"2026-11",3,2,0],
-      ["LOVERA 5 mg/tablet, 30 TABLET/BOX",76,"2026-04",0,1,2],
-      ["ELEVIT Tablet, 30 TABLET/BOX",74,"2026-07",0,1,0],
-      ["IRO-VIT drop, 30 ML/CONTAINER",74,"2026-11",0,2,0],
-      ["MIRZAGEN Gastro-resistant coated tablet 30MG",73,"2026-12",0,0,0],
-      ["BABYCOOL ml Syrup, 100 ML/BOTTLE",72,"2026-08",5,9,9],
-      ["ADZOY 0.1% / 2.5% apply Gel, 30 GM/TUBE",70,"2026-07",4,3,1],
-      ["OPTIPRED Eye drops 1%/1Drop, 5ML/Container",70,"2026-01",1,0,0],
-      ["SEFARIX 125 mg/5 ml Suspention, 50 ML/BOTTLE",69,"2026-12",1,0,0],
-      ["SYMBICORT INHALATION SPRAY 1MG/1Inhaler, 1In",66,"2026-07",0,0,0],
-      ["NOVOMIX 30 FLEXPEN Susp. for inj. pre-filled",65,"2026-06",0,0,0],
-      ["TOBRADEX Eye drops /1Drop, 5ML/Container",65,"2026-09",41,23,22],
-      ["TYMER Eye drops 0.3MG/1Drop, 5ML/Container",62,"2026-08",2,0,0],
-      ["RAVIXA 75 mg/tablet, 30 TABLET/BOX",60,"2026-10",18,7,14],
-      ["LACTEEZ PLUS drop, 30 ML/CONTAINER",60,"2026-12",0,0,0],
-      ["ISOLONE 5 mg/TABLET, 30 Effervescent Tablet",60,"2026-01",61,63,41],
-      ["OTRI ALLERGY 0.05 mg/applicator Nasal Spray",59,"2026-12",19,19,5],
-      ["RAFOL 5 mg/tablet, 50 TABLET/BOX",57,"2026-10",18,32,21],
-      ["ADZOY 0.3 % / 2.5%/apply Gel, 30 GM/TUBE",56,"2026-07",0,0,0],
-      ["AVALON AVOCOM Cream 0.1%/1APPLY, 30GM/Tube",56,"2026-07",0,8,3],
-      ["ARTELAC COMPLET MDO 24 %/drop, 10 ML/CONTAIN",55,"2026-10",0,0,0],
-      ["PEXAPAN 5 mg/tablet, 60 TABLET/BOX",54,"2026-05",2,3,1],
-      ["RHINATHIOL ENF Syrup 2%/1ML, 125ML/Bottle",54,"2026-12",10,3,1],
-      ["LAXOCODYL 5 mg/suppository, 10 SUPPOSITORY/B",54,"2026-08",0,0,0],
-      ["ANAZOL Film coated tablet 250MG/1Tablet, 20T",53,"2026-12",0,0,0],
-      ["NEVOTIC 500 mg/tablet, 7 TABLET/BOX",52,"2026-12",6,14,10],
-      ["CENTRUM IMMUNE Support Capsule, 60 CAPSULE/C",51,"2026-08",0,0,0],
-      ["MARNYS SALMON OIL VIT E Capsule 60MG/1Capsul",50,"2026-10",0,0,0],
-      ["LOTINIL drop, 5 ML/CONTAINER",49,"2026-06",0,0,0],
-      ["APIDRA SOLOSTAR 100 iu/ml Injection, 5 VIAL/",47,"2026-07",0,0,1],
-      ["REXOFIL 20 mg/tablet, 4 TABLET/BOX",47,"2026-06",0,0,0],
-      ["ZOLIX 5 mg/tablet, 20 TABLET/BOX",45,"2026-06",0,0,1],
-      ["CIPRODAR Tablet 500MG/1Tablet, 10Tablet/Box",44,"2026-01",1,0,0],
-      ["FAWAR LEMON 5 gm/sachet, 6 SACHET/BOX",43,"2026-08",0,0,0],
-      ["FEMI BIOTIC box Sachets, 20 SACHET/BOX",42,"2026-08",3,5,5],
-      ["ROXIL SUSPENTION 250MG/5ML, 100ML/Bottle",42,"2026-06",4,2,2],
-      ["SINEO 1 mg/drop, 20 ML/CONTAINER",42,"2026-09",18,30,53],
-      ["ZETRON SUSPENTION 200MG/1ML, 15ML/Bottle",41,"2026-06",22,3,4],
-      ["ADOL 120 mg/5 ml Syrup, 100 ML/BOTTLE",41,"2026-08",145,68,93],
-      ["PANA NATURAL  Syrup, 128 GM/BOTTLE",40,"2026-03",0,0,0],
-      ["LEVOGAND 25 mcg/tablet, 100 TABLET/BOX",39,"2026-08",2,1,0],
-      ["PURGE Solution /1APPLY, 250ML/Container",38,"2026-09",2,0,0],
-      ["DIFFERIN Gel 0.1%/1APPLY, 30GM/Tube",38,"2026-09",0,2,0],
-      ["ZOLAN 5 mg/tablet, 30 TABLET/BOX",37,"2026-12",15,16,20],
-      ["SENNA ARKO Capsule 180MG/1Capsule, 45Capsule",37,"2026-06",0,0,0],
-      ["KLACID 125 mg/5 ml Suspention, 100 ML/BOTTLE",36,"2026-09",14,6,16],
-      ["OMIZ Capsule 20MG/1Capsule, 14Capsule/Box",36,"2026-06",5,5,6],
-      ["ARKO PHARMA FORCAPIL GROWTH HAIR AND NAILS G",35,"2026-01",0,0,0],
-      ["FORXIGA Tablet 10MG/1Tablet, 28Tablet/Box",34,"2026-10",18,23,28],
-      ["JOINTACE CHONDROITIN GLUCOSAMIN Tablet /1Tab",34,"2026-07",0,0,0],
-      ["BUTALIN INHALATION SPRAY 100MCG/1Applicator,",34,"2026-07",0,0,0],
-      ["AVALON AVOMEB EXTRA 75 GM Ointment",33,"2026-12",1,5,10],
-      ["HIDRASEC 30 mg/sachet Powder, 16 SACHET/BOX ",33,"2026-11",0,0,0],
-      ["TOBREX Eye drops 0.3MG/1Drop, 5ML/Container",32,"2026-09",16,7,11],
-      ["TRIOLITE CREAM apply Cream, 30 GM/TUBE",32,"2026-12",8,9,16],
-      ["OLNEDA 20 /10mg/tablet, 30 TABLET/BOX",31,"2026-07",0,1,1],
-      ["TENORYL PLUS 10/10 mg/tablet, 30 TABLET/BOX",31,"2026-06",1,0,0],
-      ["PREGADEX Capsule 150MG/1Capsule, 14Capsule/B",30,"2026-01",0,0,0],
-      ["GAMCET 0.4 mg/tablet, 30 TABLET/BOX",30,"2026-01",0,1,0],
-      ["SYSTANE ULTRA UD Eye drops /1Drop, 0.4ML/Con",30,"2026-12",0,0,0],
-      ["ONDANS 4 mg/tablet, 10 TABLET/BOX",29,"2026-10",8,4,11],
-      ["CATAFAST SACHETS 50MG/1Sachet, 9sachet/Box",29,"2026-09",78,115,132],
-      ["PICO Oral drops 7.5MG/1Drop, 30ML/Container",29,"2026-05",3,4,6],
-      ["GENTAPLEX Capsule /1Capsule, 36Capsule/Box",28,"2026-07",3,8,2],
-      ["NYDA PLUS 100 ml topical spray /1Applicator,",28,"2026-06",0,0,0],
-      ["AVALON AVOQUIN 4 %/apply Cream, 50 GM/TUBE",28,"2026-06",0,0,0],
-      ["SANOVIT ml Syrup, 320 ML/BOTTLE",28,"2026-08",0,0,0],
-      ["ZERTAZINE 5 mg/5 ml Syrup, 100 ML/BOTTLE",28,"2026-09",0,0,0],
-      ["FLIXOTIDE Inhalation powder 125MCG/1Containe",27,"2026-12",0,0,0],
-      ["AVALON ALPHA PLUS apply Cream, 30 GM/TUBE",27,"2026-10",0,1,0],
-      ["TRAVATAN Eye drops 0.004MG/1Drop, 2.5ML/Cont",26,"2026-07",0,0,0],
-      ["MEBAGEN 200 mg/ml/tablet Extended Release Ta",26,"2026-07",0,0,0],
-      ["PROTON Gastro-resistant coated tablet 40MG/1",26,"2026-01",0,0,0],
-      ["SURECURE Gel 0.1%/1APPLY, 30GM/Tube",26,"2026-06",0,0,0],
-      ["KLAVOX SUSPENTION 156MG/5ML, 100ML/Bottle",26,"2026-11",33,15,27],
-      ["TIOTROPIUM EVA 18 mcg/capsule, 30 CAPSULE/BO",25,"2026-02",0,0,0],
-      ["SALINOSE PLUS NASAL SPRAY 0.9ML/1Spray, 20ML",25,"2026-08",0,0,0],
-      ["CLAVODAR Tablet 625MG/1Tablet, 20Tablet/Box",25,"2026-01",0,0,0],
-      ["VENTOLIN EVOHALER SPRAY 100MG/1Applicator, 2",25,"2026-11",0,0,0],
-      ["NAFEES PHARMA ROYA-GIN Tablet, 30 TABLET/BOX",25,"2026-12",0,0,0],
-      ["MERIONAL HG 75 iu/ampoule Injection, 1 AMPOU",24,"2026-06",0,0,0],
-      ["SORTIVA H Tablet 50/12.5MG/1Tablet, 28Tablet",24,"2026-01",0,1,0],
-      ["AZIMAC Film coated tablet 250MG/1Tablet, 6Ta",24,"2026-11",5,0,0],
-      ["RYBELSUS 7 mg/tablet, 30 TABLET/BOX",23,"2026-06",2,1,3],
-      ["MELATONIN Tablet 3MG/1Tablet, 100Tablet/Box",23,"2026-11",1,4,0],
-      ["NAFEES PHARMA BIOTIN Tablet, 60 TABLET/BOX",23,"2026-09",0,1,0],
-      ["MARLON 20 mg/tablet, 30 TABLET/BOX",22,"2026-02",0,0,1],
-      ["DOXIDA-M sachet, 30 SACHET/BOX",22,"2026-10",11,15,14],
-      ["VIOTOPIC Ointment 0.3%/1APPLY, 30GM/Tube'",22,"2026-05",2,17,19],
-      ["FOSTIMON Powder for injection 75IU/1ML, 1Via",22,"2026-02",0,0,0],
-      ["ZINCOVIT drop, 60 ML/CONTAINER",22,"2026-11",14,14,9],
-      ["ATROSOL 250 mg/mcg/2 ml Ampoule, 2 oral solu",21,"2026-08",0,0,0],
-      ["MOUNJARO 7.5 mg/ml Ampoule, 4 AMPOULE/BOX",20,"2026-10",3,3,4],
-      ["AROX 0.5 %/drop, 5 ML/CONTAINER",20,"2026-12",2,0,0],
-      ["OYSTERCAL Tablet 500MG/1Tablet, 60Tablet/Box",20,"2026-01",0,0,0],
-      ["ROYAL HONEY  Sachets, 15 GM/SACHET",20,"2026-10",0,0,0],
-      ["LAXOCODYL 10 mg/suppository, 10 SUPPOSITORY/",20,"2026-06",0,0,0],
-      ["LOVRAK 200MG/5ML/100ML SYRUP 200MG/5ML, 100M",19,"2026-10",0,0,0],
-      ["TACROZ 0.03 %/apply Ointment , 10 GM/TUBE",19,"2026-09",0,1,1],
-      ["RECTACURE 2% /apply Cream, 30 GM/TUBE",19,"2026-01",44,43,7],
-      ["BEFOLVIT 5 mg/tablet, 30 TABLET/BOX",19,"2026-06",11,9,14],
-      ["FENSOLIN 10 mg/tablet, 30 TABLET/BOX",18,"2026-08",0,1,0],
-      ["JULEEN 100 mg/tablet, 30 TABLET/BOX",18,"2026-11",0,1,1],
-      ["CORTRIEF 1 mg/applicator Nasal Spray, APPLIC",18,"2026-06",5,0,0],
-      ["PROHAIR 1 mg/tablet, 30 TABLET/BOX",18,"2026-11",0,0,0],
-      ["AVALON AVOGAIN 5% SPRAY offer (2+1)  50 ML/A",18,"2026-11",0,0,0],
-      ["NERVAN 500 mg/tablet, 30 TABLET/BOX",18,"2026-10",5,2,2],
-      ["VITALIFE Soft Gel Cap /1Capsule, 30Capsule/B",18,"2026-04",3,5,3],
-      ["DONIFOXATE 80 mg/tablet, 30 TABLET/BOX",18,"2026-02",0,0,1],
-      ["ZYPREXA Tablet 5MG/1Tablet, 28Tablet/Box",17,"2026-06",0,0,1],
-      ["ORATANE 10 mg/capsule, 30 CAPSULE/BOX",17,"2026-12",0,0,0],
-      ["LOCASONE Cream 0.1%/1APPLY, 100GM/Tube",17,"2026-09",0,1,4],
-      ["FORCAPIL Capsule, 180 CAPSULE/BOX",16,"2026-10",13,25,18],
-      ["DEBILUR 40 mg/tablet, 30 TABLET/BOX",16,"2026-11",0,0,0],
-      ["DEBILUR 80 mg/tablet, 30 TABLET/BOX",16,"2026-03",0,0,0],
-      ["ARAVA TABLET 20MG/1Tablet, 30Tablet/BOX",16,"2026-11",2,4,2],
-      ["THIOTACID 600 mg/tablet, 30 TABLET/BOX",16,"2026-12",4,10,4],
-      ["AMLOVAN-HCT 10/320/25 mg/tablet, 28 TABLET/B",16,"2026-08",0,0,0],
-      ["CONTRACTUBEX 1 %/apply Gel, 50 GM/TUBE",16,"2026-10",9,17,6],
-      ["VIGAMOX Eye drops 0.5MG/1Drop, 5ML/Container",16,"2026-09",70,56,54],
-      ["DOXIDA-F sachet, 30 SACHET/BOX",15,"2026-11",17,19,39],
-      ["MEGATOP SYRUP /1ML, 125ML/BOTTLE",15,"2026-11",0,0,1],
-      ["DECONE sachet, 20 SACHET/BOX",15,"2026-11",0,0,0],
-      ["AMLOVAN-HCT 5/160/12.5 mg/tablet, 28 TABLET/",15,"2026-03",0,0,0],
-      ["CLARIXIN Tablet 500MG/1Tablet, 14Tablet/Box",15,"2026-11",22,35,40],
-      ["DEBILUR 20 mg/tablet, 30 TABLET/BOX",14,"2026-10",0,0,0],
-      ["DUODART Capsule 0.5/0.4MG/1Capsule, 30Capsul",14,"2026-11",1,0,0],
-      ["PULMICORT 0.5 mg/ml Ampoule, 20 AMPOULE/BOX",14,"2026-09",237,146,124],
-      ["INHIXA 20 mg/syringe Injection, 1 SYRINGE/BO",14,"2026-06",0,0,0],
-      ["ADAZIO 25 mg/tablet, (new price )30 TABLET/B",14,"2026-06",1,1,2],
-      ["FENSOLIN 5 mg/tablet, 30 TABLET/BOX",14,"2026-10",6,8,9],
-      ["EPIFASI Injection 5000IU/1Vial, 1Vial/Box",13,"2026-06",20,30,4],
-      ["FORTIFERRUM sachet Powder, 14 SACHET/BOX",13,"2026-11",8,11,5],
-      ["LAVISTINA 24 mg/tablet, 50 TABLET/BOX",13,"2026-12",1,0,0],
-      ["DEXTROSE 10% 1 mg/ml Solution, 500 ML/BOTTLE",13,"2026-06",0,0,0],
-      ["AVALON AVOCOM Ointment 0.1%/1APPLY, 30GM/Tub",13,"2026-08",0,0,0],
-      ["FEXODINE 120 mg/tablet, 14 TABLET/BOX",13,"2026-09",7,2,11],
-      ["OZEMPIC 0.5 mg/ml Ampoule, 4 AMPOULE/BOX",12,"2026-08",0,0,1],
-      ["BONOLIGHT (CARTIBON) SACHETS /1SACHET, 30SAC",12,"2026-10",0,0,0],
-      ["ZOLONIA 10 mg/tablet, 28 TABLET/BOX",12,"2026-01",0,1,0],
-      ["PHYSIOTHERM ARKO NASAL SPRAY 9MG/1Spray, 100",12,"2026-01",0,0,0],
-      ["DAKTARIN 2 %/apply Cream, 30 GM/TUBE",12,"2026-08",8,8,4],
-      ["VITA ROYAL 1000 MG 30 CAPS",11,"2026-07",0,0,0],
-      ["SERETIDE DISKUS 250MG Inhalation powder /1In",11,"2026-06",0,0,0],
-      ["PASSIFLORE ARKO Capsule 1MG/1Capsule, 45Caps",11,"2026-01",0,0,0],
-      ["FUSIBACT-B Cream 2/0.1%/1APPLY, 15GM/Tube",11,"2026-08",55,65,54],
-      ["MAXEVA 400 mg/tablet, 10 TABLET/BOX",11,"2026-02",21,0,36],
-      ["AVALON AVOBAN 2 %/apply Ointment , 30 GM/TUB",11,"2026-07",13,9,18],
-      ["REFLEX MASSAGE Emulgel, 100 ML/TUBE",11,"2026-08",125,168,112],
-      ["ROXIL Capsule 500MG/1Capsule, 20Capsule/Box",11,"2026-09",0,0,11],
-      ["PRIMA VIT D Capsule 50000MG/1Capsule, 30Caps",10,"2026-10",0,0,0],
-      ["ACTI-COLLA sachet, 30 SACHET/BOX",10,"2026-12",0,0,0],
-      ["FEMIC 500 mg/tablet, 60 TABLET/BOX",10,"2026-10",19,32,19],
-      ["LUSAM 10MG/ML 200M/BOTTLE SYP",10,"2026-10",0,0,0],
-      ["ZOVIRAX 200 mg/tablet, 25 TABLET/BOX",10,"2026-07",1,0,0],
-      ["ASTATIN Film coated tablet 40MG/1Tablet, 30T",10,"2026-12",0,0,0],
-      ["ZINNAT SUSPENTION 125MG/5ML, 70ML/Bottle",10,"2026-09",0,0,0],
-      ["COMBIWAVE 25/125 mg/inhaler Inhalation Spray",10,"2026-11",0,0,0],
-      ["OSTEOCARE Syrup 100MG/1ML, 200ML/Bottle",10,"2026-09",9,9,8],
-      ["FUSIBACT Ointment 2%/1APPLY, 15GM/Tube",10,"2026-10",22,21,50],
-      ["MOUNJARO 5 mg/ml Ampoule, 4 AMPOULE/BOX",9,"2026-10",3,3,6],
-      ["LUSAM 200 mg/tablet, 56 TABLET/BOX",9,"2026-03",0,0,0],
-      ["MEGAROY Capsule, 30 CAPSULE/BOX",9,"2026-09",0,3,0],
-      ["OPTIMUM OMEGA-3 1000 mg/capsule, 30 CAPSULE/",9,"2026-11",0,0,0],
-      ["EVERT Capsule, 30 CAPSULE/BOX",9,"2026-12",0,3,3],
-      ["CEFAJECT 1000 mg IV /vial Powder For Injecti",9,"2026-10",0,0,0],
-      ["EULAX sachet Powder For Oral Soln, 30 SACHET",9,"2026-09",28,6,2],
-      ["ZYMAXID Eye drops 0.5MG/1Drop, 2.5ML/Contain",9,"2026-06",0,0,0],
-      ["JP SAFFRON 28 mg/capsule, 30 CAPSULE/BOTTLE",9,"2026-09",0,0,0],
-      ["XIGDUO XR 5/1000 mg/tablet, 56 TABLET/BOX",9,"2026-12",1,3,2],
-      ["HYFRESH EYE GEL drop, 30 ML/BOTTEL",9,"2026-06",132,169,93],
-      ["EUTHYROX Tablet 150MG/1Tablet, 100Tablet/Box",9,"2026-06",5,9,5],
-      ["CO-TABUVAN Tablet 80/12.5MG/1Tablet, 30Table",9,"2026-08",0,0,0],
-      ["ARKOCAPS CALCOS 500 mg/tablet, 60 TABLET/BOX",9,"2026-11",5,13,11],
-      ["VEDOXIN 500 mg/tablet, 5 TABLET/BOX",9,"2026-10",175,144,66],
-      ["CEFODOX Film coated tablet 200MG/1Tablet, 14",9,"2026-07",0,0,0],
-      ["SANOVIT IRON ml Syrup, 320 ML/BOTTLE",9,"2026-12",0,0,0],
-      ["NEO HEALAR Ointment /1APPLY, 30GM/Tube",9,"2026-10",4,13,15],
-      ["SEROXAT CR 12.5 MG 30Tablet/Box",9,"2026-09",0,1,0],
-      ["XEVANEER 125 mg/5 ml Suspention, 40 ML/BOTTL",9,"2026-01",1,0,1],
-      ["VAVO SHAMPOO 2%/1Container, 1Container/Conta",9,"2026-12",0,0,0],
-      ["LOGYNON Tablet /1Tablet, 21Tablet/Box",9,"2026-11",1,1,2],
-      ["AMOVAC enema Solution, 120 ML/CONTAINER",9,"2026-08",0,1,0],
-      ["AVALON AVOQUIN Cream 1.9%/1Container, 50GM/C",9,"2026-06",0,0,0],
-      ["ROSALUS 20 mg/tablet, 28 TABLET/BOX",9,"2026-11",9,6,9],
-      ["SPIRIVA INHALATION SPRAY 18MG/1Inhaler, 30In",8,"2026-10",0,0,0],
-      ["QUERSA Capsule, 60 CAPSULE/BOTTLE",8,"2026-10",8,11,3],
-      ["ROYAL JELLY 1000 mg/capsule, 30 CAPSULE/BOX",8,"2026-10",1,0,0],
-      ["MONTEL Chewable tablet 5MG/1Tablet, 28Tablet",8,"2026-03",0,0,1],
-      ["AVODART Capsule 0.5MG/1Capsule, 30Capsule/Bo",8,"2026-08",3,3,2],
-      ["EYMID 1% drop, 10 ML/CONTAINER",8,"2026-05",0,0,0],
-      ["COSOPT Eye drops 2/0.5%/1Drop, 5ML/Container",8,"2026-11",0,0,0],
-      ["HEALCARE 100 mg/g Lotion, 180 ML/CONTAINER",8,"2026-10",0,0,0],
-      ["BEESLINE HAJJ KIT Ointment-shampo-soap /1Con",8,"2026-02",0,0,0],
-      ["IPRAMAX Film coated tablet 25MG/1Tablet, 60T",8,"2026-12",0,0,0],
-      ["NEO HEALAR Suppository /1Suppository, 10Supp",8,"2026-08",0,0,0],
-      ["NEORIN Syrup 0.5MG/1ML, 150ML/Bottle",8,"2026-06",257,149,71],
-      ["PROLAX Capsule 15MG/1Capsule, 30Capsule/Box",8,"2026-10",12,12,18],
-      ["FLAZOL Syrup 125MG/5ML, 120ML/Bottle",8,"2026-07",78,20,44],
-      ["BANORIV 2.5 mg/tablet, 60 TABLET/BOX",7,"2026-12",0,0,0],
-      ["FORCAPIL TOPICAL SPRAY",7,"2026-09",1,7,3],
-      ["BUFOMIX 1 mg/inhaler Inhalation Spray, INHAL",7,"2026-11",1,5,2],
-      ["ENTEROGERMINA ORAL VIAL 2billionMG/1Ampoule,",7,"2026-09",0,0,0],
-      ["FAVERIN Tablet 50MG/1Tablet, 60Tablet/Box",7,"2026-10",7,8,1],
-      ["AMLOVAN-HCT 10/160/12.5 mg/tablet, 28 TABLET",7,"2026-05",0,0,0],
-      ["RELPAX 40 mg/tablet, 3 TABLET/BOX",7,"2026-12",0,0,0],
-      ["ASTATIN Film coated tablet 10MG/1Tablet, 30T",7,"2026-07",0,0,0],
-      ["DENACIF 300 mg/capsule, 10 CAPSULE",7,"2026-07",19,4,1],
-      ["ZINNAT SUSPENTION 250MG/5ML, 50ML/Bottle",7,"2026-10",0,1,0],
-      ["VAGINECALM GEL CALM tube Gel, 50 ML/TUBE",7,"2026-12",1,0,3],
-      ["JP VITAMIN D3 1000 iu/capsule Soft Gel Cap, ",7,"2026-12",0,0,0],
-      ["PYRALVEX Solution 1%/1ML, 10ML/Bottle",7,"2026-12",0,0,0],
-      ["CEFIM Capsule 400MG/1Capsule, 6Capsule/Box",7,"2026-07",46,37,126],
-      ["A-LAX Tablet 20MG/1Tablet, 30Tablet/Box",7,"2026-12",0,0,0],
-      ["RIACHOL Ointment 1%/1APPLY, 5GM/Tube",7,"2026-11",0,0,0],
-      ["SORTIVA-H Tablet 100/12.5MG/1Tablet, 30Table",7,"2026-12",1,0,1],
-      ["GLOMOX Capsule 500MG/1Capsule, 20Capsule/Box",7,"2026-10",0,0,0],
-      ["FLUSORT 0.05 % Nasal Spray, APPLICATOR",7,"2026-08",0,0,0],
-      ["GARDASIL 9 0.5 ml Injection, 1 SYRINGE/BOX",6,"2026-09",0,0,0],
-      ["VAROXA 20 mg/tablet, 30 TABLET/BOX",6,"2026-09",2,2,0],
-      ["HEROX Tablet 20MG/1Tablet, 4Tablet/Box",6,"2026-02",0,0,0],
-      ["KIDS GUMMY OMEGA+DHA tablet, 60 TABLET/BOX",6,"2026-10",0,0,0],
-      ["AZARGA Eye drops 10MG/1Drop, 5ML/Container",6,"2026-07",0,0,0],
-      ["VANCOLON 1 gm/ml Vials, VIAL",6,"2026-06",0,0,0],
-      ["MELIGAMET 50 mg / 1000 mg/tablet, 60 TABLET/",6,"2026-06",0,1,2],
-      ["JALRA M Tablet 50/1000MG/1Tablet, 60Tablet/B",6,"2026-08",18,20,20],
-      ["AVALON POVIDONE ANTISEPTIC Solution 10%/1ML,",6,"2026-02",0,0,0],
-      ["DIVINUS 10 mg/tablet, 30 TABLET/BOX",6,"2026-12",19,14,22],
-      ["SELECTA PLUS Film coated tablet 5/12.5MG/1Ta",6,"2026-07",0,0,0],
-      ["LIPANTHYL Capsule 200MG/1Capsule, 30Capsule/",6,"2026-09",9,18,7],
-      ["VAGINECALM ANTIAGING tube Gel, 50 ML/TUBE",6,"2026-12",2,3,0],
-      ["MUCOSOLVAN Fort 6 mg/ml Syrup, 250 ML/BOTTLE",6,"2026-10",145,119,183],
-      ["ACRETIN C GEL 30 GM/TUBE",6,"2026-07",2,1,19],
-      ["CEFUTIL Film coated tablet 500MG/1Tablet, 10",6,"2026-12",0,0,0],
-      ["CARTIMOV 50 mg/capsule, 20 CAPSULE/BOX",6,"2026-09",44,35,95],
-      ["EREVARD 20 mg/tablet, 4 TABLET/BOX",6,"2026-05",0,0,0],
-      ["DESTAMIN 5 mg/tablet, 20 TABLET/BOX",6,"2026-09",25,119,166],
-      ["ELIQUIS 2.5 mg/tablet, 60 TABLET/BOX",5,"2026-10",0,0,0],
-      ["PENTAXIM 0.5 ml Injection, .5 ML/VIAL",5,"2026-12",0,0,0],
-      ["VIMPAT 2 %/ml Syrup, 200 ML/BOTTLE",5,"2026-10",0,0,0],
-      ["RYBELSUS 3 mg/tablet, 30 TABLET/BOX",5,"2026-10",1,1,6],
-      ["URILAX Tablet 10MG/1Tablet, 30Tablet/Box",5,"2026-12",0,0,1],
-      ["ACTRAPID Solution for injection 100IU/1ML, 1",5,"2026-06",0,0,0],
-      ["ECTOLLERG Eye drops 0.4MG/1Drop, 3ML/Contain",5,"2026-12",0,0,0],
-      ["LAXATROL 50/8.6 mg/tablet, 100 TABLET/BOX",5,"2026-12",9,18,11],
-      ["LINTRA 5 mg/tablet, 30 TABLET/BOX",5,"2026-03",23,20,30],
-      ["JANUMET Tablet 50/850MG/1Tablet, 56Tablet/Bo",5,"2026-04",4,13,9],
-      ["ENTAPRO Film coated tablet 20MG/1Tablet, 30T",5,"2026-07",0,0,0],
-      ["GLIPTAMET Tablet 50/850MG/1Tablet, 56Tablet/",5,"2026-01",22,29,49],
-      ["PRISTIQ Extended release tab 50MG/1Tablet, 3",5,"2026-08",0,0,0],
-      ["ARTELAC ADV Eye drops 2%/1Drop, 0.4ML/Contai",5,"2026-11",11,0,1],
-      ["AVALON FOOT Cream /1APPLY, 90GM/Tube",5,"2026-08",0,0,1],
-      ["KLENDAM 300 mg/capsule, 16 CAPSULE/BOX",5,"2026-07",0,1,0],
-      ["ACRETIN Cream 0.05%/1APPLY, 30GM/Tube",5,"2026-08",0,0,6],
-      ["FENISTIL Oral drops 1MG/1Drop, 20ML/Containe",5,"2026-09",73,2,0],
-      ["AVOMEB EXTRA OINTMENT 15 GM",5,"2026-12",45,33,29],
-      ["LODIAB XR 1000 mg/tablet, 30 TABLET/BOX",5,"2026-08",0,0,0],
-      ["PANADREX Syrup 120MG/5ML, 120ML/Bottle",5,"2026-06",0,0,0],
-      ["ZOVIRAX Tablet 400MG/1Tablet, 70Tablet/Box",4,"2026-09",1,1,1],
-      ["NUTRAQUINOL 100 mg/capsule Soft Gel Cap, 30 ",4,"2026-02",0,0,0],
-      ["JARDIANCE Coated tablet 25MG/1Tablet, 30Tabl",4,"2026-08",25,8,16],
-      ["URI-PLUS capsule, 30 capsule/BOX",4,"2026-11",0,0,0],
-      ["OUTRIGHT Capsule, 30 CAPSULE/BOX",4,"2026-11",1,3,6],
-      ["MELIGLPTIN 100 mg/tablet, 30 TABLET/BOX",4,"2026-06",2,2,0],
-      ["BIOGAIA oral drops 100MILLION/1Drop, 5ML/Con",4,"2026-10",0,0,0],
-      ["IPRAMAX Film coated tablet 100MG/1Tablet, 60",4,"2026-10",0,0,0],
-      ["PEPTAZOL 30 mg/capsule, 28 CAPSULE/BOX",4,"2026-02",2,16,22],
-      ["ATACAND Tablet 8MG/1Tablet, 28Tablet/Box",4,"2026-09",0,0,0],
-      ["HAEMOVIT Tablet, 30 TABLET/BOX",4,"2026-07",0,2,1],
-      ["DEPAKINE Tablet 500MG/1Tablet, 30Tablet/Box",4,"2026-08",1,0,0],
-      ["SEROXAT Tablet 20MG/1Tablet, 30Tablet/Box",4,"2026-10",4,3,7],
-      ["SCAR PRO apply Gel, 6 GM/TUBE",4,"2026-07",0,0,0],
-      ["QUEEN JELLY ROYAL NIGELLA Capsule, 30 CAPSUL",4,"2026-09",0,0,0],
-      ["LAMIRA 50 mg/tablet, 30 TABLET/BOX",4,"2026-01",3,4,2],
-      ["ARENA Tablet 150MG/1Tablet, 30Tablet/Box",4,"2026-11",0,2,3],
-      ["LODIPAM 10 mg/tablet, 30 TABLET/BOX",4,"2026-10",1,0,1],
-      ["EMANERA 20 mg/capsule, 28 CAPSULE/BOX",4,"2026-10",4,21,21],
-      ["SEFARIX 300 mg/capsule, 10 CAPSULE/BOX",4,"2026-10",7,0,0],
-      ["AQUAFLAM 50 mg/sachet, 12 SACHET/BOX",4,"2026-08",0,0,0],
-      ["DERMO Ointment /1APPLY, 30GM/Tube",4,"2026-09",51,70,83],
-      ["ESIDREX Tablet 25MG/1Tablet, 20Tablet/Box",4,"2026-09",1,0,0],
-      ["LOXOL 25 mg/tablet, 30 TABLET/BOX",4,"2026-09",0,0,0],
-      ["DERMOVATE topical solution 0.05%/1Applicator",4,"2026-09",0,0,0],
-      ["BENZAFLEX 5 mg/tablet, 30 TABLET/BOX",4,"2026-01",73,34,52],
-      ["RESPRED SYRUP 5MG/5ML, 120ML/BOTTLE",4,"2026-08",141,99,0],
-      ["ACETAB 25 mg/tablet, 30 TABLET/BOX",4,"2026-03",0,0,0],
-      ["CALSYR  Syrup, 100 ML/BOTTLE",4,"2026-08",0,0,0],
-      ["CONCOR PLUS Film coated tablet 5MG/1Tablet, ",4,"2026-09",0,0,0],
-      ["EMOLIA apply Cream, 100 GM/TUBE",4,"2026-09",2,8,0],
-      ["FIXIT 150 mg/capsule, 14 CAPSULE/BOX",4,"2026-12",20,2,3],
-      ["DICETEL Tablet 50MG/1Tablet, 20Tablet/Box",4,"2026-12",1,2,3],
-      ["ADOL SINUS Tablet /1Capsule, 20Tablet/Box",4,"2026-10",1,2,0],
-      ["VIDROP drops 2800IU/1Drop, 15ML/Container",4,"2026-10",66,58,71],
-      ["BLUM-D 50000 iu/tablet, 20 TABLET/BOX",4,"2026-06",0,0,0],
-      ["LINAJENT 5 mg/tablet, 30 TABLET/BOX",4,"2026-06",2,4,1],
-      ["SABRIL 500 mg/tablet, 100 TABLET/BOX",3,"2026-11",0,0,0],
-      ["RELVAR ELLIPTA inhalation powder 100/25MCG/1",3,"2026-10",0,0,0],
-      ["KEPPRA 1000 mg/tablet, 30 TABLET/BOX",3,"2026-08",2,1,1],
-      ["FOSTIMON Powder for injection 150MG/1Vial, 1",3,"2026-11",0,0,0],
-      ["BETMIGA 50 mg/tablet, 30 TABLET/BOX",3,"2026-06",2,1,5],
-      ["LAZURE 50 mg/tablet, 60 TABLET/BOX",3,"2026-10",0,2,1],
-      ["OMEGA MIND 1200 mg/5 ml Syrup, 100 ML/BOTTLE",3,"2026-11",0,1,0],
-      ["ELIDEL Cream 1%/1APPLY, 30GM/Tube",3,"2026-12",26,13,21],
-      ["VULGA XR Tablet 105MG/1Tablet, 30TABLET/BOX",3,"2026-10",13,8,6],
-      ["EXFORGE HCT Tablet 5/160/25MG/1Tablet, 28Tab",3,"2026-06",0,0,0],
-      ["ADACEL 0.5 ml Solution For Injection , 1 VIA",3,"2026-06",0,0,0],
-      ["DAMESTA 20 mg/tablet, 30 TABLET/BOX",3,"2026-08",0,0,3],
-      ["DIGESTCARE ml Syrup, 125 ML/BOTTLE",3,"2026-11",2,0,0],
-      ["OMEGA 3 FORT Capsule, 60 CAPSULE/BOX",3,"2026-11",1,2,1],
-      ["OXYBUPROCAINE 0.4% EYE MINMS(PINOX) D Eye dr",3,"2026-11",0,0,0],
-      ["GLUCAJONE 1000 mg/sachet, 30 SACHET/BOX",3,"2026-09",11,26,9],
-      ["HEMAGEL Gel /1APPLY, 30GM/Tube",3,"2026-10",0,2,4],
-      ["LAMIRA 100 mg/tablet, 30 TABLET/BOX",3,"2026-01",7,9,9],
-      ["SEVIKAR HCT Tablet 40/5/25MG/1Tablet, 28Tabl",3,"2026-09",0,0,0],
-      ["SILOMES 100 mg/tablet, 30 TABLET/BOX",3,"2026-07",4,0,0],
-      ["FOSTER NEXThaler 100 mcg/applicator Inhalati",3,"2026-10",0,0,0],
-      ["SIMVA Film coated tablet 20MG/1Tablet, 30Tab",3,"2026-08",0,0,1],
-      ["DOMINE 40 mg/ml ampoule Injection, 5 AMPOULE",3,"2026-11",0,0,0],
-      ["OLMETEC Tablet 20MG/1Tablet, 28Tablet/Box",3,"2026-08",26,21,20],
-      ["MIRZAGEN Tablet 15MG/1Tablet, 30Tablet/Box",3,"2026-10",4,8,4],
-      ["BIOSOFT PLUS drop, 10 ML/CONTAINER",3,"2026-06",11,16,17],
-      ["TENORYL 10 mg/tablet, 30 TABLET/BOX",3,"2026-07",1,1,0],
-      ["LASIX Tablet 40MG/1Tablet, 20Tablet/Box",3,"2026-09",5,6,10],
-      ["BILAXTEN Tablet 20MG/1Tablet, 20Tablet/Box",3,"2026-10",2,0,1],
-      ["ALDACTONE Tablet 100MG/1Tablet, 10Tablet/Box",3,"2026-09",0,0,1],
-      ["ERECTA Tablet 50MG/1Tablet, 4Tablet/Box",3,"2026-11",0,0,0],
-      ["ROSALUS 10 mg/tablet, 28 TABLET/BOX",3,"2026-12",4,7,9],
-      ["DESLOR 5 mg/tablet, 20 TABLET/BOX",3,"2026-11",262,232,153],
-      ["C-LACT Solution /1ML, 220ML/Container",3,"2026-12",6,5,0],
-      ["DENACIF 125 mg/5 ml Suspention, 50 ML/BOTTLE",3,"2026-10",14,16,22],
-      ["EPICURE PLUS Ointment /1APPLY, 30ML/Tube",3,"2026-06",2,3,2],
-      ["LODIAB XR 750 mg/tablet, 60 TABLET/BOX",3,"2026-07",0,0,1],
-      ["AVOCOM-M Cream 0.1/2%/1APPLY, 50GM/Tube",3,"2026-12",40,72,35],
-      ["GYNERA Tablet /1Tablet, 21Tablet/Box",3,"2026-07",1,3,1],
-      ["ELICA-M Cream 0.1/2%/1APPLY, 30GM/Tube",3,"2026-09",72,84,86],
-      ["PROTON 40 mg/tablet, 14 TABLET/BOX",3,"2026-01",12,25,26],
-      ["TORICOX 120 mg/tablet, 10 TABLET/BOX",3,"2026-10",1,0,2],
-      ["OFLAM 50 mg/sachet, 10 SACHET/BOX",3,"2026-03",17,2,0],
-      ["MAXITROL Eye drops /1Drop, 5ML/Container",3,"2026-12",0,0,0],
-      ["OXIRA 8 mg/tablet, 20 TABLET/BOX",3,"2026-11",8,4,11],
-      ["DAONIL-M Tablet 5/500MG/1Tablet, 30Tablet/Bo",3,"2026-05",0,0,1],
-      ["AZI-ONCE SUSPENTION 200MG/5ML, 15ML/Bottle",3,"2026-12",23,18,16],
-      ["CEBO 200 mg/capsule, 20 CAPSULE/BOX",3,"2026-12",0,0,0],
-      ["RINOFED PLUS Tablet /1Tablet, 30Tablet/Box",3,"2026-01",0,0,0],
-      ["ALFACORT Cream 0.1%/1APPLY, 15GM/Tube",3,"2026-12",12,16,11],
-      ["RIAXINE Syrup 0.8MG/1ML, 100ML/Bottle",3,"2026-10",0,3,2],
-      ["JUVAMOX Capsule 500MG/1Capsule, 20Capsule/Bo",3,"2026-09",0,1,0],
-      ["LOHIST Tablet 10MG/1Tablet, 10Tablet/Box",3,"2026-12",0,0,0],
-      ["ISOLONE 20 mg/tablet, 20 Effervescent Tablet",3,"2026-01",31,40,31],
-      ["MYFORTIC 360 mg/tablet, 120 TABLET/BOX",2,"2026-10",0,0,0],
-      ["OZEMPIC 0.25 mg/ml Ampoule, 4 AMPOULE/BOX",2,"2026-11",0,3,3],
-      ["GONAL-F Injection 300IU/1pen, 0.5ML/Pen",2,"2026-11",1,0,0],
-      ["GONAL-F Injection 450IU/1pen, 1ML/Pen",2,"2026-09",0,2,0],
-      ["RYBELSUS 14 mg/tablet, 30 TABLET/BOX",2,"2026-06",0,1,1],
-      ["MENACTRA VACCIN Solution for injection 4MCG/",2,"2026-05",0,0,0],
-      ["LANTUS SOLOSTAR 100 iu/ml Solution For Injec",2,"2026-12",0,0,0],
-      ["HUMALOG KWIK PEN Injection 50/50 IU/1ML, 15M",2,"2026-06",0,0,0],
-      ["DAIVOBET apply Ointment , 60 GM/TUBE",2,"2026-10",0,2,0],
-      ["OLENZA TABLET 15MG/1Tablet, 30Tablet/BOX",2,"2026-12",6,5,11],
-      ["G1000 3 gm/sachet, 30 SACHET/BOX",2,"2026-11",1,2,0],
-      ["JP MACA 500 mg/capsule, 50 CAPSULE/BOTTLE",2,"2026-10",0,0,0],
-      ["CONESTAL 2 mg/tablet, 28 TABLET/BOX",2,"2026-11",4,8,18],
-      ["CONCERTA 18 mg/tablet Extended Release Tab, ",2,"2026-12",0,0,0],
-      ["NEXIUM 10 mg/sachet Granules for oral susp, ",2,"2026-12",0,0,0],
-      ["AUGMENTIN Tablet 1000MG/1Tablet, 14Tablet/Bo",2,"2026-12",4,10,24],
-      ["ATACAND PLUS Tablet 16 /12.5MG/1Tablet, 28Ta",2,"2026-08",0,0,0],
-      ["CLENIL FORTE INHALATION SPRAY 250MG/1Inhaler",2,"2026-12",0,0,0],
-      ["CYANOSEPT 6 tube Vaginal Gel, 6 TUBE/BOX",2,"2026-10",0,8,11],
-      ["NEMR ROYAL 1000 mg/capsule, 30 CAPSULE/BOX",2,"2026-07",0,0,0],
-      ["ASACOL Film coated tablet 400MG/1Tablet, 50T",2,"2026-07",0,0,0],
-      ["KOZAMOD 5 % Cream, 12 sachet/box",2,"2026-08",3,6,3],
-      ["SEVIKAR HCT Tablet 40/10/25MG/1Tablet, 28Tab",2,"2026-09",0,0,0],
-      ["TRAJENTA Coated tablet 5MG/1Tablet, 30Tablet",2,"2026-11",7,10,8],
-      ["BEPANTHENE 5 %/apply Cream, 100 GM/TUBE",2,"2026-06",3,3,0],
-      ["ARYZALERA 15 mg/tablet, 30 TABLET/BOX",2,"2026-08",0,0,0],
-      ["ZOLINDA Tablet 5MG/1Tablet, 30TABLET/BOX",2,"2026-11",1,2,8],
-      ["OSTEOFLEX Tablet, 60 TABLET/BOX",2,"2026-06",3,7,0],
-      ["GLIPTAMET Tablet 50/1000MG/1Tablet, 56Tablet",2,"2026-08",49,55,54],
-      ["NUVA RING VAGINAL RING 0.120/0.01MG/1Ring, 1",2,"2026-09",0,0,0],
-      ["SEROXAT CR Tablet 25MG/1Tablet, 30Tablet/Box",2,"2026-09",0,2,3],
-      ["SIMVA Film coated tablet 10MG/1Tablet, 30Tab",2,"2026-08",0,1,0],
-      ["CREVAST 10 mg/tablet, 30 TABLET/BOX",2,"2026-03",0,0,2],
-      ["EXETORA 20 mg/4 ml Injection, 5 AMPOULE/BOX",2,"2026-04",0,0,0],
-      ["VULGA TABLET 55MG/1Tablet, 30TABLET/BOX",2,"2026-11",10,9,15],
-      ["URAGO 40 mg/tablet, 30 TABLET/BOX",2,"2026-08",33,31,51],
-      ["MIGROTAN 40 mg/tablet, 4 TABLET/BOX",2,"2026-09",5,7,0],
-      ["HAIR GROW topical spray 5%/1Applicator, 1App",2,"2026-01",0,0,0],
-      ["LISINO 20 mg/tablet, 30 TABLET/BOX",2,"2026-02",0,0,0],
-      ["EVENING PRIMROSE OIL Capsule /1CAPSULE, 30CA",2,"2026-10",0,0,0],
-      ["TEARS NATURALE FREE Eye drops 1MG/1Drop, 0.4",2,"2026-09",0,0,0],
-      ["DIOVAN Tablet 160MG/1Tablet, 28Tablet/Box",2,"2026-10",8,9,9],
-      ["HI-QUIN Cream 2%/1APPLY, 30GM/Tube",2,"2026-07",2,2,2],
-      ["YOCAIR 10 mg/tablet, 30 TABLET/BOX",2,"2026-11",24,26,34],
-      ["JALRA 50 mg/tablet, 28 TABLET/BOX",2,"2026-10",0,1,0],
-      ["VIZOL  0.21 %/drop, 10 ML/CONTAINER",2,"2026-10",5,0,0],
-      ["TEGRETOL CR Tablet 400MG/1Tablet, 30Tablet/B",2,"2026-10",2,2,0],
-      ["FEMADINE 10 %/ml Vaginal Wash, 200 ML/CONTAI",2,"2026-07",0,0,0],
-      ["NAFEES PHARMA NEUROBIT-B12 (1000 mcg/tablet)",2,"2026-09",0,0,0],
-      ["CONCOR Tablet 10MG/1Tablet, 30Tablet/Box",2,"2026-08",0,3,2],
-      ["NUTRO GUARD MASSAGE GEL /1APPLY, 100GM/Tube",2,"2026-12",0,0,0],
-      ["VOLTIC 75 mg/ampoule Injection, 5 AMPOULE/BO",2,"2026-11",2,2,2],
-      ["EMOLIA apply Cream, 200 GM/TUBE",2,"2026-11",3,3,2],
-      ["CONCOR Tablet 5MG/1Tablet, 30Tablet/Box",2,"2026-10",42,27,32],
-      ["TILAX Tablet 2MG/1Tablet, 30Tablet/Box",2,"2026-12",86,57,77],
-      ["AVALON ACTIVE 1 %/apply Cream, 100 GM/TUBE",2,"2026-12",0,0,0],
-      ["LORVAST Film coated tablet 20MG/1Tablet, 30T",2,"2026-10",0,0,0],
-      ["AGIOLAX POWDER /1SPOON, 250GM/Container",2,"2026-09",46,77,92],
-      ["SPASMOLYTE Tablet 20MG/1Tablet, 30Tablet/Box",2,"2026-12",0,1,0],
-      ["DIANE-35 Tablet /1Tablet, 21Tablet/Box",2,"2026-08",12,14,14],
-      ["LUNIA 10 mg/ 20 MG/tablet, 28 TABLET/BOX",2,"2026-07",7,5,34],
-      ["ANAFRANIL Tablet 25MG/1Tablet, 30Tablet/Box",2,"2026-12",5,1,3],
-      ["AVOBAN CREAM 2 %/apply Cream, 30 GM/TUBE",2,"2026-03",68,84,44],
-      ["DERMOVATE 0.05 %/apply Ointment , 25 GM/TUBE",2,"2026-06",6,7,6],
-      ["LEVOZAL 0.5 mg/ml Syrup, 200 ML/BOTTEL",2,"2026-09",35,15,43],
-      ["ANAFRANIL Tablet 10MG/1Tablet, 30Tablet/Box",2,"2026-10",0,1,0],
-      ["CLARITT Film coated tablet 250MG/1Tablet, 14",2,"2026-09",0,0,0],
-      ["UNI FRESH UD 5 %/drop, 30 SINGLE DOSE/BOX",2,"2026-10",0,0,0],
-      ["CELER 0.5 mg/ml Syrup, 150 ML/BOTTLE",2,"2026-12",2,0,3],
-      ["KLAVOX SUSPENTION 312MG/5ML, 100ML/Bottle",2,"2026-04",63,49,50],
-      ["BENZAFLEX 10 mg/tablet, 30 TABLET/BOX",2,"2026-01",10,8,10],
-      ["GLIM Tablet 1MG/1Tablet, 30Tablet/Box",2,"2026-01",11,6,10],
-      ["MARVELON Tablet /1Tablet, 21Tablet/Box",2,"2026-12",9,21,14],
-      ["PANADOL BABY Syrup 120MG/5ML, 100ML/Bottle",2,"2026-06",0,0,0],
-      ["PILOCIN 1 %/apply Cream, 30 GM/TUBE",2,"2026-11",43,46,62],
-      ["DEFOPAN 1 mg/ml Syrup, 100 ML/BOTTLE",2,"2026-12",20,8,10],
-      ["RISEK Powder for injection 40MG/1Vial, 1Vial",2,"2026-11",0,0,0],
-      ["RHINATHIOL PROMETHAZINE Syrup 1MG/1ML, 125ML",2,"2026-11",0,0,0],
-      ["MUCOGEL SUSPENTION /1ML, 125ML/Bottle",2,"2026-12",4,5,8],
-      ["10%MAGNESIUM SULFATE 10 mg/10 ml Ampoule, AM",2,"2026-01",0,0,0],
-      ["COLI-URINAL GRANULES /1BOTTEL, 60GM/BOX",2,"2026-10",154,143,127],
-      ["AMYDRAMINE ADULT ml Syrup, 120 ML/BOTTLE",2,"2026-09",70,12,22],
-      ["SITAVIC 50/1000 mg/tablet, 56 TABLET/BOX",2,"2026-10",8,12,12],
-      ["SITAVIC 50/850 mg/tablet, 56 TABLET/BOX",2,"2026-11",11,18,10],
-      ["MOUNJARO 12.5 mg/ml Ampoule, 4 AMPOULE/BOX",1,"2026-10",1,0,3],
-      ["SAXENDA Ampoule 6MG/1ML, 5ML/Box",1,"2026-07",0,0,0],
-      ["BOTOX Injection 1IU/1ML, 1ML/Vial",1,"2026-08",0,0,0],
-      ["RYZODEG 100 iu/ml Solution For Injection , 1",1,"2026-07",0,0,0],
-      ["TRESIBA FLEX TOUCH Solution for injection 10",1,"2026-11",0,0,0],
-      ["ZYPREXA Tablet 10MG/1Tablet, 28Tablet/BOX",1,"2026-09",0,0,0],
-      ["DEBREX 1 mg/tablet, 30 TABLET/BOX",1,"2026-07",0,1,0],
-      ["ENTRESTO 50 mg/tablet, 28 TABLET/BOX",1,"2026-06",6,2,5],
-      ["ARGITEST capsule Tablet, 30 TABLET/BOX",1,"2026-10",5,1,0],
-      ["MOTOVA C Advanced sachet, 30 SACHET/BOX",1,"2026-10",3,3,0],
-      ["ARGIREKT 7 gm Sachets, 30 SACHET/BOX",1,"2026-11",0,3,0],
-      ["MINIRIN MELT Tablet 120MG/1Tablet, 30Tablet/",1,"2026-09",1,1,0],
-      ["BRILINTA 90 mg/tablet, 56 TABLET/BOX",1,"2026-12",4,5,8],
-      ["ROVITAL Capsule /1CAPSULE, 30CAPSULE/BOX",1,"2026-09",0,0,0],
-      ["$$old$$SYNJARDY 12.5/1000 mg/tablet, 60 TABL",1,"2026-10",0,0,0],
-      ["PROLIFE PREMIUM box Sheets, 30 SHEET/BOX",1,"2026-02",3,1,0],
-      ["QUPENE capsule Soft Gel Cap, 30 CAPSULE/BOX",1,"2026-12",2,1,0],
-      ["GARCIMIUM 1 gm/tablet, 60 TABLET/BOX",1,"2026-11",1,0,1],
-      ["LEPONEX Tablet 100MG/1Tablet, 50Tablet/Box",1,"2026-09",1,0,0],
-      ["ARCON TISANE PLUS Capsule, 60 CAPSULE/BOX",1,"2026-07",1,1,0],
-      ["HELIABRINE HAIR NAIL Capsule /1Container, 1C",1,"2026-06",0,0,0],
-      ["RESVEMUNE Capsule, 30 CAPSULE/BOTTLE",1,"2026-12",0,0,0],
-      ["MOVACID 400 mg/tablet, 60 TABLET/BOX",1,"2026-09",20,11,14],
-      ["GALVUS Tablet 50MG/1Tablet, 56Tablet/Box",1,"2026-09",1,3,3],
-      ["SEVIKAR HCT Tablet 40/5/12.5MG/1Tablet, 28Ta",1,"2026-09",0,0,0],
-      ["SEROQUEL Tablet 100MG/1Tablet, 60Tablet/Box",1,"2026-09",0,1,0],
-      ["$$old$$PRAVOMAX Tablet, 30 TABLET/BOX",1,"2026-10",0,0,0],
-      ["METHOTREXATE SPC 2.5 mg/tablet, 100 TABLET/B",1,"2026-12",0,0,0],
-      ["GALVUS MET 50/1000MG/tablet, 60 TABLET/BOX",1,"2026-06",15,15,15],
-      ["$$old$$COVERAM Tablet 10 mg / 5 MG/1Tablet, ",1,"2026-10",0,0,0],
-      ["GALVUS MET Tablet 50/850MG/1Tablet, 60Tablet",1,"2026-08",5,5,12],
-      ["SEVIKAR Tablet 40/10MG/1Tablet, 28Tablet/Box",1,"2026-06",7,13,14],
-      ["WELLMOV tablet, 30 TABLET/BOX",1,"2026-11",0,3,7],
-      ["VERSATIS MEDICATED PLASTER 700 mg/ml/apply P",1,"2026-09",0,0,0],
-      ["OLMETEC PLUS Tablet 40/25MG/1Tablet, 28Table",1,"2026-11",0,0,0],
-      ["OLMETEC PLUS Tablet 40/12.5MG/1Tablet, 28Tab",1,"2026-08",0,0,0],
-      ["VALTREX 500 mg/tablet, 10 TABLET/BOX",1,"2026-08",0,0,0],
-      ["URILAX Film coated tablet 5MG/1Tablet, 30Tab",1,"2026-08",0,0,1],
-      ["FAVERIN Tablet 100MG/1Tablet, 30Tablet/Box",1,"2026-08",21,26,35],
-      ["QUETTA XR 200 mg/tablet Extended Release Tab",1,"2026-01",0,0,0],
-      ["RENALOF Capsule 1MG/1Tablet, 60Capsule/Box",1,"2026-11",2,1,0],
-      ["FOSTER PRESSURISED SOLUTION FOR INHALATION 1",1,"2026-06",0,0,0],
-      ["FEROSAC 20 MG/ML AMPOULE 5 AMPOULE",1,"2026-01",13,19,19],
-      ["VIOTOPIC Ointment 0.1%/1APPLY, 30GM/Tube'",1,"2026-07",26,31,35],
-      ["CYSBERRY 360 mg/capsule, 15 CAPSULE/BOX",1,"2026-12",0,0,0],
-      ["MARLON 10 mg/tablet, 30 TABLET/BOX",1,"2026-02",0,2,0],
-      ["CARPAZIO 600 mg/tablet, 50 TABLET/BOX",1,"2026-11",4,6,6],
-      ["AGOUT FC Film coated tablet 80MG/1Tablet, 30",1,"2026-09",0,0,0],
-      ["OLMETEC PLUS Tablet 20/12.5MG/1Tablet, 28Tab",1,"2026-08",0,0,0],
-      ["SALOFALK Tablet 500MG/1Tablet, 50Tablet/Box",1,"2026-11",1,0,0],
-      ["BUDIAIR 200 mcg/applicator Inhalation Spray,",1,"2026-08",0,0,0],
-      ["MICARDIS PLUS 80/12.5 mg/tablet, 28 TABLET/B",1,"2026-09",0,1,3],
-      ["ZORON 2 mg/1 ml Injection, 5 AMPOULE/BOX",1,"2026-07",0,0,0],
-      ["PAROXAT Tablet 30MG/1Tablet, 30Tablet/Box",1,"2026-01",13,24,15],
-      ["MELIGAMET 50 mg / 850 mg/tablet, 60 TABLET/B",1,"2026-09",1,2,1],
-      ["LOTEVAN 5/160MG//tablet, 30 TABLET/BOX",1,"2026-11",10,15,5],
-      ["CREVAST 20 mg/tablet, 30 TABLET/BOX",1,"2026-02",0,1,3],
-      ["ROLENIUM INHALATION SOLUTION 50/250MCG/1Cont",1,"2026-11",0,0,0],
-      ["GINKOSPAN 60 mg/capsule, 60 CAPSULE/BOX",1,"2026-09",3,1,3],
-      ["LAMICTAL Tablet 50MG/1Tablet, 30Tablet/Box",1,"2026-10",1,1,2],
-      ["MONTEL Tablet 10MG/1Tablet, 28Tablet/Box",1,"2026-10",4,0,6],
-      ["HUMULIN 70/30 Solution for injection 70/30MG",1,"2026-12",0,0,0],
-      ["ESOPOLE 20 mg/capsule, 28 CAPSULE/BOX",1,"2026-12",2,0,1],
-      ["DICYNONE Tablet 500MG/1Tablet, 20Tablet/Box",1,"2026-11",3,4,4],
-      ["LAMIFEN Tablet 250MG/1Tablet, 14Tablet/Box",1,"2026-07",10,17,12],
-      ["LICAN apply Cream, 30 GM/TUBE",1,"2026-11",30,28,48],
-      ["MYO REST PLUS Cream /1APPLY, 100GM/Tube",1,"2026-11",26,37,37],
-      ["RENITEC Tablet 10MG/1Tablet, 28Tablet/Box",1,"2026-06",0,0,0],
-      ["HERBA CARE VAGINAL WASH /1ML, 250ML/Containe",1,"2026-10",0,0,0],
-      ["LEVOX Film coated tablet 750MG/1Tablet, 5Tab",1,"2026-08",4,9,2],
-      ["DEVARIN ODT 10 mg/tablet, 4 TABLET/BOX",1,"2026-08",0,0,0],
-      ["ETORIA Tablet 90MG/1Tablet, 28Tablet/Box",1,"2026-10",89,50,83],
-      ["SELENIUM 100 mcg/tablet, 100 TABLET/CONTAINE",1,"2026-06",0,0,0],
-      ["CEFPROZ 250 mg/5 ml Suspention, 100 ML/BOTTL",1,"2026-11",12,10,7],
-      ["CO-DIOVAN  160/25MG/1Tablet, 28Tablet/Box",1,"2026-09",0,0,0],
-      ["TENORYL PLUS 5/5 mg/tablet, 30 TABLET/BOX",1,"2026-07",3,10,1],
-      ["TEGRETOL CR 200 mg/tablet, 50 TABLET/BOX",1,"2026-10",9,8,4],
-      ["GENGIGEL BABY 1 %/apply Gel, 15 GM/APPLY",1,"2026-12",1,4,3],
-      ["CLEXAN Injection 40MG/1Syringe, 1Syringe/Box",1,"2026-12",4,3,1],
-      ["NEUROBION 3 ml Solution For Injection , 10 A",1,"2026-10",0,0,0],
-      ["LUMIGAN Eye drops 0.3MG/1Drop, 3ML/Container",1,"2026-08",1,0,0],
-      ["LUMIFY 0.25 mg/drop, 7.5 ML/CONTAINER",1,"2026-07",2,0,1],
-      ["HEMICLAR Gel /1APPLY, 120ML/Tube",1,"2026-12",2,6,2],
-      ["STREPSILS LEMON SUGAR FREE 1 mg/tablet Lozen",1,"2026-09",0,0,0],
-      ["SUPRAX Capsule 400MG/1Capsule, 6Capsule/Box",1,"2026-12",13,7,17],
-      ["SUN-D 1000 iu/tablet, 90 TABLET/BOX",1,"2026-09",37,12,11],
-      ["MINOCET 125 mg/5 ml Suspention, 80 ML/BOTTLE",1,"2026-07",17,5,19],
-      ["ATROSOL 500 mg/2 ml Ampoule, 21 AMPOULE/BOX",1,"2026-11",9,6,3],
-      ["CROMA Eye drops 0.04MG/1Drop, 10ML/Container",1,"2026-06",0,0,1],
-      ["ACETAB Tablet 50MG/1Tablet, 30Tablet/Box",1,"2026-04",0,0,0],
-      ["AVOMEB extra 1 %/apply Ointment , 30 GM/TUBE",1,"2026-12",2,4,3],
-      ["COXICEL 200 mg/capsule, 30 CAPSULE/BOX",1,"2026-02",271,239,170],
-      ["FIXIT Capsule 150MG/1Capsule, 28Capsule/Box",1,"2026-12",0,0,1],
-      ["AVAMYS NASAL SPRAY /1Applicator, 1Applicator",1,"2026-08",0,0,0],
-      ["TEGRETOL Tablet 200MG/1Tablet, 50Tablet/Box",1,"2026-10",2,0,1],
-      ["GLADOS Tablet 15MG/1Tablet, 30Tablet/Contain",1,"2026-06",1,0,0],
-      ["HYMOX Film coated tablet 875MG/1Tablet, 14Ta",1,"2026-10",0,0,0],
-      ["ENDOSA 40 mg 2 SYRINGE/BOX",1,"2026-12",0,0,0],
-      ["NOLVADEX Tablet 10MG/1Tablet, 30Tablet/Box",1,"2026-08",1,0,1],
-      ["LIMITLESS ALLZYME Tablet, 30 TABLET/BOX",1,"2026-08",42,60,22],
-      ["CLARIMAC Film coated tablet 500MG/1Tablet, 1",1,"2026-12",0,0,0],
-      ["ACTIVLAB MAGNESIUM + VITAMIN B6 tablet, 20 T",1,"2026-10",0,0,0],
-      ["SEPTOFORT LEMON 2 mg/tablet Lozenges, 24 TAB",1,"2026-08",0,0,0],
-      ["SEPTOFORT LOZENGES 2MG/1Tablet, 24Tablet/Box",1,"2026-08",1,2,0],
-      ["GAVISCON SUSPENTION /1ML, 300ML/Bottle",1,"2026-01",15,2,22],
-      ["CORDARON Tablet 200MG/1Tablet, 30Tablet/Box",1,"2026-12",0,0,0],
-      ["NEO PROKTO Cream /1APPLY, 30GM/Tube",1,"2026-08",18,15,38],
-      ["AVALON UREA apply Cream, 100 ML/TUBE",1,"2026-09",4,3,4],
-      ["CALCINATE Film coated tablet 600MG/1Tablet, ",1,"2026-06",0,0,0],
-      ["UVAMIN Tablet 100MG/1Tablet, 20Tablet/Box",1,"2026-02",14,8,11],
-      ["AVALON VARA spray solution 1%/1APPLY, 50ML/B",1,"2026-11",0,0,0],
-      ["AVALON AVOCIN 2 % Vaginal Cream, 40 GM/TUBE",1,"2026-12",6,13,16],
-      ["EVRA TRANSDERMAL patch /1patch, 3patch/Box",1,"2026-09",4,1,2],
-      ["DIAMICRON MR Modified-release tablet 30MG/1T",1,"2026-11",0,0,0],
-      ["FLUCA 1 mg/drop, 5 ML/CONTAINER",1,"2026-07",24,12,12],
-      ["AERIUS Syrup 0.5MG/1ML, 150ML/Bottle",1,"2026-02",8,4,5],
-      ["DAPOX 60 mg/tablet, 4 TABLET/BOX",1,"2026-01",0,0,0],
-      ["ISOBID Modified-release capsule, soft 40MG/1",1,"2026-08",0,0,0],
-      ["AERIUS Tablet 5MG/1Tablet, 18Tablet/Box",1,"2026-09",0,0,0],
-      ["MEBO 1 %/apply Ointment , 15 GM/TUBE",1,"2026-11",9,8,1],
-      ["DIOVAN Tablet 40MG/1Tablet, 28Tablet/Box",1,"2026-12",1,2,2],
-      ["TRACON Capsule 100MG/1Capsule, 4Capsule/Box",1,"2026-01",5,19,8],
-      ["BETAGEN Tablet 16MG/1Tablet, 30Tablet/Box",1,"2026-10",0,0,0],
-      ["DOGMATIL 200 mg/tablet, 12 TABLET/BOX",1,"2026-10",0,0,0],
-      ["HY-SENSE Mouth Wash , 300 ML/BOTTLE",1,"2026-09",0,0,0],
-      ["NIZORAL shampoo 2%/1Container, 1Container/Co",1,"2026-09",0,0,0],
-      ["TOVAST Tablet 10MG/1Tablet, 30Tablet/Box",1,"2026-11",1,3,6],
-      ["XYZAL Tablet 5MG/1Tablet, 20Tablet/Box",1,"2026-12",3,0,0],
-      ["SNAFI Tablet 20MG/1Tablet, 4Tablet/Box",1,"2026-06",0,0,0],
-      ["SELECTA Film coated tablet 5MG/1Tablet, 30Ta",1,"2026-07",0,0,0],
-      ["GLUCOVANCE Tablet 5/500MG/1Tablet, 30Tablet/",1,"2026-12",0,0,0],
-      ["DEPAKINE Syrup 57.46MG/1ML, 150ML/Bottle",1,"2026-06",0,0,0],
-      ["OSTERRA 1500/800 mg/tablet, 30 TABLET/BOX",1,"2026-12",0,0,0],
-      ["FLAMAZINE Cream 1%/1APPLY, 50GM/Tube",1,"2026-12",0,0,0],
-      ["GLUCOPHAGE Tablet 1000MG/1Tablet, 30Tablet/B",1,"2026-12",7,9,8],
-      ["FEROGLOBIN Capsule /1Capsule, 30Capsule/Box",1,"2026-06",37,39,32],
-      ["BETAVERT 24 mg/tablet, 30 TABLET/BOX",1,"2026-04",0,1,0],
-      ["DURADOX Capsule 100MG/1Capsule, 10Capsule/Bo",1,"2026-09",0,0,0],
-      ["AVALON K JELLY Gel /1Container, 1Container/C",1,"2026-08",0,0,0],
-      ["CIPROCIN Tablet 500MG/1Tablet, 10Tablet/Box",1,"2026-12",4,1,1],
-      ["REDOXON Effervescent tablet 1000MG/1Tablet, ",1,"2026-06",0,0,0],
-      ["ACC Effervescent tablet 600MG/1Tablet, 10Tab",1,"2026-07",0,19,19],
-      ["BACTRIM Syrup 200/40MG/1ML, 100ML/Bottle",1,"2026-01",4,2,3],
-      ["PRED FORTE Eye drops 2MG/1Drop, 5ML/Containe",1,"2026-10",0,2,4],
-      ["XEFO Tablet 8MG/1Tablet, 20Tablet/Box",1,"2026-09",41,23,25],
-      ["KLAVOX Tablet 375MG/1Tablet, 20Tablet/Box",1,"2026-01",17,9,13],
-      ["ZENCIN 500 mg/tablet, 3 TABLET/BOX",1,"2026-08",46,49,43],
-      ["DAROXIME Film coated tablet 500MG/1Tablet, 1",1,"2026-01",0,0,0],
-      ["FUSIBACT-B 2.1 %/apply Cream, 30 GM/TUBE",1,"2026-01",41,44,30],
-      ["SELECTA Tablet 2.5MG/1Tablet, 30Tablet/Box",1,"2026-11",8,11,13],
-      ["ROFENAC 1 %/apply Gel, 50 GM/TUBE",1,"2026-01",140,92,229],
-      ["KETESSE Film coated tablet 25MG/1Tablet, 20T",1,"2026-09",0,0,0],
-      ["FAMODAR Tablet 40MG/1Tablet, 10Tablet/Box",1,"2026-01",2,2,0],
-      ["AMAGLIME 3 mg/tablet, 30 TABLET/BOX",1,"2026-11",0,0,0],
-      ["OXIRA RAPID 8 mg/tablet, 20 TABLET/BOX",1,"2026-08",0,0,0],
-      ["MICOCORT cream 2/1%/1APPLY, 30GM/Tube",1,"2026-11",0,2,0],
-      ["REPADERM 1 %/apply Gel, 100 GM/TUBE",1,"2026-08",128,65,107],
-      ["VERMOX SUSPENTION 0.02MG/1ML, 30ML/Bottle",1,"2026-12",5,8,3],
-      ["AVALON AVOCOM-M CREAM 30GM Cream 0.1/2%/1Con",1,"2026-12",0,0,0],
-      ["ETORIA Tablet 120MG/1Tablet, 7Tablet/Box",1,"2026-03",17,14,23],
-      ["RAFOL 1 mg/tablet, 50 TABLET/BOX",1,"2026-12",32,0,0],
-      ["DESLIN 1 mg/ml Syrup, 150 ML/BOTTLE",1,"2026-09",0,0,0],
-      ["CLARA Tablet 10MG/1Tablet, 10Tablet/Box",1,"2026-09",357,303,310],
-      ["PANADOL ACTIFAST Coated tablet 500MG/1Tablet",1,"2026-12",0,0,0],
-      ["IVY-CALM ml Syrup, 120 ML/BOTTLE",1,"2026-09",1,1,0],
-      ["NEGAZOL Tablet 500MG/1Tablet, 20Tablet/Box",1,"2026-02",1,0,3],
-      ["BUTALIN SUSPENTION 0.4MG/1ML, 120ML/Bottle",1,"2026-02",15,8,7],
-      ["JUSPRIN 81 mg/tablet, 30 TABLET/BOX",1,"2026-07",0,2,8],
-      ["GLIBIL Tablet 5MG/1Tablet, 30Tablet/Box",1,"2026-07",0,0,0],
-      ["COXICAM 15 mg/tablet, 10 TABLET/BOX",1,"2026-09",0,0,0],
-      ["PROFINAL XP 400 mg/tablet, 20 TABLET/BOX",1,"2026-08",20,21,32],
-      ["DEPOVIT B12 Injection 1000MG/1Ampoule, 2ML/A",1,"2026-11",0,0,0],
-      ["SAPOFEN 100 mg/ml Syrup, 100 ML/BOTTLE",1,"2026-01",2,0,0],
-      ["MEGAMOX SUSPENTION 156MG/5ML, 100ML/Bottle",1,"2026-04",2,21,17],
-      ["ACICAL PLUS tablet, 30 TABLET/BOX",1,"2026-08",2,0,0],
-      ["FOLIC ACID Tablet 5MG/1Tablet, 20Tablet/Box",1,"2026-08",3,11,8],
-      ["ADOL Suppository 250MG/1Suppository, 10Suppo",1,"2026-11",0,0,0],
-      ["PROF SUSPENTION 100MG/5ML, 110ML/Bottle",1,"2026-12",167,158,179],
-      ["GUAPHAN Syrup 20MG/1ML, 100ML/Bottle",1,"2026-11",26,20,15],
-      ["AMYDRAMINE SUGAR FREE Syrup, 120 ML/BOTTLE",1,"2026-12",2,41,33],
-      ["DEFADOL 160 mg/5 ml Syrup, 100 ML/BOTTLE",1,"2026-07",366,271,138],
-      ["DECOZAL 0.05 % nasal spray child, 10 ML/CONT",1,"2026-11",0,0,0],
-      ["EPICOGEL Oral suspension /1ML, 125ML/Bottle",1,"2026-09",3,9,3],
-      ["LYPFEN 200 mg/capsule, 30 CAPSULE/BOX",1,"2026-10",0,6,13],
-      ["APIGEN Eye ointment 0.3%/1APPLY, 5GM/Tube",1,"2026-12",0,0,0],
-      ["JOSPAN ml Syrup, 100 ML/BOTTLE",1,"2026-06",0,0,0],
-      ["APLEFIT PLUS Capsule, 60 CAPSULE/BOX",1,"2026-09",1,1,1],
-      ["MOTOVA PLUS 60 TAB 1500 MG BOTTEL",1,"2026-11",2,1,4],
-      ["RIDON Film coated tablet 4MG/1Tablet, 30Tabl",1,"2026-10",0,1,1],
-      ["DENACIF 125 mg/5 ml Suspention, 100 ML/BOTTL",1,"2026-10",1,0,0],
-      ["DRAMYLIN ADULT ml Syrup, 120 ML/BOTTLE",1,"2026-10",1,0,0],
-      ["PROLUTEX 25 mg/1.119 vial Injection, 7 VIAL/",0,"2026-11",13,17,2],
-      ["TOUJEO SOLOSTAR 300 iu/ml Solution For Injec",0,"2026-08",0,0,0],
-      ["LACTOSAT 125 mg/capsule, 30 CAPSULE/BOX",0,"2026-10",8,12,7],
-      ["EMANERA 40 mg/capsule, 28 CAPSULE/BOX",0,"2026-10",33,20,15],
-      ["Vicks vapodrops Berry menthol 36 lozenges",0,"2026-08",0,0,0]],
+    monthly:{"05":7260,"06":6666,"07":6598,"08":7044},
+    all:[["HYMOX FORTE SUSPENTION 250MG/5ML, 100ML/Bott",2594,"2026-01",0,0,0,0],["EMILOK Capsule 20MG/1Capsule, 14Capsule/Box",1434,"2026-02",43,76,32,60],["ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE",929,"2026-08",9,21,56,49],["FORMIT XR Tablet 750MG/1Tablet, 30Tablet/BOX",734,"2026-01",23,33,35,43],["AVALON AVOCOM 0.1 %/apply Ointment , 50 GM/T",581,"2026-06",0,0,0,0],["VOLTIC  tablet 50MG/1Tablet, 20Tablet/Box",431,"2026-07",22,80,7,2],["EMIDOL 120 mg/5 ml Syrup, 100 ML/BOTTLE",364,"2026-10",0,0,0,0],["OPTIFLOX Eye drops 0.3MG/1Drop,  5 ML/Contai",331,"2026-06",1,0,0,2],["DAONIL Tablet 5MG/1Tablet, 30Tablet/Box",321,"2026-07",0,1,0,0],["BIOCAL D 500 mg/tablet, 60 TABLET/BOX",258,"2026-01",24,1,0,1],["PANADREX 120 mg/5 ml Syrup, 60 ML/BOTTLE",245,"2026-12",1,0,0,1],["SETAPRO 10 mg/tablet, 30 TABLET/BOX",233,"2026-01",38,41,26,40],["AVALON AVOMEB EXTERA Ointment , 50 GM/TUBE",205,"2026-06",8,1,1,3],["TRENTAL Tablet 400MG/1Tablet, 20Tablet/Box",175,"2026-10",0,2,1,4],["JARDIANCE Coated tablet 10MG/1Tablet, 30Tabl",166,"2026-09",12,1,2,21],["SERETIDE EVOHALER125MG INHALATION SPRAY /1In",147,"2026-06",0,0,0,0],["MIXTARD Injection 30IU/1ML, 10ML/Vial",147,"2026-07",2,3,3,1],["PEXAPAN 2.5 mg/tablet, 60 TABLET/BOX",146,"2026-11",0,0,0,1],["ROLIP Ointment 1%/1APPLY, 30GM/Tube",141,"2026-06",4,2,8,2],["ECHILIB CHewable tablet, 20 TABLET/BOX",139,"2026-09",0,4,0,1],["LEVOGAND 50 mcg/tablet, 100 TABLET/BOX",129,"2026-09",2,0,0,0],["JP VITAMIN D3 Soft Gel Cap 1000IU/1Capsule, ",125,"2026-03",0,0,0,9],["REMOX SUSPENTION 125MG/5ML, 70ML/Bottle",119,"2026-07",16,21,41,53],["AMYDRAMINE PED ml Syrup, 120 ML/BOTTLE",116,"2026-01",25,1,1,5],["OPTICIN Eye drops 0.3MG/1Drop, 5ML/Container",116,"2026-01",0,0,1,0],["AVALON SALINOSE BABY 0.9 ml/drop, 20 ML/BOTT",112,"2026-08",0,0,0,0],["RINOFED COLD&ALLERGY Tablet, 30 TABLET/BOX",109,"2026-10",0,0,0,0],["VIDA-IRON  Spray, 60 ML/BOTTLE",107,"2026-12",30,20,26,27],["OPTILONE Eye drops 0.1MG/1Drop, 5ML/Containe",103,"2026-02",0,0,0,0],["INHIXA 40 mg/syringe Injection, 1 SYRINGE/BO",101,"2026-08",0,0,0,0],["CIPROCIN Eye drops 0.3MG/1Drop, 5ML/Containe",90,"2026-12",0,1,1,1],["FARCOLIN Solution 0.5MG/1ML, 20ML/Bottle",83,"2026-03",0,0,0,1],["CLARINASE Tablet 5/120MG/1Tablet, 14Tablet/B",82,"2026-09",1,4,9,4],["AVALON AVOCOM AQU NASAL SPRAY 0.05%/1Applica",82,"2026-11",0,0,0,0],["LEVOGAND 100 mcg/tablet, 100 TABLET/BOX",80,"2026-08",1,0,0,0],["CITICOLINE Capsule, 30 CAPSULE/BOX",79,"2026-11",3,2,0,11],["LOVERA 5 mg/tablet, 30 TABLET/BOX",76,"2026-04",0,1,2,4],["ELEVIT Tablet, 30 TABLET/BOX",74,"2026-07",0,1,0,0],["IRO-VIT drop, 30 ML/CONTAINER",74,"2026-11",0,2,0,0],["MIRZAGEN Gastro-resistant coated tablet 30MG",73,"2026-12",0,0,0,1],["BABYCOOL ml Syrup, 100 ML/BOTTLE",72,"2026-08",5,9,9,3],["ADZOY 0.1% / 2.5% apply Gel, 30 GM/TUBE",70,"2026-07",4,3,1,0],["OPTIPRED Eye drops 1%/1Drop, 5ML/Container",70,"2026-01",1,0,0,0],["SEFARIX 125 mg/5 ml Suspention, 50 ML/BOTTLE",69,"2026-12",1,0,0,0],["SYMBICORT INHALATION SPRAY 1MG/1Inhaler, 1In",66,"2026-07",0,0,0,1],["NOVOMIX 30 FLEXPEN Susp. for inj. pre-filled",65,"2026-06",0,0,0,4],["TOBRADEX Eye drops /1Drop, 5ML/Container",65,"2026-09",41,23,22,14],["TYMER Eye drops 0.3MG/1Drop, 5ML/Container",62,"2026-08",2,0,0,0],["RAVIXA 75 mg/tablet, 30 TABLET/BOX",60,"2026-10",18,7,14,6],["LACTEEZ PLUS drop, 30 ML/CONTAINER",60,"2026-12",0,0,0,6],["ISOLONE 5 mg/TABLET, 30 Effervescent Tablet",60,"2026-01",61,63,41,41],["OTRI ALLERGY 0.05 mg/applicator Nasal Spray",59,"2026-12",19,19,5,1],["RAFOL 5 mg/tablet, 50 TABLET/BOX",57,"2026-10",18,32,21,4],["ADZOY 0.3 % / 2.5%/apply Gel, 30 GM/TUBE",56,"2026-07",0,0,0,0],["AVALON AVOCOM Cream 0.1%/1APPLY, 30GM/Tube",56,"2026-07",0,8,3,2],["ARTELAC COMPLET MDO 24 %/drop, 10 ML/CONTAIN",55,"2026-10",0,0,0,0],["PEXAPAN 5 mg/tablet, 60 TABLET/BOX",54,"2026-05",2,3,1,1],["RHINATHIOL ENF Syrup 2%/1ML, 125ML/Bottle",54,"2026-12",10,3,1,1],["LAXOCODYL 5 mg/suppository, 10 SUPPOSITORY/B",54,"2026-08",0,0,0,0],["ANAZOL Film coated tablet 250MG/1Tablet, 20T",53,"2026-12",0,0,0,10],["NEVOTIC 500 mg/tablet, 7 TABLET/BOX",52,"2026-12",6,14,10,12],["CENTRUM IMMUNE Support Capsule, 60 CAPSULE/C",51,"2026-08",0,0,0,0],["MARNYS SALMON OIL VIT E Capsule 60MG/1Capsul",50,"2026-10",0,0,0,0],["LOTINIL drop, 5 ML/CONTAINER",49,"2026-06",0,0,0,0],["APIDRA SOLOSTAR 100 iu/ml Injection, 5 VIAL/",47,"2026-07",0,0,1,0],["REXOFIL 20 mg/tablet, 4 TABLET/BOX",47,"2026-06",0,0,0,0],["ZOLIX 5 mg/tablet, 20 TABLET/BOX",45,"2026-06",0,0,1,7],["CIPRODAR Tablet 500MG/1Tablet, 10Tablet/Box",44,"2026-01",1,0,0,2],["FAWAR LEMON 5 gm/sachet, 6 SACHET/BOX",43,"2026-08",0,0,0,0],["FEMI BIOTIC box Sachets, 20 SACHET/BOX",42,"2026-08",3,5,5,1],["ROXIL SUSPENTION 250MG/5ML, 100ML/Bottle",42,"2026-06",4,2,2,2],["SINEO 1 mg/drop, 20 ML/CONTAINER",42,"2026-09",18,30,53,48],["ZETRON SUSPENTION 200MG/1ML, 15ML/Bottle",41,"2026-06",22,3,4,3],["ADOL 120 mg/5 ml Syrup, 100 ML/BOTTLE",41,"2026-08",145,68,93,66],["PANA NATURAL  Syrup, 128 GM/BOTTLE",40,"2026-03",0,0,0,0],["LEVOGAND 25 mcg/tablet, 100 TABLET/BOX",39,"2026-08",2,1,0,0],["PURGE Solution /1APPLY, 250ML/Container",38,"2026-09",2,0,0,0],["DIFFERIN Gel 0.1%/1APPLY, 30GM/Tube",38,"2026-09",0,2,0,0],["ZOLAN 5 mg/tablet, 30 TABLET/BOX",37,"2026-12",15,16,20,26],["SENNA ARKO Capsule 180MG/1Capsule, 45Capsule",37,"2026-06",0,0,0,0],["KLACID 125 mg/5 ml Suspention, 100 ML/BOTTLE",36,"2026-09",14,6,16,26],["OMIZ Capsule 20MG/1Capsule, 14Capsule/Box",36,"2026-06",5,5,6,7],["ARKO PHARMA FORCAPIL GROWTH HAIR AND NAILS G",35,"2026-01",0,0,0,0],["FORXIGA Tablet 10MG/1Tablet, 28Tablet/Box",34,"2026-10",18,23,28,17],["JOINTACE CHONDROITIN GLUCOSAMIN Tablet /1Tab",34,"2026-07",0,0,0,0],["BUTALIN INHALATION SPRAY 100MCG/1Applicator,",34,"2026-07",0,0,0,0],["AVALON AVOMEB EXTRA 75 GM Ointment",33,"2026-12",1,5,10,6],["HIDRASEC 30 mg/sachet Powder, 16 SACHET/BOX ",33,"2026-11",0,0,0,13],["TOBREX Eye drops 0.3MG/1Drop, 5ML/Container",32,"2026-09",16,7,11,6],["TRIOLITE CREAM apply Cream, 30 GM/TUBE",32,"2026-12",8,9,16,2],["OLNEDA 20 /10mg/tablet, 30 TABLET/BOX",31,"2026-07",0,1,1,0],["TENORYL PLUS 10/10 mg/tablet, 30 TABLET/BOX",31,"2026-06",1,0,0,0],["PREGADEX Capsule 150MG/1Capsule, 14Capsule/B",30,"2026-01",0,0,0,0],["GAMCET 0.4 mg/tablet, 30 TABLET/BOX",30,"2026-01",0,1,0,1],["SYSTANE ULTRA UD Eye drops /1Drop, 0.4ML/Con",30,"2026-12",0,0,0,0],["ONDANS 4 mg/tablet, 10 TABLET/BOX",29,"2026-10",8,4,11,1],["CATAFAST SACHETS 50MG/1Sachet, 9sachet/Box",29,"2026-09",78,115,132,97],["PICO Oral drops 7.5MG/1Drop, 30ML/Container",29,"2026-05",3,4,6,2],["GENTAPLEX Capsule /1Capsule, 36Capsule/Box",28,"2026-07",3,8,2,1],["NYDA PLUS 100 ml topical spray /1Applicator,",28,"2026-06",0,0,0,1],["AVALON AVOQUIN 4 %/apply Cream, 50 GM/TUBE",28,"2026-06",0,0,0,0],["SANOVIT ml Syrup, 320 ML/BOTTLE",28,"2026-08",0,0,0,0],["ZERTAZINE 5 mg/5 ml Syrup, 100 ML/BOTTLE",28,"2026-09",0,0,0,0],["FLIXOTIDE Inhalation powder 125MCG/1Containe",27,"2026-12",0,0,0,0],["AVALON ALPHA PLUS apply Cream, 30 GM/TUBE",27,"2026-10",0,1,0,0],["TRAVATAN Eye drops 0.004MG/1Drop, 2.5ML/Cont",26,"2026-07",0,0,0,0],["MEBAGEN 200 mg/ml/tablet Extended Release Ta",26,"2026-07",0,0,0,0],["PROTON Gastro-resistant coated tablet 40MG/1",26,"2026-01",0,0,0,9],["SURECURE Gel 0.1%/1APPLY, 30GM/Tube",26,"2026-06",0,0,0,0],["KLAVOX SUSPENTION 156MG/5ML, 100ML/Bottle",26,"2026-11",33,15,27,1],["TIOTROPIUM EVA 18 mcg/capsule, 30 CAPSULE/BO",25,"2026-02",0,0,0,0],["SALINOSE PLUS NASAL SPRAY 0.9ML/1Spray, 20ML",25,"2026-08",0,0,0,0],["CLAVODAR Tablet 625MG/1Tablet, 20Tablet/Box",25,"2026-01",0,0,0,0],["VENTOLIN EVOHALER SPRAY 100MG/1Applicator, 2",25,"2026-11",0,0,0,28],["NAFEES PHARMA ROYA-GIN Tablet, 30 TABLET/BOX",25,"2026-12",0,0,0,0],["MERIONAL HG 75 iu/ampoule Injection, 1 AMPOU",24,"2026-06",0,0,0,0],["SORTIVA H Tablet 50/12.5MG/1Tablet, 28Tablet",24,"2026-01",0,1,0,0],["AZIMAC Film coated tablet 250MG/1Tablet, 6Ta",24,"2026-11",5,0,0,12],["RYBELSUS 7 mg/tablet, 30 TABLET/BOX",23,"2026-06",2,1,3,4],["MELATONIN Tablet 3MG/1Tablet, 100Tablet/Box",23,"2026-11",1,4,0,3],["NAFEES PHARMA BIOTIN Tablet, 60 TABLET/BOX",23,"2026-09",0,1,0,0],["MARLON 20 mg/tablet, 30 TABLET/BOX",22,"2026-02",0,0,1,1],["DOXIDA-M sachet, 30 SACHET/BOX",22,"2026-10",11,15,14,3],["VIOTOPIC Ointment 0.3%/1APPLY, 30GM/Tube'",22,"2026-05",2,17,19,6],["FOSTIMON Powder for injection 75IU/1ML, 1Via",22,"2026-02",0,0,0,0],["ZINCOVIT drop, 60 ML/CONTAINER",22,"2026-11",14,14,9,6],["ATROSOL 250 mg/mcg/2 ml Ampoule, 2 oral solu",21,"2026-08",0,0,0,2],["MOUNJARO 7.5 mg/ml Ampoule, 4 AMPOULE/BOX",20,"2026-10",3,3,4,6],["AROX 0.5 %/drop, 5 ML/CONTAINER",20,"2026-12",2,0,0,0],["OYSTERCAL Tablet 500MG/1Tablet, 60Tablet/Box",20,"2026-01",0,0,0,0],["ROYAL HONEY  Sachets, 15 GM/SACHET",20,"2026-10",0,0,0,0],["LAXOCODYL 10 mg/suppository, 10 SUPPOSITORY/",20,"2026-06",0,0,0,0],["LOVRAK 200MG/5ML/100ML SYRUP 200MG/5ML, 100M",19,"2026-10",0,0,0,0],["TACROZ 0.03 %/apply Ointment , 10 GM/TUBE",19,"2026-09",0,1,1,6],["RECTACURE 2% /apply Cream, 30 GM/TUBE",19,"2026-01",44,43,7,14],["BEFOLVIT 5 mg/tablet, 30 TABLET/BOX",19,"2026-06",11,9,14,4],["FENSOLIN 10 mg/tablet, 30 TABLET/BOX",18,"2026-08",0,1,0,0],["JULEEN 100 mg/tablet, 30 TABLET/BOX",18,"2026-11",0,1,1,0],["CORTRIEF 1 mg/applicator Nasal Spray, APPLIC",18,"2026-06",5,0,0,0],["PROHAIR 1 mg/tablet, 30 TABLET/BOX",18,"2026-11",0,0,0,0],["AVALON AVOGAIN 5% SPRAY offer (2+1)  50 ML/A",18,"2026-11",0,0,0,3],["NERVAN 500 mg/tablet, 30 TABLET/BOX",18,"2026-10",5,2,2,4],["VITALIFE Soft Gel Cap /1Capsule, 30Capsule/B",18,"2026-04",3,5,3,0],["DONIFOXATE 80 mg/tablet, 30 TABLET/BOX",18,"2026-02",0,0,1,0],["ZYPREXA Tablet 5MG/1Tablet, 28Tablet/Box",17,"2026-06",0,0,1,0],["ORATANE 10 mg/capsule, 30 CAPSULE/BOX",17,"2026-12",0,0,0,0],["LOCASONE Cream 0.1%/1APPLY, 100GM/Tube",17,"2026-09",0,1,4,4],["FORCAPIL Capsule, 180 CAPSULE/BOX",16,"2026-10",13,25,18,35],["DEBILUR 40 mg/tablet, 30 TABLET/BOX",16,"2026-11",0,0,0,0],["DEBILUR 80 mg/tablet, 30 TABLET/BOX",16,"2026-03",0,0,0,0],["ARAVA TABLET 20MG/1Tablet, 30Tablet/BOX",16,"2026-11",2,4,2,2],["THIOTACID 600 mg/tablet, 30 TABLET/BOX",16,"2026-12",4,10,4,0],["AMLOVAN-HCT 10/320/25 mg/tablet, 28 TABLET/B",16,"2026-08",0,0,0,0],["CONTRACTUBEX 1 %/apply Gel, 50 GM/TUBE",16,"2026-10",9,17,6,5],["VIGAMOX Eye drops 0.5MG/1Drop, 5ML/Container",16,"2026-09",70,56,54,2],["DOXIDA-F sachet, 30 SACHET/BOX",15,"2026-11",17,19,39,9],["MEGATOP SYRUP /1ML, 125ML/BOTTLE",15,"2026-11",0,0,1,0],["DECONE sachet, 20 SACHET/BOX",15,"2026-11",0,0,0,0],["AMLOVAN-HCT 5/160/12.5 mg/tablet, 28 TABLET/",15,"2026-03",0,0,0,0],["CLARIXIN Tablet 500MG/1Tablet, 14Tablet/Box",15,"2026-11",22,35,40,12],["DEBILUR 20 mg/tablet, 30 TABLET/BOX",14,"2026-10",0,0,0,0],["DUODART Capsule 0.5/0.4MG/1Capsule, 30Capsul",14,"2026-11",1,0,0,7],["PULMICORT 0.5 mg/ml Ampoule, 20 AMPOULE/BOX",14,"2026-09",237,146,124,119],["INHIXA 20 mg/syringe Injection, 1 SYRINGE/BO",14,"2026-06",0,0,0,0],["ADAZIO 25 mg/tablet, (new price )30 TABLET/B",14,"2026-06",1,1,2,1],["FENSOLIN 5 mg/tablet, 30 TABLET/BOX",14,"2026-10",6,8,9,6],["EPIFASI Injection 5000IU/1Vial, 1Vial/Box",13,"2026-06",20,30,4,10],["FORTIFERRUM sachet Powder, 14 SACHET/BOX",13,"2026-11",8,11,5,2],["LAVISTINA 24 mg/tablet, 50 TABLET/BOX",13,"2026-12",1,0,0,0],["DEXTROSE 10% 1 mg/ml Solution, 500 ML/BOTTLE",13,"2026-06",0,0,0,0],["AVALON AVOCOM Ointment 0.1%/1APPLY, 30GM/Tub",13,"2026-08",0,0,0,0],["FEXODINE 120 mg/tablet, 14 TABLET/BOX",13,"2026-09",7,2,11,1],["OZEMPIC 0.5 mg/ml Ampoule, 4 AMPOULE/BOX",12,"2026-08",0,0,1,0],["BONOLIGHT (CARTIBON) SACHETS /1SACHET, 30SAC",12,"2026-10",0,0,0,0],["ZOLONIA 10 mg/tablet, 28 TABLET/BOX",12,"2026-01",0,1,0,0],["PHYSIOTHERM ARKO NASAL SPRAY 9MG/1Spray, 100",12,"2026-01",0,0,0,0],["DAKTARIN 2 %/apply Cream, 30 GM/TUBE",12,"2026-08",8,8,4,14],["VITA ROYAL 1000 MG 30 CAPS",11,"2026-07",0,0,0,0],["SERETIDE DISKUS 250MG Inhalation powder /1In",11,"2026-06",0,0,0,0],["PASSIFLORE ARKO Capsule 1MG/1Capsule, 45Caps",11,"2026-01",0,0,0,0],["FUSIBACT-B Cream 2/0.1%/1APPLY, 15GM/Tube",11,"2026-08",55,65,54,31],["MAXEVA 400 mg/tablet, 10 TABLET/BOX",11,"2026-02",21,0,36,20],["AVALON AVOBAN 2 %/apply Ointment , 30 GM/TUB",11,"2026-07",13,9,18,4],["REFLEX MASSAGE Emulgel, 100 ML/TUBE",11,"2026-08",125,168,112,0],["ROXIL Capsule 500MG/1Capsule, 20Capsule/Box",11,"2026-09",0,0,11,5],["PRIMA VIT D Capsule 50000MG/1Capsule, 30Caps",10,"2026-10",0,0,0,374],["ACTI-COLLA sachet, 30 SACHET/BOX",10,"2026-12",0,0,0,0],["FEMIC 500 mg/tablet, 60 TABLET/BOX",10,"2026-10",19,32,19,11],["LUSAM 10MG/ML 200M/BOTTLE SYP",10,"2026-10",0,0,0,0],["ZOVIRAX 200 mg/tablet, 25 TABLET/BOX",10,"2026-07",1,0,0,0],["ASTATIN Film coated tablet 40MG/1Tablet, 30T",10,"2026-12",0,0,0,16],["ZINNAT SUSPENTION 125MG/5ML, 70ML/Bottle",10,"2026-09",0,0,0,1],["COMBIWAVE 25/125 mg/inhaler Inhalation Spray",10,"2026-11",0,0,0,3],["OSTEOCARE Syrup 100MG/1ML, 200ML/Bottle",10,"2026-09",9,9,8,7],["FUSIBACT Ointment 2%/1APPLY, 15GM/Tube",10,"2026-10",22,21,50,21],["MOUNJARO 5 mg/ml Ampoule, 4 AMPOULE/BOX",9,"2026-10",3,3,6,14],["LUSAM 200 mg/tablet, 56 TABLET/BOX",9,"2026-03",0,0,0,0],["MEGAROY Capsule, 30 CAPSULE/BOX",9,"2026-09",0,3,0,5],["OPTIMUM OMEGA-3 1000 mg/capsule, 30 CAPSULE/",9,"2026-11",0,0,0,0],["EVERT Capsule, 30 CAPSULE/BOX",9,"2026-12",0,3,3,1],["CEFAJECT 1000 mg IV /vial Powder For Injecti",9,"2026-10",0,0,0,0],["EULAX sachet Powder For Oral Soln, 30 SACHET",9,"2026-09",28,6,2,5],["ZYMAXID Eye drops 0.5MG/1Drop, 2.5ML/Contain",9,"2026-06",0,0,0,0],["JP SAFFRON 28 mg/capsule, 30 CAPSULE/BOTTLE",9,"2026-09",0,0,0,0],["XIGDUO XR 5/1000 mg/tablet, 56 TABLET/BOX",9,"2026-12",1,3,2,5],["HYFRESH EYE GEL drop, 30 ML/BOTTEL",9,"2026-06",132,169,93,119],["EUTHYROX Tablet 150MG/1Tablet, 100Tablet/Box",9,"2026-06",5,9,5,3],["CO-TABUVAN Tablet 80/12.5MG/1Tablet, 30Table",9,"2026-08",0,0,0,0],["ARKOCAPS CALCOS 500 mg/tablet, 60 TABLET/BOX",9,"2026-11",5,13,11,9],["VEDOXIN 500 mg/tablet, 5 TABLET/BOX",9,"2026-10",175,144,66,119],["CEFODOX Film coated tablet 200MG/1Tablet, 14",9,"2026-07",0,0,0,34],["SANOVIT IRON ml Syrup, 320 ML/BOTTLE",9,"2026-12",0,0,0,0],["NEO HEALAR Ointment /1APPLY, 30GM/Tube",9,"2026-10",4,13,15,10],["SEROXAT CR 12.5 MG 30Tablet/Box",9,"2026-09",0,1,0,2],["XEVANEER 125 mg/5 ml Suspention, 40 ML/BOTTL",9,"2026-01",1,0,1,0],["VAVO SHAMPOO 2%/1Container, 1Container/Conta",9,"2026-12",0,0,0,84],["LOGYNON Tablet /1Tablet, 21Tablet/Box",9,"2026-11",1,1,2,1],["AMOVAC enema Solution, 120 ML/CONTAINER",9,"2026-08",0,1,0,2],["AVALON AVOQUIN Cream 1.9%/1Container, 50GM/C",9,"2026-06",0,0,0,0],["ROSALUS 20 mg/tablet, 28 TABLET/BOX",9,"2026-11",9,6,9,6],["SPIRIVA INHALATION SPRAY 18MG/1Inhaler, 30In",8,"2026-10",0,0,0,0],["QUERSA Capsule, 60 CAPSULE/BOTTLE",8,"2026-10",8,11,3,5],["ROYAL JELLY 1000 mg/capsule, 30 CAPSULE/BOX",8,"2026-10",1,0,0,0],["MONTEL Chewable tablet 5MG/1Tablet, 28Tablet",8,"2026-03",0,0,1,0],["AVODART Capsule 0.5MG/1Capsule, 30Capsule/Bo",8,"2026-08",3,3,2,5],["EYMID 1% drop, 10 ML/CONTAINER",8,"2026-05",0,0,0,0],["COSOPT Eye drops 2/0.5%/1Drop, 5ML/Container",8,"2026-11",0,0,0,0],["HEALCARE 100 mg/g Lotion, 180 ML/CONTAINER",8,"2026-10",0,0,0,0],["BEESLINE HAJJ KIT Ointment-shampo-soap /1Con",8,"2026-02",0,0,0,0],["IPRAMAX Film coated tablet 25MG/1Tablet, 60T",8,"2026-12",0,0,0,10],["NEO HEALAR Suppository /1Suppository, 10Supp",8,"2026-08",0,0,0,1],["NEORIN Syrup 0.5MG/1ML, 150ML/Bottle",8,"2026-06",257,149,71,155],["PROLAX Capsule 15MG/1Capsule, 30Capsule/Box",8,"2026-10",12,12,18,0],["FLAZOL Syrup 125MG/5ML, 120ML/Bottle",8,"2026-07",78,20,44,31],["BANORIV 2.5 mg/tablet, 60 TABLET/BOX",7,"2026-12",0,0,0,0],["FORCAPIL TOPICAL SPRAY",7,"2026-09",1,7,3,6],["BUFOMIX 1 mg/inhaler Inhalation Spray, INHAL",7,"2026-11",1,5,2,2],["ENTEROGERMINA ORAL VIAL 2billionMG/1Ampoule,",7,"2026-09",0,0,0,0],["FAVERIN Tablet 50MG/1Tablet, 60Tablet/Box",7,"2026-10",7,8,1,5],["AMLOVAN-HCT 10/160/12.5 mg/tablet, 28 TABLET",7,"2026-05",0,0,0,1],["RELPAX 40 mg/tablet, 3 TABLET/BOX",7,"2026-12",0,0,0,1],["ASTATIN Film coated tablet 10MG/1Tablet, 30T",7,"2026-07",0,0,0,28],["DENACIF 300 mg/capsule, 10 CAPSULE",7,"2026-07",19,4,1,9],["ZINNAT SUSPENTION 250MG/5ML, 50ML/Bottle",7,"2026-10",0,1,0,0],["VAGINECALM GEL CALM tube Gel, 50 ML/TUBE",7,"2026-12",1,0,3,3],["JP VITAMIN D3 1000 iu/capsule Soft Gel Cap, ",7,"2026-12",0,0,0,0],["PYRALVEX Solution 1%/1ML, 10ML/Bottle",7,"2026-12",0,0,0,0],["CEFIM Capsule 400MG/1Capsule, 6Capsule/Box",7,"2026-07",46,37,126,106],["A-LAX Tablet 20MG/1Tablet, 30Tablet/Box",7,"2026-12",0,0,0,0],["RIACHOL Ointment 1%/1APPLY, 5GM/Tube",7,"2026-11",0,0,0,0],["SORTIVA-H Tablet 100/12.5MG/1Tablet, 30Table",7,"2026-12",1,0,1,0],["GLOMOX Capsule 500MG/1Capsule, 20Capsule/Box",7,"2026-10",0,0,0,0],["FLUSORT 0.05 % Nasal Spray, APPLICATOR",7,"2026-08",0,0,0,0],["GARDASIL 9 0.5 ml Injection, 1 SYRINGE/BOX",6,"2026-09",0,0,0,0],["VAROXA 20 mg/tablet, 30 TABLET/BOX",6,"2026-09",2,2,0,0],["HEROX Tablet 20MG/1Tablet, 4Tablet/Box",6,"2026-02",0,0,0,0],["KIDS GUMMY OMEGA+DHA tablet, 60 TABLET/BOX",6,"2026-10",0,0,0,0],["AZARGA Eye drops 10MG/1Drop, 5ML/Container",6,"2026-07",0,0,0,0],["VANCOLON 1 gm/ml Vials, VIAL",6,"2026-06",0,0,0,0],["MELIGAMET 50 mg / 1000 mg/tablet, 60 TABLET/",6,"2026-06",0,1,2,2],["JALRA M Tablet 50/1000MG/1Tablet, 60Tablet/B",6,"2026-08",18,20,20,11],["AVALON POVIDONE ANTISEPTIC Solution 10%/1ML,",6,"2026-02",0,0,0,0],["DIVINUS 10 mg/tablet, 30 TABLET/BOX",6,"2026-12",19,14,22,15],["SELECTA PLUS Film coated tablet 5/12.5MG/1Ta",6,"2026-07",0,0,0,0],["LIPANTHYL Capsule 200MG/1Capsule, 30Capsule/",6,"2026-09",9,18,7,11],["VAGINECALM ANTIAGING tube Gel, 50 ML/TUBE",6,"2026-12",2,3,0,1],["MUCOSOLVAN Fort 6 mg/ml Syrup, 250 ML/BOTTLE",6,"2026-10",145,119,183,187],["ACRETIN C GEL 30 GM/TUBE",6,"2026-07",2,1,19,5],["CEFUTIL Film coated tablet 500MG/1Tablet, 10",6,"2026-12",0,0,0,81],["CARTIMOV 50 mg/capsule, 20 CAPSULE/BOX",6,"2026-09",44,35,95,102],["EREVARD 20 mg/tablet, 4 TABLET/BOX",6,"2026-05",0,0,0,0],["DESTAMIN 5 mg/tablet, 20 TABLET/BOX",6,"2026-09",25,119,166,37],["ELIQUIS 2.5 mg/tablet, 60 TABLET/BOX",5,"2026-10",0,0,0,0],["PENTAXIM 0.5 ml Injection, .5 ML/VIAL",5,"2026-12",0,0,0,0],["VIMPAT 2 %/ml Syrup, 200 ML/BOTTLE",5,"2026-10",0,0,0,0],["RYBELSUS 3 mg/tablet, 30 TABLET/BOX",5,"2026-10",1,1,6,6],["URILAX Tablet 10MG/1Tablet, 30Tablet/Box",5,"2026-12",0,0,1,0],["ACTRAPID Solution for injection 100IU/1ML, 1",5,"2026-06",0,0,0,0],["ECTOLLERG Eye drops 0.4MG/1Drop, 3ML/Contain",5,"2026-12",0,0,0,0],["LAXATROL 50/8.6 mg/tablet, 100 TABLET/BOX",5,"2026-12",9,18,11,5],["LINTRA 5 mg/tablet, 30 TABLET/BOX",5,"2026-03",23,20,30,20],["JANUMET Tablet 50/850MG/1Tablet, 56Tablet/Bo",5,"2026-04",4,13,9,3],["ENTAPRO Film coated tablet 20MG/1Tablet, 30T",5,"2026-07",0,0,0,12],["GLIPTAMET Tablet 50/850MG/1Tablet, 56Tablet/",5,"2026-01",22,29,49,39],["PRISTIQ Extended release tab 50MG/1Tablet, 3",5,"2026-08",0,0,0,14],["ARTELAC ADV Eye drops 2%/1Drop, 0.4ML/Contai",5,"2026-11",11,0,1,6],["AVALON FOOT Cream /1APPLY, 90GM/Tube",5,"2026-08",0,0,1,0],["KLENDAM 300 mg/capsule, 16 CAPSULE/BOX",5,"2026-07",0,1,0,0],["ACRETIN Cream 0.05%/1APPLY, 30GM/Tube",5,"2026-08",0,0,6,0],["FENISTIL Oral drops 1MG/1Drop, 20ML/Containe",5,"2026-09",73,2,0,0],["AVOMEB EXTRA OINTMENT 15 GM",5,"2026-12",45,33,29,10],["LODIAB XR 1000 mg/tablet, 30 TABLET/BOX",5,"2026-08",0,0,0,0],["PANADREX Syrup 120MG/5ML, 120ML/Bottle",5,"2026-06",0,0,0,0],["ZOVIRAX Tablet 400MG/1Tablet, 70Tablet/Box",4,"2026-09",1,1,1,3],["NUTRAQUINOL 100 mg/capsule Soft Gel Cap, 30 ",4,"2026-02",0,0,0,0],["JARDIANCE Coated tablet 25MG/1Tablet, 30Tabl",4,"2026-08",25,8,16,35],["URI-PLUS capsule, 30 capsule/BOX",4,"2026-11",0,0,0,0],["OUTRIGHT Capsule, 30 CAPSULE/BOX",4,"2026-11",1,3,6,0],["MELIGLPTIN 100 mg/tablet, 30 TABLET/BOX",4,"2026-06",2,2,0,1],["BIOGAIA oral drops 100MILLION/1Drop, 5ML/Con",4,"2026-10",0,0,0,6],["IPRAMAX Film coated tablet 100MG/1Tablet, 60",4,"2026-10",0,0,0,1],["PEPTAZOL 30 mg/capsule, 28 CAPSULE/BOX",4,"2026-02",2,16,22,36],["ATACAND Tablet 8MG/1Tablet, 28Tablet/Box",4,"2026-09",0,0,0,1],["HAEMOVIT Tablet, 30 TABLET/BOX",4,"2026-07",0,2,1,1],["DEPAKINE Tablet 500MG/1Tablet, 30Tablet/Box",4,"2026-08",1,0,0,0],["SEROXAT Tablet 20MG/1Tablet, 30Tablet/Box",4,"2026-10",4,3,7,2],["SCAR PRO apply Gel, 6 GM/TUBE",4,"2026-07",0,0,0,0],["QUEEN JELLY ROYAL NIGELLA Capsule, 30 CAPSUL",4,"2026-09",0,0,0,0],["LAMIRA 50 mg/tablet, 30 TABLET/BOX",4,"2026-01",3,4,2,3],["ARENA Tablet 150MG/1Tablet, 30Tablet/Box",4,"2026-11",0,2,3,1],["LODIPAM 10 mg/tablet, 30 TABLET/BOX",4,"2026-10",1,0,1,1],["EMANERA 20 mg/capsule, 28 CAPSULE/BOX",4,"2026-10",4,21,21,0],["SEFARIX 300 mg/capsule, 10 CAPSULE/BOX",4,"2026-10",7,0,0,0],["AQUAFLAM 50 mg/sachet, 12 SACHET/BOX",4,"2026-08",0,0,0,0],["DERMO Ointment /1APPLY, 30GM/Tube",4,"2026-09",51,70,83,41],["ESIDREX Tablet 25MG/1Tablet, 20Tablet/Box",4,"2026-09",1,0,0,0],["LOXOL 25 mg/tablet, 30 TABLET/BOX",4,"2026-09",0,0,0,0],["DERMOVATE topical solution 0.05%/1Applicator",4,"2026-09",0,0,0,0],["BENZAFLEX 5 mg/tablet, 30 TABLET/BOX",4,"2026-01",73,34,52,41],["RESPRED SYRUP 5MG/5ML, 120ML/BOTTLE",4,"2026-08",141,99,0,0],["ACETAB 25 mg/tablet, 30 TABLET/BOX",4,"2026-03",0,0,0,0],["CALSYR  Syrup, 100 ML/BOTTLE",4,"2026-08",0,0,0,0],["CONCOR PLUS Film coated tablet 5MG/1Tablet, ",4,"2026-09",0,0,0,1],["EMOLIA apply Cream, 100 GM/TUBE",4,"2026-09",2,8,0,6],["FIXIT 150 mg/capsule, 14 CAPSULE/BOX",4,"2026-12",20,2,3,1],["DICETEL Tablet 50MG/1Tablet, 20Tablet/Box",4,"2026-12",1,2,3,1],["ADOL SINUS Tablet /1Capsule, 20Tablet/Box",4,"2026-10",1,2,0,1],["VIDROP drops 2800IU/1Drop, 15ML/Container",4,"2026-10",66,58,71,74],["BLUM-D 50000 iu/tablet, 20 TABLET/BOX",4,"2026-06",0,0,0,0],["LINAJENT 5 mg/tablet, 30 TABLET/BOX",4,"2026-06",2,4,1,1],["SABRIL 500 mg/tablet, 100 TABLET/BOX",3,"2026-11",0,0,0,0],["RELVAR ELLIPTA inhalation powder 100/25MCG/1",3,"2026-10",0,0,0,0],["KEPPRA 1000 mg/tablet, 30 TABLET/BOX",3,"2026-08",2,1,1,1],["FOSTIMON Powder for injection 150MG/1Vial, 1",3,"2026-11",0,0,0,1],["BETMIGA 50 mg/tablet, 30 TABLET/BOX",3,"2026-06",2,1,5,3],["LAZURE 50 mg/tablet, 60 TABLET/BOX",3,"2026-10",0,2,1,0],["OMEGA MIND 1200 mg/5 ml Syrup, 100 ML/BOTTLE",3,"2026-11",0,1,0,0],["ELIDEL Cream 1%/1APPLY, 30GM/Tube",3,"2026-12",26,13,21,12],["VULGA XR Tablet 105MG/1Tablet, 30TABLET/BOX",3,"2026-10",13,8,6,0],["EXFORGE HCT Tablet 5/160/25MG/1Tablet, 28Tab",3,"2026-06",0,0,0,1],["ADACEL 0.5 ml Solution For Injection , 1 VIA",3,"2026-06",0,0,0,0],["DAMESTA 20 mg/tablet, 30 TABLET/BOX",3,"2026-08",0,0,3,2],["DIGESTCARE ml Syrup, 125 ML/BOTTLE",3,"2026-11",2,0,0,0],["OMEGA 3 FORT Capsule, 60 CAPSULE/BOX",3,"2026-11",1,2,1,0],["OXYBUPROCAINE 0.4% EYE MINMS(PINOX) D Eye dr",3,"2026-11",0,0,0,0],["GLUCAJONE 1000 mg/sachet, 30 SACHET/BOX",3,"2026-09",11,26,9,13],["HEMAGEL Gel /1APPLY, 30GM/Tube",3,"2026-10",0,2,4,2],["LAMIRA 100 mg/tablet, 30 TABLET/BOX",3,"2026-01",7,9,9,8],["SEVIKAR HCT Tablet 40/5/25MG/1Tablet, 28Tabl",3,"2026-09",0,0,0,0],["SILOMES 100 mg/tablet, 30 TABLET/BOX",3,"2026-07",4,0,0,1],["FOSTER NEXThaler 100 mcg/applicator Inhalati",3,"2026-10",0,0,0,3],["SIMVA Film coated tablet 20MG/1Tablet, 30Tab",3,"2026-08",0,0,1,0],["DOMINE 40 mg/ml ampoule Injection, 5 AMPOULE",3,"2026-11",0,0,0,0],["OLMETEC Tablet 20MG/1Tablet, 28Tablet/Box",3,"2026-08",26,21,20,12],["MIRZAGEN Tablet 15MG/1Tablet, 30Tablet/Box",3,"2026-10",4,8,4,2],["BIOSOFT PLUS drop, 10 ML/CONTAINER",3,"2026-06",11,16,17,5],["TENORYL 10 mg/tablet, 30 TABLET/BOX",3,"2026-07",1,1,0,2],["LASIX Tablet 40MG/1Tablet, 20Tablet/Box",3,"2026-09",5,6,10,13],["BILAXTEN Tablet 20MG/1Tablet, 20Tablet/Box",3,"2026-10",2,0,1,0],["ALDACTONE Tablet 100MG/1Tablet, 10Tablet/Box",3,"2026-09",0,0,1,1],["ERECTA Tablet 50MG/1Tablet, 4Tablet/Box",3,"2026-11",0,0,0,0],["ROSALUS 10 mg/tablet, 28 TABLET/BOX",3,"2026-12",4,7,9,7],["DESLOR 5 mg/tablet, 20 TABLET/BOX",3,"2026-11",262,232,153,200],["C-LACT Solution /1ML, 220ML/Container",3,"2026-12",6,5,0,0],["DENACIF 125 mg/5 ml Suspention, 50 ML/BOTTLE",3,"2026-10",14,16,22,6],["EPICURE PLUS Ointment /1APPLY, 30ML/Tube",3,"2026-06",2,3,2,0],["LODIAB XR 750 mg/tablet, 60 TABLET/BOX",3,"2026-07",0,0,1,0],["AVOCOM-M Cream 0.1/2%/1APPLY, 50GM/Tube",3,"2026-12",40,72,35,48],["GYNERA Tablet /1Tablet, 21Tablet/Box",3,"2026-07",1,3,1,3],["ELICA-M Cream 0.1/2%/1APPLY, 30GM/Tube",3,"2026-09",72,84,86,59],["PROTON 40 mg/tablet, 14 TABLET/BOX",3,"2026-01",12,25,26,12],["TORICOX 120 mg/tablet, 10 TABLET/BOX",3,"2026-10",1,0,2,0],["OFLAM 50 mg/sachet, 10 SACHET/BOX",3,"2026-03",17,2,0,4],["MAXITROL Eye drops /1Drop, 5ML/Container",3,"2026-12",0,0,0,0],["OXIRA 8 mg/tablet, 20 TABLET/BOX",3,"2026-11",8,4,11,10],["DAONIL-M Tablet 5/500MG/1Tablet, 30Tablet/Bo",3,"2026-05",0,0,1,1],["AZI-ONCE SUSPENTION 200MG/5ML, 15ML/Bottle",3,"2026-12",23,18,16,28],["CEBO 200 mg/capsule, 20 CAPSULE/BOX",3,"2026-12",0,0,0,0],["RINOFED PLUS Tablet /1Tablet, 30Tablet/Box",3,"2026-01",0,0,0,0],["ALFACORT Cream 0.1%/1APPLY, 15GM/Tube",3,"2026-12",12,16,11,20],["RIAXINE Syrup 0.8MG/1ML, 100ML/Bottle",3,"2026-10",0,3,2,1],["JUVAMOX Capsule 500MG/1Capsule, 20Capsule/Bo",3,"2026-09",0,1,0,0],["LOHIST Tablet 10MG/1Tablet, 10Tablet/Box",3,"2026-12",0,0,0,0],["ISOLONE 20 mg/tablet, 20 Effervescent Tablet",3,"2026-01",31,40,31,18],["MYFORTIC 360 mg/tablet, 120 TABLET/BOX",2,"2026-10",0,0,0,0],["OZEMPIC 0.25 mg/ml Ampoule, 4 AMPOULE/BOX",2,"2026-11",0,3,3,1],["GONAL-F Injection 300IU/1pen, 0.5ML/Pen",2,"2026-11",1,0,0,0],["GONAL-F Injection 450IU/1pen, 1ML/Pen",2,"2026-09",0,2,0,2],["RYBELSUS 14 mg/tablet, 30 TABLET/BOX",2,"2026-06",0,1,1,2],["MENACTRA VACCIN Solution for injection 4MCG/",2,"2026-05",0,0,0,0],["LANTUS SOLOSTAR 100 iu/ml Solution For Injec",2,"2026-12",0,0,0,10],["HUMALOG KWIK PEN Injection 50/50 IU/1ML, 15M",2,"2026-06",0,0,0,0],["DAIVOBET apply Ointment , 60 GM/TUBE",2,"2026-10",0,2,0,0],["OLENZA TABLET 15MG/1Tablet, 30Tablet/BOX",2,"2026-12",6,5,11,3],["G1000 3 gm/sachet, 30 SACHET/BOX",2,"2026-11",1,2,0,0],["JP MACA 500 mg/capsule, 50 CAPSULE/BOTTLE",2,"2026-10",0,0,0,0],["CONESTAL 2 mg/tablet, 28 TABLET/BOX",2,"2026-11",4,8,18,13],["CONCERTA 18 mg/tablet Extended Release Tab, ",2,"2026-12",0,0,0,0],["NEXIUM 10 mg/sachet Granules for oral susp, ",2,"2026-12",0,0,0,0],["AUGMENTIN Tablet 1000MG/1Tablet, 14Tablet/Bo",2,"2026-12",4,10,24,13],["ATACAND PLUS Tablet 16 /12.5MG/1Tablet, 28Ta",2,"2026-08",0,0,0,0],["CLENIL FORTE INHALATION SPRAY 250MG/1Inhaler",2,"2026-12",0,0,0,0],["CYANOSEPT 6 tube Vaginal Gel, 6 TUBE/BOX",2,"2026-10",0,8,11,8],["NEMR ROYAL 1000 mg/capsule, 30 CAPSULE/BOX",2,"2026-07",0,0,0,0],["ASACOL Film coated tablet 400MG/1Tablet, 50T",2,"2026-07",0,0,0,0],["KOZAMOD 5 % Cream, 12 sachet/box",2,"2026-08",3,6,3,3],["SEVIKAR HCT Tablet 40/10/25MG/1Tablet, 28Tab",2,"2026-09",0,0,0,0],["TRAJENTA Coated tablet 5MG/1Tablet, 30Tablet",2,"2026-11",7,10,8,18],["BEPANTHENE 5 %/apply Cream, 100 GM/TUBE",2,"2026-06",3,3,0,2],["ARYZALERA 15 mg/tablet, 30 TABLET/BOX",2,"2026-08",0,0,0,0],["ZOLINDA Tablet 5MG/1Tablet, 30TABLET/BOX",2,"2026-11",1,2,8,8],["OSTEOFLEX Tablet, 60 TABLET/BOX",2,"2026-06",3,7,0,5],["GLIPTAMET Tablet 50/1000MG/1Tablet, 56Tablet",2,"2026-08",49,55,54,44],["NUVA RING VAGINAL RING 0.120/0.01MG/1Ring, 1",2,"2026-09",0,0,0,0],["SEROXAT CR Tablet 25MG/1Tablet, 30Tablet/Box",2,"2026-09",0,2,3,2],["SIMVA Film coated tablet 10MG/1Tablet, 30Tab",2,"2026-08",0,1,0,0],["CREVAST 10 mg/tablet, 30 TABLET/BOX",2,"2026-03",0,0,2,0],["EXETORA 20 mg/4 ml Injection, 5 AMPOULE/BOX",2,"2026-04",0,0,0,0],["VULGA TABLET 55MG/1Tablet, 30TABLET/BOX",2,"2026-11",10,9,15,4],["URAGO 40 mg/tablet, 30 TABLET/BOX",2,"2026-08",33,31,51,39],["MIGROTAN 40 mg/tablet, 4 TABLET/BOX",2,"2026-09",5,7,0,3],["HAIR GROW topical spray 5%/1Applicator, 1App",2,"2026-01",0,0,0,0],["LISINO 20 mg/tablet, 30 TABLET/BOX",2,"2026-02",0,0,0,0],["EVENING PRIMROSE OIL Capsule /1CAPSULE, 30CA",2,"2026-10",0,0,0,2],["TEARS NATURALE FREE Eye drops 1MG/1Drop, 0.4",2,"2026-09",0,0,0,0],["DIOVAN Tablet 160MG/1Tablet, 28Tablet/Box",2,"2026-10",8,9,9,9],["HI-QUIN Cream 2%/1APPLY, 30GM/Tube",2,"2026-07",2,2,2,2],["YOCAIR 10 mg/tablet, 30 TABLET/BOX",2,"2026-11",24,26,34,14],["JALRA 50 mg/tablet, 28 TABLET/BOX",2,"2026-10",0,1,0,0],["VIZOL  0.21 %/drop, 10 ML/CONTAINER",2,"2026-10",5,0,0,0],["TEGRETOL CR Tablet 400MG/1Tablet, 30Tablet/B",2,"2026-10",2,2,0,1],["FEMADINE 10 %/ml Vaginal Wash, 200 ML/CONTAI",2,"2026-07",0,0,0,12],["NAFEES PHARMA NEUROBIT-B12 (1000 mcg/tablet)",2,"2026-09",0,0,0,0],["CONCOR Tablet 10MG/1Tablet, 30Tablet/Box",2,"2026-08",0,3,2,0],["NUTRO GUARD MASSAGE GEL /1APPLY, 100GM/Tube",2,"2026-12",0,0,0,0],["VOLTIC 75 mg/ampoule Injection, 5 AMPOULE/BO",2,"2026-11",2,2,2,1],["EMOLIA apply Cream, 200 GM/TUBE",2,"2026-11",3,3,2,0],["CONCOR Tablet 5MG/1Tablet, 30Tablet/Box",2,"2026-10",42,27,32,18],["TILAX Tablet 2MG/1Tablet, 30Tablet/Box",2,"2026-12",86,57,77,57],["AVALON ACTIVE 1 %/apply Cream, 100 GM/TUBE",2,"2026-12",0,0,0,0],["LORVAST Film coated tablet 20MG/1Tablet, 30T",2,"2026-10",0,0,0,2],["AGIOLAX POWDER /1SPOON, 250GM/Container",2,"2026-09",46,77,92,104],["SPASMOLYTE Tablet 20MG/1Tablet, 30Tablet/Box",2,"2026-12",0,1,0,0],["DIANE-35 Tablet /1Tablet, 21Tablet/Box",2,"2026-08",12,14,14,6],["LUNIA 10 mg/ 20 MG/tablet, 28 TABLET/BOX",2,"2026-07",7,5,34,29],["ANAFRANIL Tablet 25MG/1Tablet, 30Tablet/Box",2,"2026-12",5,1,3,6],["AVOBAN CREAM 2 %/apply Cream, 30 GM/TUBE",2,"2026-03",68,84,44,100],["DERMOVATE 0.05 %/apply Ointment , 25 GM/TUBE",2,"2026-06",6,7,6,9],["LEVOZAL 0.5 mg/ml Syrup, 200 ML/BOTTEL",2,"2026-09",35,15,43,44],["ANAFRANIL Tablet 10MG/1Tablet, 30Tablet/Box",2,"2026-10",0,1,0,0],["CLARITT Film coated tablet 250MG/1Tablet, 14",2,"2026-09",0,0,0,1],["UNI FRESH UD 5 %/drop, 30 SINGLE DOSE/BOX",2,"2026-10",0,0,0,0],["CELER 0.5 mg/ml Syrup, 150 ML/BOTTLE",2,"2026-12",2,0,3,0],["KLAVOX SUSPENTION 312MG/5ML, 100ML/Bottle",2,"2026-04",63,49,50,56],["BENZAFLEX 10 mg/tablet, 30 TABLET/BOX",2,"2026-01",10,8,10,10],["GLIM Tablet 1MG/1Tablet, 30Tablet/Box",2,"2026-01",11,6,10,6],["MARVELON Tablet /1Tablet, 21Tablet/Box",2,"2026-12",9,21,14,8],["PANADOL BABY Syrup 120MG/5ML, 100ML/Bottle",2,"2026-06",0,0,0,0],["PILOCIN 1 %/apply Cream, 30 GM/TUBE",2,"2026-11",43,46,62,47],["DEFOPAN 1 mg/ml Syrup, 100 ML/BOTTLE",2,"2026-12",20,8,10,29],["RISEK Powder for injection 40MG/1Vial, 1Vial",2,"2026-11",0,0,0,0],["RHINATHIOL PROMETHAZINE Syrup 1MG/1ML, 125ML",2,"2026-11",0,0,0,0],["MUCOGEL SUSPENTION /1ML, 125ML/Bottle",2,"2026-12",4,5,8,3],["10%MAGNESIUM SULFATE 10 mg/10 ml Ampoule, AM",2,"2026-01",0,0,0,0],["COLI-URINAL GRANULES /1BOTTEL, 60GM/BOX",2,"2026-10",154,143,127,166],["AMYDRAMINE ADULT ml Syrup, 120 ML/BOTTLE",2,"2026-09",70,12,22,29],["SITAVIC 50/1000 mg/tablet, 56 TABLET/BOX",2,"2026-10",8,12,12,7],["SITAVIC 50/850 mg/tablet, 56 TABLET/BOX",2,"2026-11",11,18,10,5],["MOUNJARO 12.5 mg/ml Ampoule, 4 AMPOULE/BOX",1,"2026-10",1,0,3,2],["SAXENDA Ampoule 6MG/1ML, 5ML/Box",1,"2026-07",0,0,0,0],["BOTOX Injection 1IU/1ML, 1ML/Vial",1,"2026-08",0,0,0,0],["RYZODEG 100 iu/ml Solution For Injection , 1",1,"2026-07",0,0,0,1],["TRESIBA FLEX TOUCH Solution for injection 10",1,"2026-11",0,0,0,1],["ZYPREXA Tablet 10MG/1Tablet, 28Tablet/BOX",1,"2026-09",0,0,0,0],["DEBREX 1 mg/tablet, 30 TABLET/BOX",1,"2026-07",0,1,0,1],["ENTRESTO 50 mg/tablet, 28 TABLET/BOX",1,"2026-06",6,2,5,2],["ARGITEST capsule Tablet, 30 TABLET/BOX",1,"2026-10",5,1,0,0],["MOTOVA C Advanced sachet, 30 SACHET/BOX",1,"2026-10",3,3,0,3],["ARGIREKT 7 gm Sachets, 30 SACHET/BOX",1,"2026-11",0,3,0,5],["MINIRIN MELT Tablet 120MG/1Tablet, 30Tablet/",1,"2026-09",1,1,0,1],["BRILINTA 90 mg/tablet, 56 TABLET/BOX",1,"2026-12",4,5,8,2],["ROVITAL Capsule /1CAPSULE, 30CAPSULE/BOX",1,"2026-09",0,0,0,0],["$old$SYNJARDY 12.5/1000 mg/tablet, 60 TABL",1,"2026-10",0,0,0,0],["PROLIFE PREMIUM box Sheets, 30 SHEET/BOX",1,"2026-02",3,1,0,0],["QUPENE capsule Soft Gel Cap, 30 CAPSULE/BOX",1,"2026-12",2,1,0,0],["GARCIMIUM 1 gm/tablet, 60 TABLET/BOX",1,"2026-11",1,0,1,1],["LEPONEX Tablet 100MG/1Tablet, 50Tablet/Box",1,"2026-09",1,0,0,0],["ARCON TISANE PLUS Capsule, 60 CAPSULE/BOX",1,"2026-07",1,1,0,0],["HELIABRINE HAIR NAIL Capsule /1Container, 1C",1,"2026-06",0,0,0,4],["RESVEMUNE Capsule, 30 CAPSULE/BOTTLE",1,"2026-12",0,0,0,0],["MOVACID 400 mg/tablet, 60 TABLET/BOX",1,"2026-09",20,11,14,23],["GALVUS Tablet 50MG/1Tablet, 56Tablet/Box",1,"2026-09",1,3,3,3],["SEVIKAR HCT Tablet 40/5/12.5MG/1Tablet, 28Ta",1,"2026-09",0,0,0,3],["SEROQUEL Tablet 100MG/1Tablet, 60Tablet/Box",1,"2026-09",0,1,0,0],["$old$PRAVOMAX Tablet, 30 TABLET/BOX",1,"2026-10",0,0,0,0],["METHOTREXATE SPC 2.5 mg/tablet, 100 TABLET/B",1,"2026-12",0,0,0,0],["GALVUS MET 50/1000MG/tablet, 60 TABLET/BOX",1,"2026-06",15,15,15,20],["$old$COVERAM Tablet 10 mg / 5 MG/1Tablet, ",1,"2026-10",0,0,0,0],["GALVUS MET Tablet 50/850MG/1Tablet, 60Tablet",1,"2026-08",5,5,12,7],["SEVIKAR Tablet 40/10MG/1Tablet, 28Tablet/Box",1,"2026-06",7,13,14,8],["WELLMOV tablet, 30 TABLET/BOX",1,"2026-11",0,3,7,0],["VERSATIS MEDICATED PLASTER 700 mg/ml/apply P",1,"2026-09",0,0,0,32],["OLMETEC PLUS Tablet 40/25MG/1Tablet, 28Table",1,"2026-11",0,0,0,0],["OLMETEC PLUS Tablet 40/12.5MG/1Tablet, 28Tab",1,"2026-08",0,0,0,3],["VALTREX 500 mg/tablet, 10 TABLET/BOX",1,"2026-08",0,0,0,0],["URILAX Film coated tablet 5MG/1Tablet, 30Tab",1,"2026-08",0,0,1,0],["FAVERIN Tablet 100MG/1Tablet, 30Tablet/Box",1,"2026-08",21,26,35,17],["QUETTA XR 200 mg/tablet Extended Release Tab",1,"2026-01",0,0,0,0],["RENALOF Capsule 1MG/1Tablet, 60Capsule/Box",1,"2026-11",2,1,0,0],["FOSTER PRESSURISED SOLUTION FOR INHALATION 1",1,"2026-06",0,0,0,0],["FEROSAC 20 MG/ML AMPOULE 5 AMPOULE",1,"2026-01",13,19,19,11],["VIOTOPIC Ointment 0.1%/1APPLY, 30GM/Tube'",1,"2026-07",26,31,35,5],["CYSBERRY 360 mg/capsule, 15 CAPSULE/BOX",1,"2026-12",0,0,0,0],["MARLON 10 mg/tablet, 30 TABLET/BOX",1,"2026-02",0,2,0,2],["CARPAZIO 600 mg/tablet, 50 TABLET/BOX",1,"2026-11",4,6,6,10],["AGOUT FC Film coated tablet 80MG/1Tablet, 30",1,"2026-09",0,0,0,12],["OLMETEC PLUS Tablet 20/12.5MG/1Tablet, 28Tab",1,"2026-08",0,0,0,1],["SALOFALK Tablet 500MG/1Tablet, 50Tablet/Box",1,"2026-11",1,0,0,0],["BUDIAIR 200 mcg/applicator Inhalation Spray,",1,"2026-08",0,0,0,0],["MICARDIS PLUS 80/12.5 mg/tablet, 28 TABLET/B",1,"2026-09",0,1,3,0],["ZORON 2 mg/1 ml Injection, 5 AMPOULE/BOX",1,"2026-07",0,0,0,0],["PAROXAT Tablet 30MG/1Tablet, 30Tablet/Box",1,"2026-01",13,24,15,20],["MELIGAMET 50 mg / 850 mg/tablet, 60 TABLET/B",1,"2026-09",1,2,1,0],["LOTEVAN 5/160MG//tablet, 30 TABLET/BOX",1,"2026-11",10,15,5,10],["CREVAST 20 mg/tablet, 30 TABLET/BOX",1,"2026-02",0,1,3,2],["ROLENIUM INHALATION SOLUTION 50/250MCG/1Cont",1,"2026-11",0,0,0,0],["GINKOSPAN 60 mg/capsule, 60 CAPSULE/BOX",1,"2026-09",3,1,3,2],["LAMICTAL Tablet 50MG/1Tablet, 30Tablet/Box",1,"2026-10",1,1,2,1],["MONTEL Tablet 10MG/1Tablet, 28Tablet/Box",1,"2026-10",4,0,6,0],["HUMULIN 70/30 Solution for injection 70/30MG",1,"2026-12",0,0,0,0],["ESOPOLE 20 mg/capsule, 28 CAPSULE/BOX",1,"2026-12",2,0,1,2],["DICYNONE Tablet 500MG/1Tablet, 20Tablet/Box",1,"2026-11",3,4,4,7],["LAMIFEN Tablet 250MG/1Tablet, 14Tablet/Box",1,"2026-07",10,17,12,3],["LICAN apply Cream, 30 GM/TUBE",1,"2026-11",30,28,48,11],["MYO REST PLUS Cream /1APPLY, 100GM/Tube",1,"2026-11",26,37,37,35],["RENITEC Tablet 10MG/1Tablet, 28Tablet/Box",1,"2026-06",0,0,0,0],["HERBA CARE VAGINAL WASH /1ML, 250ML/Containe",1,"2026-10",0,0,0,0],["LEVOX Film coated tablet 750MG/1Tablet, 5Tab",1,"2026-08",4,9,2,6],["DEVARIN ODT 10 mg/tablet, 4 TABLET/BOX",1,"2026-08",0,0,0,0],["ETORIA Tablet 90MG/1Tablet, 28Tablet/Box",1,"2026-10",89,50,83,75],["SELENIUM 100 mcg/tablet, 100 TABLET/CONTAINE",1,"2026-06",0,0,0,0],["CEFPROZ 250 mg/5 ml Suspention, 100 ML/BOTTL",1,"2026-11",12,10,7,30],["CO-DIOVAN  160/25MG/1Tablet, 28Tablet/Box",1,"2026-09",0,0,0,2],["TENORYL PLUS 5/5 mg/tablet, 30 TABLET/BOX",1,"2026-07",3,10,1,1],["TEGRETOL CR 200 mg/tablet, 50 TABLET/BOX",1,"2026-10",9,8,4,12],["GENGIGEL BABY 1 %/apply Gel, 15 GM/APPLY",1,"2026-12",1,4,3,3],["CLEXAN Injection 40MG/1Syringe, 1Syringe/Box",1,"2026-12",4,3,1,7],["NEUROBION 3 ml Solution For Injection , 10 A",1,"2026-10",0,0,0,5],["LUMIGAN Eye drops 0.3MG/1Drop, 3ML/Container",1,"2026-08",1,0,0,0],["LUMIFY 0.25 mg/drop, 7.5 ML/CONTAINER",1,"2026-07",2,0,1,0],["HEMICLAR Gel /1APPLY, 120ML/Tube",1,"2026-12",2,6,2,4],["STREPSILS LEMON SUGAR FREE 1 mg/tablet Lozen",1,"2026-09",0,0,0,0],["SUPRAX Capsule 400MG/1Capsule, 6Capsule/Box",1,"2026-12",13,7,17,10],["SUN-D 1000 iu/tablet, 90 TABLET/BOX",1,"2026-09",37,12,11,15],["MINOCET 125 mg/5 ml Suspention, 80 ML/BOTTLE",1,"2026-07",17,5,19,0],["ATROSOL 500 mg/2 ml Ampoule, 21 AMPOULE/BOX",1,"2026-11",9,6,3,2],["CROMA Eye drops 0.04MG/1Drop, 10ML/Container",1,"2026-06",0,0,1,0],["ACETAB Tablet 50MG/1Tablet, 30Tablet/Box",1,"2026-04",0,0,0,0],["AVOMEB extra 1 %/apply Ointment , 30 GM/TUBE",1,"2026-12",2,4,3,3],["COXICEL 200 mg/capsule, 30 CAPSULE/BOX",1,"2026-02",271,239,170,200],["FIXIT Capsule 150MG/1Capsule, 28Capsule/Box",1,"2026-12",0,0,1,0],["AVAMYS NASAL SPRAY /1Applicator, 1Applicator",1,"2026-08",0,0,0,77],["TEGRETOL Tablet 200MG/1Tablet, 50Tablet/Box",1,"2026-10",2,0,1,1],["GLADOS Tablet 15MG/1Tablet, 30Tablet/Contain",1,"2026-06",1,0,0,2],["HYMOX Film coated tablet 875MG/1Tablet, 14Ta",1,"2026-10",0,0,0,50],["ENDOSA 40 mg 2 SYRINGE/BOX",1,"2026-12",0,0,0,0],["NOLVADEX Tablet 10MG/1Tablet, 30Tablet/Box",1,"2026-08",1,0,1,1],["LIMITLESS ALLZYME Tablet, 30 TABLET/BOX",1,"2026-08",42,60,22,9],["CLARIMAC Film coated tablet 500MG/1Tablet, 1",1,"2026-12",0,0,0,0],["ACTIVLAB MAGNESIUM + VITAMIN B6 tablet, 20 T",1,"2026-10",0,0,0,67],["SEPTOFORT LEMON 2 mg/tablet Lozenges, 24 TAB",1,"2026-08",0,0,0,0],["SEPTOFORT LOZENGES 2MG/1Tablet, 24Tablet/Box",1,"2026-08",1,2,0,1],["GAVISCON SUSPENTION /1ML, 300ML/Bottle",1,"2026-01",15,2,22,6],["CORDARON Tablet 200MG/1Tablet, 30Tablet/Box",1,"2026-12",0,0,0,0],["NEO PROKTO Cream /1APPLY, 30GM/Tube",1,"2026-08",18,15,38,17],["AVALON UREA apply Cream, 100 ML/TUBE",1,"2026-09",4,3,4,0],["CALCINATE Film coated tablet 600MG/1Tablet, ",1,"2026-06",0,0,0,38],["UVAMIN Tablet 100MG/1Tablet, 20Tablet/Box",1,"2026-02",14,8,11,9],["AVALON VARA spray solution 1%/1APPLY, 50ML/B",1,"2026-11",0,0,0,0],["AVALON AVOCIN 2 % Vaginal Cream, 40 GM/TUBE",1,"2026-12",6,13,16,3],["EVRA TRANSDERMAL patch /1patch, 3patch/Box",1,"2026-09",4,1,2,1],["DIAMICRON MR Modified-release tablet 30MG/1T",1,"2026-11",0,0,0,26],["FLUCA 1 mg/drop, 5 ML/CONTAINER",1,"2026-07",24,12,12,1],["AERIUS Syrup 0.5MG/1ML, 150ML/Bottle",1,"2026-02",8,4,5,4],["DAPOX 60 mg/tablet, 4 TABLET/BOX",1,"2026-01",0,0,0,0],["ISOBID Modified-release capsule, soft 40MG/1",1,"2026-08",0,0,0,0],["AERIUS Tablet 5MG/1Tablet, 18Tablet/Box",1,"2026-09",0,0,0,1],["MEBO 1 %/apply Ointment , 15 GM/TUBE",1,"2026-11",9,8,1,4],["DIOVAN Tablet 40MG/1Tablet, 28Tablet/Box",1,"2026-12",1,2,2,1],["TRACON Capsule 100MG/1Capsule, 4Capsule/Box",1,"2026-01",5,19,8,9],["BETAGEN Tablet 16MG/1Tablet, 30Tablet/Box",1,"2026-10",0,0,0,0],["DOGMATIL 200 mg/tablet, 12 TABLET/BOX",1,"2026-10",0,0,0,0],["HY-SENSE Mouth Wash , 300 ML/BOTTLE",1,"2026-09",0,0,0,0],["NIZORAL shampoo 2%/1Container, 1Container/Co",1,"2026-09",0,0,0,10],["TOVAST Tablet 10MG/1Tablet, 30Tablet/Box",1,"2026-11",1,3,6,10],["XYZAL Tablet 5MG/1Tablet, 20Tablet/Box",1,"2026-12",3,0,0,0],["SNAFI Tablet 20MG/1Tablet, 4Tablet/Box",1,"2026-06",0,0,0,0],["SELECTA Film coated tablet 5MG/1Tablet, 30Ta",1,"2026-07",0,0,0,1],["GLUCOVANCE Tablet 5/500MG/1Tablet, 30Tablet/",1,"2026-12",0,0,0,0],["DEPAKINE Syrup 57.46MG/1ML, 150ML/Bottle",1,"2026-06",0,0,0,0],["OSTERRA 1500/800 mg/tablet, 30 TABLET/BOX",1,"2026-12",0,0,0,0],["FLAMAZINE Cream 1%/1APPLY, 50GM/Tube",1,"2026-12",0,0,0,0],["GLUCOPHAGE Tablet 1000MG/1Tablet, 30Tablet/B",1,"2026-12",7,9,8,6],["FEROGLOBIN Capsule /1Capsule, 30Capsule/Box",1,"2026-06",37,39,32,35],["BETAVERT 24 mg/tablet, 30 TABLET/BOX",1,"2026-04",0,1,0,0],["DURADOX Capsule 100MG/1Capsule, 10Capsule/Bo",1,"2026-09",0,0,0,0],["AVALON K JELLY Gel /1Container, 1Container/C",1,"2026-08",0,0,0,0],["CIPROCIN Tablet 500MG/1Tablet, 10Tablet/Box",1,"2026-12",4,1,1,8],["REDOXON Effervescent tablet 1000MG/1Tablet, ",1,"2026-06",0,0,0,3],["ACC Effervescent tablet 600MG/1Tablet, 10Tab",1,"2026-07",0,19,19,6],["BACTRIM Syrup 200/40MG/1ML, 100ML/Bottle",1,"2026-01",4,2,3,1],["PRED FORTE Eye drops 2MG/1Drop, 5ML/Containe",1,"2026-10",0,2,4,0],["XEFO Tablet 8MG/1Tablet, 20Tablet/Box",1,"2026-09",41,23,25,42],["KLAVOX Tablet 375MG/1Tablet, 20Tablet/Box",1,"2026-01",17,9,13,7],["ZENCIN 500 mg/tablet, 3 TABLET/BOX",1,"2026-08",46,49,43,70],["DAROXIME Film coated tablet 500MG/1Tablet, 1",1,"2026-01",0,0,0,0],["FUSIBACT-B 2.1 %/apply Cream, 30 GM/TUBE",1,"2026-01",41,44,30,21],["SELECTA Tablet 2.5MG/1Tablet, 30Tablet/Box",1,"2026-11",8,11,13,7],["ROFENAC 1 %/apply Gel, 50 GM/TUBE",1,"2026-01",140,92,229,127],["KETESSE Film coated tablet 25MG/1Tablet, 20T",1,"2026-09",0,0,0,3],["FAMODAR Tablet 40MG/1Tablet, 10Tablet/Box",1,"2026-01",2,2,0,24],["AMAGLIME 3 mg/tablet, 30 TABLET/BOX",1,"2026-11",0,0,0,0],["OXIRA RAPID 8 mg/tablet, 20 TABLET/BOX",1,"2026-08",0,0,0,0],["MICOCORT cream 2/1%/1APPLY, 30GM/Tube",1,"2026-11",0,2,0,0],["REPADERM 1 %/apply Gel, 100 GM/TUBE",1,"2026-08",128,65,107,96],["VERMOX SUSPENTION 0.02MG/1ML, 30ML/Bottle",1,"2026-12",5,8,3,6],["AVALON AVOCOM-M CREAM 30GM Cream 0.1/2%/1Con",1,"2026-12",0,0,0,0],["ETORIA Tablet 120MG/1Tablet, 7Tablet/Box",1,"2026-03",17,14,23,9],["RAFOL 1 mg/tablet, 50 TABLET/BOX",1,"2026-12",32,0,0,1],["DESLIN 1 mg/ml Syrup, 150 ML/BOTTLE",1,"2026-09",0,0,0,0],["CLARA Tablet 10MG/1Tablet, 10Tablet/Box",1,"2026-09",357,303,310,309],["PANADOL ACTIFAST Coated tablet 500MG/1Tablet",1,"2026-12",0,0,0,27],["IVY-CALM ml Syrup, 120 ML/BOTTLE",1,"2026-09",1,1,0,1],["NEGAZOL Tablet 500MG/1Tablet, 20Tablet/Box",1,"2026-02",1,0,3,3],["BUTALIN SUSPENTION 0.4MG/1ML, 120ML/Bottle",1,"2026-02",15,8,7,4],["JUSPRIN 81 mg/tablet, 30 TABLET/BOX",1,"2026-07",0,2,8,9],["GLIBIL Tablet 5MG/1Tablet, 30Tablet/Box",1,"2026-07",0,0,0,0],["COXICAM 15 mg/tablet, 10 TABLET/BOX",1,"2026-09",0,0,0,0],["PROFINAL XP 400 mg/tablet, 20 TABLET/BOX",1,"2026-08",20,21,32,23],["DEPOVIT B12 Injection 1000MG/1Ampoule, 2ML/A",1,"2026-11",0,0,0,5],["SAPOFEN 100 mg/ml Syrup, 100 ML/BOTTLE",1,"2026-01",2,0,0,0],["MEGAMOX SUSPENTION 156MG/5ML, 100ML/Bottle",1,"2026-04",2,21,17,21],["ACICAL PLUS tablet, 30 TABLET/BOX",1,"2026-08",2,0,0,0],["FOLIC ACID Tablet 5MG/1Tablet, 20Tablet/Box",1,"2026-08",3,11,8,18],["ADOL Suppository 250MG/1Suppository, 10Suppo",1,"2026-11",0,0,0,25],["PROF SUSPENTION 100MG/5ML, 110ML/Bottle",1,"2026-12",167,158,179,194],["GUAPHAN Syrup 20MG/1ML, 100ML/Bottle",1,"2026-11",26,20,15,19],["AMYDRAMINE SUGAR FREE Syrup, 120 ML/BOTTLE",1,"2026-12",2,41,33,56],["DEFADOL 160 mg/5 ml Syrup, 100 ML/BOTTLE",1,"2026-07",366,271,138,75],["DECOZAL 0.05 % nasal spray child, 10 ML/CONT",1,"2026-11",0,0,0,0],["EPICOGEL Oral suspension /1ML, 125ML/Bottle",1,"2026-09",3,9,3,3],["LYPFEN 200 mg/capsule, 30 CAPSULE/BOX",1,"2026-10",0,6,13,7],["APIGEN Eye ointment 0.3%/1APPLY, 5GM/Tube",1,"2026-12",0,0,0,0],["JOSPAN ml Syrup, 100 ML/BOTTLE",1,"2026-06",0,0,0,0],["APLEFIT PLUS Capsule, 60 CAPSULE/BOX",1,"2026-09",1,1,1,0],["MOTOVA PLUS 60 TAB 1500 MG BOTTEL",1,"2026-11",2,1,4,1],["RIDON Film coated tablet 4MG/1Tablet, 30Tabl",1,"2026-10",0,1,1,0],["DENACIF 125 mg/5 ml Suspention, 100 ML/BOTTL",1,"2026-10",1,0,0,0],["DRAMYLIN ADULT ml Syrup, 120 ML/BOTTLE",1,"2026-10",1,0,0,0],["PROLUTEX 25 mg/1.119 vial Injection, 7 VIAL/",0,"2026-11",13,17,2,22],["TOUJEO SOLOSTAR 300 iu/ml Solution For Injec",0,"2026-08",0,0,0,5],["LACTOSAT 125 mg/capsule, 30 CAPSULE/BOX",0,"2026-10",8,12,7,13],["EMANERA 40 mg/capsule, 28 CAPSULE/BOX",0,"2026-10",33,20,15,39],["Vicks vapodrops Berry menthol 36 lozenges",0,"2026-08",0,0,0,0]],
     topDocs:{"ROFENAC 1 %/apply Gel, 50 GM/TUBE":"Mohamed Samir Abdelfattah Faraj (79) · Medhat Alashry Aladawy Goger (63)","CEFIM Capsule 400MG/1Capsule, 6Capsule/Box":"Said Tolba Elsayed Elbedewy (177) · Mugahid Khalid Zainelabdin Elfak (15)","SALOFALK Tablet 500MG/1Tablet, 50Tablet/Box":"Abdulaziz Ibrahim Abdullah Aljura (1)","CONCOR Tablet 5MG/1Tablet, 30Tablet/Box":"Hanan Mohamed Naguib Elgendi (24) · Abdulaziz Ibrahim Abdullah Aljura (22)","GLIPTAMET Tablet 50/850MG/1Tablet, 56Tablet/":"Summera Aman Solangi (35) · Mugahid Khalid Zainelabdin Elfak (21)","DESLOR 5 mg/tablet, 20 TABLET/BOX":"Mohamed Hasan Badr Moussa (167) · Abdullah Ahmed Mohamede Ahme (125)","MUCOSOLVAN Fort 6 mg/ml Syrup, 250 ML/BOTTLE":"Said Tolba Elsayed Elbedewy (266) · Mugahid Khalid Zainelabdin Elfak (102)","ESIDREX Tablet 25MG/1Tablet, 20Tablet/Box":"Nahed Mohammed Hassona Bahage (1)","RECTACURE 2% /apply Cream, 30 GM/TUBE":"Ahmad Abdelrahman Abdallah Ha (56) · Mohamed Hatem Abdelsamie Nour (13)","HYFRESH EYE GEL drop, 30 ML/BOTTEL":"Ahmed Zakaria Abdelmohsen Zaye (132) · Dina Mahmoud Abdelazim Mahme (113)","AGIOLAX POWDER /1SPOON, 250GM/Container":"Ahmad Abdelrahman Abdallah Ha (49) · Ibrahim Ali Ismail Heggy (33)","OLMETEC Tablet 20MG/1Tablet, 28Tablet/Box":"Hanan Mohamed Naguib Elgendi (34) · Maysa Sayed Abdullah Abdeltawab (8)","ADAZIO 25 mg/tablet, (new price )30 TABLET/B":"Ahmed Taher Mokhtar Mashaly (3) · Mohamed Emad Kamal Ismail (1)","JARDIANCE Coated tablet 25MG/1Tablet, 30Tabl":"Mugahid Khalid Zainelabdin Elfak (15) · Summera Aman Solangi (14)","VAROXA 20 mg/tablet, 30 TABLET/BOX":"Abdulaziz Ibrahim Abdullah Aljura (2) · Mohamed Hatem Abdelsamie Nour (2)","FORXIGA Tablet 10MG/1Tablet, 28Tablet/Box":"Hanan Mohamed Naguib Elgendi (16) · Abdulaziz Ibrahim Abdullah Aljura (15)","PILOCIN 1 %/apply Cream, 30 GM/TUBE":"Ibrahim Ali Ismail Heggy (72) · Khaled Ahmed Ali Abdurrahman (17)","AVOBAN CREAM 2 %/apply Cream, 30 GM/TUBE":"Ibrahim Ali Ismail Heggy (60) · Ahmad Abdelrahman Abdallah Ha (58)","SETAPRO 10 mg/tablet, 30 TABLET/BOX":"Mohamed Emad Kamal Ismail (96) · Said Tolba Elsayed Elbedewy (4)","OLENZA TABLET 15MG/1Tablet, 30Tablet/BOX":"Mohamed Emad Kamal Ismail (22)","REPADERM 1 %/apply Gel, 100 GM/TUBE":"Mohamed Samir Abdelfattah Faraj (181) · Mohammed Shabaan Abdelhay Els (50)","COXICEL 200 mg/capsule, 30 CAPSULE/BOX":"Mohammed Shabaan Abdelhay Els (253) · Mohamed Samir Abdelfattah Faraj (194)","TRAJENTA Coated tablet 5MG/1Tablet, 30Tablet":"Abdalla Basbar Dafaallah Basbar (7) · Hatem Abdelmageed Elsayed Mata (5)","COLI-URINAL GRANULES /1BOTTEL, 60GM/BOX":"Khaled Ahmed Ali Abdurrahman (120) · Hossameldin Mohamed Amin Bekh (74)","LINTRA 5 mg/tablet, 30 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (25) · Summera Aman Solangi (17)","BIOSOFT PLUS drop, 10 ML/CONTAINER":"Dina Mahmoud Abdelazim Mahme (14) · Mohamed Mohamed Arafa Abo Ob (7)","GALVUS MET 50/1000MG/tablet, 60 TABLET/BOX":"Said Tolba Elsayed Elbedewy (7) · Ali Mohamed Elameen Ahmed (6)","VEDOXIN 500 mg/tablet, 5 TABLET/BOX":"Nahed Mohammed Hassona Bahage (158) · Mohamed Hasan Badr Moussa (154)","SITAVIC 50/850 mg/tablet, 56 TABLET/BOX":"Hatem Abdelmageed Elsayed Mata (18) · Maysa Sayed Abdullah Abdeltawab (12)","DIOVAN Tablet 160MG/1Tablet, 28Tablet/Box":"Maysa Sayed Abdullah Abdeltawab (7) · Abdulaziz Ibrahim Abdullah Aljura (5)","ELIDEL Cream 1%/1APPLY, 30GM/Tube":"Mona Farid Elmandouh Abdelrahm (34) · Nasser Abdelaziz Ragab Sakr (17)","RAFOL 1 mg/tablet, 50 TABLET/BOX":"Wafaa Abdelrazig Mukhtar Moham (27) · Fatimah Abdulhafeez Mohamed K (2)","LASIX Tablet 40MG/1Tablet, 20Tablet/Box":"Maysa Sayed Abdullah Abdeltawab (7) · Gazala Gholam Mir (3)","AVODART Capsule 0.5MG/1Capsule, 30Capsule/Bo":"Nahed Mohammed Hassona Bahage (3) · Hossameldin Mohamed Amin Bekh (2)","BUTALIN SUSPENTION 0.4MG/1ML, 120ML/Bottle":"Said Tolba Elsayed Elbedewy (27) · Ayman Othman Youssef Othman (1)","PULMICORT 0.5 mg/ml Ampoule, 20 AMPOULE/BOX":"Mohamed Adel Saudi Gabr (226) · Mohamed Muhiddeen Abd Al Gde (75)","SEROXAT Tablet 20MG/1Tablet, 30Tablet/Box":"Mohamed Emad Kamal Ismail (14)","ARAVA TABLET 20MG/1Tablet, 30Tablet/BOX":"Mohammed Shabaan Abdelhay Els (8)","ELICA-M Cream 0.1/2%/1APPLY, 30GM/Tube":"Nasser Abdelaziz Ragab Sakr (72) · Nehad Farouk Abdallah Ramadan (44)","TILAX Tablet 2MG/1Tablet, 30Tablet/Box":"Mohamed Samir Abdelfattah Faraj (138) · Mohammed Shabaan Abdelhay Els (43)","VOLTIC 75 mg/ampoule Injection, 5 AMPOULE/BO":"Mohammed Shabaan Abdelhay Els (2) · Abdalla Basbar Dafaallah Basbar (1)","ZENCIN 500 mg/tablet, 3 TABLET/BOX":"Mona Farid Elmandouh Abdelrahm (50) · Arwa Mohammed Osman Taha (25)","CLARA Tablet 10MG/1Tablet, 10Tablet/Box":"Summera Aman Solangi (413) · Nasser Abdelaziz Ragab Sakr (139)","DEFADOL 160 mg/5 ml Syrup, 100 ML/BOTTLE":"Mohamed Adel Saudi Gabr (684) · Mohamed Hatem Abdelsamie Nour (61)","FUSIBACT-B Cream 2/0.1%/1APPLY, 15GM/Tube":"Nasser Abdelaziz Ragab Sakr (61) · Mohamed Muhiddeen Abd Al Gde (24)","CARPAZIO 600 mg/tablet, 50 TABLET/BOX":"Mohamed Emad Kamal Ismail (10) · Ahmed Taher Mokhtar Mashaly (6)","LAMIRA 50 mg/tablet, 30 TABLET/BOX":"Ahmed Taher Mokhtar Mashaly (5) · Mohamed Emad Kamal Ismail (3)","PROLAX Capsule 15MG/1Capsule, 30Capsule/Box":"Mohamed Samir Abdelfattah Faraj (23) · Ahmed Taher Mokhtar Mashaly (19)","FEROGLOBIN Capsule /1Capsule, 30Capsule/Box":"Fatimah Abdulhafeez Mohamed K (23) · Wafaa Abdelrazig Mukhtar Moham (19)","AMYDRAMINE ADULT ml Syrup, 120 ML/BOTTLE":"Nahed Mohammed Hassona Bahage (26) · Mohamed Hatem Abdelsamie Nour (22)","GLIPTAMET Tablet 50/1000MG/1Tablet, 56Tablet":"Summera Aman Solangi (67) · Mugahid Khalid Zainelabdin Elfak (27)","URAGO 40 mg/tablet, 30 TABLET/BOX":"Mohamed Samir Abdelfattah Faraj (60) · Summera Aman Solangi (17)","JANUMET Tablet 50/850MG/1Tablet, 56Tablet/Bo":"Ali Mohamed Elameen Ahmed (6) · Abdalla Basbar Dafaallah Basbar (4)","NEORIN Syrup 0.5MG/1ML, 150ML/Bottle":"Mohamed Adel Saudi Gabr (258) · Mohamed Muhiddeen Abd Al Gde (117)","EMANERA 20 mg/capsule, 28 CAPSULE/BOX":"Mohamed Hatem Abdelsamie Nour (33) · Mohamed Mostafa Ali Abdelkader (4)","ADOL 120 mg/5 ml Syrup, 100 ML/BOTTLE":"Mugahid Khalid Zainelabdin Elfak (71) · Mohamed Hatem Abdelsamie Nour (67)","DEFOPAN 1 mg/ml Syrup, 100 ML/BOTTLE":"Mohamed Adel Saudi Gabr (21) · Summera Aman Solangi (11)","AUGMENTIN Tablet 1000MG/1Tablet, 14Tablet/Bo":"Mohamed Hatem Abdelsamie Nour (10) · Nahed Mohammed Hassona Bahage (8)","TENORYL 10 mg/tablet, 30 TABLET/BOX":"Abdullah Ahmed Mohamede Ahme (1) · Gazala Gholam Mir (1)","EULAX sachet Powder For Oral Soln, 30 SACHET":"Ibrahim Ali Ismail Heggy (15) · Hatem Abdelmageed Elsayed Mata (13)","GUAPHAN Syrup 20MG/1ML, 100ML/Bottle":"Nahed Mohammed Hassona Bahage (29) · Mohamed Hatem Abdelsamie Nour (21)","OTRI ALLERGY 0.05 mg/applicator Nasal Spray":"Mohamed Mostafa Ali Abdelkader (27) · Mohamed Hasan Badr Moussa (14)","MIGROTAN 40 mg/tablet, 4 TABLET/BOX":"Ahmed Taher Mokhtar Mashaly (7) · Maysa Sayed Abdullah Abdeltawab (2)","FLUCA 1 mg/drop, 5 ML/CONTAINER":"Dina Mahmoud Abdelazim Mahme (44) · Ahmed Zakaria Abdelmohsen Zaye (1)","ROSALUS 20 mg/tablet, 28 TABLET/BOX":"Mugahid Khalid Zainelabdin Elfak (6) · Maysa Sayed Abdullah Abdeltawab (4)","SEFARIX 300 mg/capsule, 10 CAPSULE/BOX":"Said Tolba Elsayed Elbedewy (7)","EMANERA 40 mg/capsule, 28 CAPSULE/BOX":"Maysa Sayed Abdullah Abdeltawab (22) · Abdullah Ahmed Mohamede Ahme (11)","EUTHYROX Tablet 150MG/1Tablet, 100Tablet/Box":"Maysa Sayed Abdullah Abdeltawab (6) · Mugahid Khalid Zainelabdin Elfak (3)","CARTIMOV 50 mg/capsule, 20 CAPSULE/BOX":"Mohamed Samir Abdelfattah Faraj (91) · Medhat Alashry Aladawy Goger (55)","JARDIANCE Coated tablet 10MG/1Tablet, 30Tabl":"Mohamed Abdelaziz Abdelmoneem (3) · Maysa Sayed Abdullah Abdeltawab (2)","FEMIC 500 mg/tablet, 60 TABLET/BOX":"Nehad Farouk Abdallah Ramadan (39) · Mohamed Hasan Badr Moussa (14)","VIOTOPIC Ointment 0.1%/1APPLY, 30GM/Tube'":"Mona Farid Elmandouh Abdelrahm (60) · Nasser Abdelaziz Ragab Sakr (23)","ZOLAN 5 mg/tablet, 30 TABLET/BOX":"Mohamed Emad Kamal Ismail (49) · Ahmed Taher Mokhtar Mashaly (2)","KLAVOX Tablet 375MG/1Tablet, 20Tablet/Box":"Mohamed Abdelaziz Abdelmoneem (12) · Ahmed Hassanin Mohamed Hassan (9)","VIDA-IRON  Spray, 60 ML/BOTTLE":"Salama Mahdy Morshed Rashed (48) · Nehad Farouk Abdallah Ramadan (13)","EPIFASI Injection 5000IU/1Vial, 1Vial/Box":"Wafaa Abdelrazig Mukhtar Moham (45) · Nehad Farouk Abdallah Ramadan (7)","CATAFAST SACHETS 50MG/1Sachet, 9sachet/Box":"Summera Aman Solangi (113) · Nahed Mohammed Hassona Bahage (62)","GLUCOPHAGE Tablet 1000MG/1Tablet, 30Tablet/B":"Mohamed Hatem Abdelsamie Nour (6) · Wafaa Abdelrazig Mukhtar Moham (3)","RENALOF Capsule 1MG/1Tablet, 60Capsule/Box":"Maysa Sayed Abdullah Abdeltawab (1) · Hossameldin Mohamed Amin Bekh (1)","NEO PROKTO Cream /1APPLY, 30GM/Tube":"Ibrahim Ali Ismail Heggy (57) · Ahmad Abdelrahman Abdallah Ha (9)","DICYNONE Tablet 500MG/1Tablet, 20Tablet/Box":"Ahmad Abdelrahman Abdallah Ha (4) · Hossameldin Mohamed Amin Bekh (2)","RAVIXA 75 mg/tablet, 30 TABLET/BOX":"Hanan Mohamed Naguib Elgendi (31) · Mohamed Abdelaziz Abdelmoneem (2)","REFLEX MASSAGE Emulgel, 100 ML/TUBE":"Mohammed Shabaan Abdelhay Els (190) · Medhat Alashry Aladawy Goger (74)","QUERSA Capsule, 60 CAPSULE/BOTTLE":"Ahmad Mahmoud Mohammed Elad (14) · Medhat Alashry Aladawy Goger (7)","DIANE-35 Tablet /1Tablet, 21Tablet/Box":"Fatimah Abdulhafeez Mohamed K (12) · Soha Mohamed Salaheldeen Solima (11)","DERMO Ointment /1APPLY, 30GM/Tube":"Ibrahim Ali Ismail Heggy (163) · Khaled Ahmed Ali Abdurrahman (31)","FORCAPIL Capsule, 180 CAPSULE/BOX":"Mona Farid Elmandouh Abdelrahm (16) · Amira Mohamed Salem Eldaltouni (12)","AZIMAC Film coated tablet 250MG/1Tablet, 6Ta":"Nahed Mohammed Hassona Bahage (2) · Mayada Farah Obaid Ali (2)","FUSIBACT Ointment 2%/1APPLY, 15GM/Tube":"Nasser Abdelaziz Ragab Sakr (48) · Mona Farid Elmandouh Abdelrahm (21)","KLAVOX SUSPENTION 312MG/5ML, 100ML/Bottle":"Mohamed Adel Saudi Gabr (66) · Ibrahim Ali Ismail Heggy (29)","PROF SUSPENTION 100MG/5ML, 110ML/Bottle":"Mohamed Adel Saudi Gabr (333) · Ibrahim Ali Ismail Heggy (59)","OSTEOCARE Syrup 100MG/1ML, 200ML/Bottle":"Ahmed Gamal Abdelnasser Abdelm (10) · Mohamed Muhiddeen Abd Al Gde (4)","AVOMEB extra 1 %/apply Ointment , 30 GM/TUBE":"Sara Mohammed Ahmed Albasheer (4) · Nasser Abdelaziz Ragab Sakr (2)","ROSALUS 10 mg/tablet, 28 TABLET/BOX":"Abdalla Basbar Dafaallah Basbar (5) · Mugahid Khalid Zainelabdin Elfak (5)","PROFINAL XP 400 mg/tablet, 20 TABLET/BOX":"Radwa Mohamed Mabrouk Abdalla (37) · Ahmed Taher Mokhtar Mashaly (13)","SEVIKAR Tablet 40/10MG/1Tablet, 28Tablet/Box":"Mugahid Khalid Zainelabdin Elfak (7) · Maysa Sayed Abdullah Abdeltawab (6)","FAVERIN Tablet 50MG/1Tablet, 60Tablet/Box":"Mohamed Emad Kamal Ismail (15) · Mugahid Khalid Zainelabdin Elfak (1)","TENORYL PLUS 10/10 mg/tablet, 30 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (1)","EMILOK Capsule 20MG/1Capsule, 14Capsule/Box":"Said Tolba Elsayed Elbedewy (77) · Hatem Abdelmageed Elsayed Mata (47)","VULGA XR Tablet 105MG/1Tablet, 30TABLET/BOX":"Nasser Abdelaziz Ragab Sakr (19) · Mona Farid Elmandouh Abdelrahm (6)","AVOCOM-M Cream 0.1/2%/1APPLY, 50GM/Tube":"Wafaa Abdelrazig Mukhtar Moham (77) · Nehad Farouk Abdallah Ramadan (33)","FUSIBACT-B 2.1 %/apply Cream, 30 GM/TUBE":"Mohamed Muhiddeen Abd Al Gde (35) · Nasser Abdelaziz Ragab Sakr (21)","LINAJENT 5 mg/tablet, 30 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (4) · Mugahid Khalid Zainelabdin Elfak (2)","LUNIA 10 mg/ 20 MG/tablet, 28 TABLET/BOX":"Hatem Abdelmageed Elsayed Mata (27) · Maysa Sayed Abdullah Abdeltawab (15)","OFLAM 50 mg/sachet, 10 SACHET/BOX":"Nahed Mohammed Hassona Bahage (8) · Nehad Farouk Abdallah Ramadan (8)","GAVISCON SUSPENTION /1ML, 300ML/Bottle":"Subohi Sultana Muhammad Farouq (10) · Abdalla Basbar Dafaallah Basbar (5)","FIXIT 150 mg/capsule, 14 CAPSULE/BOX":"Wafaa Abdelrazig Mukhtar Moham (17) · Nehad Farouk Abdallah Ramadan (2)","XEFO Tablet 8MG/1Tablet, 20Tablet/Box":"Nahed Mohammed Hassona Bahage (36) · Mohamed Samir Abdelfattah Faraj (26)","KEPPRA 1000 mg/tablet, 30 TABLET/BOX":"Ahmed Taher Mokhtar Mashaly (3) · Maysa Sayed Abdullah Abdeltawab (1)","LAXATROL 50/8.6 mg/tablet, 100 TABLET/BOX":"Ibrahim Ali Ismail Heggy (12) · Khaled Ahmed Ali Abdurrahman (9)","SUN-D 1000 iu/tablet, 90 TABLET/BOX":"Medhat Alashry Aladawy Goger (25) · Nehad Farouk Abdallah Ramadan (8)","VIDROP drops 2800IU/1Drop, 15ML/Container":"Mohamed Muhiddeen Abd Al Gde (48) · Salama Mahdy Morshed Rashed (41)","AMYDRAMINE PED ml Syrup, 120 ML/BOTTLE":"Mohamed Abdelaziz Abdelmoneem (13) · Mohamed Adel Saudi Gabr (9)","ALFACORT Cream 0.1%/1APPLY, 15GM/Tube":"Sara Ibrahim Elabd Eldegla (13) · Mona Farid Elmandouh Abdelrahm (7)","OPTIPRED Eye drops 1%/1Drop, 5ML/Container":"Mohamed Mohamed Arafa Abo Ob (1)","BENZAFLEX 5 mg/tablet, 30 TABLET/BOX":"Mohamed Samir Abdelfattah Faraj (130) · Mohammed Shabaan Abdelhay Els (13)","ENTRESTO 50 mg/tablet, 28 TABLET/BOX":"Hanan Mohamed Naguib Elgendi (11) · Abdalla Basbar Dafaallah Basbar (1)","LAMIRA 100 mg/tablet, 30 TABLET/BOX":"Mohamed Emad Kamal Ismail (21) · Ahmed Taher Mokhtar Mashaly (4)","CLEXAN Injection 40MG/1Syringe, 1Syringe/Box":"Nehad Farouk Abdallah Ramadan (5) · Wafaa Abdelrazig Mukhtar Moham (3)","IVY-CALM ml Syrup, 120 ML/BOTTLE":"Wafaa Abdelrazig Mukhtar Moham (1) · Mayada Farah Obaid Ali (1)","ETORIA Tablet 90MG/1Tablet, 28Tablet/Box":"Mohamed Samir Abdelfattah Faraj (198) · Ahmed Taher Mokhtar Mashaly (10)","DIVINUS 10 mg/tablet, 30 TABLET/BOX":"Summera Aman Solangi (21) · Mugahid Khalid Zainelabdin Elfak (11)","THIOTACID 600 mg/tablet, 30 TABLET/BOX":"Mohamed Hasan Badr Moussa (6) · Ahmed Taher Mokhtar Mashaly (5)","MELIGAMET 50 mg / 850 mg/tablet, 60 TABLET/B":"Abdalla Basbar Dafaallah Basbar (3) · Ali Mohamed Elameen Ahmed (1)","LEVOX Film coated tablet 750MG/1Tablet, 5Tab":"Maysa Sayed Abdullah Abdeltawab (4) · Gazala Gholam Mir (4)","MINOCET 125 mg/5 ml Suspention, 80 ML/BOTTLE":"Mohamed Hatem Abdelsamie Nour (41)","BIOCAL D 500 mg/tablet, 60 TABLET/BOX":"Mohammed Shabaan Abdelhay Els (15) · Mohamed Samir Abdelfattah Faraj (9)","ROLIP Ointment 1%/1APPLY, 30GM/Tube":"Mona Farid Elmandouh Abdelrahm (4) · Nasser Abdelaziz Ragab Sakr (4)","PEXAPAN 5 mg/tablet, 60 TABLET/BOX":"Hanan Mohamed Naguib Elgendi (6)","TOBRADEX Eye drops /1Drop, 5ML/Container":"Mohamed Hasan Badr Moussa (27) · Mohamed Adel Saudi Gabr (20)","DERMOVATE 0.05 %/apply Ointment , 25 GM/TUBE":"Nasser Abdelaziz Ragab Sakr (11) · Mona Farid Elmandouh Abdelrahm (5)","PROLUTEX 25 mg/1.119 vial Injection, 7 VIAL/":"Wafaa Abdelrazig Mukhtar Moham (21) · Nehad Farouk Abdallah Ramadan (10)","VULGA TABLET 55MG/1Tablet, 30TABLET/BOX":"Mona Farid Elmandouh Abdelrahm (28) · Nasser Abdelaziz Ragab Sakr (6)","FAVERIN Tablet 100MG/1Tablet, 30Tablet/Box":"Mohamed Emad Kamal Ismail (82)","VOLTIC  tablet 50MG/1Tablet, 20Tablet/Box":"Mugahid Khalid Zainelabdin Elfak (32) · Mohamed Hatem Abdelsamie Nour (16)","MONTEL Tablet 10MG/1Tablet, 28Tablet/Box":"Said Tolba Elsayed Elbedewy (7) · Mohamed Mostafa Ali Abdelkader (1)","MELIGLPTIN 100 mg/tablet, 30 TABLET/BOX":"Abdalla Basbar Dafaallah Basbar (4)","ONDANS 4 mg/tablet, 10 TABLET/BOX":"Mohamed Hatem Abdelsamie Nour (23)","CIPRODAR Tablet 500MG/1Tablet, 10Tablet/Box":"Wafaa Abdelrazig Mukhtar Moham (1)","LICAN apply Cream, 30 GM/TUBE":"Nasser Abdelaziz Ragab Sakr (47) · Mona Farid Elmandouh Abdelrahm (38)","FEROSAC 20 MG/ML AMPOULE 5 AMPOULE":"Maysa Sayed Abdullah Abdeltawab (27) · Mugahid Khalid Zainelabdin Elfak (7)","ARTELAC ADV Eye drops 2%/1Drop, 0.4ML/Contai":"Ahmed Zakaria Abdelmohsen Zaye (11) · Dina Mahmoud Abdelazim Mahme (1)","MEBO 1 %/apply Ointment , 15 GM/TUBE":"Wafaa Abdelrazig Mukhtar Moham (5) · Rafik Elsayed Aboelhythim Ereba (3)","VIZOL  0.21 %/drop, 10 ML/CONTAINER":"Ahmed Taher Mokhtar Mashaly (5)","RESPRED SYRUP 5MG/5ML, 120ML/BOTTLE":"Mohamed Adel Saudi Gabr (80) · Mohamed Hatem Abdelsamie Nour (46)","FORCAPIL TOPICAL SPRAY":"Mona Farid Elmandouh Abdelrahm (5) · Amira Mohamed Salem Eldaltouni (4)","BUFOMIX 1 mg/inhaler Inhalation Spray, INHAL":"Mayada Farah Obaid Ali (6) · Abdullah Ahmed Mohamede Ahme (1)","AVALON AVOMEB EXTERA Ointment , 50 GM/TUBE":"Nehad Farouk Abdallah Ramadan (7) · Sara Ibrahim Elabd Eldegla (3)","ATROSOL 500 mg/2 ml Ampoule, 21 AMPOULE/BOX":"Mohamed Adel Saudi Gabr (13) · Mayada Farah Obaid Ali (4)","MARVELON Tablet /1Tablet, 21Tablet/Box":"Nehad Farouk Abdallah Ramadan (16) · Soha Mohamed Salaheldeen Solima (15)","FLAZOL Syrup 125MG/5ML, 120ML/Bottle":"Mohamed Muhiddeen Abd Al Gde (78) · Nahed Mohammed Hassona Bahage (26)","LEVOZAL 0.5 mg/ml Syrup, 200 ML/BOTTEL":"Mona Farid Elmandouh Abdelrahm (31) · Sara Mohammed Ahmed Albasheer (27)","PAROXAT Tablet 30MG/1Tablet, 30Tablet/Box":"Mohamed Emad Kamal Ismail (50) · Ahmed Hassanin Mohamed Hassan (1)","AVALON UREA apply Cream, 100 ML/TUBE":"Mona Farid Elmandouh Abdelrahm (10) · Amira Mohamed Salem Eldaltouni (1)","MUCOGEL SUSPENTION /1ML, 125ML/Bottle":"Said Tolba Elsayed Elbedewy (14) · Maysa Sayed Abdullah Abdeltawab (1)","FORMIT XR Tablet 750MG/1Tablet, 30Tablet/BOX":"Maysa Sayed Abdullah Abdeltawab (34) · Hatem Abdelmageed Elsayed Mata (18)","YOCAIR 10 mg/tablet, 30 TABLET/BOX":"Summera Aman Solangi (51) · Mohamed Hatem Abdelsamie Nour (15)","MIXTARD Injection 30IU/1ML, 10ML/Vial":"Abdalla Basbar Dafaallah Basbar (6) · Abdulaziz Ibrahim Abdullah Aljura (1)","TOVAST Tablet 10MG/1Tablet, 30Tablet/Box":"Mugahid Khalid Zainelabdin Elfak (3) · Hatem Abdelmageed Elsayed Mata (3)","EPICOGEL Oral suspension /1ML, 125ML/Bottle":"Summera Aman Solangi (6) · Mohamed Hatem Abdelsamie Nour (3)","LIMITLESS ALLZYME Tablet, 30 TABLET/BOX":"Mohammed Shabaan Abdelhay Els (86) · Ahmad Abdelrahman Abdallah Ha (31)","ADZOY 0.1% / 2.5% apply Gel, 30 GM/TUBE":"Mona Farid Elmandouh Abdelrahm (5) · Nasser Abdelaziz Ragab Sakr (3)","DOXIDA-M sachet, 30 SACHET/BOX":"Khaled Ahmed Ali Abdurrahman (13) · Said Tolba Elsayed Elbedewy (10)","SILOMES 100 mg/tablet, 30 TABLET/BOX":"Mohamed Emad Kamal Ismail (3) · Ahmed Taher Mokhtar Mashaly (1)","EMOLIA apply Cream, 200 GM/TUBE":"Mona Farid Elmandouh Abdelrahm (8)","ARGITEST capsule Tablet, 30 TABLET/BOX":"Ahmad Mahmoud Mohammed Elad (3) · Hossameldin Mohamed Amin Bekh (3)","AVOMEB EXTRA OINTMENT 15 GM":"Nasser Abdelaziz Ragab Sakr (53) · Hossameldin Mohamed Amin Bekh (45)","SEPTOFORT LOZENGES 2MG/1Tablet, 24Tablet/Box":"Mohamed Hatem Abdelsamie Nour (1) · Ahmed Hassanin Mohamed Hassan (1)","FENISTIL Oral drops 1MG/1Drop, 20ML/Containe":"Mohamed Muhiddeen Abd Al Gde (36) · Mohamed Adel Saudi Gabr (17)","PEPTAZOL 30 mg/capsule, 28 CAPSULE/BOX":"Mohamed Hasan Badr Moussa (14) · Maysa Sayed Abdullah Abdeltawab (4)","ANAFRANIL Tablet 25MG/1Tablet, 30Tablet/Box":"Mohamed Emad Kamal Ismail (9)","ROYAL JELLY 1000 mg/capsule, 30 CAPSULE/BOX":"Hossameldin Mohamed Amin Bekh (1)","GENTAPLEX Capsule /1Capsule, 36Capsule/Box":"Said Tolba Elsayed Elbedewy (10) · Hossameldin Mohamed Amin Bekh (3)","JALRA M Tablet 50/1000MG/1Tablet, 60Tablet/B":"Summera Aman Solangi (28) · Maysa Sayed Abdullah Abdeltawab (9)","MOUNJARO 5 mg/ml Ampoule, 4 AMPOULE/BOX":"Hatem Abdelmageed Elsayed Mata (5) · Hatem Mohamed Mohamed Ramad (2)","TEGRETOL CR 200 mg/tablet, 50 TABLET/BOX":"Ahmed Taher Mokhtar Mashaly (19) · Mohamed Abdelaziz Abdelmoneem (2)","RHINATHIOL ENF Syrup 2%/1ML, 125ML/Bottle":"Ahmed Hassanin Mohamed Hassan (5) · Said Tolba Elsayed Elbedewy (5)","ISOLONE 20 mg/tablet, 20 Effervescent Tablet":"Mohamed Mostafa Ali Abdelkader (52) · Mohamed Hasan Badr Moussa (48)","CLARIXIN Tablet 500MG/1Tablet, 14Tablet/Box":"Mugahid Khalid Zainelabdin Elfak (43) · Summera Aman Solangi (24)","GLADOS Tablet 15MG/1Tablet, 30Tablet/Contain":"Amany Moaaz Abdrabbou Sayed (1)","SUPRAX Capsule 400MG/1Capsule, 6Capsule/Box":"Nehad Farouk Abdallah Ramadan (8) · Wafaa Abdelrazig Mukhtar Moham (8)","GALVUS MET Tablet 50/850MG/1Tablet, 60Tablet":"Hanan Mohamed Naguib Elgendi (6) · Summera Aman Solangi (4)","DOXIDA-F sachet, 30 SACHET/BOX":"Nehad Farouk Abdallah Ramadan (61) · Hala Fathi Ewis Mansur (12)","RAFOL 5 mg/tablet, 50 TABLET/BOX":"Fatimah Abdulhafeez Mohamed K (29) · Soha Mohamed Salaheldeen Solima (14)","FORTIFERRUM sachet Powder, 14 SACHET/BOX":"Nahed Mohammed Hassona Bahage (13) · Fatma Mohamed Abdelhameed Ab (4)","CONTRACTUBEX 1 %/apply Gel, 50 GM/TUBE":"Ahmad Abdelrahman Abdallah Ha (14) · Nasser Abdelaziz Ragab Sakr (8)","NEVOTIC 500 mg/tablet, 7 TABLET/BOX":"Abdullah Ahmed Mohamede Ahme (21) · Mohamed Hatem Abdelsamie Nour (4)","ZOVIRAX Tablet 400MG/1Tablet, 70Tablet/Box":"Mohamed Hatem Abdelsamie Nour (1) · Ahmed Taher Mokhtar Mashaly (1)","TYMER Eye drops 0.3MG/1Drop, 5ML/Container":"Ahmed Zakaria Abdelmohsen Zaye (1) · Mohamed Hatem Abdelsamie Nour (1)","BEFOLVIT 5 mg/tablet, 30 TABLET/BOX":"Fatimah Abdulhafeez Mohamed K (8) · Summera Aman Solangi (6)","LUMIFY 0.25 mg/drop, 7.5 ML/CONTAINER":"Ahmed Zakaria Abdelmohsen Zaye (1) · Dina Mahmoud Abdelazim Mahme (1)","FEXODINE 120 mg/tablet, 14 TABLET/BOX":"Mohamed Abdelaziz Abdelmoneem (10) · Summera Aman Solangi (5)","CEFPROZ 250 mg/5 ml Suspention, 100 ML/BOTTL":"Sara Mohammed Ahmed Albasheer (24) · Mohamed Muhiddeen Abd Al Gde (3)","LOTEVAN 5/160MG//tablet, 30 TABLET/BOX":"Mugahid Khalid Zainelabdin Elfak (10) · Maysa Sayed Abdullah Abdeltawab (6)","MOUNJARO 7.5 mg/ml Ampoule, 4 AMPOULE/BOX":"Hatem Abdelmageed Elsayed Mata (4) · Hatem Mohamed Mohamed Ramad (3)","TOBREX Eye drops 0.3MG/1Drop, 5ML/Container":"Mohamed Adel Saudi Gabr (12) · Ayman Othman Youssef Othman (8)","DEPAKINE Tablet 500MG/1Tablet, 30Tablet/Box":"Mohamed Emad Kamal Ismail (1)","CONESTAL 2 mg/tablet, 28 TABLET/BOX":"Abdalla Basbar Dafaallah Basbar (7) · Mugahid Khalid Zainelabdin Elfak (7)","ACRETIN C GEL 30 GM/TUBE":"Anwar Ali Abdullah Jwass (11) · Mona Farid Elmandouh Abdelrahm (10)","DENACIF 300 mg/capsule, 10 CAPSULE":"Abdullah Ahmed Mohamede Ahme (24)","ETORIA Tablet 120MG/1Tablet, 7Tablet/Box":"Mohamed Samir Abdelfattah Faraj (37) · Ahmed Taher Mokhtar Mashaly (9)","DENACIF 125 mg/5 ml Suspention, 100 ML/BOTTL":"Mohamed Adel Saudi Gabr (1)","DAKTARIN 2 %/apply Cream, 30 GM/TUBE":"Mona Farid Elmandouh Abdelrahm (10) · Nasser Abdelaziz Ragab Sakr (2)","LAMIFEN Tablet 250MG/1Tablet, 14Tablet/Box":"Nasser Abdelaziz Ragab Sakr (18) · Mona Farid Elmandouh Abdelrahm (6)","BILAXTEN Tablet 20MG/1Tablet, 20Tablet/Box":"Mona Farid Elmandouh Abdelrahm (2) · Abdulaziz Ibrahim Abdullah Aljura (1)","PROLIFE PREMIUM box Sheets, 30 SHEET/BOX":"Maysa Sayed Abdullah Abdeltawab (2) · Hatem Mohamed Mohamed Ramad (1)","PURGE Solution /1APPLY, 250ML/Container":"Nehad Farouk Abdallah Ramadan (2)","OSTEOFLEX Tablet, 60 TABLET/BOX":"Mohammed Shabaan Abdelhay Els (10)","CIPROCIN Tablet 500MG/1Tablet, 10Tablet/Box":"Mohamed Hatem Abdelsamie Nour (2) · Fatimah Abdulhafeez Mohamed K (2)","XIGDUO XR 5/1000 mg/tablet, 56 TABLET/BOX":"Abdulaziz Ibrahim Abdullah Aljura (5) · Mohamed Hatem Abdelsamie Nour (1)","TEGRETOL CR Tablet 400MG/1Tablet, 30Tablet/B":"Ahmed Taher Mokhtar Mashaly (4)","TRIOLITE CREAM apply Cream, 30 GM/TUBE":"Mona Farid Elmandouh Abdelrahm (18) · Nasser Abdelaziz Ragab Sakr (14)","PROTON 40 mg/tablet, 14 TABLET/BOX":"Hatem Abdelmageed Elsayed Mata (25) · Ibrahim Ali Ismail Heggy (11)","TEGRETOL Tablet 200MG/1Tablet, 50Tablet/Box":"Mohamed Mostafa Ali Abdelkader (2) · Summera Aman Solangi (1)","DRAMYLIN ADULT ml Syrup, 120 ML/BOTTLE":"Mohamed Hatem Abdelsamie Nour (1)","AVALON AVOBAN 2 %/apply Ointment , 30 GM/TUB":"Nasser Abdelaziz Ragab Sakr (14) · Fatimah Abdulhafeez Mohamed K (13)","ADOL SINUS Tablet /1Capsule, 20Tablet/Box":"Mohamed Hatem Abdelsamie Nour (1) · Mohamed Hasan Badr Moussa (1)","GYNERA Tablet /1Tablet, 21Tablet/Box":"Nehad Farouk Abdallah Ramadan (3) · Wafaa Abdelrazig Mukhtar Moham (1)","VITALIFE Soft Gel Cap /1Capsule, 30Capsule/B":"Maysa Sayed Abdullah Abdeltawab (9) · Heba Mohsen Mohamed Khalil (1)","AZI-ONCE SUSPENTION 200MG/5ML, 15ML/Bottle":"Mohamed Adel Saudi Gabr (24) · Mohamed Muhiddeen Abd Al Gde (8)","DIOVAN Tablet 40MG/1Tablet, 28Tablet/Box":"Summera Aman Solangi (2) · Ali Mohamed Elameen Ahmed (1)","ARKOCAPS CALCOS 500 mg/tablet, 60 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (9) · Soha Mohamed Salaheldeen Solima (6)","C-LACT Solution /1ML, 220ML/Container":"Nehad Farouk Abdallah Ramadan (10) · Fatimah Abdulhafeez Mohamed K (1)","KOZAMOD 5 % Cream, 12 sachet/box":"Nasser Abdelaziz Ragab Sakr (5) · Mona Farid Elmandouh Abdelrahm (4)","DUODART Capsule 0.5/0.4MG/1Capsule, 30Capsul":"Hossameldin Mohamed Amin Bekh (1)","OUTRIGHT Capsule, 30 CAPSULE/BOX":"Ali Mohamed Elameen Ahmed (4) · Nehad Farouk Abdallah Ramadan (3)","ZINCOVIT drop, 60 ML/CONTAINER":"Sara Mohammed Ahmed Albasheer (37)","TORICOX 120 mg/tablet, 10 TABLET/BOX":"Ahmed Gamal Abdelnasser Abdelm (2) · Ahmed Taher Mokhtar Mashaly (1)","AVALON AVOMEB EXTRA 75 GM Ointment":"Nehad Farouk Abdallah Ramadan (16)","OXIRA 8 mg/tablet, 20 TABLET/BOX":"Mohamed Samir Abdelfattah Faraj (15) · Ibrahim Ali Ismail Heggy (8)","ESOPOLE 20 mg/capsule, 28 CAPSULE/BOX":"Mohamed Hatem Abdelsamie Nour (2) · Sara Mohammed Ahmed Albasheer (1)","LEVOGAND 50 mcg/tablet, 100 TABLET/BOX":"Arwa Mohammed Osman Taha (1) · Maysa Sayed Abdullah Abdeltawab (1)","EMOLIA apply Cream, 100 GM/TUBE":"Sara Ibrahim Elabd Eldegla (5) · Mona Farid Elmandouh Abdelrahm (5)","FEMI BIOTIC box Sachets, 20 SACHET/BOX":"Nehad Farouk Abdallah Ramadan (10) · Heba Mohsen Mohamed Khalil (1)","ZETRON 200MG/5ML SUSPENTION 22.5ML/BOTTLE":"Salama Mahdy Morshed Rashed (49) · Mohamed Adel Saudi Gabr (26)","MYO REST PLUS Cream /1APPLY, 100GM/Tube":"Medhat Alashry Aladawy Goger (84) · Soha Mohamed Salaheldeen Solima (5)","LUMIGAN Eye drops 0.3MG/1Drop, 3ML/Container":"Mohamed Mohamed Arafa Abo Ob (1)","FOLIC ACID Tablet 5MG/1Tablet, 20Tablet/Box":"Said Tolba Elsayed Elbedewy (7) · Abdulaziz Ibrahim Abdullah Aljura (3)","EVRA TRANSDERMAL patch /1patch, 3patch/Box":"Wafaa Abdelrazig Mukhtar Moham (2) · Nehad Farouk Abdallah Ramadan (2)","DICETEL Tablet 50MG/1Tablet, 20Tablet/Box":"Maysa Sayed Abdullah Abdeltawab (6)","SELECTA Tablet 2.5MG/1Tablet, 30Tablet/Box":"Hanan Mohamed Naguib Elgendi (8) · Hatem Abdelmageed Elsayed Mata (5)","ZOLINDA Tablet 5MG/1Tablet, 30TABLET/BOX":"Mohamed Emad Kamal Ismail (11)","GINKOSPAN 60 mg/capsule, 60 CAPSULE/BOX":"Ahmed Taher Mokhtar Mashaly (2) · Hatem Abdelmageed Elsayed Mata (2)","OMIZ Capsule 20MG/1Capsule, 14Capsule/Box":"Wafaa Abdelrazig Mukhtar Moham (3) · Abdalla Basbar Dafaallah Basbar (3)","OMEGA 3 FORT Capsule, 60 CAPSULE/BOX":"Ahmed Hassanin Mohamed Hassan (1) · Arwa Mohammed Osman Taha (1)","VERMOX SUSPENTION 0.02MG/1ML, 30ML/Bottle":"Mohamed Muhiddeen Abd Al Gde (7) · Mohamed Adel Saudi Gabr (4)","KLAVOX SUSPENTION 156MG/5ML, 100ML/Bottle":"Ibrahim Ali Ismail Heggy (57) · Mohamed Hatem Abdelsamie Nour (14)","ARCON TISANE PLUS Capsule, 60 CAPSULE/BOX":"Nasser Abdelaziz Ragab Sakr (2)","GLIM Tablet 1MG/1Tablet, 30Tablet/Box":"Hatem Abdelmageed Elsayed Mata (12) · Mugahid Khalid Zainelabdin Elfak (9)","BABYCOOL ml Syrup, 100 ML/BOTTLE":"Sara Mohammed Ahmed Albasheer (16) · Rafik Elsayed Aboelhythim Ereba (7)","RYBELSUS 3 mg/tablet, 30 TABLET/BOX":"Ali Mohamed Elameen Ahmed (3) · Mugahid Khalid Zainelabdin Elfak (2)","BEPANTHENE 5 %/apply Cream, 100 GM/TUBE":"Nasser Abdelaziz Ragab Sakr (2) · Ayman Othman Youssef Othman (1)","MOTOVA C Advanced sachet, 30 SACHET/BOX":"Heba Mohsen Mohamed Khalil (5) · Nehad Farouk Abdallah Ramadan (1)","VIOTOPIC Ointment 0.3%/1APPLY, 30GM/Tube'":"Mona Farid Elmandouh Abdelrahm (32) · Nasser Abdelaziz Ragab Sakr (4)","GALVUS Tablet 50MG/1Tablet, 56Tablet/Box":"Abdalla Basbar Dafaallah Basbar (3) · Maysa Sayed Abdullah Abdeltawab (2)","GONAL-F Injection 300IU/1pen, 0.5ML/Pen":"Wafaa Abdelrazig Mukhtar Moham (1)","LODIPAM 10 mg/tablet, 30 TABLET/BOX":"Ahmed Hassanin Mohamed Hassan (2)","LIPANTHYL Capsule 200MG/1Capsule, 30Capsule/":"Summera Aman Solangi (13) · Gazala Gholam Mir (5)","PICO Oral drops 7.5MG/1Drop, 30ML/Container":"Mohamed Muhiddeen Abd Al Gde (7) · Salama Mahdy Morshed Rashed (3)","CELER 0.5 mg/ml Syrup, 150 ML/BOTTLE":"Rafik Elsayed Aboelhythim Ereba (4) · Mugahid Khalid Zainelabdin Elfak (1)","RYBELSUS 7 mg/tablet, 30 TABLET/BOX":"Ali Mohamed Elameen Ahmed (5) · Nahed Mohammed Hassona Bahage (1)","DENACIF 125 mg/5 ml Suspention, 50 ML/BOTTLE":"Mohamed Hatem Abdelsamie Nour (38) · Mohamed Adel Saudi Gabr (13)","LEVOGAND 100 mcg/tablet, 100 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (1)","LEVOGAND 25 mcg/tablet, 100 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (1) · Arwa Mohammed Osman Taha (1)","ZETRON SUSPENTION 200MG/1ML, 15ML/Bottle":"Mohamed Adel Saudi Gabr (17) · Summera Aman Solangi (10)","BRILINTA 90 mg/tablet, 56 TABLET/BOX":"Hanan Mohamed Naguib Elgendi (7) · Ali Mohamed Elameen Ahmed (3)","NEGAZOL Tablet 500MG/1Tablet, 20Tablet/Box":"Gazala Gholam Mir (2) · Ali Mohamed Elameen Ahmed (1)","FAMODAR Tablet 40MG/1Tablet, 10Tablet/Box":"Wafaa Abdelrazig Mukhtar Moham (4)","BENZAFLEX 10 mg/tablet, 30 TABLET/BOX":"Mohamed Samir Abdelfattah Faraj (17) · Ahmed Taher Mokhtar Mashaly (6)","MIRZAGEN Tablet 15MG/1Tablet, 30Tablet/Box":"Ahmed Taher Mokhtar Mashaly (10) · Mohamed Emad Kamal Ismail (5)","HI-QUIN Cream 2%/1APPLY, 30GM/Tube":"Mona Farid Elmandouh Abdelrahm (4) · Sara Ibrahim Elabd Eldegla (1)","KLACID 125 mg/5 ml Suspention, 100 ML/BOTTLE":"Mohamed Muhiddeen Abd Al Gde (21) · Sara Mohammed Ahmed Albasheer (11)","CLARINASE Tablet 5/120MG/1Tablet, 14Tablet/B":"Mohamed Mostafa Ali Abdelkader (6) · Said Tolba Elsayed Elbedewy (2)","SINEO 1 mg/drop, 20 ML/CONTAINER":"Mohamed Muhiddeen Abd Al Gde (61) · Sara Mohammed Ahmed Albasheer (18)","NEO HEALAR Ointment /1APPLY, 30GM/Tube":"Hala Fathi Ewis Mansur (10) · Nahed Mohammed Hassona Bahage (9)","SEFARIX 125 mg/5 ml Suspention, 50 ML/BOTTLE":"Mohamed Hatem Abdelsamie Nour (1)","CITICOLINE Capsule, 30 CAPSULE/BOX":"Ahmed Taher Mokhtar Mashaly (5)","MELATONIN Tablet 3MG/1Tablet, 100Tablet/Box":"Abdalla Basbar Dafaallah Basbar (2) · Mahfooz Ali Hafez Ali (2)","EPICURE PLUS Ointment /1APPLY, 30ML/Tube":"Khaled Ahmed Ali Abdurrahman (4) · Nasser Abdelaziz Ragab Sakr (1)","MOUNJARO 12.5 mg/ml Ampoule, 4 AMPOULE/BOX":"Ali Mohamed Elameen Ahmed (2) · Abdalla Basbar Dafaallah Basbar (1)","BACTRIM Syrup 200/40MG/1ML, 100ML/Bottle":"Khaled Ahmed Ali Abdurrahman (5) · Mohamed Muhiddeen Abd Al Gde (3)","REMOX SUSPENTION 125MG/5ML, 70ML/Bottle":"Khaled Ahmed Ali Abdurrahman (67) · Mohamed Muhiddeen Abd Al Gde (9)","LAMICTAL Tablet 50MG/1Tablet, 30Tablet/Box":"Mohamed Emad Kamal Ismail (3) · Ahmed Taher Mokhtar Mashaly (1)","NOLVADEX Tablet 10MG/1Tablet, 30Tablet/Box":"Ahmad Mahmoud Mohammed Elad (2)","OPTIFLOX Eye drops 0.3MG/1Drop,  5 ML/Contai":"Mohamed Adel Saudi Gabr (1)","LEPONEX Tablet 100MG/1Tablet, 50Tablet/Box":"Ahmed Taher Mokhtar Mashaly (1)","XEVANEER 125 mg/5 ml Suspention, 40 ML/BOTTL":"Mohamed Hatem Abdelsamie Nour (2)","DESTAMIN 5 mg/tablet, 20 TABLET/BOX":"Mugahid Khalid Zainelabdin Elfak (290) · Summera Aman Solangi (16)","AROX 0.5 %/drop, 5 ML/CONTAINER":"Summera Aman Solangi (1) · Dina Mahmoud Abdelazim Mahme (1)","ISOLONE 5 mg/TABLET, 30 Effervescent Tablet":"Mohamed Hasan Badr Moussa (163) · Mohamed Mostafa Ali Abdelkader (1)","ROXIL SUSPENTION 250MG/5ML, 100ML/Bottle":"Mohamed Muhiddeen Abd Al Gde (8)","ACICAL PLUS tablet, 30 TABLET/BOX":"Summera Aman Solangi (2)","BETMIGA 50 mg/tablet, 30 TABLET/BOX":"Khaled Ahmed Ali Abdurrahman (3) · Mohamed Abdelaziz Abdelmoneem (3)","TRACON Capsule 100MG/1Capsule, 4Capsule/Box":"Fatimah Abdulhafeez Mohamed K (9) · Khaled Ahmed Ali Abdurrahman (7)","HEMICLAR Gel /1APPLY, 120ML/Tube":"Ahmed Gamal Abdelnasser Abdelm (8) · Mohamed Samir Abdelfattah Faraj (2)","MAXEVA 400 mg/tablet, 10 TABLET/BOX":"Ahmad Abdelrahman Abdallah Ha (55) · Mariam Ezzeldin Abdelmonem Sh (1)","VIGAMOX Eye drops 0.5MG/1Drop, 5ML/Container":"Dina Mahmoud Abdelazim Mahme (159) · Mohamed Muhiddeen Abd Al Gde (13)","AVALON AVOCIN 2 % Vaginal Cream, 40 GM/TUBE":"Fatimah Abdulhafeez Mohamed K (16) · Nehad Farouk Abdallah Ramadan (13)","ZOVIRAX 200 mg/tablet, 25 TABLET/BOX":"Khaled Ahmed Ali Abdurrahman (1)","SAPOFEN 100 mg/ml Syrup, 100 ML/BOTTLE":"Summera Aman Solangi (2)","AERIUS Syrup 0.5MG/1ML, 150ML/Bottle":"Summera Aman Solangi (14) · Mohamed Muhiddeen Abd Al Gde (3)","LACTOSAT 125 mg/capsule, 30 CAPSULE/BOX":"Heba Mohsen Mohamed Khalil (13) · Soha Mohamed Salaheldeen Solima (6)","UVAMIN Tablet 100MG/1Tablet, 20Tablet/Box":"Khaled Ahmed Ali Abdurrahman (18) · Hatem Abdelmageed Elsayed Mata (13)","VAGINECALM ANTIAGING tube Gel, 50 ML/TUBE":"Fatimah Abdulhafeez Mohamed K (3) · Wafaa Abdelrazig Mukhtar Moham (1)","FENSOLIN 5 mg/tablet, 30 TABLET/BOX":"Khaled Ahmed Ali Abdurrahman (13) · Hossameldin Mohamed Amin Bekh (8)","DIGESTCARE ml Syrup, 125 ML/BOTTLE":"Mahfooz Ali Hafez Ali (2)","LAVISTINA 24 mg/tablet, 50 TABLET/BOX":"Hatem Abdelmageed Elsayed Mata (1)","SITAVIC 50/1000 mg/tablet, 56 TABLET/BOX":"Hatem Abdelmageed Elsayed Mata (26) · Summera Aman Solangi (3)","NERVAN 500 mg/tablet, 30 TABLET/BOX":"Mohamed Samir Abdelfattah Faraj (6) · Fatimah Abdulhafeez Mohamed K (1)","CORTRIEF 1 mg/applicator Nasal Spray, APPLIC":"Mohamed Hasan Badr Moussa (5)","XYZAL Tablet 5MG/1Tablet, 20Tablet/Box":"Mariam Ezzeldin Abdelmonem Sh (2) · Mugahid Khalid Zainelabdin Elfak (1)","PANADREX 120 mg/5 ml Syrup, 60 ML/BOTTLE":"Mohamed Samir Abdelfattah Faraj (1)","GENGIGEL BABY 1 %/apply Gel, 15 GM/APPLY":"Mohamed Muhiddeen Abd Al Gde (4) · Ibrahim Abdelrazeq Ibrahim Deso (1)","APLEFIT PLUS Capsule, 60 CAPSULE/BOX":"Maysa Sayed Abdullah Abdeltawab (2) · Mohamed Samir Abdelfattah Faraj (1)","TENORYL PLUS 5/5 mg/tablet, 30 TABLET/BOX":"Hatem Abdelmageed Elsayed Mata (6) · Mohamed Hatem Abdelsamie Nour (2)","AMYDRAMINE SUGAR FREE Syrup, 120 ML/BOTTLE":"Ahmed Hassanin Mohamed Hassan (41) · Mugahid Khalid Zainelabdin Elfak (8)","SORTIVA-H Tablet 100/12.5MG/1Tablet, 30Table":"Mugahid Khalid Zainelabdin Elfak (2)","MINIRIN MELT Tablet 120MG/1Tablet, 30Tablet/":"Khaled Ahmed Ali Abdurrahman (1) · Hossameldin Mohamed Amin Bekh (1)","MOTOVA PLUS 60 TAB 1500 MG BOTTEL":"Khaled Ahmed Ali Abdurrahman (3) · Heba Mohsen Mohamed Khalil (2)","MEGAMOX SUSPENTION 156MG/5ML, 100ML/Bottle":"Ibrahim Ali Ismail Heggy (34) · Mugahid Khalid Zainelabdin Elfak (6)","MOVACID 400 mg/tablet, 60 TABLET/BOX":"Medhat Alashry Aladawy Goger (45)","GLUCAJONE 1000 mg/sachet, 30 SACHET/BOX":"Medhat Alashry Aladawy Goger (46)","GARCIMIUM 1 gm/tablet, 60 TABLET/BOX":"Medhat Alashry Aladawy Goger (2)","QUPENE capsule Soft Gel Cap, 30 CAPSULE/BOX":"Soha Mohamed Salaheldeen Solima (3)","G1000 3 gm/sachet, 30 SACHET/BOX":"Fatimah Abdulhafeez Mohamed K (2) · Amira Mohamed Salem Eldaltouni (1)","VAGINECALM GEL CALM tube Gel, 50 ML/TUBE":"Hala Fathi Ewis Mansur (3) · Soha Mohamed Salaheldeen Solima (1)","LOGYNON Tablet /1Tablet, 21Tablet/Box":"Soha Mohamed Salaheldeen Solima (2) · Hala Fathi Ewis Mansur (2)","ACC Effervescent tablet 600MG/1Tablet, 10Tab":"Mohamed Mostafa Ali Abdelkader (17) · Mayada Farah Obaid Ali (11)","ECHILIB CHewable tablet, 20 TABLET/BOX":"Nehad Farouk Abdallah Ramadan (4)","ARENA Tablet 150MG/1Tablet, 30Tablet/Box":"Nahed Mohammed Hassona Bahage (2) · Ahmed Hassanin Mohamed Hassan (1)","MELIGAMET 50 mg / 1000 mg/tablet, 60 TABLET/":"Ahmed Hassanin Mohamed Hassan (1) · Abdullah Ahmed Mohamede Ahme (1)","JUSPRIN 81 mg/tablet, 30 TABLET/BOX":"Mugahid Khalid Zainelabdin Elfak (3) · Hala Fathi Ewis Mansur (2)","TRENTAL Tablet 400MG/1Tablet, 20Tablet/Box":"Ali Mohamed Elameen Ahmed (1) · Ahmed Taher Mokhtar Mashaly (1)","SEROXAT CR Tablet 25MG/1Tablet, 30Tablet/Box":"Mohamed Emad Kamal Ismail (4) · Ahmed Taher Mokhtar Mashaly (1)","AMOVAC enema Solution, 120 ML/CONTAINER":"Hossameldin Mohamed Amin Bekh (1)","CYANOSEPT 6 tube Vaginal Gel, 6 TUBE/BOX":"Nehad Farouk Abdallah Ramadan (10) · Hala Fathi Ewis Mansur (3)","LYPFEN 200 mg/capsule, 30 CAPSULE/BOX":"Maysa Sayed Abdullah Abdeltawab (11) · Hatem Abdelmageed Elsayed Mata (7)","JULEEN 100 mg/tablet, 30 TABLET/BOX":"Abdalla Basbar Dafaallah Basbar (2)","CONCOR Tablet 10MG/1Tablet, 30Tablet/Box":"Hanan Mohamed Naguib Elgendi (3) · Mohamed Hatem Abdelsamie Nour (1)","MEGAROY Capsule, 30 CAPSULE/BOX":"Hossameldin Mohamed Amin Bekh (2) · Said Tolba Elsayed Elbedewy (1)","MARLON 10 mg/tablet, 30 TABLET/BOX":"Ahmed Taher Mokhtar Mashaly (1) · Mohamed Emad Kamal Ismail (1)","DIFFERIN Gel 0.1%/1APPLY, 30GM/Tube":"Mona Farid Elmandouh Abdelrahm (2)","DAONIL Tablet 5MG/1Tablet, 30Tablet/Box":"Maysa Sayed Abdullah Abdeltawab (1)","SIMVA Film coated tablet 10MG/1Tablet, 30Tab":"Hanan Mohamed Naguib Elgendi (1)","CIPROCIN Eye drops 0.3MG/1Drop, 5ML/Containe":"Gazala Gholam Mir (2)","MICARDIS PLUS 80/12.5 mg/tablet, 28 TABLET/B":"Ahmed Hassanin Mohamed Hassan (1) · Nahed Mohammed Hassona Bahage (1)","ELEVIT Tablet, 30 TABLET/BOX":"Nehad Farouk Abdallah Ramadan (1)","HAEMOVIT Tablet, 30 TABLET/BOX":"Arwa Mohammed Osman Taha (2) · Nehad Farouk Abdallah Ramadan (1)","GONAL-F Injection 450IU/1pen, 1ML/Pen":"Wafaa Abdelrazig Mukhtar Moham (2)","SEROXAT CR 12.5 MG 30Tablet/Box":"Mohamed Emad Kamal Ismail (1)","SPASMOLYTE Tablet 20MG/1Tablet, 30Tablet/Box":"Maysa Sayed Abdullah Abdeltawab (1)","HEMAGEL Gel /1APPLY, 30GM/Tube":"Mohamed Hatem Abdelsamie Nour (5) · Said Tolba Elsayed Elbedewy (1)","SORTIVA H Tablet 50/12.5MG/1Tablet, 28Tablet":"Maysa Sayed Abdullah Abdeltawab (1)","DEBREX 1 mg/tablet, 30 TABLET/BOX":"Mohamed Emad Kamal Ismail (1)","TACROZ 0.03 %/apply Ointment , 10 GM/TUBE":"Sara Ibrahim Elabd Eldegla (1) · Mona Farid Elmandouh Abdelrahm (1)","ARGIREKT 7 gm Sachets, 30 SACHET/BOX":"Hossameldin Mohamed Amin Bekh (2) · Ahmad Mahmoud Mohammed Elad (1)","FENSOLIN 10 mg/tablet, 30 TABLET/BOX":"Mohamed Hatem Abdelsamie Nour (1)","DAIVOBET apply Ointment , 60 GM/TUBE":"Mona Farid Elmandouh Abdelrahm (2)","LOCASONE Cream 0.1%/1APPLY, 100GM/Tube":"Mona Farid Elmandouh Abdelrahm (5)","LOVERA 5 mg/tablet, 30 TABLET/BOX":"Ahmad Mahmoud Mohammed Elad (3)","GAMCET 0.4 mg/tablet, 30 TABLET/BOX":"Ahmad Mahmoud Mohammed Elad (1)","KLENDAM 300 mg/capsule, 16 CAPSULE/BOX":"Ibrahim Abdelrazeq Ibrahim Deso (1)","ZOLONIA 10 mg/tablet, 28 TABLET/BOX":"Mohamed Emad Kamal Ismail (1)","SEROQUEL Tablet 100MG/1Tablet, 60Tablet/Box":"Mohamed Emad Kamal Ismail (1)","ANAFRANIL Tablet 10MG/1Tablet, 30Tablet/Box":"Ahmed Taher Mokhtar Mashaly (1)","CREVAST 20 mg/tablet, 30 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (4)","IRO-VIT drop, 30 ML/CONTAINER":"Mohamed Hatem Abdelsamie Nour (1) · Rafik Elsayed Aboelhythim Ereba (1)","RYBELSUS 14 mg/tablet, 30 TABLET/BOX":"Ali Mohamed Elameen Ahmed (1) · Hatem Abdelmageed Elsayed Mata (1)","OLNEDA 20 /10mg/tablet, 30 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (2)","LAZURE 50 mg/tablet, 60 TABLET/BOX":"Ahmed Taher Mokhtar Mashaly (2) · Mohamed Hatem Abdelsamie Nour (1)","OMEGA MIND 1200 mg/5 ml Syrup, 100 ML/BOTTLE":"Ayman Othman Youssef Othman (1)","AVALON ALPHA PLUS apply Cream, 30 GM/TUBE":"Mona Farid Elmandouh Abdelrahm (1)","PRED FORTE Eye drops 2MG/1Drop, 5ML/Containe":"Mohamed Mohamed Arafa Abo Ob (3) · Dina Mahmoud Abdelazim Mahme (2)","NAFEES PHARMA BIOTIN Tablet, 60 TABLET/BOX":"Mona Farid Elmandouh Abdelrahm (1)","RIDON Film coated tablet 4MG/1Tablet, 30Tabl":"Ahmed Taher Mokhtar Mashaly (1) · Mohamed Emad Kamal Ismail (1)","BETAVERT 24 mg/tablet, 30 TABLET/BOX":"Maysa Sayed Abdullah Abdeltawab (1)","AVALON AVOCOM Cream 0.1%/1APPLY, 30GM/Tube":"Mugahid Khalid Zainelabdin Elfak (10) · Mona Farid Elmandouh Abdelrahm (1)","RIAXINE Syrup 0.8MG/1ML, 100ML/Bottle":"Mugahid Khalid Zainelabdin Elfak (5)","OZEMPIC 0.25 mg/ml Ampoule, 4 AMPOULE/BOX":"Hatem Abdelmageed Elsayed Mata (3) · Mugahid Khalid Zainelabdin Elfak (1)","ZINNAT SUSPENTION 250MG/5ML, 50ML/Bottle":"Mohamed Muhiddeen Abd Al Gde (1)","JUVAMOX Capsule 500MG/1Capsule, 20Capsule/Bo":"Mugahid Khalid Zainelabdin Elfak (1)","JALRA 50 mg/tablet, 28 TABLET/BOX":"Summera Aman Solangi (1)","EVERT Capsule, 30 CAPSULE/BOX":"Medhat Alashry Aladawy Goger (5) · Soha Mohamed Salaheldeen Solima (1)","WELLMOV tablet, 30 TABLET/BOX":"Ahmed Gamal Abdelnasser Abdelm (6) · Medhat Alashry Aladawy Goger (4)","MICOCORT cream 2/1%/1APPLY, 30GM/Tube":"Amira Mohamed Salem Eldaltouni (2)","URILAX Tablet 10MG/1Tablet, 30Tablet/Box":"Nahed Mohammed Hassona Bahage (1)","URILAX Film coated tablet 5MG/1Tablet, 30Tab":"Nahed Mohammed Hassona Bahage (1)","ROXIL Capsule 500MG/1Capsule, 20Capsule/Box":"Abdullah Ahmed Mohamede Ahme (4) · Mohamed Hatem Abdelsamie Nour (4)","DAONIL-M Tablet 5/500MG/1Tablet, 30Tablet/Bo":"Hatem Abdelmageed Elsayed Mata (1)","MONTEL Chewable tablet 5MG/1Tablet, 28Tablet":"Mohamed Hatem Abdelsamie Nour (1)","MARLON 20 mg/tablet, 30 TABLET/BOX":"Ahmed Taher Mokhtar Mashaly (1)","ZYPREXA Tablet 5MG/1Tablet, 28Tablet/Box":"Mohamed Emad Kamal Ismail (1)","DAMESTA 20 mg/tablet, 30 TABLET/BOX":"Mohamed Emad Kamal Ismail (3)","AVALON FOOT Cream /1APPLY, 90GM/Tube":"Mona Farid Elmandouh Abdelrahm (1)","OZEMPIC 0.5 mg/ml Ampoule, 4 AMPOULE/BOX":"Hatem Abdelmageed Elsayed Mata (1)","ACRETIN Cream 0.05%/1APPLY, 30GM/Tube":"Nasser Abdelaziz Ragab Sakr (2) · Mona Farid Elmandouh Abdelrahm (2)","APIDRA SOLOSTAR 100 iu/ml Injection, 5 VIAL/":"Abdalla Basbar Dafaallah Basbar (1)","ALDACTONE Tablet 100MG/1Tablet, 10Tablet/Box":"Said Tolba Elsayed Elbedewy (1)","CROMA Eye drops 0.04MG/1Drop, 10ML/Container":"Mohamed Mohamed Arafa Abo Ob (1)","MEGATOP SYRUP /1ML, 125ML/BOTTLE":"Mohamed Hatem Abdelsamie Nour (1)","OPTICIN Eye drops 0.3MG/1Drop, 5ML/Container":"Gazala Gholam Mir (1)","ZOLIX 5 mg/tablet, 20 TABLET/BOX":"Nahed Mohammed Hassona Bahage (1)","SIMVA Film coated tablet 20MG/1Tablet, 30Tab":"Ahmed Taher Mokhtar Mashaly (1)","DONIFOXATE 80 mg/tablet, 30 TABLET/BOX":"Mugahid Khalid Zainelabdin Elfak (1)","CREVAST 10 mg/tablet, 30 TABLET/BOX":"Hatem Abdelmageed Elsayed Mata (1) · Mohamed Abdelaziz Abdelmoneem (1)","FIXIT Capsule 150MG/1Capsule, 28Capsule/Box":"Mugahid Khalid Zainelabdin Elfak (1)","LODIAB XR 750 mg/tablet, 60 TABLET/BOX":"Mugahid Khalid Zainelabdin Elfak (1)"}
   },
 
@@ -1372,7 +641,8 @@ const DATA = {
 /* ==================== helpers ==================== */
 const M=DATA.months, ML=DATA.monthLabel;
 const CUR="07",PREV="06",FIRST="05";
-const COL={"05":"var(--c05)","06":"var(--c06)","07":"var(--c07)"};
+const MW=["05","06","07","08"], CURW="08", PREVW="07";
+const COL={"05":"var(--c05)","06":"var(--c06)","07":"var(--c07)","08":"var(--c08)"};
 const state={tab:"sales",scope:"all",metric:"units"};
 const fmt=n=>n==null?"—":Number(n).toLocaleString("en-US",{maximumFractionDigits:0});
 function delta(cur,prev){
@@ -1386,14 +656,15 @@ function itemTotals(scope,metric){ // {05,06,07} totals across items for a scope
   const o={}; M.forEach(m=>o[m]=DATA.nostriItems.reduce((a,it)=>{
     const v=itemVals(it,scope,metric); return a+((v&&v[m])||0);},0)); return o;
 }
-function barChart(vals,unit){
-  const max=Math.max(...M.map(m=>vals[m]||0),1);
-  const bars=M.map(m=>{
+function barChart(vals,unit,months){
+  const mo=months||M;
+  const max=Math.max(...mo.map(m=>vals[m]||0),1);
+  const bars=mo.map(m=>{
     const h=Math.max((vals[m]||0)/max*100,1.5);
     return `<div class="chgroup"><div class="bar" style="height:${h}%;background:${COL[m]}">
       <span class="cap" style="color:${COL[m]}">${fmt(vals[m])}</span></div></div>`;
   }).join("");
-  const labels=M.map(m=>`<span>${ML[m]}</span>`).join("");
+  const labels=mo.map(m=>`<span>${ML[m]}</span>`).join("");
   return `<div class="chart chart-monthly">${bars}</div><div class="chlabels">${labels}</div>`;
 }
 function scopeLabel(s){return s==="all"?"كل الصيدليات":"صيدلية "+s;}
@@ -1546,7 +817,7 @@ V.credit=()=>{
 
 /* ---- 2. Writings (REAL — ص1) ---- */
 function itemWr(it,scope){ return it.wr && it.wr[scope] ? it.wr[scope] : null; }
-function wrTotals(scope){ const o={}; M.forEach(m=>o[m]=DATA.nostriItems.reduce((a,it)=>{
+function wrTotals(scope,months){ const mo=months||M; const o={}; mo.forEach(m=>o[m]=DATA.nostriItems.reduce((a,it)=>{
   const w=itemWr(it,scope); return a+((w&&w[m])||0);},0)); return o; }
 V.writings=()=>{
   const scope=state.scope;
@@ -1554,47 +825,44 @@ V.writings=()=>{
     return `<div class="panel"><div class="pend"><div class="big">✍️</div>
       <h2>كتابات ${scopeLabel(scope)} — بانتظار الملف</h2></div></div>`;
   }
-  const w=wrTotals(scope), dCur=delta(w[CUR],w[PREV]), dTot=delta(w[CUR],w[FIRST]);
-  const note=`<div class="note real">✔ <b>كتابات حقيقية</b> — ${scopeLabel(scope)}، من ملفات الأطباء 05/06/07.
-     كل «كتابة» = سطر وصفة لأحد أصناف نوستري (كل الحالات).</div>`;
+  const w=wrTotals(scope,MW), dCur=delta(w[CURW],w[PREVW]), dTot=delta(w[CURW],w[FIRST]);
   const kpis=`<div class="kpis">
-    <div class="kpi"><div class="lbl">كتابات يوليو 07</div><div class="val">${fmt(w[CUR])}</div>
-      <div class="delta ${dCur.c}">${dCur.t} مقابل يونيو</div></div>
+    <div class="kpi hero"><div class="lbl">كتابات أغسطس 08</div><div class="val">${fmt(w[CURW])}</div>
+      <div class="delta ${dCur.c}">${dCur.t} مقابل يوليو</div></div>
+    <div class="kpi"><div class="lbl">يوليو 07</div><div class="val">${fmt(w[CUR])}</div></div>
     <div class="kpi"><div class="lbl">يونيو 06</div><div class="val">${fmt(w[PREV])}</div></div>
-    <div class="kpi"><div class="lbl">مايو 05</div><div class="val">${fmt(w[FIRST])}</div></div>
-    <div class="kpi"><div class="lbl">التغير 05←07</div><div class="val ${dTot.c}">${dTot.t.replace(/[▲▼●] /,"")}</div>
+    <div class="kpi"><div class="lbl">التغير 05←08</div><div class="val ${dTot.c}">${dTot.t.replace(/[▲▼●] /,"")}</div>
       <div class="delta ${dTot.c}">${dTot.c==="up"?"تحسّن":dTot.c==="down"?"تراجع":"ثبات"} الكتابات</div></div></div>`;
-  const chart=`<div class="panel"><h2>تسلسل الكتابات — ${scopeLabel(scope)}</h2>${barChart(w)}</div>`;
+  const chart=`<div class="panel"><h2>تسلسل الكتابات — ${scopeLabel(scope)}</h2>${barChart(w,null,MW)}</div>`;
   const rows=DATA.nostriItems.map(it=>{
-    const x=itemWr(it,scope)||{}, d=delta(x[CUR],x[PREV]);
-    return `<tr><td>${it.name}</td><td class="num">${fmt(x[FIRST])}</td>
-      <td class="num">${fmt(x[PREV])}</td><td class="num">${fmt(x[CUR])}</td>
+    const x=itemWr(it,scope)||{}, d=delta(x[CURW],x[PREVW]);
+    return `<tr><td>${it.name}</td>${MW.map(m=>`<td class="num">${fmt(x[m])}</td>`).join("")}
       <td class="trend ${d.c}">${d.t}</td></tr>`;}).join("");
   const table=`<div class="panel"><h2>الكتابات لكل صنف — ${scopeLabel(scope)}</h2>
-    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>مايو</th><th>يونيو</th><th>يوليو</th><th>التغير ش/ش</th></tr></thead>
+    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th>${MW.map(m=>`<th>${ML[m]}</th>`).join("")}<th>التغير ش/ش</th></tr></thead>
     <tbody>${rows}</tbody>
-    <tfoot><tr><td>الإجمالي</td><td class="num">${fmt(w[FIRST])}</td><td class="num">${fmt(w[PREV])}</td>
-    <td class="num">${fmt(w[CUR])}</td><td class="trend ${dCur.c}">${dCur.t}</td></tr></tfoot></table></div></div>`;
+    <tfoot><tr><td>الإجمالي</td>${MW.map(m=>`<td class="num">${fmt(w[m])}</td>`).join("")}
+    <td class="trend ${dCur.c}">${dCur.t}</td></tr></tfoot></table></div></div>`;
   // ===== إجمالي الصيدليات الثلاث معًا (1+7+18) =====
   const P3=["1","7","18"];
-  const comb={}; M.forEach(m=>comb[m]=P3.reduce((a,p)=>a+(wrTotals(p)[m]||0),0));
-  const cd=delta(comb[CUR],comb[PREV]), cd3=delta(comb[CUR],comb[FIRST]);
+  const comb={}; MW.forEach(m=>comb[m]=P3.reduce((a,p)=>a+(wrTotals(p,MW)[m]||0),0));
+  const cd=delta(comb[CURW],comb[PREVW]), cd3=delta(comb[CURW],comb[FIRST]);
   const combKpis=`<div class="kpis">
-    <div class="kpi hero"><div class="lbl">إجمالي الصيدليات الثلاث (1+7+18) — يوليو</div>
-      <div class="val">${fmt(comb[CUR])}</div><div class="delta ${cd.c}">${cd.t} مقابل يونيو</div></div>
+    <div class="kpi hero"><div class="lbl">إجمالي الصيدليات الثلاث (1+7+18) — أغسطس</div>
+      <div class="val">${fmt(comb[CURW])}</div><div class="delta ${cd.c}">${cd.t} مقابل يوليو</div></div>
+    <div class="kpi"><div class="lbl">يوليو</div><div class="val">${fmt(comb[CUR])}</div></div>
     <div class="kpi"><div class="lbl">يونيو</div><div class="val">${fmt(comb[PREV])}</div></div>
-    <div class="kpi"><div class="lbl">مايو</div><div class="val">${fmt(comb[FIRST])}</div></div>
-    <div class="kpi"><div class="lbl">التغير 05←07</div><div class="val ${cd3.c}">${cd3.t.replace(/[▲▼●] /,"")}</div>
+    <div class="kpi"><div class="lbl">التغير 05←08</div><div class="val ${cd3.c}">${cd3.t.replace(/[▲▼●] /,"")}</div>
       <div class="delta ${cd3.c}">${cd3.c==="up"?"تحسّن":cd3.c==="down"?"تراجع":"ثبات"}</div></div></div>`;
-  const brk=P3.map(p=>{const x=wrTotals(p), d=delta(x[CUR],x[PREV]);
-    return `<tr><td>${scopeLabel(p)}</td><td class="num">${fmt(x[FIRST])}</td><td class="num">${fmt(x[PREV])}</td>
-      <td class="num">${fmt(x[CUR])}</td><td class="trend ${d.c}">${d.t}</td></tr>`;}).join("");
+  const brk=P3.map(p=>{const x=wrTotals(p,MW), d=delta(x[CURW],x[PREVW]);
+    return `<tr><td>${scopeLabel(p)}</td>${MW.map(m=>`<td class="num">${fmt(x[m])}</td>`).join("")}
+      <td class="trend ${d.c}">${d.t}</td></tr>`;}).join("");
   const combPanel=`<div class="panel"><h2>🏥 إجمالي الصيدليات الثلاث معًا — الكتابات</h2>
-    ${barChart(comb)}
-    <div class="tbl-wrap" style="margin-top:14px"><table><thead><tr><th>الصيدلية</th><th>مايو</th><th>يونيو</th><th>يوليو</th><th>التغير ش/ش</th></tr></thead>
+    ${barChart(comb,null,MW)}
+    <div class="tbl-wrap" style="margin-top:14px"><table><thead><tr><th>الصيدلية</th>${MW.map(m=>`<th>${ML[m]}</th>`).join("")}<th>التغير ش/ش</th></tr></thead>
     <tbody>${brk}</tbody>
-    <tfoot><tr><td>المجموع (1+7+18)</td><td class="num">${fmt(comb[FIRST])}</td><td class="num">${fmt(comb[PREV])}</td>
-    <td class="num">${fmt(comb[CUR])}</td><td class="trend ${cd.c}">${cd.t}</td></tr></tfoot></table></div></div>`;
+    <tfoot><tr><td>المجموع (1+7+18)</td>${MW.map(m=>`<td class="num">${fmt(comb[m])}</td>`).join("")}
+    <td class="trend ${cd.c}">${cd.t}</td></tr></tfoot></table></div></div>`;
   return combKpis+combPanel+`<div class="section-stage" style="margin-top:6px"><div><h2 style="font-size:16px">تفصيل ${scopeLabel(scope)}</h2></div></div>`+kpis+chart+table;
 };
 
@@ -1646,27 +914,28 @@ V.doctors=()=>{
     return `<div class="panel"><div class="pend"><div class="big">👨‍⚕️</div>
       <h2>أطباء ${scopeLabel(scope)} — بانتظار الملف</h2></div></div>`;
   }
-  const docs=DATA.doctorsNostri[scope], nDoc=DATA.doctorCount[scope]||docs.length;
-  const wTot=wrTotals(scope);
-  const t5=wTot[FIRST], t6=wTot[PREV], t7=wTot[CUR];
+  const nDoc=DATA.doctorCount[scope]||DATA.doctorsNostri[scope].length;
+  const docs=DATA.doctorsNostri[scope].slice().sort((a,b)=>(b[4]||0)-(a[4]||0));
+  const wTot=wrTotals(scope,MW);
+  const t8=wTot[CURW];
   const dTop=docs[0];
   const kpis=`<div class="kpis">
-    <div class="kpi"><div class="lbl">أعلى طبيب (يوليو)</div><div class="val" style="font-size:18px">${dTop[0]}</div>
-      <div class="delta up">${dTop[3]} كتابة</div></div>
+    <div class="kpi hero"><div class="lbl">أعلى طبيب (أغسطس)</div><div class="val" style="font-size:18px">${dTop[0]}</div>
+      <div class="delta up">${dTop[4]} كتابة</div></div>
     <div class="kpi"><div class="lbl">عدد الأطباء الكاتبين</div><div class="val">${nDoc}</div></div>
-    <div class="kpi"><div class="lbl">متوسط كتابة/طبيب (07)</div><div class="val">${(t7/nDoc).toFixed(1)}</div></div>
-    <div class="kpi"><div class="lbl">إجمالي الكتابات (07)</div><div class="val">${fmt(t7)}</div></div></div>`;
+    <div class="kpi"><div class="lbl">متوسط كتابة/طبيب (08)</div><div class="val">${(t8/nDoc).toFixed(1)}</div></div>
+    <div class="kpi"><div class="lbl">إجمالي الكتابات (08)</div><div class="val">${fmt(t8)}</div></div></div>`;
   const chart=`<div class="panel"><h2>إجمالي الكتابات — ${scopeLabel(scope)}</h2>
-    ${barChart({"05":t5,"06":t6,"07":t7})}</div>`;
-  const max7=Math.max(...docs.map(d=>d[3]),1);
+    ${barChart({"05":wTot["05"],"06":wTot["06"],"07":wTot["07"],"08":wTot["08"]},null,MW)}</div>`;
+  const max8=Math.max(...docs.map(d=>d[4]||0),1);
   const rows=docs.map((d,i)=>{
-    const dd=delta(d[3],d[2]);
+    const dd=delta(d[4]||0,d[3]||0);
     return `<tr><td>${i+1}. ${d[0]}</td><td class="num">${d[1]}</td><td class="num">${d[2]}</td>
-      <td class="num">${d[3]}</td><td class="trend ${dd.c}">${dd.t}</td>
-      <td style="width:120px"><div class="conv"><div class="track">
-        <div class="fill" style="width:${d[3]/max7*100}%;background:var(--teal)"></div></div></div></td></tr>`;}).join("");
-  const table=`<div class="panel"><h2>ترتيب الأطباء (أعلى ${docs.length}) — ${scopeLabel(scope)}</h2>
-    <div class="tbl-wrap"><table><thead><tr><th>الطبيب</th><th>مايو</th><th>يونيو</th><th>يوليو</th><th>التغير</th><th>يوليو</th></tr></thead>
+      <td class="num">${d[3]}</td><td class="num" style="font-weight:700">${d[4]||0}</td><td class="trend ${dd.c}">${dd.t}</td>
+      <td style="width:110px"><div class="conv"><div class="track">
+        <div class="fill" style="width:${(d[4]||0)/max8*100}%;background:var(--teal)"></div></div></div></td></tr>`;}).join("");
+  const table=`<div class="panel"><h2>ترتيب الأطباء (أعلى ${docs.length}) — ${scopeLabel(scope)} · حسب أغسطس</h2>
+    <div class="tbl-wrap"><table><thead><tr><th>الطبيب</th><th>مايو</th><th>يونيو</th><th>يوليو</th><th>أغسطس</th><th>التغير</th><th>أغسطس</th></tr></thead>
     <tbody>${rows}</tbody></table></div></div>`;
   return kpis+chart+table;
 };
@@ -1674,9 +943,9 @@ V.doctors=()=>{
 /* ---- 4. Near-Expire (REAL) ---- */
 V.expire=()=>{
   const NE=DATA.nearExpire, s=NE.summary, mo=NE.monthly;
-  const dCur=delta(mo[CUR],mo[PREV]);
-  const statusOf=w7=>w7===0?"none":w7<=5?"weak":"active";
-  const wpill=w7=>w7===0?'<span class="pill r">بدون كتابة</span>':w7<=5?'<span class="pill y">ضعيف</span>':'<span class="pill g">نشط</span>';
+  const dCur=delta(mo[CURW],mo[PREVW]);
+  const statusOf=w=>w===0?"none":w<=5?"weak":"active";
+  const wpill=w=>w===0?'<span class="pill r">بدون كتابة</span>':w<=5?'<span class="pill y">ضعيف</span>':'<span class="pill g">نشط</span>';
   const kpis=`<div class="kpis">
     <div class="kpi"><div class="lbl">إجمالي أصناف النير اكسبير</div><div class="val">${fmt(s.items)}</div>
       <div class="delta flat">${fmt(s.qty)} وحدة مخزون</div></div>
@@ -1684,17 +953,17 @@ V.expire=()=>{
       <div class="delta flat">${Math.round(s.prescribed/s.items*100)}% من الأصناف</div></div>
     <div class="kpi"><div class="lbl">أصناف بدون أي كتابة</div><div class="val" style="color:var(--down)">${fmt(s.risk)}</div>
       <div class="delta down">بدون كتابة</div></div>
-    <div class="kpi"><div class="lbl">إجمالي كتاباتها (07)</div><div class="val">${fmt(mo[CUR])}</div>
-      <div class="delta ${dCur.c}">${dCur.t} مقابل يونيو</div></div></div>`;
+    <div class="kpi"><div class="lbl">إجمالي كتاباتها (أغسطس 08)</div><div class="val">${fmt(mo[CURW])}</div>
+      <div class="delta ${dCur.c}">${dCur.t} مقابل يوليو</div></div></div>`;
   const chart=`<div class="panel"><h2>إجمالي كتابات أصناف النير اكسبير — تسلسل شهري</h2>
-    ${barChart(mo)}</div>`;
+    ${barChart(mo,null,MW)}</div>`;
   const allRows=NE.all.map(r=>{
-    const[desc,qty,exp,w5,w6,w7]=r, d=delta(w7,w6), st=statusOf(w7);
+    const[desc,qty,exp,w5,w6,w7,w8]=r, d=delta(w8,w7), st=statusOf(w8);
     const doc=(NE.topDocs&&NE.topDocs[desc])?NE.topDocs[desc]:"—";
     return `<tr data-name="${desc.toLowerCase()}" data-status="${st}"><td>${desc}</td>
       <td class="num" style="${qty>=200?'color:var(--down);font-weight:700':''}">${fmt(qty)}</td>
-      <td class="num">${w5}</td><td class="num">${w6}</td><td class="num">${w7}</td>
-      <td class="trend ${d.c}">${d.t}</td><td>${wpill(w7)}</td>
+      <td class="num">${w5}</td><td class="num">${w6}</td><td class="num">${w7}</td><td class="num" style="font-weight:700">${w8}</td>
+      <td class="trend ${d.c}">${d.t}</td><td>${wpill(w8)}</td>
       <td style="font-size:12px;min-width:180px;color:var(--muted)">${doc}</td></tr>`;}).join("");
   const table=`<div class="panel"><h2>كل أصناف النير اكسبير (${NE.all.length}) — مرتّبة بالمخزون</h2>
     <div class="ne-tools">
@@ -1708,7 +977,7 @@ V.expire=()=>{
     </div>
     <div id="neCount" style="font-size:12px;color:var(--muted);margin-bottom:8px"></div>
     <div class="tbl-wrap" style="max-height:70vh;overflow-y:auto"><table><thead><tr>
-      <th>الصنف</th><th>المخزون</th><th>مايو</th><th>يونيو</th><th>يوليو</th>
+      <th>الصنف</th><th>المخزون</th><th>مايو</th><th>يونيو</th><th>يوليو</th><th>أغسطس</th>
       <th>التغير</th><th>الحالة</th><th>أكثر طبيب يكتبه</th></tr></thead><tbody id="neBody">${allRows}</tbody></table></div></div>`;
   setTimeout(()=>{
     const inp=document.getElementById("neSearch"), body=document.getElementById("neBody"),
@@ -1874,9 +1143,9 @@ function insightsFor(tab){
     out.push({c:"up",t:`أعلى صيدلية داخلية: ص${bestP} — ${fmt(bestV)} ${metricLabel()}`});
   } else if(tab==="writings"){
     const scope=DATA.writingsReady[state.scope]?state.scope:"1";
-    const w=wrTotals(scope), d=delta(w[CUR],w[PREV]);
-    out.push({c:d.c,t:`${scopeLabel(scope)} يوليو: ${fmt(w[CUR])} كتابة (${d.t} vs يونيو)`});
-    out.push({c:delta(w[CUR],w[FIRST]).c,t:`مايو ← يوليو: ${delta(w[CUR],w[FIRST]).t}`});
+    const w=wrTotals(scope,MW), d=delta(w[CURW],w[PREVW]);
+    out.push({c:d.c,t:`${scopeLabel(scope)} أغسطس: ${fmt(w[CURW])} كتابة (${d.t} vs يوليو)`});
+    out.push({c:delta(w[CURW],w[FIRST]).c,t:`مايو ← أغسطس: ${delta(w[CURW],w[FIRST]).t}`});
   } else if(tab==="conversion"){
     const scope=DATA.writingsReady[state.scope]?state.scope:"1";
     const sold=itemTotals(scope,"units"), wr=wrTotals(scope);
@@ -1894,8 +1163,8 @@ function insightsFor(tab){
     out.push({c:"down",t:`الخارجية: ${fmt(uAll-uIntr)} وحدة · ${100-sh}%`});
   } else if(tab==="doctors"){
     const scope=DATA.doctorsNostri[state.scope]?state.scope:"1";
-    const docs=DATA.doctorsNostri[scope]||[];
-    if(docs[0]) out.push({c:"up",t:`الأعلى يوليو (ص${scope}): ${shortName(docs[0][0])} — ${docs[0][3]}`});
+    const docs=(DATA.doctorsNostri[scope]||[]).slice().sort((a,b)=>(b[4]||0)-(a[4]||0));
+    if(docs[0]) out.push({c:"up",t:`الأعلى أغسطس (ص${scope}): ${shortName(docs[0][0])} — ${docs[0][4]||0}`});
     out.push({c:"flat",t:`عدد الأطباء الكاتبين: ${DATA.doctorCount[scope]||docs.length}`});
   } else if(tab==="credit"){
     const y5=DATA.credit["2025"], y6=DATA.credit["2026"];
