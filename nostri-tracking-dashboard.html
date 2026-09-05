@@ -563,6 +563,7 @@ th{background:color-mix(in srgb,var(--glass) 78%, transparent)}
       <button data-tab="doctors">الأطباء</button>
       <button data-tab="expire">Near-Expire</button>
       <button data-tab="credit">الأدوية آجل</button>
+      <button data-tab="targets">🎯 استهدافات شهر 9</button>
     </nav>
     <main class="main">
       <section id="view"></section>
@@ -1074,6 +1075,32 @@ V.pureherb=()=>{
   return kpis+shareChart+chart+table+conv;
 };
 
+/* ---- استهدافات شهر 9 (September focus) ---- */
+V.targets=()=>{
+  const goals=[
+    {ic:"🏷️", t:"زيادة مبيعات الـ Private Label (NOSTRI + PureHerb)",
+     d:"التركيز على رفع مبيعات علاماتنا الخاصة عبر الصيدليات ودفع كتابتها من الأطباء."},
+    {ic:"🏪", t:"التوسّع في البيع الخارجي للصيدليات الصغيرة",
+     d:"فتح منافذ بيع جديدة خارج الصيدليات الداخلية والوصول للصيدليات الصغيرة."},
+    {ic:"🩺", t:"إدخال أصناف NOSTRI في مجمّعات طبية أخرى",
+     d:"استهداف مجمّعات طبية جديدة وزيارة الأطباء فيها لتنشيط كتابة أصناف نوستري."}
+  ];
+  const note=`<div class="note info">🎯 <b>محاور التركيز لشهر سبتمبر (09-2026)</b> — بنود استراتيجية نتابع تنفيذها خلال الشهر.</div>`;
+  const cards=goals.map((g,i)=>`
+    <div class="panel" style="display:flex;align-items:flex-start;gap:16px">
+      <div style="flex:0 0 auto;width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+        font-size:22px;background:color-mix(in srgb,var(--teal) 14%, var(--card));border:1px solid color-mix(in srgb,var(--teal) 30%, var(--line))">${g.ic}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-size:12px;font-weight:800;color:var(--teal);background:color-mix(in srgb,var(--teal-l) 30%, transparent);
+            padding:2px 9px;border-radius:999px">هدف ${i+1}</span></div>
+        <h2 style="margin:2px 0 6px;font-size:17px;color:var(--heading);font-weight:800;line-height:1.4">${g.t}</h2>
+        <p style="margin:0;color:var(--muted);font-size:13.5px;line-height:1.6">${g.d}</p>
+      </div>
+    </div>`).join("");
+  return note+cards;
+};
+
 /* ==================== render ==================== */
 function needsScope(t){return t==="sales"||t==="writings"||t==="conversion"||t==="doctors";}
 function scopeReadyMap(t){return (t==="writings"||t==="conversion"||t==="doctors")?DATA.writingsReady:DATA.pharmacyReady;}
@@ -1086,7 +1113,8 @@ const TAB_META={
   pureherb:{t:"مبيعات Pure herb",s:"كل الصيدليات · الداخلية · الخارجية — يوليو"},
   doctors:{t:"الأطباء",s:"ترتيب الأطباء حسب الكتابات"},
   expire:{t:"Near-Expire",s:"المخزون قريب الانتهاء والكتابات"},
-  credit:{t:"الأدوية آجل",s:"2025 مقابل 2026"}
+  credit:{t:"الأدوية آجل",s:"2025 مقابل 2026"},
+  targets:{t:"استهدافات شهر 9",s:"محاور التركيز لشهر سبتمبر 2026"}
 };
 function sectionStage(tab){
   const m=TAB_META[tab]||{t:tab,s:""};
