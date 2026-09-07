@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>منصة متابعة الكتابات والتحويل — NOSTRI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- SheetJS (قراءة ملفات Excel) — من CDN مسموح -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --teal:#0f766e; --teal-d:#06332e; --teal-m:#0b5c55; --teal-l:#5eead4; --heading:#06332e;
+  --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#eef3f6; --card:#ffffff;
+  --up:#15803d; --down:#b91c1c; --warn:#c2410c;
+  --c1:#0f766e; --c2:#0e7490; --c3:#2dd4bf; --c4:#99f6e4;
+  --grid:rgba(148,163,184,.18);
+  --th-bg:#f3f7fa; --zebra:rgba(15,118,110,.035); --row-hover:#eef8f6; --tfoot-bg:#ecfdf5;
+  --sh-ambient:0 14px 36px -18px rgba(15,23,42,.18);
+  --sh-direct:0 1px 2px rgba(15,23,42,.05);
+  --radius:18px; --ease:cubic-bezier(.22,1,.36,1);
+}
+:root[data-theme="dark"]{
+  --teal-d:#041f1c; --heading:#99f6e4;
+  --ink:#e8eef7; --muted:#9fb1c4; --line:#243247; --bg:#081018; --card:#101b2c;
+  --c1:#14b8a6; --c2:#22d3ee; --c3:#2dd4bf; --c4:#5eead4;
+  --grid:rgba(148,163,184,.14);
+  --th-bg:#162437; --zebra:rgba(255,255,255,.025); --row-hover:#1a2b42; --tfoot-bg:#123029;
+  --sh-ambient:0 16px 40px -18px rgba(0,0,0,.55);
+  --sh-direct:0 1px 2px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:'IBM Plex Sans Arabic',Tahoma,sans-serif;
+  background:
+    radial-gradient(980px 460px at 100% -8%, rgba(45,212,191,.12), transparent 58%),
+    radial-gradient(820px 440px at -8% 12%, rgba(6,51,46,.05), transparent 52%),
+    linear-gradient(180deg,#f7fafb 0%,var(--bg) 38%,var(--bg) 100%);
+  background-attachment:fixed;color:var(--ink);direction:rtl;-webkit-font-smoothing:antialiased;line-height:1.55;
+}
+:root[data-theme="dark"] body{background:var(--bg)}
+.wrap{max-width:1560px;margin:0 auto;padding:18px 24px 56px}
+
+/* header */
+header.top{
+  background:linear-gradient(120deg,rgba(94,234,212,.14),transparent 42%),
+    radial-gradient(ellipse at 70% 0%,#12897f 0%,#0a4f48 42%,#052925 100%);
+  color:#fff;border-radius:22px;padding:22px 30px;box-shadow:0 18px 40px -20px rgba(6,51,46,.55),inset 0 1px 0 rgba(255,255,255,.12);
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;position:relative;overflow:hidden;
+}
+header.top .logo{font-family:'Alexandria',sans-serif;font-weight:900;font-size:26px;letter-spacing:.12em;
+  background:linear-gradient(180deg,#fff 20%,#99f6e4 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+header.top .htxt h1{margin:0;font-size:16px;font-weight:700;color:#ecfeff}
+header.top .htxt p{margin:2px 0 0;font-size:12.5px;color:rgba(191,240,233,.85)}
+header.top .hactions{margin-inline-start:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.12);color:#fff;font-family:inherit;
+  font-weight:700;font-size:13px;padding:9px 16px;border-radius:12px;cursor:pointer;transition:all .15s;display:inline-flex;gap:7px;align-items:center}
+.btn:hover{background:rgba(255,255,255,.24)}
+.btn.primary{background:#fff;color:var(--teal-d)}
+.btn.primary:hover{background:#ecfeff}
+.icobtn{border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.12);color:#fff;width:40px;height:40px;
+  border-radius:11px;font-size:16px;cursor:pointer;transition:all .15s}
+.icobtn:hover{background:rgba(255,255,255,.24)}
+
+/* current-state strip */
+.statebar{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}
+.sb{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px 15px;box-shadow:var(--sh-direct);position:relative;overflow:hidden}
+.sb::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--teal-l),var(--teal))}
+.sb .l{font-size:11.5px;color:var(--muted);font-weight:600}
+.sb .v{font-family:'Alexandria',sans-serif;font-size:23px;font-weight:800;color:var(--heading);line-height:1.1;margin-top:5px}
+.sb .s{font-size:11px;color:var(--muted);font-weight:600;margin-top:3px}
+.sb.hero::before{width:5px;background:linear-gradient(180deg,#99f6e4,#0f766e)}
+.sb.hero{background:linear-gradient(145deg,color-mix(in srgb,var(--teal) 12%,var(--card)),var(--card) 55%)}
+
+/* filter/toolbar */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 14px;padding:11px 14px;
+  border:1px solid var(--line);border-radius:15px;background:color-mix(in srgb,var(--card) 90%,transparent);box-shadow:var(--sh-direct)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--muted);padding:7px 13px;border-radius:999px;
+  font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .15s}
+.chip:hover{color:var(--teal);border-color:var(--teal-l)}
+.chip.active{background:var(--teal);color:#fff;border-color:var(--teal)}
+.toolbar .sp{flex:1}
+.toolbar input.search{border:1px solid var(--line);border-radius:11px;padding:8px 12px;font-family:inherit;font-size:13px;
+  background:var(--card);color:var(--ink);min-width:180px}
+.toolbar input.search:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 16%,transparent)}
+.periodinfo{font-size:12px;color:var(--muted);font-weight:600}
+
+/* layout */
+.layout{display:flex;gap:14px;align-items:flex-start}
+.sidebar{flex:0 0 176px;display:flex;flex-direction:column;gap:4px;position:sticky;top:12px;
+  padding:8px 6px;border:1px solid var(--line);border-radius:16px;background:color-mix(in srgb,var(--card) 94%,transparent);box-shadow:var(--sh-direct)}
+.sidebar .nl{font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.05em;padding:2px 8px 6px}
+.sidebar button{border:1px solid transparent;background:transparent;color:var(--muted);padding:10px 11px;border-radius:11px;
+  font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;text-align:right;width:100%;transition:all .16s var(--ease);display:flex;gap:9px;align-items:center}
+.sidebar button:hover{color:var(--teal);background:color-mix(in srgb,var(--teal) 8%,transparent)}
+.sidebar button.active{color:#fff;background:linear-gradient(135deg,var(--teal),var(--teal-m));box-shadow:0 8px 16px -10px rgba(15,118,110,.7)}
+.main{flex:1;min-width:0}
+@media(max-width:860px){.layout{flex-direction:column}.sidebar{flex-basis:auto;width:100%;flex-direction:row;flex-wrap:wrap}
+  .sidebar .nl{width:100%}.sidebar button{width:auto;flex:1 1 auto;justify-content:center}}
+
+/* section head */
+.shead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:15px 18px;
+  border-radius:16px;border:1px solid color-mix(in srgb,var(--teal) 22%,var(--line));
+  background:linear-gradient(120deg,color-mix(in srgb,var(--teal) 10%,var(--card)),var(--card) 55%);box-shadow:var(--sh-direct)}
+.shead h2{margin:0;font-family:'Alexandria',sans-serif;font-size:22px;font-weight:800;color:var(--heading)}
+.shead p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.shead .stamp{padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700;color:var(--teal-d);
+  background:color-mix(in srgb,var(--teal-l) 28%,transparent);border:1px solid color-mix(in srgb,var(--teal) 25%,transparent);white-space:nowrap}
+:root[data-theme="dark"] .shead .stamp{color:var(--teal-l)}
+
+/* cards / panels */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--sh-ambient),var(--sh-direct);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--teal-l),var(--teal))}
+.kpi .lbl{font-size:12px;color:var(--muted);font-weight:600}
+.kpi .val{font-family:'Alexandria',sans-serif;font-size:27px;font-weight:800;margin-top:6px;color:var(--ink);line-height:1.05}
+.kpi .val small{font-size:.5em;color:var(--muted);font-weight:700}
+.kpi .delta{font-size:12px;font-weight:700;margin-top:7px}
+.kpi.hero{background:linear-gradient(145deg,color-mix(in srgb,var(--teal) 12%,var(--card)),var(--card) 55%);border-color:color-mix(in srgb,var(--teal) 35%,var(--line))}
+.kpi.hero .val{color:var(--heading)}
+.up{color:var(--up)!important}.down{color:var(--down)!important}.flat{color:var(--muted)!important}
+
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.cols.wide{grid-template-columns:1.3fr .7fr}
+@media(max-width:900px){.cols,.cols.wide{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--sh-ambient),var(--sh-direct)}
+.panel h3{margin:0 0 13px;font-family:'Alexandria',sans-serif;font-size:15.5px;font-weight:800;color:var(--heading);display:flex;align-items:center;gap:8px}
+.panel h3 .hint{margin-inline-start:auto;font-family:'IBM Plex Sans Arabic';font-size:11.5px;font-weight:600;color:var(--muted)}
+
+/* leaderboard */
+.lead{display:flex;flex-direction:column;gap:1px}
+.lead-row{display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:10px;padding:8px;border-radius:10px;transition:background .15s;cursor:pointer}
+.lead-row:hover{background:var(--row-hover)}
+.lead-row .rank{font-family:'Alexandria';font-weight:800;font-size:12.5px;color:var(--muted);text-align:center}
+.lead-row:nth-child(1) .rank{color:var(--teal)}
+.lead-row .who{min-width:0}
+.lead-row .who .nm{font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lead-row .who .track{height:5px;border-radius:3px;background:var(--grid);margin-top:5px;overflow:hidden}
+.lead-row .who .track>i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--teal-l),var(--teal))}
+.lead-row .amt{font-family:'Alexandria';font-weight:800;font-size:15px;color:var(--heading);text-align:end}
+.lead-row .amt small{display:block;font-family:'IBM Plex Sans Arabic';font-size:11px;font-weight:700;margin-top:1px}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:520px}
+thead th{background:var(--th-bg);color:var(--muted);font-weight:700;font-size:12px;padding:11px 12px;text-align:center;position:sticky;top:0;white-space:nowrap}
+thead th:first-child{text-align:start}
+tbody td{padding:10px 12px;text-align:center;border-top:1px solid var(--line)}
+tbody td:first-child{text-align:start;font-weight:600}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:hover{background:var(--row-hover)}
+td.num{font-family:'Alexandria';font-weight:700}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:800}
+.pill.g{background:color-mix(in srgb,var(--up) 14%,var(--card));color:var(--up)}
+.pill.y{background:color-mix(in srgb,var(--warn) 14%,var(--card));color:var(--warn)}
+.pill.r{background:color-mix(in srgb,var(--down) 14%,var(--card));color:var(--down)}
+
+/* bars chart */
+.chart{display:flex;align-items:flex-end;gap:10px;height:200px;padding:8px 4px 0;position:relative}
+.chart .cg{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
+.chart .cg .bar{width:100%;max-width:46px;border-radius:8px 8px 0 0;min-height:4px;position:relative;transition:height .5s var(--ease)}
+.chart .cg .cap{font-family:'Alexandria';font-size:12px;font-weight:800;color:var(--ink);margin-bottom:2px}
+.chlabels{display:flex;gap:10px;margin-top:6px}
+.chlabels span{flex:1;text-align:center;font-size:11.5px;color:var(--muted);font-weight:700}
+
+/* donut */
+.donut-wrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.legend{display:flex;flex-direction:column;gap:7px;font-size:12.5px}
+.legend .li{display:flex;align-items:center;gap:8px;font-weight:600}
+.legend .li .dot{width:11px;height:11px;border-radius:3px}
+.legend .li b{margin-inline-start:auto;font-family:'Alexandria';font-weight:800}
+
+/* dropzone */
+.dropzone{border:2px dashed color-mix(in srgb,var(--teal) 40%,var(--line));border-radius:18px;padding:34px 24px;text-align:center;
+  background:color-mix(in srgb,var(--teal) 4%,var(--card));transition:all .18s;cursor:pointer}
+.dropzone:hover,.dropzone.drag{background:color-mix(in srgb,var(--teal) 9%,var(--card));border-color:var(--teal)}
+.dropzone .big{font-size:40px}
+.dropzone h3{margin:10px 0 4px;color:var(--heading);font-family:'Alexandria';font-size:18px}
+.dropzone p{margin:0;color:var(--muted);font-size:13px}
+.dropzone .fmt{margin-top:10px;font-size:11.5px;color:var(--muted)}
+
+/* period list */
+.plist{display:flex;flex-direction:column;gap:8px}
+.pitem{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:13px;background:var(--card)}
+.pitem .pmeta{flex:1;min-width:0}
+.pitem .pmeta .pn{font-weight:700;font-size:13.5px;color:var(--ink)}
+.pitem .pmeta .pd{font-size:11.5px;color:var(--muted);margin-top:2px}
+.pitem input.plabel{border:1px solid var(--line);border-radius:9px;padding:6px 10px;font-family:inherit;font-size:12.5px;background:var(--bg);color:var(--ink);width:130px}
+.pitem .del{border:1px solid var(--line);background:var(--card);color:var(--down);width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:15px}
+.pitem .del:hover{background:color-mix(in srgb,var(--down) 10%,var(--card))}
+
+/* empty state */
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty .big{font-size:52px;opacity:.7}
+.empty h2{color:var(--heading);font-family:'Alexandria';margin:14px 0 6px}
+
+.foot{text-align:center;color:var(--muted);font-size:12px;margin-top:26px;padding-top:16px;border-top:1px solid var(--line)}
+
+/* toast */
+#toast{position:fixed;inset-block-end:20px;inset-inline-start:50%;transform:translateX(50%) translateY(20px);
+  background:var(--teal-d);color:#fff;padding:12px 20px;border-radius:12px;font-weight:700;font-size:13.5px;
+  box-shadow:0 12px 30px -8px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:all .3s var(--ease);z-index:9999;max-width:80vw}
+#toast.show{opacity:1;transform:translateX(50%) translateY(0)}
+#toast.err{background:#7f1d1d}
+
+@media print{.sidebar,.toolbar .chip,.icobtn,.btn{display:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo">NOSTRI</div>
+    <div class="htxt">
+      <h1>منصة متابعة الكتابات والتحويل</h1>
+      <p>الإدارة التجارية — د. السيد حسن · ارفع ملفات السيستم وكل الأرقام تتجمّع تلقائياً</p>
+    </div>
+    <div class="hactions">
+      <button class="btn primary" id="uploadBtn">⬆ رفع ملف</button>
+      <button class="icobtn" id="themeBtn" title="الوضع الداكن">◐</button>
+      <button class="icobtn" id="printBtn" title="طباعة / PDF">⎙</button>
+    </div>
+  </header>
+  <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" multiple hidden>
+
+  <!-- خانة الوضع الحالي المجمّع -->
+  <div class="statebar" id="statebar"></div>
+
+  <div class="toolbar">
+    <div class="chips" id="prodChips">
+      <button class="chip active" data-prod="all">كل المنتجات</button>
+      <button class="chip" data-prod="nostri">🔷 Nostri</button>
+      <button class="chip" data-prod="pureherb">🌿 PureHerb</button>
+      <button class="chip" data-prod="other">أخرى</button>
+    </div>
+    <span class="sp"></span>
+    <span class="periodinfo" id="periodInfo"></span>
+    <input class="search" id="globalSearch" type="search" placeholder="🔎 ابحث عن طبيب أو دواء…">
+  </div>
+
+  <div class="layout">
+    <nav class="sidebar" id="tabs">
+      <div class="nl">الأقسام</div>
+      <button data-tab="command" class="active">🧭 مركز القيادة</button>
+      <button data-tab="doctors">👨‍⚕️ الأطباء</button>
+      <button data-tab="drugs">💊 الأدوية</button>
+      <button data-tab="conversion">🔁 التحويل</button>
+      <button data-tab="sections">🏥 الأقسام الطبية</button>
+      <button data-tab="periods">📂 الرفعات والفترات</button>
+    </nav>
+    <main class="main"><section id="view"></section></main>
+  </div>
+
+  <div class="foot">منصة NOSTRI للمتابعة · البيانات محفوظة محلياً على جهازك فقط (localStorage) — لا تُرسل لأي خادم</div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   منصة متابعة الكتابات والتحويل — NOSTRI
+   المصدر: تقرير كتابات الأطباء (صف لكل خدمة/دواء)
+   الأعمدة: Patient No · Patient Name · Service Name · Order No. · Status · Doctor Name · Section Name
+   التحويل = الحالة Closed/Dispensed (مصروف) ÷ إجمالي الكتابات
+   التخزين: تجميع فوري لكل رفعة ويُحفظ في localStorage (بدون رفع الصفوف الخام)
+   ============================================================ */
+const NBSP=String.fromCharCode(160);
+const STORE_KEY="nostri-tracker-v1";
+const fmt=n=>n==null?"—":Number(n).toLocaleString("en-US",{maximumFractionDigits:0});
+const pct=(a,b)=>b?Math.round(a/b*100):0;
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+
+/* ---- منتجات Nostri / PureHerb (من تقرير الشركة) ---- */
+const NOSTRI_KEYS=["RIZER","NOSTRICURE","REFLEX MASSAGE","INTIMO","NOSTRIDERM","ORACURE","NOSTRI"];
+const PUREHERB_KEYS=["ZINCOLIVE","FAWARVIT","PUREFEEL","PURE OMEGA","PURE-OMEGA","CENTROZON","BONEFRIEND","ARGIGROW","PUREHERB","PURE HERB","PURE-HERB"];
+function productClass(svc){
+  const s=(svc||"").toUpperCase();
+  if(NOSTRI_KEYS.some(k=>s.includes(k))) return "nostri";
+  if(PUREHERB_KEYS.some(k=>s.includes(k))) return "pureherb";
+  return "other";
+}
+
+/* ---- تطبيع ---- */
+function normKey(s){return String(s==null?"":s).replace(/\u00a0/g," ").replace(/\s+/g," ").trim();}
+function headerKey(s){return normKey(s).toLowerCase().replace(/[\s._-]/g,"");}
+function normStatus(v){
+  const s=normKey(v).toUpperCase();
+  if(/CLOS|DISPENS|مغلق|مصروف|صرف/.test(s)) return "Closed";
+  if(/CANC|ملغ/.test(s)) return "Canceled";
+  if(/PEND|معلق|انتظار/.test(s)) return "Pending";
+  if(/NEW|جديد/.test(s)) return "New";
+  if(/OPEN|مفتوح/.test(s)) return "Opened";
+  if(/ACTIV|نشط/.test(s)) return "Active";
+  return normKey(v)||"غير محدد";
+}
+const CONVERTED=new Set(["Closed"]);
+const STATUS_LABEL={Closed:"مصروف (تحوّل لبيع)",Canceled:"ملغي",Pending:"معلق",New:"جديد",Opened:"مفتوح",Active:"نشط","غير محدد":"غير محدد"};
+const STATUS_COLOR={Closed:"var(--up)",Canceled:"var(--down)",Pending:"var(--warn)",New:"#0e7490",Opened:"#6366f1",Active:"#0ea5e9","غير محدد":"var(--muted)"};
+
+/* ---- مرادفات الأعمدة ---- */
+const ALIASES={
+  doctor:["doctor","doctorname","physician","physicianname","اسمالطبيب","الطبيب","دكتور"],
+  service:["service","servicename","medication","medicationname","drug","drugname","item","itemname","اسمالخدمة","الدواء","الصنف","اسمالصنف"],
+  section:["section","sectionname","specialty","speciality","department","clinic","اسمالقسم","القسم","العيادة","التخصص"],
+  status:["status","state","orderstatus","الحالة","حالة"],
+  order:["orderno","order","orderno.","invoice","invoiceno","رقمالاوردر","رقمالطلب","الاوردر"],
+  patient:["patientno","patient","patientname","رقمالمريض","اسمالمريض","المريض"]
+};
+function mapColumns(headerRow){
+  const idx={};
+  headerRow.forEach((h,i)=>{const k=headerKey(h);
+    for(const field in ALIASES){ if(idx[field]!=null) continue;
+      if(ALIASES[field].some(a=>k===a||k.includes(a))){ idx[field]=i; }
+    }
+  });
+  return idx;
+}
+
+/* ---- قراءة ملف ---- */
+function readFile(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onerror=()=>rej(new Error("تعذّر قراءة الملف"));
+    r.onload=e=>{
+      try{
+        const wb=XLSX.read(e.target.result,{type:"array"});
+        // اختر الشيت الأكبر
+        let best=null,bestRows=-1;
+        wb.SheetNames.forEach(nm=>{
+          const ws=wb.Sheets[nm];
+          const ref=ws["!ref"]; if(!ref) return;
+          const rows=XLSX.utils.decode_range(ref).e.r;
+          if(rows>bestRows){bestRows=rows;best=ws;}
+        });
+        if(!best) return rej(new Error("الملف فارغ"));
+        const aoa=XLSX.utils.sheet_to_json(best,{header:1,defval:"",blankrows:false});
+        res(aoa);
+      }catch(err){rej(err);}
+    };
+    r.readAsArrayBuffer(file);
+  });
+}
+/* أوجد صف العناوين (أول صف فيه طبيب + خدمة) */
+function findHeader(aoa){
+  for(let i=0;i<Math.min(aoa.length,15);i++){
+    const idx=mapColumns(aoa[i]);
+    if(idx.doctor!=null && idx.service!=null) return {row:i,idx};
+  }
+  return null;
+}
+
+/* ---- تجميع الصفوف إلى ملخص فترة ---- */
+function aggregate(aoa){
+  const hdr=findHeader(aoa);
+  if(!hdr) throw new Error("لم أتعرف على الأعمدة — تأكد من وجود عمودَي «Doctor Name» و«Service Name»");
+  const {row,idx}=hdr;
+  const agg={rows:0,writings:0,closed:0,status:{},doctors:{},services:{},sections:{}};
+  for(let i=row+1;i<aoa.length;i++){
+    const r=aoa[i]; if(!r) continue;
+    const doc=normKey(r[idx.doctor]); const svc=normKey(r[idx.service]);
+    if(!doc && !svc) continue;
+    if(!svc) continue;
+    const sec=idx.section!=null?normKey(r[idx.section]):"";
+    const st=normStatus(idx.status!=null?r[idx.status]:"");
+    const conv=CONVERTED.has(st)?1:0;
+    agg.rows++; agg.writings++; agg.closed+=conv;
+    agg.status[st]=(agg.status[st]||0)+1;
+    // doctor
+    const dn=doc||"غير محدد";
+    let D=agg.doctors[dn]; if(!D){D=agg.doctors[dn]={w:0,c:0,svc:{},sec:sec||""};}
+    D.w++; D.c+=conv; D.svc[svc]=(D.svc[svc]||0)+1; if(!D.sec&&sec)D.sec=sec;
+    // service
+    let S=agg.services[svc]; if(!S){S=agg.services[svc]={w:0,c:0,doc:{}};}
+    S.w++; S.c+=conv; S.doc[dn]=(S.doc[dn]||0)+1;
+    // section
+    const sn=sec||"غير محدد";
+    let SE=agg.sections[sn]; if(!SE){SE=agg.sections[sn]={w:0,c:0};}
+    SE.w++; SE.c+=conv;
+  }
+  if(!agg.rows) throw new Error("لا توجد صفوف صالحة في الملف");
+  return agg;
+}
+
+/* ---- دمج فترات ---- */
+function addInto(dst,src){ for(const k in src) dst[k]=(dst[k]||0)+src[k]; }
+function mergeAggs(list){
+  const m={rows:0,writings:0,closed:0,status:{},doctors:{},services:{},sections:{}};
+  list.forEach(agg=>{
+    m.rows+=agg.rows; m.writings+=agg.writings; m.closed+=agg.closed;
+    addInto(m.status,agg.status);
+    for(const dn in agg.doctors){const s=agg.doctors[dn];let D=m.doctors[dn];if(!D)D=m.doctors[dn]={w:0,c:0,svc:{},sec:s.sec};D.w+=s.w;D.c+=s.c;if(!D.sec&&s.sec)D.sec=s.sec;addInto(D.svc,s.svc);}
+    for(const sv in agg.services){const s=agg.services[sv];let S=m.services[sv];if(!S)S=m.services[sv]={w:0,c:0,doc:{}};S.w+=s.w;S.c+=s.c;addInto(S.doc,s.doc);}
+    for(const se in agg.sections){const s=agg.sections[se];let E=m.sections[se];if(!E)E=m.sections[se]={w:0,c:0};E.w+=s.w;E.c+=s.c;}
+  });
+  return m;
+}
+
+/* ---- تطبيق فلتر المنتج/البحث على التجميع ---- */
+function viewData(){
+  const sel=state.periods.filter(p=>p.on);
+  const merged=mergeAggs(sel.map(p=>p.agg));
+  const prod=state.prod, q=normKey(state.q).toLowerCase();
+  const svcOk=sv=>(prod==="all"||productClass(sv)===prod);
+  // services filtered
+  const services={}; for(const sv in merged.services){ if(svcOk(sv)) services[sv]=merged.services[sv]; }
+  // doctors recomputed from their svc map under product filter
+  const doctors={};
+  for(const dn in merged.doctors){
+    const D=merged.doctors[dn]; let w=0,c=0; const svc={};
+    for(const sv in D.svc){ if(svcOk(sv)){ const n=D.svc[sv]; svc[sv]=n; w+=n; } }
+    if(prod==="all"){ w=D.w; c=D.c; }
+    else { // converted share for filtered svc: approx by service conv ratio
+      c=0; for(const sv in D.svc){ if(svcOk(sv)){ const S=merged.services[sv]; const ratio=S&&S.w?S.c/S.w:0; c+=D.svc[sv]*ratio; } }
+      c=Math.round(c);
+    }
+    if(w>0) doctors[dn]={w,c,svc,sec:D.sec};
+  }
+  // totals under filter
+  let W=0,C=0; for(const sv in services){W+=services[sv].w;C+=services[sv].c;}
+  if(prod==="all"){W=merged.writings;C=merged.closed;}
+  return {merged,services,doctors,sections:merged.sections,status:merged.status,W,C,periods:sel};
+}
+
+/* ================= STATE ================= */
+let state={periods:[],prod:"all",q:"",tab:"command",pick:{doctor:null,drug:null}};
+
+function loadStore(){
+  try{const raw=localStorage.getItem(STORE_KEY); if(raw){const o=JSON.parse(raw);
+    state.periods=(o.periods||[]).map(p=>({...p,on:p.on!==false}));}}catch(e){}
+}
+function saveStore(){
+  try{localStorage.setItem(STORE_KEY,JSON.stringify({periods:state.periods.map(p=>({id:p.id,label:p.label,file:p.file,at:p.at,on:p.on,agg:p.agg}))}));}
+  catch(e){toast("تعذّر الحفظ — قد تكون المساحة ممتلئة",true);}
+}
+
+/* اشتقاق تسمية الفترة من اسم الملف */
+function derivePeriod(fname){
+  const m=fname.match(/(20\d{2})[-_ ]?(0[1-9]|1[0-2])/);
+  if(m) return m[1]+"-"+m[2];
+  const ar={يناير:"01",فبراير:"02",مارس:"03",ابريل:"04",أبريل:"04",مايو:"05",يونيو:"06",يوليو:"07",اغسطس:"08",أغسطس:"08",سبتمبر:"09",اكتوبر:"10",أكتوبر:"10",نوفمبر:"11",ديسمبر:"12"};
+  for(const k in ar){ if(fname.includes(k)){ const y=(fname.match(/20\d{2}/)||[])[0]||new Date().getFullYear(); return y+"-"+ar[k]; } }
+  return "رفعة "+(state.periods.length+1);
+}
+
+/* ================= استيراد ================= */
+async function handleFiles(files){
+  if(typeof XLSX==="undefined"){ toast("مكتبة قراءة Excel لم تُحمّل — تأكد من اتصال الإنترنت عند أول فتح للصفحة",true); return; }
+  let ok=0,fail=0;
+  for(const f of files){
+    try{
+      const aoa=await readFile(f);
+      const agg=aggregate(aoa);
+      const id="p"+Date.now()+"_"+Math.random().toString(36).slice(2,6);
+      state.periods.push({id,label:derivePeriod(f.name),file:f.name,at:new Date().toISOString(),on:true,agg});
+      ok++;
+    }catch(err){ console.error(err); toast("«"+f.name+"»: "+(err.message||"خطأ"),true); fail++; }
+  }
+  if(ok){ saveStore(); toast(ok+" ملف تمّت قراءته وتجميعه ✓"); renderStatebar(); render(); }
+}
+
+/* ================= رسومات مساعدة ================= */
+function barChart(pairs){ // [[label,val,color], ...]
+  const max=Math.max(...pairs.map(p=>p[1]),1);
+  const bars=pairs.map(p=>`<div class="cg"><div class="cap">${fmt(p[1])}</div>
+    <div class="bar" style="height:${Math.max(p[1]/max*100,2)}%;background:${p[2]||"var(--teal)"}" title="${p[0]}: ${fmt(p[1])}"></div></div>`).join("");
+  const labels=pairs.map(p=>`<span>${p[0]}</span>`).join("");
+  return `<div class="chart">${bars}</div><div class="chlabels">${labels}</div>`;
+}
+function donut(parts){ // [{label,val,color}]
+  const total=parts.reduce((a,p)=>a+p.val,0)||1;
+  let acc=0; const segs=parts.map(p=>{const frac=p.val/total;const s=acc*360;acc+=frac;return `${p.color} ${s}deg ${acc*360}deg`;}).join(",");
+  const conv=parts.find(p=>p.key==="Closed");
+  const center=conv?pct(conv.val,total)+"%":fmt(total);
+  const leg=parts.map(p=>`<div class="li"><span class="dot" style="background:${p.color}"></span>${p.label}<b>${fmt(p.val)}</b></div>`).join("");
+  return `<div class="donut-wrap">
+    <div style="width:150px;height:150px;border-radius:50%;background:conic-gradient(${segs});position:relative;flex:0 0 auto">
+      <div style="position:absolute;inset:26px;border-radius:50%;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="font-family:'Alexandria';font-size:24px;font-weight:800;color:var(--heading)">${center}</div>
+        <div style="font-size:11px;color:var(--muted);font-weight:600">${conv?"نسبة التحويل":"إجمالي"}</div>
+      </div></div>
+    <div class="legend">${leg}</div></div>`;
+}
+function convPill(p){const c=p>=60?"g":p>=35?"y":"r";return `<span class="pill ${c}">${p}%</span>`;}
+
+/* ================= VIEWS ================= */
+const V={};
+
+V.command=()=>{
+  const d=viewData();
+  if(!d.periods.length) return emptyState();
+  const conv=pct(d.C,d.W);
+  const docList=Object.entries(d.doctors).map(([n,o])=>({n,...o}));
+  const svcList=Object.entries(d.services).map(([n,o])=>({n,...o}));
+  const nDoc=docList.length, nSvc=svcList.length;
+  const avgDoc=nDoc?Math.round(d.W/nDoc):0;
+  // KPIs
+  const kpis=`<div class="kpis">
+    <div class="kpi hero"><div class="lbl">إجمالي الكتابات (الوضع الحالي)</div><div class="val">${fmt(d.W)}</div>
+      <div class="delta flat">عبر ${d.periods.length} فترة مرفوعة</div></div>
+    <div class="kpi"><div class="lbl">المصروف — تحوّل لبيع</div><div class="val up">${fmt(d.C)}</div>
+      <div class="delta ${conv>=50?'up':'down'}">نسبة التحويل ${conv}%</div></div>
+    <div class="kpi"><div class="lbl">لم يُصرف (فرصة ضائعة)</div><div class="val down">${fmt(d.W-d.C)}</div>
+      <div class="delta flat">${pct(d.W-d.C,d.W)}% من الكتابات</div></div>
+    <div class="kpi"><div class="lbl">الأطباء الكاتبون</div><div class="val">${fmt(nDoc)}</div>
+      <div class="delta flat">متوسط ${fmt(avgDoc)} كتابة/طبيب</div></div>
+    <div class="kpi"><div class="lbl">الأصناف المكتوبة</div><div class="val">${fmt(nSvc)}</div>
+      <div class="delta flat">${state.prod==="all"?"كل المنتجات":state.prod==="nostri"?"Nostri فقط":state.prod==="pureherb"?"PureHerb فقط":"منتجات أخرى"}</div></div>
+  </div>`;
+  // trend across periods (writings + conversion)
+  const per=d.periods.map(p=>{const a=p.agg;
+    let w=a.writings,c=a.closed;
+    if(state.prod!=="all"){w=0;c=0;for(const sv in a.services){if(productClass(sv)===state.prod){w+=a.services[sv].w;c+=a.services[sv].c;}}}
+    return {label:p.label,w,c};});
+  const trend=`<div class="panel"><h3>📈 تسلسل الكتابات عبر الفترات <span class="hint">مصروف / إجمالي</span></h3>
+    ${per.length?barChart(per.map((p,i)=>[p.label,p.w,`var(--c${(i%4)+1})`])):"<p style='color:var(--muted)'>ارفع أكثر من فترة لعرض التسلسل</p>"}</div>`;
+  // status donut
+  const statusParts=Object.entries(d.status).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({key:k,label:STATUS_LABEL[k]||k,val:v,color:STATUS_COLOR[k]||"var(--muted)"}));
+  const donutPanel=`<div class="panel"><h3>🔁 حالة الكتابات <span class="hint">الوضع الحالي</span></h3>${donut(statusParts)}</div>`;
+  // top doctors
+  const topDocs=docList.sort((a,b)=>b.w-a.w).slice(0,7);
+  const dMax=Math.max(...topDocs.map(x=>x.w),1);
+  const docRows=topDocs.map((x,i)=>`<div class="lead-row" onclick="openDoctor('${esc(x.n)}')"><div class="rank">${i+1}</div>
+    <div class="who"><div class="nm">${x.n}</div><div class="track"><i style="width:${Math.max(x.w/dMax*100,3)}%"></i></div></div>
+    <div class="amt">${fmt(x.w)}<small class="${pct(x.c,x.w)>=50?'up':'down'}">تحويل ${pct(x.c,x.w)}%</small></div></div>`).join("");
+  const docPanel=`<div class="panel"><h3>👨‍⚕️ أعلى الأطباء كتابةً <span class="hint">اضغط للتفاصيل</span></h3><div class="lead">${docRows}</div></div>`;
+  // top drugs
+  const topSvc=svcList.sort((a,b)=>b.w-a.w).slice(0,7);
+  const sMax=Math.max(...topSvc.map(x=>x.w),1);
+  const svcRows=topSvc.map((x,i)=>`<div class="lead-row" onclick="openDrug('${esc(x.n)}')"><div class="rank">${i+1}</div>
+    <div class="who"><div class="nm">${x.n}</div><div class="track"><i style="width:${Math.max(x.w/sMax*100,3)}%"></i></div></div>
+    <div class="amt">${fmt(x.w)}<small class="${pct(x.c,x.w)>=50?'up':'down'}">تحويل ${pct(x.c,x.w)}%</small></div></div>`).join("");
+  const svcPanel=`<div class="panel"><h3>💊 أعلى الأصناف كتابةً <span class="hint">اضغط للتفاصيل</span></h3><div class="lead">${svcRows}</div></div>`;
+  return kpis+`<div class="cols wide">${trend}${donutPanel}</div><div class="cols">${docPanel}${svcPanel}</div>`;
+};
+
+V.doctors=()=>{
+  const d=viewData(); if(!d.periods.length) return emptyState();
+  if(state.pick.doctor && d.doctors[state.pick.doctor]) return doctorProfile(d);
+  const list=Object.entries(d.doctors).map(([n,o])=>({n,...o}))
+    .filter(x=>!state.q||x.n.toLowerCase().includes(state.q.toLowerCase())).sort((a,b)=>b.w-a.w);
+  const rows=list.map(x=>`<tr onclick="openDoctor('${esc(x.n)}')" style="cursor:pointer">
+    <td>${x.n}</td><td class="num">${fmt(x.w)}</td><td class="num up">${fmt(x.c)}</td>
+    <td>${convPill(pct(x.c,x.w))}</td><td class="num">${fmt(Object.keys(x.svc).length)}</td><td>${x.sec||"—"}</td></tr>`).join("");
+  return `<div class="panel"><h3>👨‍⚕️ كل الأطباء (${list.length}) <span class="hint">مرتّبون بعدد الكتابات · اضغط أي طبيب</span></h3>
+    <div class="tbl-wrap"><table><thead><tr><th>الطبيب</th><th>كتابات</th><th>مصروف</th><th>تحويل</th><th>أصناف</th><th>القسم</th></tr></thead>
+    <tbody>${rows||`<tr><td colspan="6" style="text-align:center;color:var(--muted)">لا نتائج</td></tr>`}</tbody></table></div></div>`;
+};
+function doctorProfile(d){
+  const x=d.doctors[state.pick.doctor]; const n=state.pick.doctor;
+  const svcs=Object.entries(x.svc).map(([s,c])=>({s,c})).sort((a,b)=>b.c-a.c);
+  const sMax=Math.max(...svcs.map(v=>v.c),1);
+  const rows=svcs.slice(0,20).map((v,i)=>`<tr><td>${v.s}</td><td class="num">${fmt(v.c)}</td>
+    <td><div class="track" style="height:6px;border-radius:3px;background:var(--grid);overflow:hidden"><i style="display:block;height:100%;width:${v.c/sMax*100}%;background:linear-gradient(90deg,var(--teal-l),var(--teal))"></i></div></td>
+    <td>${productClass(v.s)==="nostri"?"🔷":productClass(v.s)==="pureherb"?"🌿":""}</td></tr>`).join("");
+  const kpis=`<div class="kpis">
+    <div class="kpi hero"><div class="lbl">إجمالي كتابات الطبيب</div><div class="val">${fmt(x.w)}</div><div class="delta flat">${x.sec||"—"}</div></div>
+    <div class="kpi"><div class="lbl">المصروف</div><div class="val up">${fmt(x.c)}</div><div class="delta up">تحويل ${pct(x.c,x.w)}%</div></div>
+    <div class="kpi"><div class="lbl">أصناف مختلفة</div><div class="val">${fmt(svcs.length)}</div></div>
+    <div class="kpi"><div class="lbl">أعلى صنف</div><div class="val" style="font-size:16px">${svcs[0]?svcs[0].s:"—"}</div><div class="delta flat">${svcs[0]?fmt(svcs[0].c)+" مرة":""}</div></div>
+  </div>`;
+  return `<div style="margin-bottom:12px"><button class="chip" onclick="state.pick.doctor=null;render()">← رجوع لكل الأطباء</button></div>`+kpis+
+    `<div class="panel"><h3>💊 أصناف يكتبها ${n} <span class="hint">أعلى ٢٠</span></h3>
+     <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>مرات</th><th>النسبة</th><th>منتج</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+V.drugs=()=>{
+  const d=viewData(); if(!d.periods.length) return emptyState();
+  if(state.pick.drug && d.services[state.pick.drug]) return drugProfile(d);
+  const list=Object.entries(d.services).map(([n,o])=>({n,...o}))
+    .filter(x=>!state.q||x.n.toLowerCase().includes(state.q.toLowerCase())).sort((a,b)=>b.w-a.w);
+  const rows=list.map(x=>`<tr onclick="openDrug('${esc(x.n)}')" style="cursor:pointer">
+    <td>${productClass(x.n)==="nostri"?"🔷 ":productClass(x.n)==="pureherb"?"🌿 ":""}${x.n}</td>
+    <td class="num">${fmt(x.w)}</td><td class="num up">${fmt(x.c)}</td><td>${convPill(pct(x.c,x.w))}</td>
+    <td class="num">${fmt(Object.keys(x.doc).length)}</td></tr>`).join("");
+  return `<div class="panel"><h3>💊 كل الأصناف (${list.length}) <span class="hint">اضغط أي صنف لأعلى من يكتبه</span></h3>
+    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>كتابات</th><th>مصروف</th><th>تحويل</th><th>أطباء</th></tr></thead>
+    <tbody>${rows||`<tr><td colspan="5" style="text-align:center;color:var(--muted)">لا نتائج</td></tr>`}</tbody></table></div></div>`;
+};
+function drugProfile(d){
+  const x=d.services[state.pick.drug]; const n=state.pick.drug;
+  const docs=Object.entries(x.doc).map(([s,c])=>({s,c})).sort((a,b)=>b.c-a.c);
+  const mx=Math.max(...docs.map(v=>v.c),1);
+  const rows=docs.slice(0,20).map((v,i)=>`<tr onclick="openDoctor('${esc(v.s)}')" style="cursor:pointer"><td>${i+1}. ${v.s}</td><td class="num">${fmt(v.c)}</td>
+    <td><div class="track" style="height:6px;border-radius:3px;background:var(--grid);overflow:hidden"><i style="display:block;height:100%;width:${v.c/mx*100}%;background:linear-gradient(90deg,var(--teal-l),var(--teal))"></i></div></td></tr>`).join("");
+  const kpis=`<div class="kpis">
+    <div class="kpi hero"><div class="lbl">إجمالي كتابات الصنف</div><div class="val">${fmt(x.w)}</div><div class="delta flat">${productClass(n)==="nostri"?"🔷 Nostri":productClass(n)==="pureherb"?"🌿 PureHerb":"منتج آخر"}</div></div>
+    <div class="kpi"><div class="lbl">المصروف</div><div class="val up">${fmt(x.c)}</div><div class="delta up">تحويل ${pct(x.c,x.w)}%</div></div>
+    <div class="kpi"><div class="lbl">عدد الأطباء</div><div class="val">${fmt(docs.length)}</div></div>
+    <div class="kpi"><div class="lbl">أعلى كاتب</div><div class="val" style="font-size:16px">${docs[0]?docs[0].s:"—"}</div><div class="delta flat">${docs[0]?fmt(docs[0].c)+" مرة":""}</div></div>
+  </div>`;
+  return `<div style="margin-bottom:12px"><button class="chip" onclick="state.pick.drug=null;render()">← رجوع لكل الأصناف</button></div>`+kpis+
+    `<div class="panel"><h3>👨‍⚕️ أعلى الأطباء كتابةً لـ ${n} <span class="hint">أعلى ٢٠ · اضغط طبيب</span></h3>
+     <div class="tbl-wrap"><table><thead><tr><th>الطبيب</th><th>مرات</th><th>النسبة</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+V.conversion=()=>{
+  const d=viewData(); if(!d.periods.length) return emptyState();
+  const conv=pct(d.C,d.W);
+  const statusParts=Object.entries(d.status).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({key:k,label:STATUS_LABEL[k]||k,val:v,color:STATUS_COLOR[k]||"var(--muted)"}));
+  const kpis=`<div class="kpis">
+    <div class="kpi hero"><div class="lbl">نسبة التحويل الكلية</div><div class="val">${conv}%</div><div class="delta flat">${fmt(d.C)} من ${fmt(d.W)}</div></div>
+    <div class="kpi"><div class="lbl">مصروف (بيع)</div><div class="val up">${fmt(d.C)}</div></div>
+    <div class="kpi"><div class="lbl">لم يُصرف</div><div class="val down">${fmt(d.W-d.C)}</div></div>
+  </div>`;
+  const donutPanel=`<div class="panel"><h3>🔁 توزيع الحالات</h3>${donut(statusParts)}</div>`;
+  // best/worst converting doctors (min 10 writings)
+  const docs=Object.entries(d.doctors).map(([n,o])=>({n,...o,cv:pct(o.c,o.w)})).filter(x=>x.w>=10);
+  const best=docs.slice().sort((a,b)=>b.cv-a.cv).slice(0,6);
+  const worst=docs.slice().sort((a,b)=>a.cv-b.cv).slice(0,6);
+  const mk=arr=>arr.map(x=>`<div class="lead-row" onclick="openDoctor('${esc(x.n)}')"><div class="rank">${convPill(x.cv)}</div>
+    <div class="who"><div class="nm">${x.n}</div></div><div class="amt">${fmt(x.c)}/${fmt(x.w)}</div></div>`).join("")||"<p style='color:var(--muted)'>لا يوجد أطباء بعدد كافٍ</p>";
+  const bw=`<div class="cols">
+    <div class="panel"><h3>🏆 أعلى تحويلاً <span class="hint">≥ ١٠ كتابات</span></h3><div class="lead">${mk(best)}</div></div>
+    <div class="panel"><h3>⚠️ أقل تحويلاً — تحتاج متابعة <span class="hint">≥ ١٠ كتابات</span></h3><div class="lead">${mk(worst)}</div></div>
+  </div>`;
+  return kpis+`<div class="cols wide">${donutPanel}<div class="panel"><h3>💡 قراءة سريعة</h3>
+    <p style="font-size:13.5px;line-height:1.9">من كل <b>${fmt(d.W)}</b> كتابة، تحوّلت <b class="up">${fmt(d.C)}</b> إلى بيع فعلي (نسبة <b>${conv}%</b>)، وبقيت <b class="down">${fmt(d.W-d.C)}</b> كتابة لم تُصرف — وهي فرصة مباشرة للمتابعة مع الصيدلية والطبيب.</p>
+    <p style="font-size:12.5px;color:var(--muted)">التحويل يُحتسب من عمود الحالة: «مصروف/Closed» = تحوّل لبيع.</p></div></div>`+bw;
+};
+
+V.sections=()=>{
+  const d=viewData(); if(!d.periods.length) return emptyState();
+  const list=Object.entries(d.sections).map(([n,o])=>({n,...o})).sort((a,b)=>b.w-a.w);
+  const mx=Math.max(...list.map(x=>x.w),1);
+  const rows=list.map(x=>`<tr><td>${x.n}</td><td class="num">${fmt(x.w)}</td><td class="num up">${fmt(x.c)}</td><td>${convPill(pct(x.c,x.w))}</td>
+    <td><div class="track" style="height:6px;border-radius:3px;background:var(--grid);overflow:hidden"><i style="display:block;height:100%;width:${x.w/mx*100}%;background:linear-gradient(90deg,var(--teal-l),var(--teal))"></i></div></td></tr>`).join("");
+  return `<div class="panel"><h3>🏥 الكتابات حسب القسم/التخصص (${list.length})</h3>
+    <div class="tbl-wrap"><table><thead><tr><th>القسم</th><th>كتابات</th><th>مصروف</th><th>تحويل</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p style="font-size:12px;color:var(--muted);margin-top:10px">* قسم الأقسام يعرض الإجمالي بغضّ النظر عن فلتر المنتج.</p></div>`;
+};
+
+V.periods=()=>{
+  const dz=`<div class="dropzone" id="dz">
+    <div class="big">📥</div><h3>اسحب ملفات السيستم هنا أو اضغط للاختيار</h3>
+    <p>تقرير كتابات الأطباء — شهري أو يومي — والأرقام تتجمّع تلقائياً</p>
+    <div class="fmt">صيغ مدعومة: Excel (.xlsx / .xls) و CSV · الأعمدة المتوقعة: Doctor Name · Service Name · Status · Section Name</div>
+  </div>`;
+  if(!state.periods.length) return dz+`<div class="empty" style="padding:30px"><p>لا توجد رفعات بعد — ابدأ برفع أول ملف.</p></div>`;
+  const items=state.periods.slice().sort((a,b)=>a.label.localeCompare(b.label)).map(p=>`<div class="pitem">
+    <input type="checkbox" ${p.on?"checked":""} onchange="togglePeriod('${p.id}',this.checked)" title="ضمّ للوضع الحالي" style="width:18px;height:18px;accent-color:var(--teal)">
+    <div class="pmeta"><div class="pn">${p.file}</div>
+      <div class="pd">${fmt(p.agg.writings)} كتابة · ${fmt(p.agg.closed)} مصروف (${pct(p.agg.closed,p.agg.writings)}%) · ${Object.keys(p.agg.doctors).length} طبيب · ${new Date(p.at).toLocaleDateString("ar-EG")}</div></div>
+    <input class="plabel" value="${esc(p.label)}" onchange="relabel('${p.id}',this.value)" title="اسم الفترة">
+    <button class="del" onclick="removePeriod('${p.id}')" title="حذف">🗑</button>
+  </div>`).join("");
+  const on=state.periods.filter(p=>p.on).length;
+  return dz+`<div class="panel" style="margin-top:14px"><h3>📂 الملفات المرفوعة (${state.periods.length}) <span class="hint">${on} مُضمَّنة في الوضع الحالي</span></h3>
+    <div class="plist">${items}</div>
+    <p style="font-size:12px;color:var(--muted);margin-top:12px">✔️ علّم/ألغِ الفترات لضمّها في «الوضع الحالي المجمّع» · عدّل اسم الفترة · 🗑 للحذف. كله محفوظ محلياً.</p></div>`;
+};
+
+function emptyState(){
+  return `<div class="empty"><div class="big">📊</div><h2>لسه مفيش بيانات</h2>
+    <p>ارفع تقرير كتابات الأطباء من السيستم (Excel/CSV) وكل الأقسام هتتعبّى تلقائياً.</p>
+    <div style="margin-top:18px"><button class="btn primary" style="background:var(--teal);color:#fff" onclick="$('#fileInput').click()">⬆ رفع أول ملف</button></div>
+    <p style="margin-top:22px;font-size:12.5px">أو جرّب ببيانات تجريبية:
+      <button class="chip" onclick="loadDemo()">تحميل عيّنة تجريبية</button></p></div>`;
+}
+
+/* ================= أحداث ================= */
+function esc(s){return String(s).replace(/'/g,"\\'").replace(/"/g,"&quot;");}
+window.openDoctor=n=>{state.pick.doctor=n;state.tab="doctors";syncTabs();render();};
+window.openDrug=n=>{state.pick.drug=n;state.tab="drugs";syncTabs();render();};
+window.togglePeriod=(id,on)=>{const p=state.periods.find(x=>x.id===id);if(p){p.on=on;saveStore();renderStatebar();render();}};
+window.relabel=(id,v)=>{const p=state.periods.find(x=>x.id===id);if(p){p.label=v.trim()||p.label;saveStore();renderStatebar();}};
+window.removePeriod=id=>{if(!confirm("حذف هذه الرفعة نهائياً؟"))return;state.periods=state.periods.filter(x=>x.id!==id);saveStore();renderStatebar();render();};
+window.loadDemo=loadDemo;
+
+function renderStatebar(){
+  const d=viewData();
+  const el=$("#statebar");
+  if(!d.periods.length){ el.innerHTML=`<div class="sb hero"><div class="l">الوضع الحالي</div><div class="v">—</div><div class="s">ارفع ملفاً للبدء</div></div>`; $("#periodInfo").textContent=""; return; }
+  const conv=pct(d.C,d.W), nDoc=Object.keys(d.doctors).length, nSvc=Object.keys(d.services).length;
+  el.innerHTML=`
+    <div class="sb hero"><div class="l">إجمالي الكتابات</div><div class="v">${fmt(d.W)}</div><div class="s">${d.periods.length} فترة مُضمَّنة</div></div>
+    <div class="sb"><div class="l">مصروف (تحوّل لبيع)</div><div class="v up">${fmt(d.C)}</div><div class="s">من إجمالي الكتابات</div></div>
+    <div class="sb"><div class="l">نسبة التحويل</div><div class="v">${conv}%</div><div class="s">${conv>=50?"جيدة":"تحتاج متابعة"}</div></div>
+    <div class="sb"><div class="l">لم يُصرف</div><div class="v down">${fmt(d.W-d.C)}</div><div class="s">فرص متابعة</div></div>
+    <div class="sb"><div class="l">أطباء</div><div class="v">${fmt(nDoc)}</div><div class="s">كاتبون</div></div>
+    <div class="sb"><div class="l">أصناف</div><div class="v">${fmt(nSvc)}</div><div class="s">مكتوبة</div></div>`;
+  $("#periodInfo").textContent=d.periods.map(p=>p.label).join(" · ");
+}
+
+const TAB_META={
+  command:{t:"مركز القيادة",s:"الوضع الحالي المجمّع — الكتابة والتحويل في شاشة واحدة"},
+  doctors:{t:"الأطباء",s:"من يكتب كام، وكام تحوّل لبيع"},
+  drugs:{t:"الأدوية / الأصناف",s:"كل صنف ومن يكتبه ونسبة صرفه"},
+  conversion:{t:"التحويل",s:"الكتابة مقابل البيع الفعلي (من عمود الحالة)"},
+  sections:{t:"الأقسام الطبية",s:"الكتابات حسب التخصص"},
+  periods:{t:"الرفعات والفترات",s:"ارفع، سمِّ، وادمج فترات المتابعة"}
+};
+function shead(tab){const m=TAB_META[tab];const d=viewData();
+  const stamp=d.periods.length?d.periods.length+" فترة · "+fmt(d.W)+" كتابة":"لا بيانات";
+  return `<div class="shead"><div><h2>${m.t}</h2><p>${m.s}</p></div><div class="stamp">${stamp}</div></div>`;}
+
+function render(){ $("#view").innerHTML=shead(state.tab)+V[state.tab](); }
+function syncTabs(){ $$("#tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===state.tab)); }
+
+/* ================= wiring ================= */
+$$("#tabs button").forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;state.pick={doctor:null,drug:null};syncTabs();render();});
+$$("#prodChips .chip").forEach(b=>b.onclick=()=>{$$("#prodChips .chip").forEach(x=>x.classList.remove("active"));b.classList.add("active");state.prod=b.dataset.prod;renderStatebar();render();});
+$("#globalSearch").addEventListener("input",e=>{state.q=e.target.value;if(state.tab==="doctors"||state.tab==="drugs")render();});
+$("#globalSearch").addEventListener("keydown",e=>{if(e.key==="Enter"&&state.q){state.tab="drugs";syncTabs();render();}});
+$("#uploadBtn").onclick=()=>$("#fileInput").click();
+$("#fileInput").onchange=e=>{handleFiles([...e.target.files]);e.target.value="";};
+$("#printBtn").onclick=()=>window.print();
+// drag/drop anywhere
+["dragover","drop"].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();
+  const dz=$("#dz"); if(dz)dz.classList.toggle("drag",ev==="dragover");}));
+document.addEventListener("drop",e=>{if(e.dataTransfer&&e.dataTransfer.files.length)handleFiles([...e.dataTransfer.files]);});
+document.addEventListener("click",e=>{if(e.target.closest("#dz"))$("#fileInput").click();});
+
+// theme
+(function(){const html=document.documentElement,tb=$("#themeBtn");
+  const ap=t=>{html.setAttribute("data-theme",t);tb.textContent=t==="dark"?"☀":"◐";};
+  ap(localStorage.getItem("nostri-tracker-theme")||"light");
+  tb.onclick=()=>{const t=html.getAttribute("data-theme")==="dark"?"light":"dark";localStorage.setItem("nostri-tracker-theme",t);ap(t);};
+})();
+
+function toast(msg,err){const t=$("#toast");t.textContent=msg;t.className=err?"err show":"show";clearTimeout(t._t);t._t=setTimeout(()=>t.className="",3200);}
+
+/* عيّنة تجريبية */
+function loadDemo(){
+  const docs=["د. حسام الدين محمد","د. نهاد فاروق","د. محمد شعبان","د. أحمد محمود","د. سماح عبدالكريم","د. أنور علي","د. منى فريد"];
+  const svcs=["RIZER apply Cream 75ML","NOSTRICURE Oral Gel 30ML","REFLEX MASSAGE Emulgel 100ML","ORACURE Mouth Wash 300ML","ZINCOLIVE Syrup 150ML","FAWARVIT Vit C 1000mg","PANADREX Syrup","AUGMENTIN 1g","CONCOR 5mg"];
+  const secs=["باطنة","أطفال","جلدية","نساء","عظام"];
+  const sts=["Closed","Closed","Closed","Canceled","Pending","New"];
+  function make(seed,nrows,label){let s=seed;const rnd=()=>{s=(s*9301+49297)%233280;return s/233280;};
+    const agg={rows:0,writings:0,closed:0,status:{},doctors:{},services:{},sections:{}};
+    const aoa=[["Patient No","Patient"+NBSP+"Name","Service"+NBSP+"Name","Order No.","Status","Doctor"+NBSP+"Name","Section"+NBSP+"Name"]];
+    for(let i=0;i<nrows;i++)aoa.push([i,"P"+i,svcs[Math.floor(rnd()*svcs.length)],i,sts[Math.floor(rnd()*sts.length)],docs[Math.floor(rnd()*docs.length)],secs[Math.floor(rnd()*secs.length)]]);
+    const a=aggregate(aoa);
+    return {id:"demo"+seed,label,file:"عيّنة "+label+".xlsx",at:new Date().toISOString(),on:true,agg:a};
+  }
+  state.periods.push(make(7,600,"2026-07"),make(8,750,"2026-08"));
+  saveStore();toast("تم تحميل عيّنة تجريبية (شهرين) ✓");renderStatebar();render();
+}
+
+/* init */
+loadStore();
+renderStatebar();
+render();
+</script>
+</body>
+</html>
