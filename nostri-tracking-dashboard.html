@@ -614,10 +614,10 @@ const DATA = {
   writingsReady:{"all":false,"1":true,"7":true,"18":true},
 
   /* عدد الأطباء الكاتبين لنوستري لكل صيدلية */
-  doctorCount:{"1":26,"7":9,"18":10},
+  doctorCount:{"1":19,"7":10,"18":11},
 
   /* أعلى الأطباء كتابةً لأصناف نوستري لكل صيدلية — [الاسم, 05, 06, 07] */
-  doctorsNostri:{"1":[["Hossameldin Mohamed Amin Bekh",61,61,63,69],["Nehad Farouk Abdallah Ramadan",15,27,54,20],["Mohammed Shabaan Abdelhay Els",60,93,37,48],["Ahmad Mahmoud Mohammed Elad",18,39,27,37],["Samah Abdelkarim Ahmed Elbashi",30,16,22,32],["Mohamed Samir Abdelfattah Fara",0,0,22,3],["Radwa Mohamed Mabrouk Abdalla",14,7,11,0],["Mona Farid Elmandouh Abdelrahm",5,10,11,0],["Ahmed Hassanin Mohamed Hassan",14,10,6,15],["Rafik Elsayed Aboelhythim Ereba",8,13,5,5],["Ahmed Taher Mokhtar Mashaly",14,13,3,12],["Said Tolba Elsayed Elbedewy",15,3,3,3]],"7":[["Nesreen Mohammed Hassan Amash",15,5,10,10],["Soha Mohamed Salaheldeen Solima",8,9,9,10],["Hala Fathi Ewis Mansur",4,12,4,9],["Amira Mohamed Salem Eldaltouni",12,13,3,2],["Medhat Alashry Aladawy Goger",14,27,2,0],["Nesrin Ibrahim Mohamed Elmokad",3,0,2,0],["Khalid Ghalib Masar Alharbi",1,1,2,0],["Ahmed Gamal Abdelnasser Abdelm",0,0,1,3],["Huda Mohamed Khedr Ghali",0,4,0,0]],"18":[["Anwar Ali Abdullah Jwass",0,0,52,58],["Fatimah Abdulhafeez Mohamed K",21,39,37,0],["Medhat Alashry Aladawy Goger",0,0,31,23],["Mugahid Khalid Zainelabdin Elfak",1,5,16,10],["Ahmad Abdelrahman Abdallah Ha",4,20,8,19],["Heba Mohsen Mohamed Khalil",7,16,7,14],["Shivapriya Nair",9,2,6,5],["Mohamed Samir Abdelfattah Fara",15,8,1,0],["Amira Mohamed Salem Eldaltoun",6,6,1,0],["Mohamed Muhiddeen Abd Al Gde",7,1,0,0]]},
+  doctorsNostri:{"1": [["Hossameldin Mohamed Amin Bekh", 61, 61, 63, 69], ["Nehad Farouk Abdallah Ramadan", 15, 27, 54, 20], ["Mohammed Shabaan Abdelhay Els", 60, 93, 37, 48], ["Ahmad Mahmoud Mohammed Elad", 18, 39, 27, 37], ["Samah Abdelkarim Ahmed Elbashi", 30, 16, 22, 32], ["Mohamed Samir Abdelfattah Fara", 0, 0, 22, 3], ["Radwa Mohamed Mabrouk Abdalla", 14, 7, 11, 0], ["Mona Farid Elmandouh Abdelrahm", 5, 10, 11, 0], ["Ahmed Hassanin Mohamed Hassan", 14, 10, 6, 15], ["Rafik Elsayed Aboelhythim Ereba", 8, 13, 5, 5], ["Ahmed Taher Mokhtar Mashaly", 14, 13, 3, 12], ["Said Tolba Elsayed Elbedewy", 15, 3, 3, 3], ["Zaid Abdulrahman Zaid Alogaily", null, null, null, 7], ["Sara Ibrahim Elabd Eldegla", null, null, null, 4], ["Ibrahim Abdelrazeq Ibrahim Deso", null, null, null, 3], ["Mohamed Adel Saudi Gabr", null, null, null, 3], ["Lujina Wahid Mohamed Abdelwah", null, null, null, 2], ["Ali Mohamed Elameen Ahmed", null, null, null, 2], ["Salama Mahdy Morshed Rashed", null, null, null, 1]], "7": [["Nesreen Mohammed Hassan Amash", 15, 5, 10, 10], ["Soha Mohamed Salaheldeen Solima", 8, 9, 9, 10], ["Hala Fathi Ewis Mansur", 4, 12, 4, 9], ["Amira Mohamed Salem Eldaltouni", 12, 13, 3, 2], ["Medhat Alashry Aladawy Goger", 14, 27, 2, 0], ["Nesrin Ibrahim Mohamed Elmokad", 3, 0, 2, 0], ["Khalid Ghalib Masar Alharbi", 1, 1, 2, 0], ["Ahmed Gamal Abdelnasser Abdelm", 0, 0, 1, 3], ["Huda Mohamed Khedr Ghali", 0, 4, 0, 0], ["Mohamed Abdelaziz Abdelmoneem", null, null, null, 1]], "18": [["Anwar Ali Abdullah Jwass", 0, 0, 52, 58], ["Fatimah Abdulhafeez Mohamed K", 21, 39, 37, 0], ["Medhat Alashry Aladawy Goger", 0, 0, 31, 23], ["Mugahid Khalid Zainelabdin Elfak", 1, 5, 16, 10], ["Ahmad Abdelrahman Abdallah Ha", 4, 20, 8, 19], ["Heba Mohsen Mohamed Khalil", 7, 16, 7, 14], ["Shivapriya Nair", 9, 2, 6, 5], ["Mohamed Samir Abdelfattah Fara", 15, 8, 1, 0], ["Amira Mohamed Salem Eldaltoun", 6, 6, 1, 0], ["Mohamed Muhiddeen Abd Al Gde", 7, 1, 0, 0], ["Sara Mohammed Ahmed Albashee", null, null, null, 9]]},
 
   /* ⏳ Near-Expire — حقيقي (ملف Near Expire till 31-12-2026 + كتابات التعاونات الثلاثة)
      كل صف: [الوصف, المخزون, تاريخ الانتهاء, كتابات 05, 06, 07] */
@@ -942,9 +942,9 @@ V.doctors=()=>{
     ${barChart({"05":wTot["05"],"06":wTot["06"],"07":wTot["07"],"08":wTot["08"]},null,MW)}</div>`;
   const max8=Math.max(...docs.map(d=>d[4]||0),1);
   const rows=docs.map((d,i)=>{
-    const dd=delta(d[4]||0,d[3]||0);
-    return `<tr><td>${i+1}. ${d[0]}</td><td class="num">${d[1]}</td><td class="num">${d[2]}</td>
-      <td class="num">${d[3]}</td><td class="num" style="font-weight:700">${d[4]||0}</td><td class="trend ${dd.c}">${dd.t}</td>
+    const dd=delta(d[4]||0,d[3]||0), dc=x=>x==null?"—":x;
+    return `<tr><td>${i+1}. ${d[0]}</td><td class="num">${dc(d[1])}</td><td class="num">${dc(d[2])}</td>
+      <td class="num">${dc(d[3])}</td><td class="num" style="font-weight:700">${d[4]||0}</td><td class="trend ${dd.c}">${dd.t}</td>
       <td style="width:110px"><div class="conv"><div class="track">
         <div class="fill" style="width:${(d[4]||0)/max8*100}%;background:var(--teal)"></div></div></div></td></tr>`;}).join("");
   const table=`<div class="panel"><h2>ترتيب الأطباء (أعلى ${docs.length}) — ${scopeLabel(scope)} · حسب أغسطس</h2>
