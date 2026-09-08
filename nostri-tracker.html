@@ -10,6 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- SheetJS (قراءة ملفات Excel) — من CDN مسموح -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- pdf.js (قراءة تقارير PDF النصية من السيستم) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 :root{
   --teal:#0f766e; --teal-d:#06332e; --teal-m:#0b5c55; --teal-l:#5eead4; --heading:#06332e;
@@ -224,7 +226,7 @@ td.num{font-family:'Alexandria';font-weight:700}
       <button class="icobtn" id="printBtn" title="طباعة / PDF">⎙</button>
     </div>
   </header>
-  <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" multiple hidden>
+  <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.pdf" multiple hidden>
 
   <!-- خانة الوضع الحالي المجمّع -->
   <div class="statebar" id="statebar"></div>
@@ -342,6 +344,100 @@ function readFile(file){
     r.readAsArrayBuffer(file);
   });
 }
+/* ---- قراءة PDF (تقارير Oracle النصية) — منقول ومُبسّط من محرك PharmaDash ---- */
+const ENGLISH_SPECIALTIES=['GASTROENTEROLOGY','ENDOCRINOLOGY','OPHTHALMOLOGY','OPTHALMOLOGY','RHEUMATOLOGY','PULMONOLOGY','FAMILY MEDICINE','GENERAL PRACTITIONER','PARACITIONER','DERMATOLOGY','ORTHOPAEDIC','PSYCHIATRY','OBSTETRICS','PAEDIATRIC','CARDIOLOGY','NEPHROLOGY','NEUROLOGY','ONCOLOGY','INTERNAL MEDICINE','UROLOGY','GENERAL','SURGERY','DENTAL','RADIOLOGY','GYNECOLOGY','MEDICINE','ENT'];
+const SPECIALTIES=[...ENGLISH_SPECIALTIES,'الطب العام','طب عام','الباطنة','باطنة','العظام','عظام','الاطفال','الأطفال','اطفال','أطفال','العيون','عيون','الانف والاذن','الأنف والأذن','النسا والولادة','نساء وولادة','الجلدية','جلدية','النفسية','نفسية','المسالك','مسالك','الاسنان','الأسنان','اسنان','أسنان','الجراحة','جراحة','القلب','قلب','الكلى','كلى','المخ والاعصاب','مخ واعصاب'].sort((a,b)=>b.split(/\s+/).length-a.split(/\s+/).length);
+const DEFAULT_COLS={patient:[-Infinity,75],patientName:[75,243],service:[243,476],orderNo:[476,535],status:[535,596],doctorSection:[596,Infinity]};
+const HEADER_ALIASES=[
+  ['patient',/PATIENT\s*(NO|NUMBER)|رقم\s*المريض|المريض\s*رقم/i],
+  ['patientName',/PATIENT\s*NAME|اسم\s*المريض|المريض\s*اسم/i],
+  ['service',/SERVICE\s*NAME|MEDICATION|DRUG\s*NAME|اسم\s*(الخدمة|الدواء|الصنف)/i],
+  ['orderNo',/ORDER\s*(NO|NUMBER)|رقم\s*(الأمر|الطلب)/i],
+  ['status',/STATUS|الحالة|حالة\s*الطلب/i],
+  ['doctorSection',/DOCTOR\s*NAME|PHYSICIAN|اسم\s*الطبيب|الطبيب\s*اسم/i],
+  ['section',/SECTION|SPECIAL(TY|ITY)|DEPARTMENT|القسم|التخصص/i],
+];
+function entityKey(s){return normKey(s).toUpperCase();}
+function joinCell(ws,range){ if(!range)return"";
+  return ws.filter(w=>w.x>=range[0]&&w.x<range[1]).sort((a,b)=>a.order-b.order).map(w=>w.s).join(" ").replace(/\s+/g," ").trim(); }
+function findHeaderWord(ws,re){
+  const seqs=[[...ws].sort((a,b)=>a.order-b.order),[...ws].sort((a,b)=>a.x-b.x),[...ws].sort((a,b)=>b.x-a.x)];
+  let best=null;
+  for(const seq of seqs) for(let s=0;s<seq.length;s++) for(let sz=1;sz<=Math.min(4,seq.length-s);sz++){
+    const words=seq.slice(s,s+sz),text=words.map(w=>w.s).join(" ");
+    if(re.test(text)){const cand={x:words.reduce((a,w)=>a+w.x,0)/words.length,size:sz,length:text.length};
+      if(!best||cand.size<best.size||(cand.size===best.size&&cand.length<best.length))best=cand;}
+  }
+  return best;
+}
+function headerFields(ws){return HEADER_ALIASES.map(([k,re])=>{const f=findHeaderWord(ws,re);return f?{key:k,x:f.x}:null;}).filter(Boolean);}
+function detectColumns(lines){
+  for(const ws of lines){
+    const found=headerFields(ws),keys=new Set(found.map(i=>i.key));
+    if(!keys.has("patient")||!keys.has("service")||!keys.has("doctorSection"))continue;
+    found.sort((a,b)=>a.x-b.x); const cols={};
+    found.forEach((it,i)=>{const p=found[i-1],n=found[i+1];cols[it.key]=[p?(p.x+it.x)/2:-Infinity,n?(it.x+n.x)/2:Infinity];});
+    return {cols,detected:true};
+  }
+  return {cols:DEFAULT_COLS,detected:false};
+}
+function isHeaderLine(ws){const keys=new Set(headerFields(ws).map(i=>i.key));return keys.size>=2&&(keys.has("patient")||keys.has("service")||keys.has("doctorSection"));}
+function isFooterLine(ws){const t=ws.map(w=>w.s).join(" ");return /Page\s+\d+\s+of\s+\d+/i.test(t)||/Printed\s+By\s*:/i.test(t)||/P\.?\s*O\.?\s*Box/i.test(t);}
+function normDigits(v){return String(v||"").replace(/[٠-٩]/g,d=>"0123456789"["٠١٢٣٤٥٦٧٨٩".indexOf(d)]).replace(/[۰-۹]/g,d=>"0123456789"["۰۱۲۳۴۵۶۷۸۹".indexOf(d)]);}
+function splitDoctorSection(text){
+  const clean=normKey(text),words=clean.split(/\s+/).filter(Boolean);
+  for(let i=1;i<words.length;i++) for(const sp of SPECIALTIES){const sz=sp.split(/\s+/).length;
+    if(entityKey(words.slice(i,i+sz).join(" "))===entityKey(sp)) return {doctor:words.slice(0,i).join(" "),section:words.slice(i).join(" ")};}
+  for(let i=0;i<words.length;i++){const up=words[i].toUpperCase();
+    for(const sp of ENGLISH_SPECIALTIES.filter(x=>!x.includes(" ")&&x.length>=5)){
+      if(up.length>sp.length+1&&up.endsWith(sp)){const at=words[i].length-sp.length;
+        return {doctor:[...words.slice(0,i),words[i].slice(0,at)].join(" ").trim(),section:[words[i].slice(at),...words.slice(i+1)].join(" ").trim()};}
+    }}
+  return {doctor:clean,section:""};
+}
+function appendV(cur,nx){return nx?normKey((cur?cur+" ":"")+nx):cur;}
+async function readPdf(file){
+  if(typeof pdfjsLib==="undefined") throw new Error("مكتبة قراءة PDF لم تُحمّل — تأكد من الإنترنت عند فتح الصفحة");
+  try{pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";}catch(e){}
+  const buf=await file.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+  if(pdf.numPages>1200) throw new Error("عدد صفحات PDF كبير جداً — قسّم التقرير أو صدّره Excel");
+  const header=["Patient No","Patient"+NBSP+"Name","Service"+NBSP+"Name","Order No.","Status","Doctor"+NBSP+"Name","Section"+NBSP+"Name"];
+  const aoa=[header]; let textItems=0;
+  for(let pn=1;pn<=pdf.numPages;pn++){
+    const page=await pdf.getPage(pn), content=await page.getTextContent(); textItems+=content.items.length;
+    const lineMap={};
+    content.items.forEach((it,order)=>{const y=Math.round(it.transform[5]/2)*2;const s=String(it.str||"").trim();
+      if(!s)return; (lineMap[y]||(lineMap[y]=[])).push({x:it.transform[4],s,order});});
+    const lines=Object.keys(lineMap).map(Number).sort((a,b)=>b-a).map(y=>({y,words:lineMap[y]})).filter(l=>l.words.length);
+    const layout=detectColumns(lines.map(l=>l.words)),cols=layout.cols;
+    let pending=null;
+    const flush=()=>{ if(!pending)return;
+      const sp=cols.section?{doctor:pending.doctorSection,section:pending.section}:splitDoctorSection(pending.doctorSection);
+      if(pending.service&&sp.doctor) aoa.push([pending.patient,pending.patientName,pending.service,pending.orderNo,pending.status,sp.doctor,sp.section]);
+      pending=null; };
+    for(const line of lines){ const ws=line.words;
+      if(isHeaderLine(ws)||isFooterLine(ws))continue;
+      const cells={patient:joinCell(ws,cols.patient),patientName:joinCell(ws,cols.patientName),service:joinCell(ws,cols.service),
+        orderNo:joinCell(ws,cols.orderNo),status:joinCell(ws,cols.status),doctorSection:joinCell(ws,cols.doctorSection),section:joinCell(ws,cols.section)};
+      const pc=normDigits(cells.patient).trim(), lead=pc.split(/\s+/)[0]||"";
+      if(pc){
+        if(/^[\p{L}\p{N}][\p{L}\p{N}._/-]{0,31}$/u.test(lead)){ flush();
+          const rest=pc.slice(lead.length).trim();
+          pending={...cells,patient:lead,patientName:rest?appendV(rest,cells.patientName):cells.patientName,lastY:line.y}; continue; }
+        if(pending&&Math.abs(pending.lastY-line.y)<=24){ ["patientName","service","orderNo","status","doctorSection","section"].forEach(f=>pending[f]=appendV(pending[f],cells[f]));
+          pending.patientName=appendV(pending.patientName,pc); pending.lastY=line.y; continue; }
+        continue;
+      }
+      if(pending&&Math.abs(pending.lastY-line.y)<=24){ ["patientName","service","orderNo","status","doctorSection","section"].forEach(f=>pending[f]=appendV(pending[f],cells[f])); pending.lastY=line.y; }
+    }
+    flush();
+  }
+  if(!textItems) throw new Error("PDF صور ممسوحة بدون نص — استخدم PDF نصي من النظام أو OCR");
+  if(aoa.length<=1) throw new Error("لم أتعرف على صفوف داخل الـ PDF — تأكد أنه تقرير نصي بأعمدة Doctor/Service");
+  return aoa;
+}
+
 /* أوجد صف العناوين (أول صف فيه طبيب + خدمة) */
 function findHeader(aoa){
   for(let i=0;i<Math.min(aoa.length,15);i++){
@@ -446,11 +542,13 @@ function derivePeriod(fname){
 
 /* ================= استيراد ================= */
 async function handleFiles(files){
-  if(typeof XLSX==="undefined"){ toast("مكتبة قراءة Excel لم تُحمّل — تأكد من اتصال الإنترنت عند أول فتح للصفحة",true); return; }
   let ok=0,fail=0;
   for(const f of files){
     try{
-      const aoa=await readFile(f);
+      const isPdf=/\.pdf$/i.test(f.name)||f.type==="application/pdf";
+      if(isPdf && typeof pdfjsLib==="undefined") throw new Error("مكتبة PDF لم تُحمّل — افتح الصفحة مع اتصال إنترنت مرة واحدة");
+      if(!isPdf && typeof XLSX==="undefined") throw new Error("مكتبة Excel لم تُحمّل — افتح الصفحة مع اتصال إنترنت مرة واحدة");
+      const aoa=isPdf ? await readPdf(f) : await readFile(f);
       const agg=aggregate(aoa);
       const id="p"+Date.now()+"_"+Math.random().toString(36).slice(2,6);
       state.periods.push({id,label:derivePeriod(f.name),file:f.name,at:new Date().toISOString(),on:true,agg});
@@ -633,9 +731,9 @@ V.sections=()=>{
 
 V.periods=()=>{
   const dz=`<div class="dropzone" id="dz">
-    <div class="big">📥</div><h3>اسحب ملفات السيستم هنا أو اضغط للاختيار</h3>
+    <div class="big">📥</div><h3>اسحب ملفات السيستم هنا أو اضغط للاختيار (Excel / CSV / PDF)</h3>
     <p>تقرير كتابات الأطباء — شهري أو يومي — والأرقام تتجمّع تلقائياً</p>
-    <div class="fmt">صيغ مدعومة: Excel (.xlsx / .xls) و CSV · الأعمدة المتوقعة: Doctor Name · Service Name · Status · Section Name</div>
+    <div class="fmt">صيغ مدعومة: Excel (.xlsx / .xls) · CSV · PDF نصي من السيستم · الأعمدة المتوقعة: Doctor Name · Service Name · Status · Section Name</div>
   </div>`;
   if(!state.periods.length) return dz+`<div class="empty" style="padding:30px"><p>لا توجد رفعات بعد — ابدأ برفع أول ملف.</p></div>`;
   const items=state.periods.slice().sort((a,b)=>a.label.localeCompare(b.label)).map(p=>`<div class="pitem">
