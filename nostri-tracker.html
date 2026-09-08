@@ -210,6 +210,19 @@ td.num{font-family:'Alexandria';font-weight:700}
 #toast.err{background:#7f1d1d}
 
 @media print{.sidebar,.toolbar .chip,.icobtn,.btn{display:none!important}}
+
+/* mapper modal */
+.modal{position:fixed;inset:0;background:rgba(6,20,18,.5);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:9998;padding:20px}
+.modal .box{background:var(--card);border:1px solid var(--line);border-radius:18px;max-width:520px;width:100%;padding:22px 24px;box-shadow:0 30px 60px -20px rgba(0,0,0,.5);max-height:88vh;overflow:auto}
+.modal h3{margin:0 0 4px;font-family:'Alexandria';color:var(--heading);font-size:18px}
+.modal p{margin:0 0 16px;color:var(--muted);font-size:13px}
+.modal .frow{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.modal .frow label{flex:0 0 130px;font-size:13px;font-weight:700;color:var(--ink)}
+.modal .frow select{flex:1;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-family:inherit;font-size:13px;background:var(--bg);color:var(--ink)}
+.modal .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+.modal .acts button{border:1px solid var(--line);background:var(--card);color:var(--ink);font-family:inherit;font-weight:700;font-size:13px;padding:9px 18px;border-radius:11px;cursor:pointer}
+.modal .acts button.go{background:var(--teal);color:#fff;border-color:var(--teal)}
+.modal .prev{font-size:11px;color:var(--muted);background:var(--bg);border-radius:9px;padding:8px 10px;margin-bottom:14px;max-height:80px;overflow:auto;direction:ltr;text-align:left}
 </style>
 </head>
 <body>
@@ -250,6 +263,7 @@ td.num{font-family:'Alexandria';font-weight:700}
       <button data-tab="doctors">👨‍⚕️ الأطباء</button>
       <button data-tab="drugs">💊 الأدوية</button>
       <button data-tab="conversion">🔁 التحويل</button>
+      <button data-tab="sales">💰 المبيعات</button>
       <button data-tab="sections">🏥 الأقسام الطبية</button>
       <button data-tab="periods">📂 الرفعات والفترات</button>
     </nav>
@@ -520,14 +534,17 @@ function viewData(){
 }
 
 /* ================= STATE ================= */
-let state={periods:[],prod:"all",q:"",tab:"command",pick:{doctor:null,drug:null}};
+let state={periods:[],sales:[],prod:"all",q:"",tab:"command",pick:{doctor:null,drug:null}};
 
 function loadStore(){
   try{const raw=localStorage.getItem(STORE_KEY); if(raw){const o=JSON.parse(raw);
-    state.periods=(o.periods||[]).map(p=>({...p,on:p.on!==false}));}}catch(e){}
+    state.periods=(o.periods||[]).map(p=>({...p,on:p.on!==false}));
+    state.sales=(o.sales||[]).map(p=>({...p,on:p.on!==false}));}}catch(e){}
 }
 function saveStore(){
-  try{localStorage.setItem(STORE_KEY,JSON.stringify({periods:state.periods.map(p=>({id:p.id,label:p.label,file:p.file,at:p.at,on:p.on,agg:p.agg}))}));}
+  try{localStorage.setItem(STORE_KEY,JSON.stringify({
+    periods:state.periods.map(p=>({id:p.id,label:p.label,file:p.file,at:p.at,on:p.on,agg:p.agg})),
+    sales:state.sales.map(p=>({id:p.id,label:p.label,file:p.file,at:p.at,on:p.on,agg:p.agg}))}));}
   catch(e){toast("تعذّر الحفظ — قد تكون المساحة ممتلئة",true);}
 }
 
@@ -540,22 +557,127 @@ function derivePeriod(fname){
   return "رفعة "+(state.periods.length+1);
 }
 
-/* ================= استيراد ================= */
+/* ================= مبيعات (تقرير مبيعات اصناف مورد) ================= */
+const SALES_ALIASES={
+  item:["item","itemname","product","productname","service","servicename","drug","drugname","material","الصنف","اسمالصنف","المنتج","الدواء","اسمالمنتج","اسمالصنف","الصنفاسم"],
+  units:["qty","quantity","units","unit","soldqty","netqty","salesqty","qtysold","الكمية","كمية","عددالوحدات","المباع","الكمياتالمباعة","الكميةالمباعة","الوحدات"],
+  value:["value","amount","net","netvalue","total","totalvalue","sales","salesvalue","netsales","القيمة","قيمة","المبلغ","الاجمالي","الإجمالي","اجماليالبيع","صافي","صافيالبيع","قيمةالبيع"],
+  branch:["branch","pharmacy","store","location","site","الفرع","الصيدلية","المخزن","الموقع","فرع"]
+};
+function detectSalesCols(headerRow){
+  const idx={};
+  headerRow.forEach((h,i)=>{const k=headerKey(h);
+    for(const f in SALES_ALIASES){ if(idx[f]!=null) continue;
+      if(SALES_ALIASES[f].some(a=>k===a||k.includes(a))) idx[f]=i; }});
+  return idx;
+}
+function findSalesHeader(aoa){
+  for(let i=0;i<Math.min(aoa.length,15);i++){
+    const idx=detectSalesCols(aoa[i]);
+    if(idx.item!=null && (idx.units!=null||idx.value!=null)) return {row:i,idx};
+  }
+  return null;
+}
+function toNum(v){ if(v==null)return 0; const s=String(v).replace(/[^\d.\-]/g,""); const n=parseFloat(s); return isFinite(n)?n:0; }
+/* map: {item,units,value,branch} مؤشرات أعمدة · headerRowIdx */
+function salesAggregate(aoa,map,headerRowIdx){
+  const agg={rows:0,units:0,value:0,products:{},branches:{}};
+  for(let i=headerRowIdx+1;i<aoa.length;i++){
+    const r=aoa[i]; if(!r) continue;
+    const nm=normKey(r[map.item]); if(!nm) continue;
+    const u=map.units!=null?toNum(r[map.units]):0;
+    const v=map.value!=null?toNum(r[map.value]):0;
+    if(!u && !v) continue;
+    agg.rows++; agg.units+=u; agg.value+=v;
+    let P=agg.products[nm]; if(!P)P=agg.products[nm]={u:0,v:0}; P.u+=u; P.v+=v;
+    const bn=map.branch!=null?(normKey(r[map.branch])||"غير محدد"):"الكل";
+    let B=agg.branches[bn]; if(!B)B=agg.branches[bn]={u:0,v:0}; B.u+=u; B.v+=v;
+  }
+  if(!agg.rows) throw new Error("لا توجد صفوف مبيعات صالحة (تأكد من عمود الكمية/القيمة)");
+  return agg;
+}
+function mergeSales(list){
+  const m={rows:0,units:0,value:0,products:{},branches:{}};
+  list.forEach(a=>{ m.rows+=a.rows;m.units+=a.units;m.value+=a.value;
+    for(const p in a.products){const s=a.products[p];let P=m.products[p];if(!P)P=m.products[p]={u:0,v:0};P.u+=s.u;P.v+=s.v;}
+    for(const b in a.branches){const s=a.branches[b];let B=m.branches[b];if(!B)B=m.branches[b]={u:0,v:0};B.u+=s.u;B.v+=s.v;}
+  });
+  return m;
+}
+function salesView(){
+  const sel=state.sales.filter(p=>p.on);
+  const m=mergeSales(sel.map(p=>p.agg));
+  const prod=state.prod;
+  const products={}; let U=0,Vv=0;
+  for(const p in m.products){ if(prod==="all"||productClass(p)===prod){products[p]=m.products[p];U+=m.products[p].u;Vv+=m.products[p].v;} }
+  return {m,products,branches:m.branches,U,V:Vv,periods:sel};
+}
+
+/* ================= استيراد (توجيه تلقائي: كتابات / مبيعات) ================= */
 async function handleFiles(files){
-  let ok=0,fail=0;
+  let ok=0;
   for(const f of files){
     try{
       const isPdf=/\.pdf$/i.test(f.name)||f.type==="application/pdf";
       if(isPdf && typeof pdfjsLib==="undefined") throw new Error("مكتبة PDF لم تُحمّل — افتح الصفحة مع اتصال إنترنت مرة واحدة");
       if(!isPdf && typeof XLSX==="undefined") throw new Error("مكتبة Excel لم تُحمّل — افتح الصفحة مع اتصال إنترنت مرة واحدة");
       const aoa=isPdf ? await readPdf(f) : await readFile(f);
-      const agg=aggregate(aoa);
-      const id="p"+Date.now()+"_"+Math.random().toString(36).slice(2,6);
-      state.periods.push({id,label:derivePeriod(f.name),file:f.name,at:new Date().toISOString(),on:true,agg});
-      ok++;
-    }catch(err){ console.error(err); toast("«"+f.name+"»: "+(err.message||"خطأ"),true); fail++; }
+      // 1) كتابات؟
+      if(findHeader(aoa)){
+        const agg=aggregate(aoa);
+        state.periods.push({id:"p"+Date.now()+"_"+Math.random().toString(36).slice(2,6),label:derivePeriod(f.name),file:f.name,at:new Date().toISOString(),on:true,agg,kind:"writings"});
+        ok++; continue;
+      }
+      // 2) مبيعات؟
+      const sh=findSalesHeader(aoa);
+      if(sh){
+        const agg=salesAggregate(aoa,sh.idx,sh.row);
+        state.sales.push({id:"s"+Date.now()+"_"+Math.random().toString(36).slice(2,6),label:derivePeriod(f.name),file:f.name,at:new Date().toISOString(),on:true,agg,kind:"sales"});
+        ok++; continue;
+      }
+      // 3) غير معروف — افتح نافذة ربط الأعمدة
+      openMapper(f.name,aoa);
+    }catch(err){ console.error(err); toast("«"+f.name+"»: "+(err.message||"خطأ"),true); }
   }
   if(ok){ saveStore(); toast(ok+" ملف تمّت قراءته وتجميعه ✓"); renderStatebar(); render(); }
+}
+/* أضف مبيعات بعد ربط يدوي */
+function commitMappedSales(fname,aoa,map,headerRowIdx){
+  try{
+    const agg=salesAggregate(aoa,map,headerRowIdx);
+    state.sales.push({id:"s"+Date.now()+"_"+Math.random().toString(36).slice(2,6),label:derivePeriod(fname),file:fname,at:new Date().toISOString(),on:true,agg,kind:"sales"});
+    saveStore(); toast("تم استيراد ملف المبيعات ✓"); renderStatebar(); render();
+  }catch(err){ toast(err.message||"خطأ",true); }
+}
+/* نافذة ربط الأعمدة (احتياطية لو الكشف التلقائي فشل) */
+function openMapper(fname,aoa){
+  // اختر أفضل صف عناوين مرشّح
+  let hr=0; for(let i=0;i<Math.min(aoa.length,8);i++){ if(aoa[i].filter(c=>String(c).trim()).length>=3){hr=i;break;} }
+  const headers=aoa[hr].map((h,i)=>({i,name:String(h).replace(/ /g," ").trim()||("عمود "+(i+1))}));
+  const guess=detectSalesCols(aoa[hr]);
+  const opt=(sel,cur)=>`<option value="">— بدون —</option>`+headers.map(h=>`<option value="${h.i}"${cur===h.i?" selected":""}>${h.name}</option>`).join("");
+  const preview=aoa.slice(hr,hr+3).map(r=>r.slice(0,8).map(c=>String(c).slice(0,14)).join(" | ")).join("\n");
+  const el=document.createElement("div"); el.className="modal";
+  el.innerHTML=`<div class="box">
+    <h3>ربط أعمدة ملف المبيعات</h3>
+    <p>ما قدرتش أتعرّف على الأعمدة تلقائياً في «${fname}». اختر العمود المناسب لكل حقل:</p>
+    <div class="prev">${preview}</div>
+    <div class="frow"><label>الصنف / المنتج *</label><select id="m_item">${opt("item",guess.item)}</select></div>
+    <div class="frow"><label>الكمية (وحدات)</label><select id="m_units">${opt("units",guess.units)}</select></div>
+    <div class="frow"><label>القيمة (ريال)</label><select id="m_value">${opt("value",guess.value)}</select></div>
+    <div class="frow"><label>الفرع (اختياري)</label><select id="m_branch">${opt("branch",guess.branch)}</select></div>
+    <div class="acts"><button id="m_cancel">إلغاء</button><button class="go" id="m_ok">استيراد</button></div>
+  </div>`;
+  document.body.appendChild(el);
+  const val=id=>{const v=el.querySelector(id).value;return v===""?null:+v;};
+  el.querySelector("#m_cancel").onclick=()=>el.remove();
+  el.querySelector("#m_ok").onclick=()=>{
+    const map={item:val("#m_item"),units:val("#m_units"),value:val("#m_value"),branch:val("#m_branch")};
+    if(map.item==null){toast("لازم تختار عمود الصنف",true);return;}
+    if(map.units==null&&map.value==null){toast("اختر عمود الكمية أو القيمة على الأقل",true);return;}
+    el.remove(); commitMappedSales(fname,aoa,map,hr);
+  };
+  el.onclick=e=>{if(e.target===el)el.remove();};
 }
 
 /* ================= رسومات مساعدة ================= */
@@ -718,6 +840,73 @@ V.conversion=()=>{
     <p style="font-size:12.5px;color:var(--muted)">التحويل يُحتسب من عمود الحالة: «مصروف/Closed» = تحوّل لبيع.</p></div></div>`+bw;
 };
 
+V.sales=()=>{
+  const salesDz=`<div class="dropzone" id="dz" style="margin-bottom:14px">
+    <div class="big">💰</div><h3>ارفع تقرير المبيعات (مبيعات اصناف مورد)</h3>
+    <p>Excel / CSV — وحدات وقيمة البيع · المنصة تربطه تلقائياً بالكتابات</p>
+    <div class="fmt">أعمدة متوقعة: الصنف · الكمية · القيمة · الفرع (اختياري). لو الأسماء مختلفة هتظهر نافذة ربط.</div></div>`;
+  if(!state.sales.filter(p=>p.on).length){
+    const anyOff=state.sales.length;
+    return salesDz+`<div class="empty" style="padding:34px">
+      <p>${anyOff?"مفيش فترة مبيعات مُضمَّنة حالياً — فعّلها من الأسفل.":"لسه مفيش بيانات مبيعات — ارفع أول تقرير."}</p>
+      ${anyOff?salesFilesList():""}</div>`;
+  }
+  const s=salesView();
+  const wr=viewData(); // للربط بالكتابات
+  const prods=Object.entries(s.products).map(([n,o])=>({n,...o}));
+  const nB=Object.keys(s.branches).length;
+  const kpis=`<div class="kpis">
+    <div class="kpi hero"><div class="lbl">قيمة المبيعات (الوضع الحالي)</div><div class="val">${fmt(s.V)}<small> ريال</small></div>
+      <div class="delta flat">عبر ${s.periods.length} فترة</div></div>
+    <div class="kpi"><div class="lbl">الوحدات المباعة</div><div class="val">${fmt(s.U)}</div></div>
+    <div class="kpi"><div class="lbl">أصناف مباعة</div><div class="val">${fmt(prods.length)}</div></div>
+    <div class="kpi"><div class="lbl">الفروع</div><div class="val">${fmt(nB)}</div></div>
+  </div>`;
+  // top products by value
+  const topV=prods.slice().sort((a,b)=>b.v-a.v).slice(0,8);
+  const vMax=Math.max(...topV.map(x=>x.v),1);
+  const vRows=topV.map((x,i)=>`<div class="lead-row"><div class="rank">${i+1}</div>
+    <div class="who"><div class="nm">${productClass(x.n)==="nostri"?"🔷 ":productClass(x.n)==="pureherb"?"🌿 ":""}${x.n}</div>
+      <div class="track"><i style="width:${Math.max(x.v/vMax*100,3)}%"></i></div></div>
+    <div class="amt">${fmt(x.v)}<small class="flat">${fmt(x.u)} وحدة</small></div></div>`).join("");
+  const topPanel=`<div class="panel"><h3>💊 أعلى الأصناف قيمةً <span class="hint">ريال</span></h3><div class="lead">${vRows}</div></div>`;
+  // per-branch
+  const brs=Object.entries(s.branches).map(([n,o])=>({n,...o})).sort((a,b)=>b.v-a.v);
+  const bMax=Math.max(...brs.map(x=>x.v),1);
+  const bRows=brs.map(x=>`<tr><td>${x.n}</td><td class="num">${fmt(x.u)}</td><td class="num">${fmt(x.v)}</td>
+    <td><div class="track" style="height:6px;border-radius:3px;background:var(--grid);overflow:hidden"><i style="display:block;height:100%;width:${x.v/bMax*100}%;background:linear-gradient(90deg,var(--teal-l),var(--teal))"></i></div></td></tr>`).join("");
+  const brPanel=`<div class="panel"><h3>🏥 المبيعات حسب الفرع</h3>
+    <div class="tbl-wrap"><table><thead><tr><th>الفرع</th><th>وحدات</th><th>قيمة</th><th></th></tr></thead><tbody>${bRows}</tbody></table></div></div>`;
+  // JOIN كتابة ↔ بيع
+  const names=new Set([...Object.keys(s.products),...Object.keys(wr.services)]);
+  const joinRows=[...names].map(n=>{
+    const S=s.products[n]||{u:0,v:0}, W=wr.services[n]||{w:0,c:0};
+    return {n,u:S.u,v:S.v,w:W.w,c:W.c};
+  }).filter(x=>state.prod==="all"||productClass(x.n)===state.prod)
+    .sort((a,b)=>b.v-a.v).slice(0,40);
+  const jr=joinRows.map(x=>`<tr>
+    <td>${productClass(x.n)==="nostri"?"🔷 ":productClass(x.n)==="pureherb"?"🌿 ":""}${x.n}</td>
+    <td class="num">${fmt(x.w)}</td><td class="num up">${fmt(x.c)}</td>
+    <td class="num">${fmt(x.u)}</td><td class="num">${fmt(x.v)}</td>
+    <td class="num">${x.w?(x.u/x.w).toFixed(1):"—"}</td></tr>`).join("");
+  const joinPanel=`<div class="panel"><h3>🔗 كتب كام ← باع كام <span class="hint">ربط الكتابات بالمبيعات لكل صنف</span></h3>
+    <div class="tbl-wrap"><table><thead><tr><th>الصنف</th><th>كتابات</th><th>مصروف</th><th>وحدات مباعة</th><th>قيمة (ريال)</th><th>وحدة/كتابة</th></tr></thead>
+    <tbody>${jr||`<tr><td colspan="6" style="text-align:center;color:var(--muted)">ارفع كتابات ومبيعات معاً للربط</td></tr>`}</tbody></table></div>
+    <p style="font-size:12px;color:var(--muted);margin-top:10px">* الربط بالاسم بين «الصنف» في تقرير المبيعات و«Service Name» في الكتابات.</p></div>`;
+  return kpis+`<div class="cols">${topPanel}${brPanel}</div>${joinPanel}<div style="margin-top:14px">${salesDz}${salesFilesList()}</div>`;
+};
+function salesFilesList(){
+  if(!state.sales.length) return "";
+  const on=state.sales.filter(p=>p.on).length;
+  const items=state.sales.slice().sort((a,b)=>a.label.localeCompare(b.label)).map(p=>`<div class="pitem">
+    <input type="checkbox" ${p.on?"checked":""} onchange="toggleSales('${p.id}',this.checked)" style="width:18px;height:18px;accent-color:var(--teal)">
+    <div class="pmeta"><div class="pn">${p.file}</div>
+      <div class="pd">${fmt(p.agg.units)} وحدة · ${fmt(p.agg.value)} ريال · ${Object.keys(p.agg.products).length} صنف · ${new Date(p.at).toLocaleDateString("ar-EG")}</div></div>
+    <input class="plabel" value="${esc(p.label)}" onchange="relabelSales('${p.id}',this.value)">
+    <button class="del" onclick="removeSales('${p.id}')" title="حذف">🗑</button></div>`).join("");
+  return `<div class="panel" style="margin-top:12px"><h3>📂 ملفات المبيعات (${state.sales.length}) <span class="hint">${on} مُضمَّنة</span></h3><div class="plist">${items}</div></div>`;
+}
+
 V.sections=()=>{
   const d=viewData(); if(!d.periods.length) return emptyState();
   const list=Object.entries(d.sections).map(([n,o])=>({n,...o})).sort((a,b)=>b.w-a.w);
@@ -764,21 +953,30 @@ window.openDrug=n=>{state.pick.drug=n;state.tab="drugs";syncTabs();render();};
 window.togglePeriod=(id,on)=>{const p=state.periods.find(x=>x.id===id);if(p){p.on=on;saveStore();renderStatebar();render();}};
 window.relabel=(id,v)=>{const p=state.periods.find(x=>x.id===id);if(p){p.label=v.trim()||p.label;saveStore();renderStatebar();}};
 window.removePeriod=id=>{if(!confirm("حذف هذه الرفعة نهائياً؟"))return;state.periods=state.periods.filter(x=>x.id!==id);saveStore();renderStatebar();render();};
+window.toggleSales=(id,on)=>{const p=state.sales.find(x=>x.id===id);if(p){p.on=on;saveStore();renderStatebar();render();}};
+window.relabelSales=(id,v)=>{const p=state.sales.find(x=>x.id===id);if(p){p.label=v.trim()||p.label;saveStore();renderStatebar();}};
+window.removeSales=id=>{if(!confirm("حذف ملف المبيعات نهائياً؟"))return;state.sales=state.sales.filter(x=>x.id!==id);saveStore();renderStatebar();render();};
 window.loadDemo=loadDemo;
 
 function renderStatebar(){
-  const d=viewData();
-  const el=$("#statebar");
-  if(!d.periods.length){ el.innerHTML=`<div class="sb hero"><div class="l">الوضع الحالي</div><div class="v">—</div><div class="s">ارفع ملفاً للبدء</div></div>`; $("#periodInfo").textContent=""; return; }
-  const conv=pct(d.C,d.W), nDoc=Object.keys(d.doctors).length, nSvc=Object.keys(d.services).length;
-  el.innerHTML=`
-    <div class="sb hero"><div class="l">إجمالي الكتابات</div><div class="v">${fmt(d.W)}</div><div class="s">${d.periods.length} فترة مُضمَّنة</div></div>
-    <div class="sb"><div class="l">مصروف (تحوّل لبيع)</div><div class="v up">${fmt(d.C)}</div><div class="s">من إجمالي الكتابات</div></div>
-    <div class="sb"><div class="l">نسبة التحويل</div><div class="v">${conv}%</div><div class="s">${conv>=50?"جيدة":"تحتاج متابعة"}</div></div>
-    <div class="sb"><div class="l">لم يُصرف</div><div class="v down">${fmt(d.W-d.C)}</div><div class="s">فرص متابعة</div></div>
-    <div class="sb"><div class="l">أطباء</div><div class="v">${fmt(nDoc)}</div><div class="s">كاتبون</div></div>
-    <div class="sb"><div class="l">أصناف</div><div class="v">${fmt(nSvc)}</div><div class="s">مكتوبة</div></div>`;
-  $("#periodInfo").textContent=d.periods.map(p=>p.label).join(" · ");
+  const d=viewData(), s=salesView();
+  const el=$("#statebar"), hasW=d.periods.length, hasS=s.periods.length;
+  if(!hasW && !hasS){ el.innerHTML=`<div class="sb hero"><div class="l">الوضع الحالي</div><div class="v">—</div><div class="s">ارفع ملفاً للبدء</div></div>`; $("#periodInfo").textContent=""; return; }
+  let html="";
+  if(hasW){
+    const conv=pct(d.C,d.W), nDoc=Object.keys(d.doctors).length;
+    html+=`<div class="sb hero"><div class="l">إجمالي الكتابات</div><div class="v">${fmt(d.W)}</div><div class="s">${d.periods.length} فترة</div></div>
+      <div class="sb"><div class="l">مصروف (تحوّل لبيع)</div><div class="v up">${fmt(d.C)}</div><div class="s">تحويل ${conv}%</div></div>
+      <div class="sb"><div class="l">لم يُصرف</div><div class="v down">${fmt(d.W-d.C)}</div><div class="s">فرص متابعة</div></div>
+      <div class="sb"><div class="l">أطباء كاتبون</div><div class="v">${fmt(nDoc)}</div><div class="s">${fmt(Object.keys(d.services).length)} صنف</div></div>`;
+  }
+  if(hasS){
+    html+=`<div class="sb${hasW?"":" hero"}"><div class="l">قيمة المبيعات</div><div class="v">${fmt(s.V)}</div><div class="s">ريال · ${s.periods.length} فترة</div></div>
+      <div class="sb"><div class="l">وحدات مباعة</div><div class="v">${fmt(s.U)}</div><div class="s">${fmt(Object.keys(s.products).length)} صنف مباع</div></div>`;
+  }
+  el.innerHTML=html;
+  const labels=[...new Set([...d.periods.map(p=>p.label),...s.periods.map(p=>p.label)])];
+  $("#periodInfo").textContent=labels.join(" · ");
 }
 
 const TAB_META={
@@ -786,11 +984,14 @@ const TAB_META={
   doctors:{t:"الأطباء",s:"من يكتب كام، وكام تحوّل لبيع"},
   drugs:{t:"الأدوية / الأصناف",s:"كل صنف ومن يكتبه ونسبة صرفه"},
   conversion:{t:"التحويل",s:"الكتابة مقابل البيع الفعلي (من عمود الحالة)"},
+  sales:{t:"المبيعات",s:"وحدات وقيمة البيع الفعلية — من تقرير مبيعات اصناف مورد"},
   sections:{t:"الأقسام الطبية",s:"الكتابات حسب التخصص"},
   periods:{t:"الرفعات والفترات",s:"ارفع، سمِّ، وادمج فترات المتابعة"}
 };
-function shead(tab){const m=TAB_META[tab];const d=viewData();
-  const stamp=d.periods.length?d.periods.length+" فترة · "+fmt(d.W)+" كتابة":"لا بيانات";
+function shead(tab){const m=TAB_META[tab];
+  let stamp;
+  if(tab==="sales"){const s=salesView();stamp=s.periods.length?s.periods.length+" فترة · "+fmt(s.V)+" ريال":"لا بيانات";}
+  else {const d=viewData();stamp=d.periods.length?d.periods.length+" فترة · "+fmt(d.W)+" كتابة":"لا بيانات";}
   return `<div class="shead"><div><h2>${m.t}</h2><p>${m.s}</p></div><div class="stamp">${stamp}</div></div>`;}
 
 function render(){ $("#view").innerHTML=shead(state.tab)+V[state.tab](); }
@@ -833,7 +1034,16 @@ function loadDemo(){
     return {id:"demo"+seed,label,file:"عيّنة "+label+".xlsx",at:new Date().toISOString(),on:true,agg:a};
   }
   state.periods.push(make(7,600,"2026-07"),make(8,750,"2026-08"));
-  saveStore();toast("تم تحميل عيّنة تجريبية (شهرين) ✓");renderStatebar();render();
+  // عيّنة مبيعات مطابقة الأسماء (للربط كتابة↔بيع)
+  const brs=["ص1","ص7","ص18"];
+  function makeSales(seed,nrows,label){let s=seed;const rnd=()=>{s=(s*9301+49297)%233280;return s/233280;};
+    const aoa=[["الصنف","الكمية","القيمة","الفرع"]];
+    for(let i=0;i<nrows;i++){const nm=svcs[Math.floor(rnd()*svcs.length)];const u=1+Math.floor(rnd()*8);aoa.push([nm,u,u*(40+Math.floor(rnd()*60)),brs[Math.floor(rnd()*brs.length)]]);}
+    const sh=findSalesHeader(aoa);const a=salesAggregate(aoa,sh.idx,sh.row);
+    return {id:"demoS"+seed,label,file:"مبيعات "+label+".xlsx",at:new Date().toISOString(),on:true,agg:a,kind:"sales"};
+  }
+  state.sales.push(makeSales(3,700,"2026-07"),makeSales(4,850,"2026-08"));
+  saveStore();toast("تم تحميل عيّنة تجريبية (كتابات + مبيعات) ✓");renderStatebar();render();
 }
 
 /* init */
