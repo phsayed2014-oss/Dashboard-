@@ -172,6 +172,48 @@ cellfmt(sm.cell(row=tr + 2, column=1, value="للتحقق: إجمالي السج
 cellfmt(sm.cell(row=tr + 2, column=6, value=f"=SUM(السجل!$I$2:$I${LOG_MAX})"), BASE, MONEY)
 sm.cell(row=2, column=1, value="اكتب أي اسم جديد في عمود الاسم (أزرق) وسيُحسب تلقائيًا من شيت السجل").font = Font(name=FONT, italic=True, color="7F7F7F")
 
+# ---------- حسب اليوم ----------
+dy = wb.create_sheet("حسب اليوم", 1)
+dy.sheet_view.rightToLeft = True
+dates = sorted(dict.fromkeys(d for d, *_ in ENTRIES))
+day_of = {d: day for d, day, *_ in SCHEDULE}
+header(dy, 1, ["الاسم"] + [f"{day_of.get(d, '')}\n{d}" for d in dates] + ["الإجمالي"],
+       [22] + [13] * len(dates) + [15])
+dy.row_dimensions[1].height = 32
+D = f"السجل!$A$2:$A${LOG_MAX}"
+for i, name in enumerate(names):
+    r = 2 + i
+    cellfmt(dy.cell(row=r, column=1, value=f"=الملخص!A{4 + i}"), BOLD)
+    for j, d in enumerate(dates):
+        col = 2 + j
+        dy.cell(row=1, column=col).value = f"{day_of.get(d, '')}\n{d}"
+        dy.cell(row=1000, column=col, value=d)  # مفتاح التاريخ (مخفي)
+        cl = dy.cell(row=1000, column=col).column_letter
+        cellfmt(dy.cell(row=r, column=col, value=f'=SUMIFS(السجل!$I$2:$I${LOG_MAX},{N},$A{r},{D},{cl}$1000)'), BASE, MONEY)
+    last = dy.cell(row=r, column=1 + len(dates)).column_letter
+    cellfmt(dy.cell(row=r, column=2 + len(dates), value=f"=SUM(B{r}:{last}{r})"), BOLD, MONEY)
+tr2 = 2 + len(names)
+cellfmt(dy.cell(row=tr2, column=1, value="الإجمالي"), BOLD)
+for col in range(2, 3 + len(dates)):
+    L_ = dy.cell(row=2, column=col).column_letter
+    c = dy.cell(row=tr2, column=col, value=f"=SUM({L_}2:{L_}{tr2 - 1})")
+    cellfmt(c, BOLD, MONEY)
+    c.fill = PatternFill("solid", fgColor="DDEBF7")
+dy.cell(row=tr2, column=1).fill = PatternFill("solid", fgColor="DDEBF7")
+dy.row_dimensions[1000].hidden = True
+dy.freeze_panes = "B2"
+
+OUT = "inventory/jard_payroll.xlsx"
 wb.calculation.fullCalcOnLoad = True
-wb.save("inventory/jard_payroll.xlsx")
+wb.save(OUT)
 print("saved", len(rows), "rows")
+
+# حفظ النتائج المحسوبة داخل الملف حتى تظهر في برامج العرض على الموبايل
+try:
+    import os, sys
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import cache_values
+    cache_values.embed(OUT)
+    print("cached values embedded")
+except ImportError as e:
+    print("skip caching:", e)
