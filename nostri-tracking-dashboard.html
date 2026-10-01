@@ -720,7 +720,27 @@ V.sales=()=>{
     <tbody>${rows}</tbody>
     <tfoot><tr><td>الإجمالي</td><td class="num">${fmt(tot[FIRST])}</td><td class="num">${fmt(tot[PREV])}</td>
     <td class="num">${fmt(tot[CUR])}</td><td class="trend ${dCur.c}">${dCur.t}</td></tr></tfoot></table></div></div>`;
-  return kpis+chart+table;
+  // ===== إجمالي الصيدليات الثلاث معًا (1+7+18) — المبيعات =====
+  const P3=["1","7","18"];
+  const comb={}; M.forEach(m=>comb[m]=P3.reduce((a,p)=>a+(itemTotals(p,mk)[m]||0),0));
+  const cd=delta(comb[CUR],comb[PREV]), cd3=delta(comb[CUR],comb[FIRST]);
+  const combKpis=`<div class="kpis">
+    <div class="kpi hero"><div class="lbl">إجمالي الصيدليات الثلاث (1+7+18) — يوليو 07</div>
+      <div class="val">${fmt(comb[CUR])} <span class="unit">${unit}</span></div><div class="delta ${cd.c}">${cd.t} مقابل يونيو</div></div>
+    <div class="kpi"><div class="lbl">يونيو 06</div><div class="val">${fmt(comb[PREV])} <span class="unit">${unit}</span></div></div>
+    <div class="kpi"><div class="lbl">مايو 05</div><div class="val">${fmt(comb[FIRST])} <span class="unit">${unit}</span></div></div>
+    <div class="kpi"><div class="lbl">النمو 05 ← 07</div><div class="val ${cd3.c}">${cd3.t.replace(/[▲▼●] /,"")}</div>
+      <div class="delta ${cd3.c}">اتجاه ${cd3.c==="up"?"تصاعدي":cd3.c==="down"?"تنازلي":"ثابت"}</div></div></div>`;
+  const brk=P3.map(p=>{const x=itemTotals(p,mk), d=delta(x[CUR],x[PREV]);
+    return `<tr><td>${scopeLabel(p)}</td>${M.map(m=>`<td class="num">${fmt(x[m])}</td>`).join("")}
+      <td class="trend ${d.c}">${d.t}</td></tr>`;}).join("");
+  const combPanel=`<div class="panel"><h2>🏥 إجمالي الصيدليات الثلاث معًا — المبيعات (${unit})</h2>
+    ${barChart(comb,unit)}
+    <div class="tbl-wrap" style="margin-top:14px"><table><thead><tr><th>الصيدلية</th>${M.map(m=>`<th>${ML[m]}</th>`).join("")}<th>التغير ش/ش</th></tr></thead>
+    <tbody>${brk}</tbody>
+    <tfoot><tr><td>المجموع (1+7+18)</td>${M.map(m=>`<td class="num">${fmt(comb[m])}</td>`).join("")}
+    <td class="trend ${cd.c}">${cd.t}</td></tr></tfoot></table></div></div>`;
+  return combKpis+combPanel+`<div class="section-stage" style="margin-top:6px"><div><h2 style="font-size:16px">تفصيل ${scopeLabel(scope)}</h2></div></div>`+kpis+chart+table;
 };
 
 /* ---- 1ب. Share: داخلي (1/7/18) مقابل خارجي من الإجمالي ---- */
