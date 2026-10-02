@@ -222,3 +222,34 @@ try:
     print("cached values embedded")
 except ImportError as e:
     print("skip caching:", e)
+
+# ---------- ملف السجل فقط ----------
+LOG_OUT = "inventory/jard_log.xlsx"
+lw = Workbook()
+ls = lw.active
+ls.title = "السجل"
+ls.sheet_view.rightToLeft = True
+header(ls, 1, ["التاريخ", "اليوم", "الموقع", "رقم الصيدلية", "الاسم", "جرد", "راجع", "نوع المهمة", "المستحق"],
+       [13, 11, 16, 12, 20, 8, 8, 16, 13])
+loc_of = {d: loc for d, _, _, _, loc in SCHEDULE}
+for r, (d, ph, name, cnt, rev) in enumerate(rows, 2):
+    kind = "جرد + مراجعة" if cnt and rev else ("جرد فقط" if cnt else "مراجعة فقط")
+    amt = {"جرد + مراجعة": RATE_BOTH, "مراجعة فقط": RATE_REVIEW, "جرد فقط": RATE_COUNT}[kind]
+    for col, v in enumerate([d, day_of.get(d, ""), loc_of.get(d, ""), int(ph), name, cnt, rev, kind, amt], 1):
+        cellfmt(ls.cell(row=r, column=col, value=v), BASE, MONEY if col == 9 else None)
+tr3 = len(rows) + 2
+for col in range(1, 10):
+    c = ls.cell(row=tr3, column=col)
+    c.fill = PatternFill("solid", fgColor="DDEBF7")
+    cellfmt(c, BOLD)
+ls.cell(row=tr3, column=1, value="الإجمالي")
+ls.cell(row=tr3, column=9, value=f"=SUM(I2:I{tr3 - 1})").number_format = MONEY
+ls.freeze_panes = "A2"
+ls.auto_filter.ref = f"A1:I{tr3 - 1}"
+lw.calculation.fullCalcOnLoad = True
+lw.save(LOG_OUT)
+try:
+    cache_values.embed(LOG_OUT)
+except NameError:
+    pass
+print("saved log-only file")
