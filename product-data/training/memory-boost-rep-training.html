@@ -1,0 +1,369 @@
+<title>دليل ميموري بوست العلمي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: a rep's training dossier. Narrow reading column, a scan-able ingredient map, then ingredient files, then field tools (call flow, objections, quiz). */
+:root{
+  --bg:#f5f7fb; --paper:#ffffff; --ink:#18202c; --muted:#596476; --line:#dde3ec; --tint:#eef3fb;
+  --accent:#2f5fc4; --accent-ink:#ffffff; --good:#1f7a4d; --good-bg:#e7f4ec; --warn:#8a5a00; --warn-bg:#fff4dc; --stop:#a23131; --stop-bg:#fbe9e9;
+  --display:'Readex Pro','IBM Plex Sans Arabic',Tahoma,sans-serif;
+  --body:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141c; --paper:#161d28; --ink:#e6ebf3; --muted:#9aa6b8; --line:#2a3445; --tint:#1b2535;
+  --accent:#7ea2ff; --accent-ink:#0f141c; --good:#6fd29c; --good-bg:#14301f; --warn:#f0c46a; --warn-bg:#33270e; --stop:#f19393; --stop-bg:#371818; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141c; --paper:#161d28; --ink:#e6ebf3; --muted:#9aa6b8; --line:#2a3445; --tint:#1b2535;
+  --accent:#7ea2ff; --accent-ink:#0f141c; --good:#6fd29c; --good-bg:#14301f; --warn:#f0c46a; --warn-bg:#33270e; --stop:#f19393; --stop-bg:#371818; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.8;direction:rtl;padding-inline:16px;padding-block:24px 56px;margin:0}
+.wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.35;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,5vw,40px)}
+h2{font-size:24px}
+h3{font-size:19px}
+h4{font-size:16px}
+p{margin:0}
+.en{direction:ltr;unicode-bidi:isolate;font-family:var(--body)}
+.eyebrow{font-size:13px;letter-spacing:.04em;color:var(--muted);font-weight:500}
+header.top{display:flex;flex-direction:column;gap:12px;padding-block:8px 4px}
+header.top .lead{font-size:18px;color:var(--muted);max-width:62ch}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.facts div{background:var(--paper);padding:10px 14px;min-width:0}
+.facts dt{font-size:12.5px;color:var(--muted)}
+.facts dd{margin:0;font-weight:700;font-variant-numeric:tabular-nums}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px}
+nav.toc a{font-size:13.5px;color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--paper);border-radius:6px;padding:3px 10px}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--accent);outline:none}
+section{display:flex;flex-direction:column;gap:14px}
+section > h2{padding-bottom:6px;border-bottom:2px solid var(--line)}
+.prose{display:flex;flex-direction:column;gap:10px;max-width:68ch}
+ul.clean{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px}
+.callout{border-radius:10px;padding:12px 16px;display:flex;flex-direction:column;gap:6px}
+.callout.warn{background:var(--warn-bg);color:var(--ink);border:1px solid var(--warn)}
+.callout.warn strong{color:var(--warn)}
+.callout.good{background:var(--good-bg);border:1px solid var(--good)}
+.callout.good strong{color:var(--good)}
+.callout.stop{background:var(--stop-bg);border:1px solid var(--stop)}
+.callout.stop strong{color:var(--stop)}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:start;vertical-align:top}
+thead th{background:var(--tint);font-family:var(--display);font-weight:500;font-size:13.5px;white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+td.dot{text-align:center;font-weight:700;color:var(--accent)}
+.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.pillar{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.pillar .k{font-family:var(--display);font-weight:700;color:var(--accent)}
+.pillar p{font-size:14.5px;color:var(--muted)}
+article.ing{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+article.ing header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+article.ing header .en{color:var(--muted);font-size:14px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px 18px}
+.grid2 > div{min-width:0}
+.lbl{font-size:12.5px;letter-spacing:.03em;color:var(--muted);font-weight:700;display:block;margin-bottom:2px}
+.say{background:var(--tint);border-radius:8px;padding:10px 12px;font-weight:500}
+.say::before{content:"قول للدكتور: ";color:var(--accent);font-weight:700}
+.ev{font-size:14px;color:var(--muted)}
+.tag{display:inline-block;font-size:12px;font-weight:700;border-radius:4px;padding:0 6px;border:1px solid currentColor}
+.tag.a{color:var(--good)} .tag.b{color:var(--accent)} .tag.c{color:var(--warn)}
+ol.steps{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:10px}
+ol.steps li strong{font-family:var(--display);font-weight:500}
+details{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+details summary{cursor:pointer;font-weight:700}
+details summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+details > div{padding-top:8px;display:flex;flex-direction:column;gap:6px}
+.qa{display:flex;flex-direction:column;gap:8px}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+@media print{
+  body{background:#fff;color:#111;font-size:12.5px;padding:0}
+  nav.toc{display:none}
+  details{border:none;padding:0}
+  details > div{display:flex !important}
+  article.ing,.pillar,.callout,tr{break-inside:avoid}
+}
+@page{size:A4;margin:14mm 12mm}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <span class="eyebrow">دليل تدريب المندوب · Dr. Organic</span>
+  <h1>ميموري بوست <span class="en" style="font-size:.6em;color:var(--muted)">MEMORY BOOST</span></h1>
+  <p class="lead">مكمل غذائي شراب لدعم الذاكرة والتركيز. الدليل ده بيشرح للمندوب الجديد إزاي المخ بيفتكر، كل مادة فعالة بتعمل إيه ودليلها العلمي، نقاط قوة المنتج، وإزاي يدخل الزيارة ويرد على أسئلة الدكتور.</p>
+  <dl class="facts">
+    <div><dt>النوع</dt><dd>مكمل غذائي · شراب</dd></div>
+    <div><dt>العلامة</dt><dd class="en" style="text-align:right">Dr. Organic</dd></div>
+    <div><dt>تسجيل SFDA</dt><dd class="en" style="text-align:right">FOP-251125-1028812</dd></div>
+    <div><dt>الحالة</dt><dd>فعال · مسجل ومراجع</dd></div>
+    <div><dt>المواد الفعالة</dt><dd>13 مادة</dd></div>
+    <div><dt>الطعم</dt><dd>توت طبيعي · محلى ببدائل السكر</dd></div>
+  </dl>
+  <nav class="toc" aria-label="المحتويات">
+    <a href="#brain">المخ بيفتكر إزاي</a>
+    <a href="#map">خريطة المواد</a>
+    <a href="#ingredients">المواد الفعالة</a>
+    <a href="#strengths">نقاط القوة</a>
+    <a href="#targets">مين الدكتور ومين المريض</a>
+    <a href="#call">سيناريو الزيارة</a>
+    <a href="#objections">الأسئلة الصعبة</a>
+    <a href="#safety">الأمان</a>
+    <a href="#rules">ممنوعات</a>
+    <a href="#quiz">اختبار المتدرب</a>
+    <a href="#pending">ناقص</a>
+  </nav>
+</header>
+
+<div class="callout warn" role="note">
+  <strong>قبل ما تستخدم الدليل في الميدان</strong>
+  <p>ملف التسجيل اللي عندنا مفيهوش كمية كل مادة في الجرعة، ولا حجم الجرعة، ولا الفئة العمرية، ولا حجم العبوة. فالأرقام اللي تحت (زي 250 ملجم DHA أو 500 ملجم سيتيكولين) هي الجرعات اللي اتعملت عليها الدراسات، مش اللي في منتجنا. متقولش للدكتور إن منتجنا فيه الكمية دي إلا لما نتأكد منها من البطاقة.</p>
+</div>
+
+<section id="brain">
+  <h2>أولاً: المخ بيفتكر إزاي؟ (الأساس اللي لازم تفهمه)</h2>
+  <div class="prose">
+    <p>الذاكرة والتركيز مش حاجة واحدة. هي نتيجة 4 حاجات لازم تشتغل مع بعض، وكل مادة في ميموري بوست بتخدم واحدة أو أكتر منهم:</p>
+  </div>
+  <div class="pillars">
+    <div class="pillar"><span class="k">1. البناء</span><h4>غشاء الخلية العصبية</h4><p>الخلية العصبية (Neuron) متغلفة بغشاء من الدهون الفوسفورية (Phospholipids). كل ما الغشاء ده مرن وسليم، الإشارات بتعدي بين الخلايا (Synapse) أسرع وأوضح. أهم مكوناته: DHA، فوسفاتيديل سيرين، فوسفاتيديل كولين.</p></div>
+    <div class="pillar"><span class="k">2. الرسائل</span><h4>النواقل العصبية</h4><p>الخلايا بتكلم بعض بمواد كيميائية. <b>الأسيتيل كولين</b> (Acetylcholine) مسؤول عن التعلم وتخزين الذاكرة. <b>الدوبامين والنورأدرينالين</b> مسؤولين عن الانتباه واليقظة، خصوصاً تحت ضغط.</p></div>
+    <div class="pillar"><span class="k">3. الطاقة</span><h4>أكسجين وطاقة للمخ</h4><p>المخ وزنه حوالي 2% من الجسم لكنه بيستهلك حوالي 20% من طاقته. نقص الحديد أو B12 معناه أكسجين أقل، وده بيظهر كإرهاق وضعف تركيز.</p></div>
+    <div class="pillar"><span class="k">4. الحماية</span><h4>الهوموسستين والالتهاب</h4><p>ارتفاع الهوموسستين (Homocysteine) في الدم مرتبط بضمور المخ مع السن. فيتامينات B6 وB9 وB12 بتكسره. والأوميجا 3 (EPA) ليها دور مضاد للالتهاب.</p></div>
+  </div>
+</section>
+
+<section id="map">
+  <h2>ثانياً: خريطة المواد الفعالة</h2>
+  <p class="prose">الجدول ده يختصر المنتج كله. كل مادة واقفة على أي ركن من الأربعة:</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>المادة الفعالة</th><th>البناء</th><th>الرسائل</th><th>الطاقة</th><th>الحماية</th><th>دورها في جملة</th></tr></thead>
+      <tbody>
+        <tr><td>زيت السمك: DHA</td><td class="dot">●</td><td></td><td></td><td class="dot">●</td><td>أهم أوميجا 3 في المخ والشبكية</td></tr>
+        <tr><td>زيت السمك: EPA</td><td></td><td></td><td></td><td class="dot">●</td><td>مضاد للالتهاب</td></tr>
+        <tr><td>سيتيكولين</td><td class="dot">●</td><td class="dot">●</td><td></td><td></td><td>يبني غشاء الخلية ومصدر للأسيتيل كولين</td></tr>
+        <tr><td>فوسفاتيديل سيرين</td><td class="dot">●</td><td class="dot">●</td><td></td><td></td><td>دهن أساسي في غشاء الخلية العصبية</td></tr>
+        <tr><td>بيتارترات الكولين</td><td class="dot">●</td><td class="dot">●</td><td></td><td class="dot">●</td><td>المادة الخام للأسيتيل كولين</td></tr>
+        <tr><td>إن-أسيتيل-إل-تيروسين</td><td></td><td class="dot">●</td><td></td><td></td><td>المادة الخام للدوبامين والنورأدرينالين</td></tr>
+        <tr><td>إل-ثيانين</td><td></td><td class="dot">●</td><td></td><td></td><td>تركيز هادي بدون نعاس</td></tr>
+        <tr><td>الزنك</td><td></td><td class="dot">●</td><td></td><td class="dot">●</td><td>يساهم في الوظيفة الإدراكية الطبيعية</td></tr>
+        <tr><td>الحديد</td><td></td><td class="dot">●</td><td class="dot">●</td><td></td><td>أكسجين للمخ، ولازم لتصنيع الدوبامين</td></tr>
+        <tr><td>فيتامين B6</td><td></td><td class="dot">●</td><td class="dot">●</td><td class="dot">●</td><td>بيحول التيروسين لدوبامين، وبيكسر الهوموسستين</td></tr>
+        <tr><td>حمض الفوليك (B9)</td><td></td><td></td><td class="dot">●</td><td class="dot">●</td><td>بيكسر الهوموسستين، وبيقلل التعب</td></tr>
+        <tr><td>فيتامين B12</td><td class="dot">●</td><td></td><td class="dot">●</td><td class="dot">●</td><td>صحة الأعصاب وكرات الدم الحمراء</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="ev">مفتاح قوة الدليل في الصفحات الجاية: <span class="tag a">A</span> ادعاء صحي معتمد من EFSA أو دراسات قوية متكررة · <span class="tag b">B</span> دراسات إكلينيكية إيجابية لكن محدودة · <span class="tag c">C</span> دليل أولي أو في ظروف معينة بس.</p>
+</section>
+
+<section id="ingredients">
+  <h2>ثالثاً: المواد الفعالة واحدة واحدة</h2>
+
+  <article class="ing">
+    <header><h3>زيت السمك: DHA و EPA</h3><span class="en">Fish Oil · Docosahexaenoic acid · Eicosapentaenoic acid</span><span class="tag a">A</span></header>
+    <div class="grid2">
+      <div><span class="lbl">إيه هو</span>أحماض أوميجا 3 دهنية. الجسم مبيعملهاش بكمية كافية، فلازم تيجي من الأكل (السمك الدهني) أو مكمل.</div>
+      <div><span class="lbl">بيشتغل إزاي</span>الـ DHA هو أكتر أوميجا 3 موجود في المادة الرمادية للمخ وفي شبكية العين. بيدخل في تركيب غشاء الخلية العصبية ويخليه مرن، فالإشارات بتعدي أسهل. الـ EPA دوره الأساسي مضاد للالتهاب.</div>
+      <div><span class="lbl">الدليل العلمي</span>هيئة سلامة الأغذية الأوروبية (EFSA) معتمدة ادعاء إن «DHA يساهم في الحفاظ على وظيفة المخ الطبيعية» بجرعة 250 ملجم DHA يومياً. دراسة MIDAS (Yurko-Mauro 2010): 900 ملجم DHA يومياً لمدة 24 أسبوع حسّنت التعلم والذاكرة عند كبار السن الأصحاء اللي عندهم تراجع ذاكرة مرتبط بالسن.</div>
+      <div><span class="lbl">مين أكتر حد يستفيد</span>اللي أكلهم فيه سمك قليل، وده شائع في المنطقة.</div>
+    </div>
+    <p class="say">الـ DHA هو الدهن الأساسي اللي المخ مبني منه، والأكل لوحده غالباً مش بيكفي. وفي ادعاء أوروبي معتمد إنه بيحافظ على وظيفة المخ الطبيعية.</p>
+  </article>
+
+  <article class="ing">
+    <header><h3>سيتيكولين</h3><span class="en">Citicoline · CDP-Choline</span><span class="tag b">B</span></header>
+    <div class="grid2">
+      <div><span class="lbl">إيه هو</span>مادة الجسم بيصنعها طبيعياً، وهي خطوة أساسية في بناء غشاء الخلية العصبية. لما الجسم بيكسرها بتدي <b>كولين</b> و<b>سيتيدين</b> (اللي بيتحول ليوريدين).</div>
+      <div><span class="lbl">بيشتغل إزاي</span>الكولين بيروح في اتجاهين: (1) بناء فوسفاتيديل كولين، الدهن الأساسي في غشاء الخلية العصبية. (2) تصنيع الأسيتيل كولين، ناقل الذاكرة والتعلم. يعني بيخدم البناء والرسائل في نفس الوقت.</div>
+      <div><span class="lbl">الدليل العلمي</span>مراجعة Cochrane (Fioravanti و Yanagi 2005) لقت أثر إيجابي على الذاكرة والسلوك على المدى القصير والمتوسط عند كبار السن اللي عندهم مشاكل إدراكية بسبب أمراض مخية مزمنة. دراسة Nakazaki 2021: 500 ملجم يومياً لمدة 12 أسبوع حسّنت الذاكرة عند كبار سن أصحاء عندهم ضعف ذاكرة مرتبط بالسن.</div>
+      <div><span class="lbl">ملحوظة للمندوب</span>الدكاترة (خصوصاً المخ والأعصاب) عارفين السيتيكولين كويس كدوا. ده في صالحك: المادة مألوفة وليها سمعة.</div>
+    </div>
+    <p class="say">فيه سيتيكولين، المادة اللي حضرتك عارفها. بتدي الكولين اللي بيبني غشاء الخلية ويصنع الأسيتيل كولين.</p>
+  </article>
+
+  <article class="ing">
+    <header><h3>فوسفاتيديل سيرين</h3><span class="en">Phosphatidylserine (PS)</span><span class="tag b">B</span></header>
+    <div class="grid2">
+      <div><span class="lbl">إيه هو</span>دهن فوسفوري موجود بتركيز عالي في غشاء الخلايا العصبية، خصوصاً في الطبقة الداخلية بتاعته.</div>
+      <div><span class="lbl">بيشتغل إزاي</span>بيساعد في توصيل الإشارات جوه الخلية وفي إفراز النواقل العصبية عند نقطة الاشتباك العصبي، وبيحافظ على سلامة الغشاء.</div>
+      <div><span class="lbl">الدليل العلمي</span>هيئة الغذاء والدواء الأمريكية (FDA) سمحت سنة 2003 بادعاء صحي «مشروط»: إن الفوسفاتيديل سيرين ممكن يقلل خطر ضعف الإدراك عند كبار السن، مع جملة إن الدليل «محدود جداً ومبدئي». فيه دراسات صغيرة على كبار سن عندهم شكاوى ذاكرة بنتائج إيجابية.</div>
+      <div><span class="lbl">ملحوظة للمندوب</span>متبالغش فيه. قدمه كجزء من فكرة «بناء غشاء الخلية» مع DHA والسيتيكولين، مش كمادة لوحدها.</div>
+    </div>
+    <p class="say">الفوسفاتيديل سيرين جزء أساسي من غشاء الخلية العصبية، وبيكمل شغل الـ DHA والسيتيكولين في البناء.</p>
+  </article>
+
+  <article class="ing">
+    <header><h3>بيتارترات الكولين</h3><span class="en">Choline Bitartrate</span><span class="tag a">A</span></header>
+    <div class="grid2">
+      <div><span class="lbl">إيه هو</span>مصدر مباشر للكولين، وهو مغذي أساسي. الكمية الكافية يومياً حسب الهيئات الأمريكية: 550 ملجم للرجالة و425 ملجم للستات، وناس كتير مش بيوصلوا لها من الأكل.</div>
+      <div><span class="lbl">بيشتغل إزاي</span>المادة الخام اللي المخ بيصنع منها الأسيتيل كولين. وكمان بيدخل في تكسير الهوموسستين وفي صحة الكبد.</div>
+      <div><span class="lbl">الدليل العلمي</span>EFSA معتمدة إن الكولين «يساهم في التمثيل الطبيعي للدهون، والحفاظ على وظيفة الكبد الطبيعية، والتمثيل الطبيعي للهوموسستين».</div>
+      <div><span class="lbl">ملحوظة للمندوب</span>بيتارترات الكولين بيرفع الكولين في الدم بسرعة، والسيتيكولين بيوصل للمخ بكفاءة أعلى. وجود الاتنين معناه مصدرين للكولين بيكملوا بعض.</div>
+    </div>
+    <p class="say">فيه مصدرين للكولين: بيتارترات الكولين بيرفع المخزون العام، والسيتيكولين بيوصل للمخ بكفاءة أعلى.</p>
+  </article>
+
+  <article class="ing">
+    <header><h3>إن-أسيتيل-إل-تيروسين</h3><span class="en">N-Acetyl-L-Tyrosine (NALT)</span><span class="tag c">C</span></header>
+    <div class="grid2">
+      <div><span class="lbl">إيه هو</span>صورة من الحمض الأميني تيروسين، أسهل في الذوبان في الماء (ومناسبة للشراب).</div>
+      <div><span class="lbl">بيشتغل إزاي</span>التيروسين هو المادة الخام اللي بيتصنع منها الدوبامين والنورأدرينالين، نواقل الانتباه واليقظة. تحت الضغط (مذاكرة، سهر، شغل كتير) المخزون بيقل، والتيروسين بيعوضه. الخطوات دي محتاجة <b>حديد</b> و<b>فيتامين B6</b>، والاتنين موجودين في المنتج.</div>
+      <div><span class="lbl">الدليل العلمي</span>مراجعة Jongkees 2015: التيروسين بيحسن الأداء الذهني في المواقف الصعبة (ضغط، قلة نوم، تعدد مهام)، لكن مش بالضرورة في الظروف العادية.</div>
+      <div><span class="lbl">ملحوظة للمندوب</span>لو دكتور قال إن الـ NALT بيتحول لتيروسين أقل من L-Tyrosine العادي، فده صحيح. متجادلش. قول إنه اتختار عشان يذوب في الشراب، وإن قيمته في إنه بيشتغل مع الحديد وB6 الموجودين في نفس المنتج.</div>
+    </div>
+    <p class="say">التيروسين بيدعم التركيز في أوقات الضغط والمذاكرة، ومعاه في نفس المنتج الحديد وB6 اللي المخ محتاجهم عشان يحوله.</p>
+  </article>
+
+  <article class="ing">
+    <header><h3>إل-ثيانين</h3><span class="en">L-Theanine</span><span class="tag b">B</span></header>
+    <div class="grid2">
+      <div><span class="lbl">إيه هو</span>حمض أميني طبيعي موجود في الشاي الأخضر.</div>
+      <div><span class="lbl">بيشتغل إزاي</span>بيزود موجات ألفا في المخ، ودي الحالة اللي بيكون فيها الإنسان «صاحي وهادي» في نفس الوقت. بيقلل التوتر من غير ما يعمل نعاس.</div>
+      <div><span class="lbl">الدليل العلمي</span>دراسات تخطيط مخ أثبتت زيادة موجات ألفا. دراسة Hidese 2019: 200 ملجم يومياً لمدة 4 أسابيع حسّنت أعراض التوتر وبعض الوظائف الإدراكية عند بالغين أصحاء.</div>
+      <div><span class="lbl">ملحوظة للمندوب</span>ده بيوازن التيروسين: التيروسين بيدي يقظة، والثيانين بيدي هدوء. النتيجة تركيز هادي من غير توتر.</div>
+    </div>
+    <p class="say">الثيانين بيدي تركيز هادي من غير نعاس. مفيد للطالب المتوتر قبل الامتحان.</p>
+  </article>
+
+  <article class="ing">
+    <header><h3>الزنك والحديد</h3><span class="en">Zinc · Iron</span><span class="tag a">A</span></header>
+    <div class="grid2">
+      <div><span class="lbl">الزنك</span>موجود بتركيز عالي في منطقة الحُصين (Hippocampus)، مركز الذاكرة في المخ، وبيشارك في الإشارات بين الخلايا. EFSA معتمدة إن الزنك «يساهم في الوظيفة الإدراكية الطبيعية».</div>
+      <div><span class="lbl">الحديد</span>بيشيل الأكسجين للمخ، وهو عامل مساعد لإنزيم تصنيع الدوبامين. EFSA معتمدة إن الحديد «يساهم في الوظيفة الإدراكية الطبيعية»، و«التطور الإدراكي الطبيعي للأطفال»، و«تقليل التعب والإرهاق».</div>
+    </div>
+    <p class="say">نقص الحديد من أشهر أسباب ضعف التركيز والإرهاق، خصوصاً عند البنات والستات. وجوده في المنتج بيغطي السبب ده.</p>
+  </article>
+
+  <article class="ing">
+    <header><h3>فيتامينات B6 و B9 (حمض الفوليك) و B12</h3><span class="en">Vitamin B6 · Folic Acid · Vitamin B12</span><span class="tag a">A</span></header>
+    <div class="grid2">
+      <div><span class="lbl">بتشتغل إزاي</span>التلاتة مع بعض بيكسروا الهوموسستين. B6 كمان بيحول التيروسين لدوبامين وبيصنع السيروتونين والـ GABA. B12 مهم لغلاف الأعصاب (المايلين) ولكرات الدم الحمراء.</div>
+      <div><span class="lbl">ادعاءات EFSA المعتمدة</span>B6 وB12: الوظيفة الطبيعية للجهاز العصبي. التلاتة: الوظيفة النفسية الطبيعية، التمثيل الطبيعي للهوموسستين، وتقليل التعب والإرهاق.</div>
+      <div><span class="lbl">أقوى دراسة في الدليل كله</span>دراسة VITACOG في أكسفورد (Smith 2010): فيتامينات B (فوليك 0.8 ملجم + B6 20 ملجم + B12 0.5 ملجم) لمدة سنتين بطّأت ضمور المخ حوالي 30% عند كبار سن عندهم ضعف إدراكي بسيط (MCI)، والأثر كان أكبر عند اللي الهوموسستين عندهم عالي.</div>
+      <div><span class="lbl">النقطة الذهبية</span>تحليلات لاحقة من نفس الدراسة (Jernerén 2015 و Oulhaj 2016) لقت إن فيتامينات B نفعت بس عند اللي مستوى الأوميجا 3 عندهم كويس. عند اللي الأوميجا 3 عندهم قليل، فيتامينات B لوحدها ما عملتش فرق واضح.</div>
+    </div>
+    <p class="say">في دراسة أكسفورد، فيتامينات B بطّأت ضمور المخ بس عند اللي عندهم أوميجا 3 كفاية. وميموري بوست جامع الاتنين في منتج واحد.</p>
+  </article>
+</section>
+
+<section id="strengths">
+  <h2>رابعاً: نقاط قوة ميموري بوست</h2>
+  <div class="grid2">
+    <div class="callout good"><strong>1. شغال على 4 محاور مش محور واحد</strong><p>أغلب منتجات الذاكرة بتعتمد على أوميجا 3 بس، أو فيتامينات بس. ميموري بوست بيغطي البناء والرسائل والطاقة والحماية في نفس الوقت.</p></div>
+    <div class="callout good"><strong>2. تآزر مدعوم بدراسة</strong><p>أوميجا 3 + فيتامينات B مع بعض. دراسة VITACOG بتقول إن فيتامينات B بتشتغل أحسن لما الأوميجا 3 تكون كافية. ده أقوى سبب علمي إن الاتنين يبقوا في منتج واحد.</p></div>
+    <div class="callout good"><strong>3. مصدرين للكولين</strong><p>سيتيكولين (يوصل للمخ بكفاءة) + بيتارترات الكولين (يرفع المخزون). الاتنين بيغذوا تصنيع الأسيتيل كولين، ناقل الذاكرة.</p></div>
+    <div class="callout good"><strong>4. تركيز من غير توتر</strong><p>تيروسين لليقظة + ثيانين للهدوء. وكمان الحديد وB6 اللي المخ محتاجهم عشان يحول التيروسين، موجودين في نفس العبوة.</p></div>
+    <div class="callout good"><strong>5. شراب بطعم التوت</strong><p>أسهل من الكبسولات الكبيرة لكل اللي عندهم صعوبة في البلع (كبار السن، وغيرهم حسب الفئة العمرية المعتمدة). وزيت السمك في شراب بنكهة توت بيقلل طعم السمك.</p></div>
+    <div class="callout good"><strong>6. محلى ببدائل السكر ومسجل</strong><p>من غير سكر عادي، حسب بيانات التسجيل. ومسجل وفعال في منصة غذاء التابعة لهيئة الغذاء والدواء برقم FOP-251125-1028812.</p></div>
+  </div>
+  <div class="callout warn"><strong>نقاط هنكملها لما توصل المنتجات المنافسة</strong><p>السعر، الجرعة اليومية، كمية كل مادة مقارنة بالمنافس، والمواد اللي عندنا ومش عندهم. جدول المقارنة هيتضاف هنا.</p></div>
+</section>
+
+<section id="targets">
+  <h2>خامساً: مين الدكتور ومين المريض المناسب</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>التخصص</th><th>المريض اللي تكلمه عنه</th><th>الرسالة الأنسب</th></tr></thead>
+      <tbody>
+        <tr><td>مخ وأعصاب</td><td>شكاوى نسيان مع التقدم في السن، ضعف تركيز</td><td>سيتيكولين + DHA + فيتامينات B ودراسة VITACOG</td></tr>
+        <tr><td>نفسية</td><td>إرهاق ذهني، توتر بيأثر على التركيز</td><td>تيروسين + ثيانين: تركيز هادي، ودور B6 في النواقل العصبية</td></tr>
+        <tr><td>باطنة وطب أسرة</td><td>إرهاق عام، أكل غير متوازن، نقص حديد أو B12، نباتيين</td><td>الحديد وB12 والفوليك وادعاءات «تقليل التعب»</td></tr>
+        <tr><td>طب المسنين</td><td>كبار سن عندهم شكاوى ذاكرة بسيطة وصعوبة في بلع الكبسولات</td><td>الشراب + DHA + فيتامينات B + الفوسفاتيديل سيرين</td></tr>
+        <tr><td>أطفال <span class="tag c">بشرط</span></td><td>طلاب وقت المذاكرة</td><td>بس لو البطاقة المعتمدة بتسمح بالفئة العمرية دي. لازم نتأكد الأول</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="prose"><p><b>ملفات المرضى المثالية:</b> طالب في فترة امتحانات · موظف عنده ضغط شغل وسهر · ست بتشتكي من إرهاق ونسيان (اسأل عن الحديد) · كبير سن بيقول «بنسى المفاتيح والأسامي» من غير تشخيص مرضي · حد مش بياكل سمك.</p></div>
+</section>
+
+<section id="call">
+  <h2>سادساً: سيناريو الزيارة (حوالي 3 دقايق)</h2>
+  <ol class="steps">
+    <li><strong>الافتتاح بسؤال مش بمنتج:</strong> «دكتور، قد إيه من مرضاك بيشتكوا من نسيان أو ضعف تركيز من غير تشخيص مرضي واضح؟»</li>
+    <li><strong>اسمع وحدد المريض:</strong> طالب؟ كبير سن؟ ست عندها إرهاق؟ اختار المحور اللي يناسبه من جدول التخصصات.</li>
+    <li><strong>الرسالة الأساسية (جملة واحدة):</strong> «ميموري بوست بيغذي المخ من 4 محاور: يبني غشاء الخلية، يدعم نواقل الذاكرة والتركيز، يوصل طاقة وأكسجين، ويحمي من الهوموسستين.»</li>
+    <li><strong>دليل واحد قوي بس:</strong> للمخ والأعصاب والمسنين استخدم VITACOG (أوميجا 3 + فيتامينات B). للباطنة استخدم الحديد وB12 وادعاءات EFSA. متحطش كل الدراسات في زيارة واحدة.</li>
+    <li><strong>الميزة العملية:</strong> شراب بطعم التوت، من غير سكر عادي، ومسجل في هيئة الغذاء والدواء.</li>
+    <li><strong>اقفل بطلب محدد:</strong> «ممكن حضرتك تجربه مع أول 3 مرضى من النوعية دي، وأرجعلك بعد شهر أسمع رأيهم؟»</li>
+  </ol>
+</section>
+
+<section id="objections">
+  <h2>سابعاً: الأسئلة الصعبة وإزاي ترد</h2>
+  <div class="qa">
+    <details><summary>«فيه دليل إن المكملات دي بتفرق فعلاً؟»</summary><div><p>متقولش «أكيد بيعالج». قول: «فيه ادعاءات معتمدة من EFSA لـ DHA والزنك والحديد وفيتامينات B إنها بتساهم في الوظيفة الإدراكية الطبيعية، ودراسة أكسفورد VITACOG أثبتت إن أوميجا 3 مع فيتامينات B بطأوا ضمور المخ عند كبار السن. المنتج مكمل بيدعم، مش علاج لمرض.»</p></div></details>
+    <details><summary>«ليه مكتبش أوميجا 3 لوحدها؟»</summary><div><p>«لأن الذاكرة محتاجة أكتر من البناء. الأوميجا 3 بتبني الغشاء، لكن تصنيع الأسيتيل كولين محتاج كولين، والتركيز محتاج تيروسين وحديد، والهوموسستين محتاج فيتامينات B. وفي VITACOG الاتنين مع بعض أداؤهم كان أحسن.»</p></div></details>
+    <details><summary>«كمية كل مادة كام؟ وهل كفاية؟»</summary><div><p>رد بالأرقام اللي على البطاقة المعتمدة بس. لو مش معاك، قول «هجيب لحضرتك ورقة التركيبة الزيارة الجاية» ومتخمنش. (البيانات دي لسه ناقصة عندنا، شوف الجزء الأخير.)</p></div></details>
+    <details><summary>«بيتارترات الكولين مش بيعدي حاجز المخ كويس»</summary><div><p>«صحيح، وعشان كده المنتج فيه كمان سيتيكولين، اللي بيوصل للمخ بكفاءة أعلى. البيتارترات بيرفع مخزون الكولين العام في الجسم، والاتنين بيكملوا بعض.»</p></div></details>
+    <details><summary>«الـ NALT امتصاصه أضعف من L-Tyrosine»</summary><div><p>«صحيح، الصورة دي بتتحول لتيروسين بنسبة أقل. اتختارت لأنها بتذوب في الشراب. ودورها هنا داعم، مش هو المادة الأساسية في المنتج.» الصراحة هنا بتكسبك ثقة الدكتور.</p></div></details>
+    <details><summary>«آمن مع أدوية تانية؟»</summary><div><p>رد من جدول الأمان تحت. أهم نقطتين: حساسية السمك، ومرضى السيولة (أدوية منع التجلط) لأن زيت السمك بجرعات عالية ممكن يزود السيولة. وفي الحالتين القرار للدكتور.</p></div></details>
+    <details><summary>«ينفع للأطفال؟»</summary><div><p>متجاوبش من عندك. الفئة العمرية لازم تبقى مكتوبة على البطاقة المعتمدة. لحد ما نتأكد، قول: «هتأكد من الفئة العمرية المعتمدة وأرد على حضرتك.»</p></div></details>
+  </div>
+</section>
+
+<section id="safety">
+  <h2>ثامناً: الأمان والتداخلات</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>الموقف</th><th>السبب</th><th>توصية</th></tr></thead>
+      <tbody>
+        <tr><td>حساسية السمك</td><td>المنتج فيه زيت سمك</td><td>لا يُستخدم إلا بقرار الطبيب</td></tr>
+        <tr><td>أدوية السيولة (وارفارين وغيره)</td><td>زيت السمك بجرعات عالية ممكن يزود السيولة</td><td>استشارة الطبيب</td></tr>
+        <tr><td>مثبطات MAO، ليفودوبا، أدوية الغدة الدرقية</td><td>التيروسين مادة خام للدوبامين وهرمونات الغدة</td><td>استشارة الطبيب</td></tr>
+        <tr><td>أدوية الضغط</td><td>الثيانين ممكن يخفض الضغط شوية</td><td>متابعة</td></tr>
+        <tr><td>مضادات حيوية (تتراسيكلين، كينولون) وليفوثيروكسين</td><td>الحديد والزنك بيقللوا امتصاصها</td><td>فصل الجرعات بساعتين على الأقل</td></tr>
+        <tr><td>زيادة الحديد في الجسم (Hemochromatosis)</td><td>المنتج فيه حديد</td><td>لا يُستخدم</td></tr>
+        <tr><td>الحمل والرضاعة</td><td>مفيش بيانات خاصة بالمنتج</td><td>بقرار الطبيب فقط</td></tr>
+        <tr><td>أعراض جانبية ممكنة</td><td>زيت السمك والحديد</td><td>تلبك معدة بسيط، طعم سمك، إمساك أو لون براز غامق</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="rules">
+  <h2>تاسعاً: ممنوعات في الكلام مع الدكتور</h2>
+  <div class="callout stop">
+    <strong>ميموري بوست مسجل مكمل غذائي، مش دوا</strong>
+    <ul class="clean">
+      <li>ممنوع تقول إنه «بيعالج» أو «بيمنع» الزهايمر أو الخرف أو فرط الحركة وتشتت الانتباه أو أي مرض.</li>
+      <li>ممنوع تقول «بيرفع الذكاء» أو «بيزود الدرجات».</li>
+      <li>ممنوع تقول إن الدراسات اتعملت على منتجنا. الدراسات اتعملت على المواد الفعالة بجرعات معينة.</li>
+      <li>ممنوع تذكر كميات أو فئة عمرية مش مكتوبة على البطاقة المعتمدة.</li>
+      <li>استخدم الصيغ الآمنة: «يساهم في»، «يدعم»، «يحافظ على الوظيفة الطبيعية».</li>
+    </ul>
+  </div>
+</section>
+
+<section id="quiz">
+  <h2>عاشراً: اختبار المتدرب</h2>
+  <p class="prose">جاوب في دماغك الأول، وبعدين افتح الإجابة.</p>
+  <div class="qa">
+    <details><summary>1. إيه الأربع محاور اللي ميموري بوست شغال عليهم؟</summary><div><p>البناء (غشاء الخلية)، الرسائل (النواقل العصبية)، الطاقة (أكسجين وتقليل التعب)، الحماية (الهوموسستين والالتهاب).</p></div></details>
+    <details><summary>2. إيه الناقل العصبي الأهم للذاكرة والتعلم؟ وإيه المواد اللي بتغذيه في المنتج؟</summary><div><p>الأسيتيل كولين. بيغذيه السيتيكولين وبيتارترات الكولين.</p></div></details>
+    <details><summary>3. إيه نتيجة دراسة VITACOG؟ وليه مهمة لمنتجنا؟</summary><div><p>فيتامينات B بطّأت ضمور المخ حوالي 30% عند كبار سن عندهم ضعف إدراكي بسيط، لكن الأثر ظهر بس عند اللي مستوى الأوميجا 3 عندهم كويس. ومنتجنا جامع الاتنين.</p></div></details>
+    <details><summary>4. ليه التيروسين والثيانين مع بعض؟</summary><div><p>التيروسين بيدعم اليقظة والانتباه تحت الضغط، والثيانين بيدي هدوء من غير نعاس. النتيجة تركيز هادي.</p></div></details>
+    <details><summary>5. إيه المادتين اللي المخ محتاجهم عشان يحول التيروسين لدوبامين، والاتنين في المنتج؟</summary><div><p>الحديد وفيتامين B6.</p></div></details>
+    <details><summary>6. إيه أهم تحذيرين لازم تفتكرهم؟</summary><div><p>حساسية السمك، ومرضى أدوية السيولة.</p></div></details>
+    <details><summary>7. دكتور سألك: «بيعالج الزهايمر؟» هترد بإيه؟</summary><div><p>«لا يا دكتور، ده مكمل غذائي مش علاج. بيدعم الوظيفة الإدراكية الطبيعية، ومواده الفعالة ليها ادعاءات معتمدة ودراسات على كبار السن، لكنه مش بديل للعلاج.»</p></div></details>
+    <details><summary>8. إيه ادعاء EFSA المعتمد للـ DHA وبأي جرعة؟</summary><div><p>DHA يساهم في الحفاظ على وظيفة المخ الطبيعية، بجرعة 250 ملجم يومياً.</p></div></details>
+  </div>
+</section>
+
+<section id="pending">
+  <h2>بيانات ناقصة لازم نكملها</h2>
+  <div class="callout warn">
+    <strong>محتاجين من البطاقة أو ملف التركيبة</strong>
+    <ul class="clean">
+      <li>كمية كل مادة فعالة في الجرعة (ملجم/مل)، وحجم الجرعة اليومية.</li>
+      <li>الفئة العمرية المعتمدة (بالغين بس؟ ولا أطفال كمان؟).</li>
+      <li>حجم العبوة، السعر، والمصنع.</li>
+      <li>التحذيرات المكتوبة على البطاقة ومسببات الحساسية.</li>
+      <li>المنتجات المنافسة في السوق عشان نعمل جدول المقارنة في جزء نقاط القوة.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>المصادر: ملف تسجيل المنتج في منصة غذاء (SFDA_MEMORY.pdf)، والدراسات المذكورة بالاسم في كل مادة. الدليل ده للتدريب الداخلي للمناديب، مش مادة دعائية للمرضى.</footer>
+</div>
