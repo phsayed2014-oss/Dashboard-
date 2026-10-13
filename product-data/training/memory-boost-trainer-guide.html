@@ -1,0 +1,517 @@
+<title>دليل المدرب ميموري بوست</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: a trainer's session book. Lessons in teaching order; each lesson = simple idea, the content, a "trainer tip" box and a checkpoint question. Ends with role-play, final test and a one-page cheat sheet. */
+:root{
+  --bg:#f5f7fb; --paper:#ffffff; --ink:#18202c; --muted:#596476; --line:#dde3ec; --tint:#eef3fb;
+  --accent:#2f5fc4; --good:#1f7a4d; --good-bg:#e7f4ec; --warn:#8a5a00; --warn-bg:#fff4dc; --stop:#a23131; --stop-bg:#fbe9e9;
+  --coach:#6b3fb0; --coach-bg:#f3edfb;
+  --display:'Readex Pro','IBM Plex Sans Arabic',Tahoma,sans-serif;
+  --body:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141c; --paper:#161d28; --ink:#e6ebf3; --muted:#9aa6b8; --line:#2a3445; --tint:#1b2535;
+  --accent:#7ea2ff; --good:#6fd29c; --good-bg:#14301f; --warn:#f0c46a; --warn-bg:#33270e; --stop:#f19393; --stop-bg:#371818;
+  --coach:#c4a5f5; --coach-bg:#251c36; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141c; --paper:#161d28; --ink:#e6ebf3; --muted:#9aa6b8; --line:#2a3445; --tint:#1b2535;
+  --accent:#7ea2ff; --good:#6fd29c; --good-bg:#14301f; --warn:#f0c46a; --warn-bg:#33270e; --stop:#f19393; --stop-bg:#371818;
+  --coach:#c4a5f5; --coach-bg:#251c36; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.85;direction:rtl;padding-inline:16px;padding-block:24px 56px;margin:0}
+.wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:30px}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.35;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,5vw,40px)}
+h2{font-size:24px}
+h3{font-size:19px}
+h4{font-size:16px}
+p{margin:0}
+.en{direction:ltr;unicode-bidi:isolate}
+.eyebrow{font-size:13px;letter-spacing:.04em;color:var(--muted);font-weight:500}
+header.top{display:flex;flex-direction:column;gap:12px}
+header.top .lead{font-size:18px;color:var(--muted);max-width:62ch}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:0}
+.facts div{background:var(--paper);padding:10px 14px;min-width:0}
+.facts dt{font-size:12.5px;color:var(--muted)}
+.facts dd{margin:0;font-weight:700;font-variant-numeric:tabular-nums}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px}
+nav.toc a{font-size:13.5px;color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--paper);border-radius:6px;padding:3px 10px}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--accent);outline:none}
+section{display:flex;flex-direction:column;gap:14px}
+section > header{display:flex;flex-direction:column;gap:2px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+section > header .eyebrow{color:var(--accent);font-weight:700}
+.prose{display:flex;flex-direction:column;gap:10px;max-width:68ch}
+ul.clean,ol.clean{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:5px}
+.box{border-radius:10px;padding:12px 16px;display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);background:var(--paper)}
+.box > strong:first-child{font-family:var(--display);font-weight:500}
+.coach{background:var(--coach-bg);border-color:var(--coach)}
+.coach > strong:first-child{color:var(--coach)}
+.coach > strong:first-child::before{content:"للمدرب · "}
+.check{background:var(--tint);border-color:var(--accent)}
+.check > strong:first-child{color:var(--accent)}
+.check > strong:first-child::before{content:"سؤال تأكيد · "}
+.good{background:var(--good-bg);border-color:var(--good)}
+.good > strong:first-child{color:var(--good)}
+.warn{background:var(--warn-bg);border-color:var(--warn)}
+.warn > strong:first-child{color:var(--warn)}
+.stop{background:var(--stop-bg);border-color:var(--stop)}
+.stop > strong:first-child{color:var(--stop)}
+.ans{color:var(--muted);font-size:14.5px}
+.ans::before{content:"الإجابة: ";font-weight:700;color:var(--good)}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:start;vertical-align:top}
+thead th{background:var(--tint);font-family:var(--display);font-weight:500;font-size:13.5px;white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+td.num,th.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.rooms{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.room{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.room .k{font-family:var(--display);font-weight:700;color:var(--accent);font-size:18px}
+.room .sci{font-size:13.5px;color:var(--muted)}
+.ing{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.ing header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.ing header .en{color:var(--muted);font-size:14px}
+.dose{font-family:var(--display);font-weight:700;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-size:12.5px;font-weight:700;border-radius:4px;padding:0 7px;border:1px solid currentColor;white-space:nowrap}
+.pill.strong{color:var(--good)} .pill.support{color:var(--warn)}
+.say{background:var(--tint);border-radius:8px;padding:9px 12px;font-weight:500}
+.say::before{content:"يقول للدكتور: ";color:var(--accent);font-weight:700}
+.big3{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.big3 div{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.big3 .n{font-family:var(--display);font-weight:700;font-size:30px;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1.2}
+.big3 .t{font-size:14.5px;color:var(--muted)}
+.dialog{display:flex;flex-direction:column;gap:8px}
+.dialog p{padding:8px 12px;border-radius:8px;max-width:85%}
+.dialog .rep{background:var(--tint);align-self:flex-start}
+.dialog .doc{background:var(--paper);border:1px solid var(--line);align-self:flex-end}
+.dialog b{font-family:var(--display);font-weight:500}
+.dialog .note{max-width:100%;font-size:13.5px;color:var(--coach);padding:0 12px}
+.qa{display:flex;flex-direction:column;gap:10px}
+.qa > div{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;gap:4px}
+.qa .q{font-weight:700}
+.cheat{border:2px solid var(--accent);border-radius:12px;padding:16px 18px;background:var(--paper);display:flex;flex-direction:column;gap:10px}
+.cheat .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px 20px}
+.cheat .grid > div{min-width:0}
+.lbl{font-size:12.5px;color:var(--muted);font-weight:700;display:block}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+@media print{
+  body{background:#fff;color:#111;font-size:12.5px;padding:0}
+  nav.toc{display:none}
+  .ing,.room,.box,.qa > div,tr,.big3 div{break-inside:avoid}
+  section{break-before:auto}
+  #cheat{break-before:page}
+}
+@page{size:A4;margin:14mm 12mm}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <span class="eyebrow">دليل المدرب · جلسة تدريب مندوب جديد · Dr. Organic</span>
+  <h1>ميموري بوست <span class="en" style="font-size:.55em;color:var(--muted)">MEMORY BOOST</span></h1>
+  <p class="lead">الملف ده مكتوب عشان تشرح منه، حتى لو دي أول مرة تدرب حد. الشرح ماشي خطوة بخطوة بنفس الترتيب اللي تقوله بيه. كل درس فيه الفكرة ببساطة، المعلومة، نصيحة ليك كمدرب، وسؤال تتأكد بيه إن المندوب فهم.</p>
+  <dl class="facts">
+    <div><dt>النوع</dt><dd>مكمل غذائي · شراب</dd></div>
+    <div><dt>الجرعة</dt><dd>10 مل مرة يومياً</dd></div>
+    <div><dt>السن</dt><dd>من 12 سنة فأكثر</dd></div>
+    <div><dt>العبوة</dt><dd>120 مل · تكفي 12 يوم</dd></div>
+    <div><dt>الطعم</dt><dd>توت · بدون سكر عادي</dd></div>
+    <div><dt>تسجيل SFDA</dt><dd class="en" style="text-align:right">FOP-251125-1028812</dd></div>
+  </dl>
+  <nav class="toc" aria-label="المحتويات">
+    <a href="#plan">خطة الجلسة</a>
+    <a href="#l1">١ · المخ زي البيت</a>
+    <a href="#l2">٢ · المواد الفعالة</a>
+    <a href="#l3">٣ · نقاط القوة</a>
+    <a href="#l4">٤ · الجرعة والمدة</a>
+    <a href="#l5">٥ · مين نزوره</a>
+    <a href="#l6">٦ · الزيارة</a>
+    <a href="#l7">٧ · أسئلة الدكتور</a>
+    <a href="#l8">٨ · الأمان والممنوعات</a>
+    <a href="#roleplay">تمثيل الأدوار</a>
+    <a href="#test">الاختبار</a>
+    <a href="#cheat">ورقة الجيب</a>
+    <a href="#glossary">المصطلحات</a>
+  </nav>
+</header>
+
+<section id="plan">
+  <header><span class="eyebrow">قبل ما تبدأ</span><h2>خطة الجلسة (حوالي ساعتين)</h2></header>
+  <div class="scroll">
+    <table>
+      <thead><tr><th class="num">الوقت</th><th>الجزء</th><th>هدفه</th></tr></thead>
+      <tbody>
+        <tr><td class="num">10 د</td><td>افتتاح + المنتج في دقيقة</td><td>المندوب يعرف المنتج إيه ولمين</td></tr>
+        <tr><td class="num">15 د</td><td>درس ١: المخ زي البيت</td><td>يفهم الفكرة الأساسية اللي كل حاجة مبنية عليها</td></tr>
+        <tr><td class="num">25 د</td><td>درس ٢: المواد الفعالة</td><td>يعرف كل مادة بتعمل إيه في جملة</td></tr>
+        <tr><td class="num">10 د</td><td>درس ٣: نقاط القوة</td><td>يحفظ الـ 3 أرقام الأقوى</td></tr>
+        <tr><td class="num">10 د</td><td>درس ٤ و ٥: الجرعة والمدة ومين نزوره</td><td>يعرف يرد على «آخده إزاي وقد إيه» ويختار الدكتور الصح</td></tr>
+        <tr><td class="num">5 د</td><td>استراحة</td><td></td></tr>
+        <tr><td class="num">15 د</td><td>درس ٦ و ٧: الزيارة وأسئلة الدكتور</td><td>يعرف يدخل الزيارة ويرد على الاعتراضات</td></tr>
+        <tr><td class="num">5 د</td><td>درس ٨: الأمان والممنوعات</td><td>ميقولش حاجة غلط أو خطر</td></tr>
+        <tr><td class="num">20 د</td><td>تمثيل أدوار</td><td>يجرب الزيارة قدامك</td></tr>
+        <tr><td class="num">10 د</td><td>الاختبار + تسليم ورقة الجيب</td><td>تتأكد إنه جاهز</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box coach">
+    <strong>نصايح عامة لو أول مرة تدرب</strong>
+    <ul class="clean">
+      <li>متقراش من الورقة. اقرا الدرس قبل الجلسة مرتين، وفي الجلسة بص على العناوين بس.</li>
+      <li>اسأل أكتر ما تتكلم. بعد كل درس اسأل «سؤال التأكيد» واستنى المندوب يجاوب بنفسه.</li>
+      <li>لو المندوب سألك حاجة مش عارفها، قول «سؤال حلو، هتأكد وأرد عليك». ده بيعلمه يعمل نفس الحاجة مع الدكتور.</li>
+      <li>ارجع لتشبيه «البيت» كل ما تحس إنه تاه. هو الخيط اللي بيربط كل الشرح.</li>
+      <li>متخافش من الكلام العلمي. المندوب مش محتاج يبقى دكتور، محتاج يفهم الفكرة ويحفظ الأرقام المهمة.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <strong>افتتاح الجلسة: المنتج في دقيقة (قوله بالنص ده)</strong>
+    <p>«ميموري بوست مكمل غذائي شراب بطعم التوت، بيدعم الذاكرة والتركيز. فيه 13 مادة فعالة، أهمهم أوميجا 3 (DHA) وسيتيكولين. الجرعة 10 مل مرة في اليوم، ومناسب من 12 سنة لحد كبار السن. النهارده هتفهم المخ بيشتغل إزاي، وكل مادة في المنتج بتعمل إيه، وإزاي تكلم الدكتور عنه.»</p>
+  </div>
+</section>
+
+<section id="l1">
+  <header><span class="eyebrow">درس ١ · 15 دقيقة</span><h2>المخ زي البيت</h2></header>
+  <div class="prose"><p>الفكرة كلها في تشبيه واحد: المخ زي البيت. عشان البيت يشتغل كويس محتاج 4 حاجات، ولو واحدة فيهم ناقصة البيت بيتعب. وكل مادة في ميموري بوست بتخدم حاجة من الأربعة.</p></div>
+  <div class="rooms">
+    <div class="room"><span class="k">الحيطان</span><h4>البناء</h4><p>الخلية العصبية متغلفة بغشاء من الدهون. لو الغشاء سليم ومرن، الإشارات بتعدي بسرعة.</p><p class="sci">علمياً: غشاء الخلية العصبية (Neuron membrane)</p></div>
+    <div class="room"><span class="k">السلوك</span><h4>الرسائل</h4><p>الخلايا بتكلم بعض بمواد كيميائية. واحدة للذاكرة (أسيتيل كولين)، وواحدة للتركيز واليقظة (دوبامين).</p><p class="sci">علمياً: النواقل العصبية (Neurotransmitters)</p></div>
+    <div class="room"><span class="k">الكهربا</span><h4>الطاقة</h4><p>المخ 2% من وزن الجسم، لكنه بيستهلك حوالي 20% من طاقته. محتاج أكسجين كتير، والحديد هو اللي بيشيله.</p><p class="sci">علمياً: نقل الأكسجين وتقليل التعب</p></div>
+    <div class="room"><span class="k">الصيانة</span><h4>الحماية</h4><p>فيه مادة في الدم اسمها هوموسستين، لو زادت بتأذي المخ مع السن. فيتامينات B بتكسرها.</p><p class="sci">علمياً: الهوموسستين (Homocysteine) والالتهاب</p></div>
+  </div>
+  <div class="box coach">
+    <strong>إزاي تشرحه</strong>
+    <p>ارسم على ورقة بيت بسيط بأربع أجزاء: حيطان، سلوك، لمبة، وعدة صيانة. اكتب جنب كل جزء اسمه العلمي. المندوب هيفتكر الرسمة أكتر من أي كلام.</p>
+  </div>
+  <div class="box check">
+    <strong>«إيه الأربع حاجات اللي المخ محتاجها؟ وإيه الناقل العصبي المسؤول عن الذاكرة؟»</strong>
+    <p class="ans">البناء، الرسائل، الطاقة، الحماية. والناقل المسؤول عن الذاكرة هو الأسيتيل كولين.</p>
+  </div>
+</section>
+
+<section id="l2">
+  <header><span class="eyebrow">درس ٢ · 25 دقيقة</span><h2>المواد الفعالة: كل مادة بتعمل إيه</h2></header>
+  <div class="prose"><p>هنمشي على المواد بنفس ترتيب البيت. جنب كل مادة الكمية اللي في الجرعة (10 مل)، وعلامة بتقول جرعتها قوية ولا داعمة:</p>
+  <p><span class="pill strong">جرعة قوية</span> يعني الكمية مطابقة لدراسة منشورة أو لادعاء صحي معتمد، فالمندوب يتكلم عنها بثقة. <span class="pill support">جرعة داعمة</span> يعني الكمية أقل من الدراسات، فهي بتكمل التركيبة بس، ومنتكلمش عنها كأنها السبب الأساسي.</p></div>
+
+  <h3>الحيطان (البناء)</h3>
+  <div class="ing">
+    <header><h4>أوميجا 3: DHA و EPA</h4><span class="en">Fish oil 1100 mg · DHA 250 mg · EPA 350 mg</span><span class="pill strong">جرعة قوية</span></header>
+    <p><b>ببساطة:</b> الـ DHA هو الدهن اللي المخ مبني منه. والجسم مش بيعمله كفاية، فلازم ييجي من السمك أو مكمل. الـ EPA بيقلل الالتهاب.</p>
+    <p><b>الدليل:</b> الهيئة الأوروبية لسلامة الغذاء (EFSA) معتمدة إن «DHA يساهم في الحفاظ على وظيفة المخ الطبيعية» بجرعة 250 ملجم يومياً. ومنتجنا فيه 250 ملجم بالظبط.</p>
+    <p class="say">فيه 250 ملجم DHA، نفس الجرعة اللي الادعاء الأوروبي معتمد عليها إنه بيحافظ على وظيفة المخ الطبيعية.</p>
+  </div>
+  <div class="ing">
+    <header><h4>فوسفاتيديل سيرين</h4><span class="en">Phosphatidylserine 50 mg</span><span class="pill support">جرعة داعمة</span></header>
+    <p><b>ببساطة:</b> دهن تاني من مكونات غشاء الخلية العصبية، بيكمل شغل الـ DHA.</p>
+    <p><b>تنبيه:</b> الدراسات استخدمت 100 إلى 300 ملجم، وإحنا 50. فالمندوب يذكره كجزء من «البناء» بس، ومن غير مبالغة.</p>
+  </div>
+
+  <h3>السلوك (الرسائل)</h3>
+  <div class="ing">
+    <header><h4>سيتيكولين</h4><span class="en">Citicoline 250 mg</span><span class="pill strong">جرعة قوية</span></header>
+    <p><b>ببساطة:</b> بيخدم الحيطان والسلوك مع بعض. بيدي «كولين» اللي بيبني غشاء الخلية، ويصنع الأسيتيل كولين (ناقل الذاكرة).</p>
+    <p><b>الدليل:</b> دراسة McGlade 2012 على ستات بالغين أصحاء: 250 ملجم يومياً لمدة 28 يوم حسّنت الانتباه. ومراجعة Cochrane لقت أثر إيجابي على الذاكرة عند كبار السن.</p>
+    <p><b>ميزة للمندوب:</b> الدكاترة، خصوصاً المخ والأعصاب، عارفين السيتيكولين كدوا. يعني المادة مألوفة عندهم وليها سمعة.</p>
+    <p class="say">فيه 250 ملجم سيتيكولين، المادة اللي حضرتك عارفها، وده جرعة اتدرست على الانتباه.</p>
+  </div>
+  <div class="ing">
+    <header><h4>بيتارترات الكولين</h4><span class="en">Choline Bitartrate 100 mg</span><span class="pill support">جرعة داعمة</span></header>
+    <p><b>ببساطة:</b> مصدر تاني للكولين، المادة الخام للأسيتيل كولين. بيرفع مخزون الكولين في الجسم، والسيتيكولين بيوصل للمخ بكفاءة أعلى. فالاتنين بيكملوا بعض.</p>
+  </div>
+  <div class="ing">
+    <header><h4>إل-ثيانين</h4><span class="en">L-Theanine 50 mg</span><span class="pill strong">جرعة قوية</span></header>
+    <p><b>ببساطة:</b> مادة طبيعية من الشاي الأخضر. بتدي هدوء من غير نعاس، يعني «صاحي وهادي».</p>
+    <p><b>الدليل:</b> دراسة Nobre 2008: جرعة 50 ملجم زودت موجات ألفا في المخ (موجات الهدوء مع اليقظة) خلال ساعة تقريباً. ومنتجنا فيه 50 ملجم.</p>
+    <p class="say">الثيانين بيدي تركيز هادي من غير نعاس، ومفيد للطالب المتوتر قبل الامتحان.</p>
+  </div>
+  <div class="ing">
+    <header><h4>إن-أسيتيل-إل-تيروسين</h4><span class="en">N-Acetyl-L-Tyrosine 50 mg</span><span class="pill support">جرعة داعمة</span></header>
+    <p><b>ببساطة:</b> المادة الخام اللي المخ بيعمل منها الدوبامين (ناقل التركيز واليقظة). بيفيد وقت الضغط والسهر. ولازمه حديد وB6 عشان يتحول، والاتنين موجودين في المنتج.</p>
+    <p><b>تنبيه:</b> الكمية قليلة مقارنة بالدراسات، والصورة دي بتتحول بنسبة أقل من التيروسين العادي. لو الدكتور قال كده، المندوب يوافقه بصراحة.</p>
+  </div>
+
+  <h3>الكهربا (الطاقة)</h3>
+  <div class="ing">
+    <header><h4>الحديد</h4><span class="en">Iron 7 mg · 32%</span><span class="pill strong">جرعة قوية</span></header>
+    <p><b>ببساطة:</b> بيشيل الأكسجين للمخ. ونقصه من أشهر أسباب ضعف التركيز والإرهاق، خصوصاً عند البنات المراهقات والستات.</p>
+    <p><b>الدليل:</b> EFSA معتمدة إن الحديد «يساهم في الوظيفة الإدراكية الطبيعية» و«تقليل التعب والإرهاق».</p>
+  </div>
+
+  <h3>الصيانة (الحماية)</h3>
+  <div class="ing">
+    <header><h4>فيتامينات B6 و B9 (فوليك) و B12</h4><span class="en">B6 1.5 mg 115% · Folic 200 mcg 50% · B12 6 mcg 250%</span><span class="pill strong">جرعة قوية</span></header>
+    <p><b>ببساطة:</b> التلاتة مع بعض بيكسروا الهوموسستين، «عدة الصيانة». B12 كمان مهم لصحة الأعصاب، وB6 بيساعد في تصنيع الدوبامين.</p>
+    <p><b>الدليل:</b> EFSA معتمدة إنهم بيساهموا في الوظيفة النفسية الطبيعية وتقليل التعب. ودراسة في جامعة أكسفورد (VITACOG) لقت إن فيتامينات B بطّأت ضمور المخ عند كبار السن، بس عند اللي عندهم أوميجا 3 كفاية. وده أقوى سبب علمي إن الاتنين يبقوا في منتج واحد.</p>
+    <p><b>تنبيه مهم:</b> جرعات الفيتامينات في دراسة أكسفورد أعلى بكتير من جرعاتنا. فالمندوب يستخدمها عشان يشرح فكرة إن الاتنين بيكملوا بعض، ومش يقول إن منتجنا بيعمل نفس النتيجة.</p>
+    <p class="say">في دراسة أكسفورد، فيتامينات B نفعت بس مع وجود أوميجا 3 كفاية. عشان كده ميموري بوست جامع الاتنين.</p>
+  </div>
+  <div class="ing">
+    <header><h4>الزنك</h4><span class="en">Zinc 5 mg · 36%</span><span class="pill strong">جرعة قوية</span></header>
+    <p><b>ببساطة:</b> موجود بكثرة في مركز الذاكرة في المخ (الحُصين). EFSA معتمدة إنه «يساهم في الوظيفة الإدراكية الطبيعية».</p>
+  </div>
+
+  <div class="box coach">
+    <strong>إزاي تشرح الدرس ده من غير ما المندوب يتوه</strong>
+    <ul class="clean">
+      <li>ارجع لرسمة البيت، واكتب اسم كل مادة جنب الجزء اللي بتخدمه.</li>
+      <li>متطلبش منه يحفظ كل الأرقام. اطلب يحفظ «جرعة قوية» ولا «داعمة» لكل مادة، وبس الـ 3 أرقام اللي في الدرس الجاي.</li>
+      <li>بعد كل مجموعة اسأله: «المادة دي بتخدم أنهي جزء في البيت؟»</li>
+    </ul>
+  </div>
+  <div class="box check">
+    <strong>«إيه المواد اللي جرعتها داعمة؟ وليه منتكلمش عنها كأنها السبب الأساسي؟»</strong>
+    <p class="ans">الفوسفاتيديل سيرين والتيروسين والكولين. لأن كمياتهم أقل من اللي اتعملت عليه الدراسات.</p>
+  </div>
+</section>
+
+<section id="l3">
+  <header><span class="eyebrow">درس ٣ · 10 دقايق</span><h2>نقاط القوة: احفظ 3 أرقام</h2></header>
+  <div class="big3">
+    <div><span class="n">250 ملجم</span><b>DHA</b><span class="t">نفس جرعة الادعاء الأوروبي المعتمد «يحافظ على وظيفة المخ الطبيعية»</span></div>
+    <div><span class="n">250 ملجم</span><b>سيتيكولين</b><span class="t">جرعة اتدرست على الانتباه، ومادة الدكاترة عارفينها</span></div>
+    <div><span class="n">50 ملجم</span><b>ثيانين</b><span class="t">نفس جرعة دراسة موجات الهدوء في المخ</span></div>
+  </div>
+  <div class="box good">
+    <strong>والنقط التانية</strong>
+    <ul class="clean">
+      <li><b>بيشتغل على البيت كله:</b> أغلب منتجات الذاكرة أوميجا 3 بس أو فيتامينات بس. ميموري بوست بيغطي البناء والرسائل والطاقة والحماية.</li>
+      <li><b>أوميجا 3 + فيتامينات B في منتج واحد:</b> ودي الفكرة اللي دراسة أكسفورد دعمتها.</li>
+      <li><b>كل الفيتامينات والمعادن فوق 15% من الاحتياج اليومي:</b> يعني كميات حقيقية مش رمزية، والادعاءات المعتمدة بتنطبق عليها.</li>
+      <li><b>شراب بطعم التوت:</b> أسهل من كبسولات أوميجا 3 الكبيرة، ومن غير طعم سمك.</li>
+      <li><b>من غير سكر عادي، ومسجل في هيئة الغذاء والدواء.</b></li>
+      <li><b>منتج واحد من 12 سنة لحد كبار السن.</b></li>
+    </ul>
+  </div>
+  <div class="box check">
+    <strong>«قولي الـ 3 أرقام وكل رقم ليه مهم»</strong>
+    <p class="ans">250 DHA (نفس جرعة الادعاء المعتمد)، 250 سيتيكولين (جرعة مدروسة للانتباه)، 50 ثيانين (نفس جرعة دراسة موجات الهدوء).</p>
+  </div>
+</section>
+
+<section id="l4">
+  <header><span class="eyebrow">درس ٤ · 5 دقايق</span><h2>الجرعة والمدة</h2></header>
+  <div class="scroll">
+    <table>
+      <tbody>
+        <tr><th>الجرعة</th><td>10 مل مرة واحدة يومياً، ويفضل الصبح بعد الفطار أو قبل المذاكرة أو أي مجهود ذهني.</td></tr>
+        <tr><th>السن</th><td>من 12 سنة فأكثر. أقل من 12 سنة مش موصى بيه إلا تحت إشراف طبي.</td></tr>
+        <tr><th>العبوة</th><td>120 مل، تكفي 12 يوم.</td></tr>
+        <tr><th>المدة المقترحة</th><td>3 شهور (12 أسبوع) كحد أدنى، وبعدها الدكتور يقيّم. <span class="pill support">مقترحة من الدراسات، محتاجة اعتماد الشركة</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="prose"><p><b>ليه 3 شهور؟</b> لأن كل مادة بتاخد وقت مختلف عشان أثرها يبان:</p></div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>إمتى</th><th>إيه اللي بيحصل</th></tr></thead>
+      <tbody>
+        <tr><td>من أول يوم</td><td>الثيانين: هدوء وتركيز خلال ساعة تقريباً</td></tr>
+        <tr><td>بعد حوالي 4 أسابيع</td><td>السيتيكولين: تحسن في الانتباه (دراسة 28 يوم)</td></tr>
+        <tr><td>بعد 2 لـ 3 شهور</td><td>الأوميجا 3 بتكون دخلت في أغشية الخلايا، والحديد بيكون عوّض المخزون</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box good">
+    <strong>المدة حسب الحالة</strong>
+    <ul class="clean">
+      <li><b>طالب قبل الامتحانات:</b> يبدأ قبل الامتحانات بـ 2 لـ 3 شهور، مش في أسبوع الامتحان.</li>
+      <li><b>ضغط الشغل:</b> 3 شهور، وبعدين يتقيّم.</li>
+      <li><b>من 45 سنة وكبار السن:</b> استخدام منتظم، مع مراجعة كل 3 شهور.</li>
+    </ul>
+  </div>
+  <div class="box coach">
+    <strong>علّمه يظبط توقعات المريض</strong>
+    <p>المريض اللي مش عارف إن الذاكرة محتاجة وقت هيوقف المنتج بعد أسبوعين ويقول «مفيش فايدة». فالمندوب يقول للدكتور: «التركيز الهادي ممكن يحس بيه بدري، لكن الذاكرة محتاجة شهرين تلاتة.»</p>
+  </div>
+  <div class="box check">
+    <strong>«الجرعة كام، والسن من كام، والعبوة بتكفي قد إيه؟»</strong>
+    <p class="ans">10 مل مرة يومياً، من 12 سنة، والعبوة بتكفي 12 يوم. يعني الشهر محتاج حوالي 3 عبوات.</p>
+  </div>
+</section>
+
+<section id="l5">
+  <header><span class="eyebrow">درس ٥ · 5 دقايق</span><h2>مين نزوره، وعلى أنهي مريض نكلمه</h2></header>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>الدكتور</th><th>المريض</th><th>يركز على</th></tr></thead>
+      <tbody>
+        <tr><td>أطفال ومراهقين</td><td>طلاب من 12 سنة وقت المذاكرة، وبنات عندهم إرهاق</td><td>DHA + سيتيكولين للتركيز، ثيانين للتوتر، والحديد</td></tr>
+        <tr><td>باطنة وطب أسرة</td><td>موظف عنده ضغط وإرهاق، أكل مش متوازن، نقص حديد أو B12</td><td>الحديد والفيتامينات وتقليل التعب</td></tr>
+        <tr><td>مخ وأعصاب</td><td>شكاوى نسيان بسيطة مع السن</td><td>سيتيكولين + DHA + فيتامينات B</td></tr>
+        <tr><td>نفسية</td><td>توتر بيأثر على التركيز</td><td>ثيانين، ودور B6 في النواقل العصبية</td></tr>
+        <tr><td>كبار السن</td><td>نسيان بسيط وصعوبة في بلع الكبسولات</td><td>DHA + فيتامينات B + سهولة الشراب</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box check">
+    <strong>«لو داخل لدكتور باطنة، هتكلمه على أنهي مريض وأنهي مواد؟»</strong>
+    <p class="ans">موظف أو ست عندهم إرهاق وضعف تركيز، والتركيز على الحديد وفيتامينات B وتقليل التعب.</p>
+  </div>
+</section>
+
+<section id="l6">
+  <header><span class="eyebrow">درس ٦ · 10 دقايق</span><h2>الزيارة خطوة بخطوة</h2></header>
+  <ol class="clean">
+    <li><b>افتح بسؤال، مش بالمنتج:</b> «دكتور، قد إيه من مرضاك بيشتكوا من نسيان أو ضعف تركيز؟»</li>
+    <li><b>اسمع:</b> وحدد نوع المريض اللي الدكتور بيشوفه أكتر.</li>
+    <li><b>جملة واحدة عن المنتج:</b> «ميموري بوست بيدعم المخ من 4 جهات: البناء، النواقل العصبية، الطاقة، والحماية.»</li>
+    <li><b>رقم واحد قوي:</b> اختار من الـ 3 أرقام حسب الدكتور. متقولش كل حاجة مرة واحدة.</li>
+    <li><b>الميزة العملية:</b> شراب بطعم التوت، 10 مل مرة في اليوم، من 12 سنة.</li>
+    <li><b>اقفل بطلب واضح:</b> «ممكن حضرتك تجربه مع أول 3 مرضى من النوعية دي، وأرجعلك بعد شهر؟»</li>
+  </ol>
+  <h3>مثال لزيارة كاملة (دكتور أطفال)</h3>
+  <div class="dialog">
+    <p class="rep"><b>المندوب:</b> صباح الخير يا دكتور. قد إيه من الأهالي بيشتكوا إن ولادهم مش مركزين في المذاكرة؟</p>
+    <p class="doc"><b>الدكتور:</b> كتير، خصوصاً في الثانوي.</p>
+    <p class="rep"><b>المندوب:</b> ميموري بوست معمول للسن ده، من 12 سنة. فيه 250 ملجم DHA، ودي نفس الجرعة اللي الادعاء الأوروبي معتمد عليها إنه بيحافظ على وظيفة المخ. ومعاه 250 ملجم سيتيكولين للانتباه، وثيانين بيقلل توتر الامتحانات من غير نعاس.</p>
+    <p class="doc"><b>الدكتور:</b> وفيه حديد؟ البنات عندهم أنيميا كتير.</p>
+    <p class="rep"><b>المندوب:</b> أيوه، 7 ملجم حديد، حوالي تلت الاحتياج اليومي، ومعاه B12 وفوليك. وهو شراب بطعم التوت، 10 مل الصبح بعد الفطار.</p>
+    <p class="doc"><b>الدكتور:</b> ويقعد عليه قد إيه؟</p>
+    <p class="rep"><b>المندوب:</b> نقترح يبدأ قبل الامتحانات بشهرين تلاتة، لأن الأوميجا 3 بتاخد وقت عشان أثرها يبان. ممكن حضرتك تجربه مع أول 3 طلاب يجولك الأسبوع ده؟</p>
+    <p class="note">لاحظ: المندوب بدأ بسؤال، واستخدم رقمين بس، ورد على سؤال الحديد من غير ما يتوه، وقفل بطلب محدد.</p>
+  </div>
+</section>
+
+<section id="l7">
+  <header><span class="eyebrow">درس ٧ · 5 دقايق</span><h2>أسئلة الدكتور الصعبة</h2></header>
+  <div class="qa">
+    <div><span class="q">«فيه دليل إن المكملات دي بتفرق؟»</span><p>«المواد الفعالة ليها ادعاءات معتمدة من الهيئة الأوروبية، زي الـ DHA والحديد والزنك والفيتامينات. وجرعة الـ DHA عندنا هي نفس جرعة الادعاء. هو مكمل بيدعم، مش علاج.»</p></div>
+    <div><span class="q">«ليه مكتبش أوميجا 3 بس؟»</span><p>«الأوميجا 3 بتبني، لكن الذاكرة محتاجة كمان نواقل عصبية وطاقة وحماية. وفي دراسة أكسفورد، الأوميجا 3 مع فيتامينات B كانوا أحسن من كل واحد لوحده.»</p></div>
+    <div><span class="q">«الفوسفاتيديل سيرين والتيروسين كمياتهم قليلة»</span><p>«صحيح يا دكتور، دورهم داعم في التركيبة. الأساس هو الـ DHA والسيتيكولين والثيانين، وجرعاتهم مطابقة للدراسات.» الصراحة هنا بتكسب ثقة الدكتور.</p></div>
+    <div><span class="q">«ينفع لطفل 10 سنين؟»</span><p>«الموصى بيه من 12 سنة. أقل من كده تحت إشراف حضرتك.» ومتقترحش جرعة للأطفال من عندك.</p></div>
+    <div><span class="q">«العبوة 12 يوم بس؟»</span><p>«أيوه، فالشهر محتاج حوالي 3 عبوات.» قولها بوضوح عشان المريض ميوقفش في النص.</p></div>
+    <div><span class="q">«آمن مع أدوية تانية؟»</span><p>رد من جدول الأمان في الدرس الجاي، والقرار دايماً للدكتور.</p></div>
+  </div>
+  <div class="box coach">
+    <strong>القاعدة الذهبية</strong>
+    <p>لو المندوب مش عارف الإجابة، يقول «هتأكد وأرد على حضرتك»، ويرجع فعلاً بالإجابة. الدكتور بيحترم المندوب اللي بيرجع بإجابة، مش اللي بيخمن.</p>
+  </div>
+</section>
+
+<section id="l8">
+  <header><span class="eyebrow">درس ٨ · 5 دقايق</span><h2>الأمان والممنوعات</h2></header>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>الحالة</th><th>ليه</th><th>المندوب يقول</th></tr></thead>
+      <tbody>
+        <tr><td>حساسية السمك</td><td>فيه زيت سمك</td><td>لا يُستخدم إلا بقرار الطبيب</td></tr>
+        <tr><td>أدوية السيولة</td><td>زيت السمك ممكن يزود السيولة</td><td>استشارة الطبيب</td></tr>
+        <tr><td>أدوية الغدة، ليفودوبا، مثبطات MAO</td><td>التيروسين بيدخل في تصنيع الدوبامين وهرمونات الغدة</td><td>استشارة الطبيب</td></tr>
+        <tr><td>مضادات حيوية (تتراسيكلين، كينولون) وليفوثيروكسين</td><td>الحديد والزنك بيقللوا امتصاصها</td><td>يفصل بينهم ساعتين على الأقل</td></tr>
+        <tr><td>زيادة الحديد في الجسم</td><td>فيه حديد</td><td>لا يُستخدم</td></tr>
+        <tr><td>أقل من 12 سنة</td><td>مش موصى بيه، والحديد خطر لو طفل صغير شرب كمية كبيرة بالغلط</td><td>تحت إشراف طبي، وبعيد عن متناول الأطفال</td></tr>
+        <tr><td>الحمل والرضاعة</td><td>مفيش بيانات خاصة بالمنتج</td><td>بقرار الطبيب</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box stop">
+    <strong>ممنوع المندوب يقول</strong>
+    <ul class="clean">
+      <li>إنه «بيعالج» أو «بيمنع» الزهايمر أو الخرف أو فرط الحركة أو أي مرض. ده مكمل غذائي، مش دوا.</li>
+      <li>إنه «بيرفع الذكاء» أو «بيزود الدرجات».</li>
+      <li>إن الدراسات اتعملت على ميموري بوست. الدراسات اتعملت على المواد الفعالة.</li>
+      <li>إن منتجنا بيعمل نفس نتيجة دراسة أكسفورد.</li>
+      <li>أي جرعة أو سن أو مدة غير اللي في الملف ده.</li>
+    </ul>
+    <p><b>الكلمات الآمنة:</b> «يساهم في»، «يدعم»، «يحافظ على الوظيفة الطبيعية».</p>
+  </div>
+</section>
+
+<section id="roleplay">
+  <header><span class="eyebrow">تمرين · 20 دقيقة</span><h2>تمثيل الأدوار</h2></header>
+  <div class="box coach">
+    <strong>إزاي تعمله</strong>
+    <p>إنت تلعب دور الدكتور، والمندوب يعمل الزيارة كاملة. بعد كل زيارة قوله حاجة واحدة عملها كويس وحاجة واحدة يحسنها. متصلحش كل حاجة مرة واحدة.</p>
+  </div>
+  <div class="qa">
+    <div><span class="q">موقف ١: دكتور أطفال مشغول، عنده دقيقتين</span><p>الهدف: المندوب يقول جملة المنتج + رقم واحد + الطلب، في أقل من دقيقة.</p></div>
+    <div><span class="q">موقف ٢: دكتور مخ وأعصاب متشكك، يسأل «فين الدليل؟» و«الكميات قليلة»</span><p>الهدف: المندوب يرد بادعاء EFSA وجرعة الـ DHA، ويعترف بصراحة إن الفوسفاتيديل سيرين والتيروسين جرعتهم داعمة.</p></div>
+    <div><span class="q">موقف ٣: دكتورة باطنة، يجيلها ستات عندهم إرهاق ونسيان، وواحدة منهم على أدوية سيولة</span><p>الهدف: المندوب يتكلم عن الحديد وفيتامينات B، ويقول بنفسه إن مريضة السيولة القرار فيها للدكتورة.</p></div>
+  </div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>قيّم المندوب في كل زيارة</th><th>تمام</th><th>محتاج يتحسن</th></tr></thead>
+      <tbody>
+        <tr><td>بدأ بسؤال مش بالمنتج</td><td></td><td></td></tr>
+        <tr><td>استخدم رقم قوي واحد أو اتنين بس</td><td></td><td></td></tr>
+        <tr><td>ربط المنتج بمريض الدكتور</td><td></td><td></td></tr>
+        <tr><td>رد على الاعتراض بهدوء وصراحة</td><td></td><td></td></tr>
+        <tr><td>مقالش أي حاجة من الممنوعات</td><td></td><td></td></tr>
+        <tr><td>قفل بطلب محدد</td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="test">
+  <header><span class="eyebrow">آخر الجلسة · 10 دقايق</span><h2>الاختبار النهائي</h2></header>
+  <div class="box coach"><strong>إزاي تصححه</strong><p>اسأل الأسئلة بصوت عالي. 8 من 10 أو أكتر يبقى جاهز للميدان. أقل من كده، راجع معاه الدروس اللي غلط فيها قبل أول زيارة.</p></div>
+  <div class="qa">
+    <div><span class="q">1. إيه الأربع حاجات اللي المخ محتاجها (تشبيه البيت)؟</span><p class="ans">البناء (الحيطان)، الرسائل (السلوك)، الطاقة (الكهربا)، الحماية (الصيانة).</p></div>
+    <div><span class="q">2. الجرعة كام، ومن سن كام؟</span><p class="ans">10 مل مرة يومياً بعد الفطار، من 12 سنة فأكثر.</p></div>
+    <div><span class="q">3. إيه الـ 3 أرقام القوية؟</span><p class="ans">DHA 250، سيتيكولين 250، ثيانين 50 (ملجم).</p></div>
+    <div><span class="q">4. ليه الـ DHA 250 ملجم رقم مهم؟</span><p class="ans">لأنه نفس جرعة الادعاء الأوروبي المعتمد إنه بيحافظ على وظيفة المخ الطبيعية.</p></div>
+    <div><span class="q">5. إيه ناقل الذاكرة؟ وإيه المواد اللي بتغذيه؟</span><p class="ans">الأسيتيل كولين، وبيغذيه السيتيكولين وبيتارترات الكولين.</p></div>
+    <div><span class="q">6. ليه الثيانين مفيد لطالب قبل الامتحان؟</span><p class="ans">بيدي هدوء وتركيز من غير نعاس.</p></div>
+    <div><span class="q">7. العبوة بتكفي قد إيه؟ والمدة المقترحة؟</span><p class="ans">12 يوم. والمدة المقترحة 3 شهور كحد أدنى (حوالي 3 عبوات في الشهر).</p></div>
+    <div><span class="q">8. إيه أهم تحذيرين؟</span><p class="ans">حساسية السمك، وأدوية السيولة.</p></div>
+    <div><span class="q">9. الدكتور سأل «بيعالج الزهايمر؟» هترد بإيه؟</span><p class="ans">«لا، ده مكمل غذائي بيدعم الوظيفة الإدراكية الطبيعية، مش علاج لمرض.»</p></div>
+    <div><span class="q">10. لو الدكتور سألك حاجة مش عارفها؟</span><p class="ans">«هتأكد وأرد على حضرتك»، وترجع بالإجابة فعلاً.</p></div>
+  </div>
+</section>
+
+<section id="cheat">
+  <header><span class="eyebrow">اطبعها وسلمها للمندوب</span><h2>ورقة الجيب</h2></header>
+  <div class="cheat">
+    <h3>ميموري بوست في صفحة</h3>
+    <div class="grid">
+      <div><span class="lbl">إيه هو</span>مكمل غذائي شراب بطعم التوت لدعم الذاكرة والتركيز. من غير سكر عادي، ومسجل في SFDA.</div>
+      <div><span class="lbl">الجرعة والسن</span>10 مل مرة يومياً بعد الفطار · من 12 سنة فأكثر · العبوة 120 مل = 12 يوم.</div>
+      <div><span class="lbl">الفكرة</span>المخ زي البيت: بناء + رسائل + طاقة + حماية. ميموري بوست بيغطي الأربعة.</div>
+      <div><span class="lbl">الـ 3 أرقام</span>DHA 250 ملجم · سيتيكولين 250 ملجم · ثيانين 50 ملجم.</div>
+      <div><span class="lbl">باقي التركيبة</span>EPA 350 · زيت سمك 1100 · كولين 100 · فوسفاتيديل سيرين 50 · تيروسين 50 · حديد 7 · زنك 5 · B6 1.5 ملجم · فوليك 200 · B12 6 ميكروجرام.</div>
+      <div><span class="lbl">المدة المقترحة</span>3 شهور على الأقل. الهدوء من أول يوم، الانتباه بعد 4 أسابيع، والذاكرة بعد 2 لـ 3 شهور.</div>
+      <div><span class="lbl">الزيارة</span>سؤال ← اسمع ← جملة المنتج ← رقم قوي ← الميزة العملية ← طلب محدد.</div>
+      <div><span class="lbl">التحذيرات</span>حساسية السمك · أدوية السيولة · أقل من 12 سنة تحت إشراف طبي.</div>
+      <div><span class="lbl">ممنوع</span>«بيعالج» · «بيمنع» · «بيرفع الذكاء» · أي رقم مش في الورقة دي.</div>
+      <div><span class="lbl">الكلمات الآمنة</span>«يساهم في» · «يدعم» · «يحافظ على الوظيفة الطبيعية».</div>
+    </div>
+  </div>
+</section>
+
+<section id="glossary">
+  <header><span class="eyebrow">مرجع</span><h2>المصطلحات اللي هتقابلك</h2></header>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>المصطلح</th><th>معناه ببساطة</th></tr></thead>
+      <tbody>
+        <tr><td>Neuron · خلية عصبية</td><td>خلية المخ اللي بتنقل الإشارات</td></tr>
+        <tr><td>Neurotransmitter · ناقل عصبي</td><td>مادة كيميائية الخلايا بتكلم بيها بعض</td></tr>
+        <tr><td>Acetylcholine · أسيتيل كولين</td><td>ناقل الذاكرة والتعلم</td></tr>
+        <tr><td>Dopamine · دوبامين</td><td>ناقل التركيز واليقظة والتحفيز</td></tr>
+        <tr><td>Homocysteine · هوموسستين</td><td>مادة في الدم، زيادتها بتأذي المخ والأوعية مع السن</td></tr>
+        <tr><td>Omega-3 · أوميجا 3</td><td>دهون مفيدة من السمك، أهمها DHA وEPA</td></tr>
+        <tr><td>EFSA</td><td>الهيئة الأوروبية لسلامة الغذاء. بتعتمد الادعاءات الصحية للمكملات</td></tr>
+        <tr><td>RDA / القيمة المرجعية</td><td>الكمية اللي الشخص محتاجها في اليوم من الفيتامين أو المعدن</td></tr>
+        <tr><td>ادعاء صحي (Health claim)</td><td>جملة رسمية معتمدة عن فايدة مادة، زي «يساهم في الوظيفة الإدراكية الطبيعية»</td></tr>
+        <tr><td>Placebo · دوا وهمي</td><td>مادة من غير مفعول بتتقارن بيها المادة الحقيقية في الدراسات</td></tr>
+        <tr><td>Supplement · مكمل غذائي</td><td>منتج بيكمل الأكل، مش دوا لعلاج مرض</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="box warn">
+  <strong>قبل ما المندوب ينزل الميدان</strong>
+  <ul class="clean">
+    <li>المدة المقترحة (3 شهور) مستنتجة من الدراسات، ومحتاجة اعتماد الشركة.</li>
+    <li>اتأكد إن حجم الحصة على البطاقة 10 مل.</li>
+    <li>السعر وجدول المقارنة مع المنافسين هيتضافوا لما يوصلوا.</li>
+  </ul>
+</div>
+
+<footer>المصادر: ملف تسجيل المنتج في SFDA، جدول المواد الفعالة على البطاقة، ملف Memory Boost Dosage and Age Guide، والدراسات المذكورة بالاسم: EFSA (ادعاءات معتمدة)، McGlade 2012، مراجعة Cochrane 2005، Nobre 2008، دراسة VITACOG (أكسفورد). الملف للتدريب الداخلي، مش مادة دعائية للمرضى.</footer>
+</div>
