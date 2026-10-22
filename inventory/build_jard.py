@@ -266,12 +266,20 @@ ls.sheet_view.rightToLeft = True
 header(ls, 1, ["التاريخ", "اليوم", "الموقع", "رقم الصيدلية", "الاسم", "جرد", "راجع", "نوع المهمة", "المستحق"],
        [13, 11, 16, 12, 20, 8, 8, 16, 13])
 loc_of = {d: loc for d, _, _, _, loc in SCHEDULE}
-for r, (d, ph, name, cnt, rev) in enumerate(rows, 2):
+# بنود منفصلة في أول ملف السجل فقط (طلب المستخدم): (رقم الصيدلية, الاسم) — جرد فقط
+LOG_EXTRA = [("15", "د. حسام شلش"), ("16", "د. حسام شلش")]
+EXTRA_FILL = PatternFill("solid", fgColor="FFF2CC")
+log_rows = [("بند منفصل", "", "", ph, name, "نعم", "", True) for ph, name in LOG_EXTRA]
+log_rows += [(d, day_of.get(d, ""), loc_of.get(d, ""), ph, name, cnt, rev, False) for d, ph, name, cnt, rev in rows]
+for r, (d, day, loc, ph, name, cnt, rev, extra) in enumerate(log_rows, 2):
     kind = "جرد + مراجعة" if cnt and rev else ("جرد فقط" if cnt else "مراجعة فقط")
     amt = {"جرد + مراجعة": RATE_BOTH, "مراجعة فقط": RATE_REVIEW, "جرد فقط": RATE_COUNT}[kind]
-    for col, v in enumerate([d, day_of.get(d, ""), loc_of.get(d, ""), int(ph), name, cnt, rev, kind, amt], 1):
-        cellfmt(ls.cell(row=r, column=col, value=v), BASE, MONEY if col == 9 else None)
-tr3 = len(rows) + 2
+    for col, v in enumerate([d, day, loc, int(ph), name, cnt, rev, kind, amt], 1):
+        c = ls.cell(row=r, column=col, value=v)
+        cellfmt(c, BASE, MONEY if col == 9 else None)
+        if extra:
+            c.fill = EXTRA_FILL
+tr3 = len(log_rows) + 2
 for col in range(1, 10):
     c = ls.cell(row=tr3, column=col)
     c.fill = PatternFill("solid", fgColor="DDEBF7")
