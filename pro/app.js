@@ -304,7 +304,7 @@ function renderItem(o,{isMine,title,sub}){
   const sold=isMine?salesFor(o.key):null;
   let h='<div class="stack"><div class="card hero"><div class="avatar" style="'+(isMine?'background:var(--mine-soft);color:var(--mine)':'')+'">'+ICON.pill+'</div><div style="min-width:0"><h2>'+esc(title)+'</h2><div class="meta">'+sub+filterNote()+'</div></div></div>';
   h+='<div class="grid g4">'+kpi('مرات الكتابة',fmt(o.total))+kpi('عدد الأطباء',fmt(o.doctors.size))+kpi('عدد المرضى',fmt(o.patients.size))
-    +(sold?kpi('مبيعات فعلية',fmt(sold.units)+' علبة',o.total?'تحويل '+Math.round(sold.units/o.total*100)+'% من الكتابات':''):kpi('نسبة الصرف',rate(o),'مصروف ÷ (مصروف + ملغي)'))+'</div>';
+    +(sold?kpi('مبيعات فعلية',fmt(sold.units)+' علبة',[sold.amount?'بقيمة '+fmt(Math.round(sold.amount)):'',o.total?'تحويل '+Math.round(sold.units/o.total*100)+'% من الكتابات':''].filter(Boolean).join(' · ')):kpi('نسبة الصرف',rate(o),'مصروف ÷ (مصروف + ملغي)'))+'</div>';
   if(!o.total) return h+'<div class="card empty"><h2>لم يُكتب في الفترة المختارة</h2><p>جرّب «كل الفترات» أو تعاون آخر.</p></div></div>';
   h+='<div class="card"><h3>'+ICON.doc+' مين بيكتبه؟ <span class="sub">'+fmt(docs.length)+' طبيب</span></h3><div class="list">'
     +docs.map((d,i)=>{ const doc=S.ix.doctors.get(d.key);
@@ -382,10 +382,9 @@ function renderData(){
       +ups.map(u=>{ const mine=u.rows.reduce((s,r)=>s+(productKeyOf(r[1])?1:0),0);
         return '<tr><td class="num">'+esc(u.date||'—')+'</td><td>'+esc(BRANCHES[u.branch])+'</td><td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(u.name)+'</td><td class="num">'+fmt(u.rows.length)+'</td><td class="num">'+fmt(mine)+'</td><td><button class="chip bad" data-act="delUpload" data-id="'+escapeAttr(u.id)+'">حذف</button></td></tr>'; }).join('')
       +'</tbody></table></div>':'<p class="muted small">لم تُرفع ملفات بعد.</p>')+'</div>';
-  h+='<div class="grid g2"><div class="card"><h3>ملف المبيعات (اختياري)</h3><p class="muted small" style="margin-bottom:12px">ملف JSON من داشبورد المبيعات — يضيف «المبيعات الفعلية» بجانب الكتابات في صفحة كل صنف.'+(S.sales.length?' <b>محمّل: '+fmt(S.sales.length)+' سطر.</b>':'')+'</p>'
-    +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="pickSales">'+ICON.upload+' رفع ملف المبيعات</button>'+(S.sales.length?'<button class="btn danger" data-act="clearSales">إزالة</button>':'')+'</div></div>';
+  h+=salesCard();
   h+='<div class="card"><h3>نسخة احتياطية</h3><p class="muted small" style="margin-bottom:12px">البيانات محفوظة في هذا المتصفح فقط. خُد نسخة احتياطية عشان تنقلها لجهاز تاني.</p>'
-    +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="backup">'+ICON.save+' تنزيل نسخة</button><button class="btn" data-act="restore">'+ICON.upload+' استرجاع نسخة</button><button class="btn danger" data-act="wipe">'+ICON.trash+' مسح الكل</button></div></div></div>';
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="backup">'+ICON.save+' تنزيل نسخة</button><button class="btn" data-act="restore">'+ICON.upload+' استرجاع نسخة</button><button class="btn danger" data-act="wipe">'+ICON.trash+' مسح الكل</button></div></div>';
   return h+'</div>';
 }
 
@@ -446,6 +445,148 @@ async function onRxFiles(files){
     toast('تم ✓ '+fmt(all.length)+' كتابة — منها '+fmt(mine)+' لأصنافك');
   }catch(err){ loading(); alert('تعذّر قراءة الملف:\n'+(err&&err.message||err)); }
 }
+/* ───────── ملف المبيعات: سحب البيانات من PDF أو Excel ─────────
+   نفس منطق داشبورد المبيعات: كل سطر فيه اسم صنف من أصنافي → الكمية والقيمة. */
+const SALES_KW = [
+  {key:'reflex',kw:'REFLEX'},{key:'rizer',kw:'RIZER'},{key:'oracure',kw:'ORACURE'},
+  {key:'intimo',kw:'INTIMO'},{key:'nostriderm',kw:'NOSTRIDERM'},{key:'nostricure',kw:'NOSTRICURE'},
+  {key:'pure_omega',kw:'PURE OMEGA'},{key:'pure_omega',kw:'PUREOMEGA'},{key:'purefeel',kw:'PUREFEEL'},{key:'purefeel',kw:'PURE FEEL'},
+  {key:'centrozon_w',kw:'CENTROZON WOMEN'},{key:'centrozon_w',kw:'CENTROZON W'},{key:'centrozon',kw:'CENTROZON'},
+  {key:'zincolive',kw:'ZINCOLIVE'},{key:'zincolive',kw:'ZINC OLIVE'},{key:'bonefriend',kw:'BONEFRIEND'},{key:'bonefriend',kw:'BONE FRIEND'},
+  {key:'argigrow',kw:'ARGIGROW'},{key:'argigrow',kw:'ARGI GROW'}
+];
+const salesKw = text => { const up=String(text||'').normalize('NFKC').toUpperCase(); const k=SALES_KW.find(p=>up.includes(p.kw)); return k?{key:k.key,at:up.indexOf(k.kw)}:null; };
+const toNum = v => { const n=Number(String(v==null?'':v).replace(/[,٬\s]/g,'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d))); return Number.isFinite(n)?n:NaN; };
+const SALES_HEAD = {
+  units:/^(الكمي[ةه]|كمي[ةه]|الكميه المباع[ةه]|الكمية المباعة|عدد|العدد|qty|quantity|units?|sold qty|sales qty)$/i,
+  amount:/^(القيم[ةه]|قيم[ةه]|المبيعات|قيمة المبيعات|اجمالي|الاجمالي|إجمالي|الإجمالي|الصافي|صافي المبيعات|net|net sales|amount|total|value|sales|sales value)$/i,
+  cost:/^(التكلف[ةه]|تكلف[ةه]|cost|total cost)$/i
+};
+function guessMeta(text, fileName){
+  let pharmacy=null, date='';
+  const pm=text.match(/صيدلي[ةه]\s*رقم\s*(\d+)/)||text.match(/صيدلي[ةه]\s*(\d+)/);
+  if(pm && SALES_BRANCH_MAP['صيدلية '+pm[1]]) pharmacy='صيدلية '+pm[1];
+  const dm=text.match(/(\d{2})[-/](\d{2})[-/](\d{4})/)||String(fileName||'').match(/(\d{1,2})[-_. ](\d{1,2})[-_. ](\d{4})/);
+  if(dm){ const d=+dm[1], m=+dm[2]; if(m>=1&&m<=12&&d>=1&&d<=31) date=dm[3]+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
+  const branch=pharmacy?SALES_BRANCH_MAP[pharmacy]:(S.f.branch!=='ALL'?S.f.branch:'T1');
+  return { branch, date:date||today() };
+}
+async function pdfLines(file){
+  if(!window.pdfjsLib) window.pdfjsLib=window['pdfjs-dist/build/pdf'];
+  if(!window.pdfjsLib) throw new Error('تعذّر تحميل قارئ PDF — تأكد من الاتصال بالإنترنت');
+  try{ if(!pdfjsLib.GlobalWorkerOptions.workerSrc) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }catch(e){}
+  const doc=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+  const lines=[];
+  for(let i=1;i<=doc.numPages;i++){
+    const content=await (await doc.getPage(i)).getTextContent(); const byY={};
+    content.items.forEach(it=>{ if(!it.str) return; const y=Math.round(it.transform[5]); (byY[y]=byY[y]||[]).push({s:it.str,x:it.transform[4]}); });
+    Object.keys(byY).map(Number).sort((a,b)=>b-a).forEach(y=>{ const l=byY[y].sort((a,b)=>a.x-b.x).map(t=>t.s).join(' ').replace(/\s+/g,' ').trim(); if(l) lines.push(l); });
+  }
+  try{ await doc.destroy(); }catch(e){}
+  return lines;
+}
+function addRow(map,key,units,amount,cost){
+  const r=map.get(key)||{product:key,units:0,amount:0,cost:0,include:true};
+  r.units+=units||0; r.amount+=amount||0; r.cost+=cost||0; map.set(key,r);
+}
+async function parseSalesPdf(file){
+  const lines=(await pdfLines(file)).map(l=>l.normalize('NFKC')); const joined=lines.join('\n');
+  if(/Service Name|Medication Orders/i.test(joined)) throw new Error('ده تقرير كتابات (روشتات) مش مبيعات — ارفعه من «رفع ملف كتابات» فوق');
+  const rows=new Map();
+  lines.forEach(line=>{
+    const k=salesKw(line); if(!k) return;
+    const nums=(line.slice(0,k.at).match(/\d[\d,]*(?:\.\d+)?/g)||[]).map(toNum).filter(n=>!isNaN(n));
+    if(nums.length<2) return;
+    addRow(rows,k.key,Math.round(nums[nums.length-1]),Math.round(nums[0]),nums.length>=3?Math.round(nums[1]):0);
+  });
+  return { ...guessMeta(joined,file.name), rows:[...rows.values()] };
+}
+async function parseSalesSheet(file,ext){
+  const wb= ext==='.csv' ? XLSX.read(decodeDelimitedText(await file.arrayBuffer()),{type:'string'}) : XLSX.read(await file.arrayBuffer(),{type:'array'});
+  const rows=new Map(); let text='';
+  for(const name of wb.SheetNames){
+    const grid=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:'',raw:true});
+    let cols=null;
+    grid.forEach(row=>{
+      const cells=row.map(c=>String(c==null?'':c).trim()); text+=cells.join(' ')+'\n';
+      if(!cols){ const c={}; cells.forEach((v,i)=>{ const h=v.replace(/\s+/g,' '); for(const k in SALES_HEAD) if(c[k]==null&&SALES_HEAD[k].test(h)) c[k]=i; }); if(c.units!=null) cols=c; }
+      const k=salesKw(cells.join(' ')); if(!k) return;
+      if(cols){
+        const u=toNum(row[cols.units]); if(isNaN(u)) return;
+        addRow(rows,k.key,Math.round(u),cols.amount!=null?Math.round(toNum(row[cols.amount])||0):0,cols.cost!=null?Math.round(toNum(row[cols.cost])||0):0);
+      } else {
+        const nums=row.filter(c=>c!==''&&!salesKw(c)).map(toNum).filter(n=>!isNaN(n));
+        if(!nums.length) return;
+        if(nums.length===1) addRow(rows,k.key,Math.round(nums[0]),0,0);
+        else addRow(rows,k.key,Math.round(Math.min(...nums.filter(n=>n>0).concat([nums[0]]))),Math.round(Math.max(...nums)),0);
+      }
+    });
+  }
+  return { ...guessMeta(text,file.name), rows:[...rows.values()] };
+}
+async function onSalesFiles(files){
+  files=[...files]; if(!files.length) return;
+  const json=files.find(f=>/\.json$/i.test(f.name)); if(json){ jsonMode='sales'; onJson(json); return; }
+  const reports=[];
+  for(let i=0;i<files.length;i++){
+    const f=files[i]; const ext=(f.name.toLowerCase().match(/\.[^.]+$/)||[''])[0];
+    loading('جارٍ سحب المبيعات '+(files.length>1?'('+(i+1)+'/'+files.length+') ':'')+'من '+f.name+'…');
+    try{
+      if(!['.pdf','.xlsx','.xls','.csv'].includes(ext)) throw new Error('صيغة غير مدعومة — PDF أو Excel');
+      const r= ext==='.pdf' ? await parseSalesPdf(f) : await parseSalesSheet(f,ext);
+      if(!r.rows.length) throw new Error('ما لقيتش أي صنف من أصنافك في الملف');
+      reports.push({...r,name:f.name});
+    }catch(err){ reports.push({name:f.name,error:String(err&&err.message||err),rows:[]}); }
+  }
+  loading(); salesReview(reports);
+}
+function salesReview(reports){
+  const m=document.createElement('div'); m.className='modal';
+  const ok=reports.some(r=>r.rows.length);
+  m.innerHTML='<div class="sheet" style="max-width:640px"><h3>راجع المبيعات المسحوبة</h3>'
+    +reports.map((r,ri)=>'<div class="card" style="margin-bottom:12px;padding:14px"><div style="font-weight:600;margin-bottom:8px;word-break:break-all">'+esc(r.name)+'</div>'
+      +(r.error?'<p class="small" style="color:var(--bad)">'+esc(r.error)+'</p>'
+      :'<div class="grid g2"><div class="field"><label>التعاون</label><select data-r="'+ri+'" data-f="branch">'+Object.entries(BRANCHES).map(([k,l])=>'<option value="'+k+'"'+(r.branch===k?' selected':'')+'>'+l+'</option>').join('')+'</select></div>'
+        +'<div class="field"><label>التاريخ</label><input type="date" data-r="'+ri+'" data-f="date" value="'+escapeAttr(r.date)+'"></div></div>'
+        +'<div class="wrap-x"><table class="tbl"><thead><tr><th></th><th>الصنف</th><th>الكمية</th><th>القيمة</th></tr></thead><tbody>'
+        +r.rows.map((x,xi)=>'<tr><td><input type="checkbox" checked data-r="'+ri+'" data-x="'+xi+'"></td><td>'+esc(PROD[x.product].name)+'</td><td class="num">'+fmt(x.units)+'</td><td class="num">'+(x.amount?fmt(x.amount):'—')+'</td></tr>').join('')
+        +'</tbody></table></div>')+'</div>').join('')
+    +'<p class="muted small" style="margin-bottom:10px">لو نفس اليوم ونفس التعاون موجودين قبل كده، الأرقام الجديدة هتحل محلهم.</p>'
+    +'<div class="sheet-actions"><button class="btn" data-x>إلغاء</button>'+(ok?'<button class="btn good" data-ok>حفظ المبيعات</button>':'')+'</div></div>';
+  document.body.appendChild(m);
+  m.addEventListener('change',e=>{ const t=e.target, r=reports[+t.dataset.r]; if(!r) return;
+    if(t.dataset.f) r[t.dataset.f]=t.value; else if(t.dataset.x!=null) r.rows[+t.dataset.x].include=t.checked; });
+  m.addEventListener('click',async e=>{
+    if(e.target===m||e.target.closest('[data-x]')){ m.remove(); return; }
+    if(!e.target.closest('[data-ok]')) return;
+    let n=0; const map=new Map(S.sales.map(x=>[x.date+'|'+x.branch+'|'+x.product,x]));
+    reports.forEach(r=>{ if(r.error||!/^\d{4}-\d{2}-\d{2}$/.test(r.date||'')) return;
+      r.rows.forEach(x=>{ if(!x.include) return; map.set(r.date+'|'+r.branch+'|'+x.product,{date:r.date,branch:r.branch,product:x.product,units:x.units,amount:x.amount,cost:x.cost}); n++; }); });
+    if(!n){ toast('مفيش سطور متعلّم عليها'); return; }
+    S.sales=[...map.values()]; try{ await Store.set('sales',S.sales); }catch(err){ toast('تعذّر الحفظ'); }
+    m.remove(); route(); toast('تم حفظ '+fmt(n)+' سطر مبيعات ✓');
+  });
+}
+async function importSalesJson(json){
+  const arr=Array.isArray(json)?json:['entries','data','records','rows','items','sales'].map(k=>json&&json[k]).find(Array.isArray);
+  const num=v=>{ const n=Number(v); return Number.isFinite(n)&&n>0?n:0; };
+  const entries=(arr||[]).filter(e=>e&&/^\d{4}-\d{2}-\d{2}$/.test(String(e.date||''))&&SALES_BRANCH_MAP[e.pharmacy]&&PROD[e.product])
+    .map(e=>({ date:e.date, branch:SALES_BRANCH_MAP[e.pharmacy], product:e.product, units:num(e.units), amount:e.amount!=null?num(e.amount):num(e.price)*num(e.units) }));
+  if(!entries.length){ alert('الملف لا يحتوي سطور مبيعات صالحة'); return; }
+  S.sales=entries; try{ await Store.set('sales',entries); }catch(e){}
+  route(); toast('تم تحميل '+fmt(entries.length)+' سطر مبيعات ✓');
+}
+function salesCard(){
+  const groups=new Map();
+  S.sales.forEach(e=>{ const k=e.date+'|'+e.branch; const g=groups.get(k)||{date:e.date,branch:e.branch,units:0,amount:0,n:0}; g.units+=e.units; g.amount+=e.amount||0; g.n++; groups.set(k,g); });
+  const list=[...groups.values()].sort((a,b)=>a.date<b.date?1:-1);
+  return '<div class="card"><h3>'+ICON.upload+' رفع ملف المبيعات</h3>'
+    +'<p class="muted small" style="margin-bottom:12px">PDF أو Excel من تقرير مبيعات الصيدلية. البرنامج بيسحب الكمية والقيمة لكل صنف من أصنافك لوحده، وبيعرضها عليك تراجعها قبل الحفظ.</p>'
+    +'<button class="btn pri" data-act="pickSales">'+ICON.upload+' اختر ملفات المبيعات</button>'
+    +(list.length?'<div class="wrap-x" style="margin-top:14px"><table class="tbl"><thead><tr><th>التاريخ</th><th>التعاون</th><th>أصناف</th><th>الكمية</th><th>القيمة</th><th></th></tr></thead><tbody>'
+      +list.map(g=>'<tr><td class="num">'+esc(g.date)+'</td><td>'+esc(BRANCHES[g.branch])+'</td><td class="num">'+fmt(g.n)+'</td><td class="num">'+fmt(g.units)+'</td><td class="num">'+(g.amount?fmt(g.amount):'—')+'</td><td><button class="chip bad" data-act="delSales" data-k="'+escapeAttr(g.date+'|'+g.branch)+'">حذف</button></td></tr>').join('')
+      +'</tbody></table></div>':'')+'</div>';
+}
 function onJson(file){
   const rd=new FileReader();
   rd.onload=async()=>{
@@ -458,14 +599,7 @@ function onJson(file){
       await Store.set('sales',json.sales||[]);
       await loadAll(); route(); toast('تم استرجاع النسخة ✓'); return;
     }
-    const arr=Array.isArray(json)?json:['entries','data','records','rows','items','sales'].map(k=>json&&json[k]).find(Array.isArray);
-    if(!arr){ alert('لم أجد بيانات مبيعات في الملف'); return; }
-    const num=v=>{ const n=Number(v); return Number.isFinite(n)&&n>0?n:0; };
-    const entries=arr.filter(e=>e&&/^\d{4}-\d{2}-\d{2}$/.test(String(e.date||''))&&SALES_BRANCH_MAP[e.pharmacy]&&PROD[e.product])
-      .map(e=>({ date:e.date, branch:SALES_BRANCH_MAP[e.pharmacy], product:e.product, units:num(e.units), amount:e.amount!=null?num(e.amount):num(e.price)*num(e.units) }));
-    if(!entries.length){ alert('الملف لا يحتوي سطور مبيعات صالحة (date / pharmacy / product / units)'); return; }
-    S.sales=entries; try{ await Store.set('sales',entries); }catch(e){}
-    route(); toast('تم تحميل '+fmt(entries.length)+' سطر مبيعات ✓');
+    importSalesJson(json);
   };
   rd.readAsText(file);
 }
@@ -499,9 +633,9 @@ document.addEventListener('click',async e=>{
   else if(act==='onlyMine'){ S.docOnlyMine=!S.docOnlyMine; route(); }
   else if(act==='moreDrugs'){ S.showAllDrugs=true; route(); }
   else if(act==='pickFiles') document.getElementById('fileInput').click();
-  else if(act==='pickSales'){ jsonMode='sales'; document.getElementById('jsonInput').click(); }
+  else if(act==='pickSales') document.getElementById('salesInput').click();
   else if(act==='restore'){ jsonMode='restore'; document.getElementById('jsonInput').click(); }
-  else if(act==='clearSales'){ S.sales=[]; try{ await Store.set('sales',[]); }catch(err){} route(); }
+  else if(act==='delSales'){ if(!confirm('حذف مبيعات هذا اليوم؟')) return; S.sales=S.sales.filter(x=>x.date+'|'+x.branch!==a.dataset.k); try{ await Store.set('sales',S.sales); }catch(err){} route(); }
   else if(act==='delUpload'){ if(!confirm('حذف هذا الملف من البيانات؟')) return; S.uploads=S.uploads.filter(u=>u.id!==a.dataset.id); try{ await Store.del('uploads',a.dataset.id); }catch(err){} rebuild(); route(); }
   else if(act==='backup'){ download('pharmadash-pro-backup-'+today()+'.json',JSON.stringify({app:'pharmadash-pro',v:1,exported:new Date().toISOString(),uploads:S.uploads,sales:S.sales}),'application/json'); }
   else if(act==='wipe'){ if(!confirm('مسح كل الملفات من هذا الجهاز؟ لا يمكن التراجع.')) return; await Store.clear('uploads'); await Store.set('sales',[]); S.f={branch:'ALL',period:'ALL'}; await loadAll(); route(); }
@@ -509,6 +643,7 @@ document.addEventListener('click',async e=>{
 document.addEventListener('change',e=>{
   if(e.target.id==='periodSel') setFilter('period',e.target.value);
   else if(e.target.id==='fileInput'){ onRxFiles(e.target.files); e.target.value=''; }
+  else if(e.target.id==='salesInput'){ onSalesFiles(e.target.files); e.target.value=''; }
   else if(e.target.id==='jsonInput'){ if(e.target.files[0]) onJson(e.target.files[0]); e.target.value=''; }
 });
 document.addEventListener('input',e=>{
