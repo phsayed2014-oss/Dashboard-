@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f5fd7">
+<title>PharmaDash Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f6fb; --surface:#ffffff; --surface-2:#f0f3f9; --line:#e3e8f1;
+  --text:#14213d; --muted:#64708a; --faint:#94a0b8;
+  --brand:#0f5fd7; --brand-soft:#e6efff; --brand-ink:#0b4bb0;
+  --mine:#0e9f6e; --mine-soft:#e3f6ee;
+  --warn:#d97706; --warn-soft:#fdf2e1;
+  --bad:#dc2626; --bad-soft:#fde8e8;
+  --nostri:#7c3aed; --nostri-soft:#efe8fd;
+  --herb:#0e9f6e; --herb-soft:#e3f6ee;
+  --shadow:0 1px 2px rgba(20,33,61,.05),0 4px 16px rgba(20,33,61,.06);
+  --r:16px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c1220; --surface:#141c2e; --surface-2:#1b2439; --line:#26314a;
+  --text:#e7ecf6; --muted:#9aa6c0; --faint:#6b7894;
+  --brand:#5b9bff; --brand-soft:#16284a; --brand-ink:#8ab8ff;
+  --mine:#34d399; --mine-soft:#10302a; --warn:#f5a524; --warn-soft:#33270f;
+  --bad:#f87171; --bad-soft:#3a1a1d; --nostri:#a78bfa; --nostri-soft:#251c42;
+  --herb:#34d399; --herb-soft:#10302a; --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+}}
+:root[data-theme="dark"]{
+  --bg:#0c1220; --surface:#141c2e; --surface-2:#1b2439; --line:#26314a;
+  --text:#e7ecf6; --muted:#9aa6c0; --faint:#6b7894;
+  --brand:#5b9bff; --brand-soft:#16284a; --brand-ink:#8ab8ff;
+  --mine:#34d399; --mine-soft:#10302a; --warn:#f5a524; --warn-soft:#33270f;
+  --bad:#f87171; --bad-soft:#3a1a1d; --nostri:#a78bfa; --nostri-soft:#251c42;
+  --herb:#34d399; --herb-soft:#10302a; --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text)}
+body{font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+a{color:inherit;text-decoration:none}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+/* ── layout ── */
+.shell{display:flex;min-height:100vh}
+.side{width:236px;flex:none;background:var(--surface);border-inline-start:1px solid var(--line);position:sticky;top:0;height:100vh;padding:20px 14px;display:flex;flex-direction:column;gap:4px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px}
+.logo{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--brand),#22b8cf);color:#fff;display:grid;place-items:center;font-weight:700;font-size:18px}
+.brand b{display:block;font-size:16px}
+.brand small{color:var(--muted);font-size:12px}
+.nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;color:var(--muted);font-weight:500}
+.nav a svg{width:20px;height:20px;flex:none}
+.nav a:hover{background:var(--surface-2);color:var(--text)}
+.nav a.on{background:var(--brand-soft);color:var(--brand-ink);font-weight:600}
+.side-foot{margin-top:auto;font-size:12px;color:var(--faint);padding:8px}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:12px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.top h1{font-size:19px;font-weight:700;margin-inline-end:auto;display:flex;align-items:center;gap:8px;min-width:0}
+.back{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line)}
+.back svg{width:18px;height:18px}
+.filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px}
+.seg button{padding:6px 12px;border-radius:9px;font-size:13px;color:var(--muted);font-weight:500;white-space:nowrap}
+.seg button.on{background:var(--brand);color:#fff}
+.sel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:7px 10px;font-size:13px}
+.icon-btn{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);color:var(--muted)}
+.icon-btn svg{width:18px;height:18px}
+.view{padding:22px 24px 110px;max-width:1180px;width:100%;margin:0 auto}
+.tabbar{display:none}
+
+@media (max-width:860px){
+  .side{display:none}
+  .top{padding:10px 16px}
+  .top h1{font-size:17px}
+  .view{padding:16px 16px 110px}
+  .tabbar{display:flex;position:fixed;bottom:0;inset-inline:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+  .tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:11px;color:var(--faint);border-radius:12px}
+  .tabbar a svg{width:22px;height:22px}
+  .tabbar a.on{color:var(--brand)}
+  .top h1{flex:1}
+  #themeBtn{order:1}
+  .filters{order:2;width:100%;overflow-x:auto;flex-wrap:nowrap}
+  .filters .sel{flex:1;min-width:120px}
+}
+
+/* ── components ── */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px}
+.card h3{font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3>svg{width:18px;height:18px;flex:none;color:var(--brand)}
+.avatar svg{width:26px;height:26px}
+.card h3 .sub{font-weight:400;color:var(--muted);font-size:13px;margin-inline-start:auto}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:860px){.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g2{grid-template-columns:1fr}}
+.stack{display:flex;flex-direction:column;gap:14px}
+.kpi{padding:14px 16px}
+.kpi .l{font-size:12.5px;color:var(--muted)}
+.kpi .v{font-size:24px;font-weight:700;margin-top:2px}
+.kpi .h{font-size:12px;color:var(--faint)}
+.hero{display:flex;gap:16px;align-items:center}
+.avatar{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-weight:700;font-size:20px;flex:none;background:var(--brand-soft);color:var(--brand-ink)}
+.hero h2{font-size:21px;line-height:1.3}
+.hero .meta{color:var(--muted);font-size:13.5px;display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;background:var(--surface-2);color:var(--muted);font-size:12.5px;font-weight:500;white-space:nowrap}
+.chip.mine{background:var(--mine-soft);color:var(--mine)}
+.chip.nostri{background:var(--nostri-soft);color:var(--nostri)}
+.chip.herb{background:var(--herb-soft);color:var(--herb)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.brand{background:var(--brand-soft);color:var(--brand-ink)}
+button.chip{cursor:pointer;border:1px solid transparent}
+button.chip.pick{border-color:var(--line);background:var(--surface)}
+button.chip.pick.on{background:var(--mine-soft);color:var(--mine);border-color:var(--mine)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;background:var(--surface);border:1px solid var(--line)}
+.btn svg{width:18px;height:18px}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.good{background:var(--mine);border-color:var(--mine);color:#fff}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:6px 12px;font-size:13px}
+
+/* product tiles */
+.ptile{display:flex;flex-direction:column;gap:8px;padding:16px;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s}
+.ptile:hover{transform:translateY(-2px)}
+.ptile .pn{font-weight:700;font-size:16px}
+.ptile .pf{font-size:12px;color:var(--muted)}
+.ptile .pv{display:flex;align-items:baseline;gap:6px}
+.ptile .pv b{font-size:26px}
+.ptile .pv span{color:var(--muted);font-size:12.5px}
+.ptile .stripe{position:absolute;inset-block-start:0;inset-inline:0;height:4px}
+.ptile.zero{opacity:.62}
+
+/* list rows */
+.list{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+a.row:hover,button.row:hover{background:var(--surface-2);border-radius:10px}
+button.row{width:100%;text-align:start}
+.row .rk{width:26px;color:var(--faint);font-size:12.5px;text-align:center;flex:none}
+.row .rm{flex:1;min-width:0}
+.row .rt{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .rs{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .rv{font-weight:700;text-align:end;flex:none}
+.row .rv small{display:block;font-weight:400;color:var(--faint);font-size:11.5px}
+.bar{height:6px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--brand)}
+.bar.mine i{background:var(--mine)}
+.mini-av{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:13px;flex:none;background:var(--surface-2);color:var(--muted)}
+.mini-av.on{background:var(--mine-soft);color:var(--mine)}
+
+/* bars chart */
+.hbars{display:flex;flex-direction:column;gap:10px}
+.hb{display:grid;grid-template-columns:minmax(90px,30%) 1fr auto;gap:10px;align-items:center;font-size:13.5px}
+.hb .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+.hb .t{height:10px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.hb .t i{display:block;height:100%;background:var(--brand);border-radius:99px}
+.hb.mine .t i{background:var(--mine)}
+.hb .c{font-weight:600;min-width:34px;text-align:end}
+.cols{display:flex;align-items:flex-end;gap:8px;height:150px;padding-top:10px}
+.cols .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;min-width:0}
+.cols .col i{display:block;width:100%;max-width:44px;background:var(--brand);border-radius:8px 8px 3px 3px;min-height:3px}
+.cols .col b{font-size:12px}
+.cols .col span{font-size:11px;color:var(--faint);white-space:nowrap}
+
+/* search */
+.search{position:relative}
+.search input{width:100%;padding:12px 44px 12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-size:15px}
+.search input:focus{outline:2px solid var(--brand);outline-offset:-1px}
+.search svg{position:absolute;inset-inline-start:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--faint)}
+
+/* tips */
+.tip{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:14px;background:var(--surface-2)}
+.tip .ti{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none}
+.tip .ti svg{width:18px;height:18px}
+.tip b{display:block;font-size:14px}
+.tip p{font-size:13px;color:var(--muted)}
+
+/* empty */
+.empty{text-align:center;padding:48px 20px}
+.empty .ei{width:72px;height:72px;border-radius:22px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;margin:0 auto 16px}
+.empty .ei svg{width:34px;height:34px}
+.empty h2{font-size:20px;margin-bottom:6px}
+.empty p{color:var(--muted);max-width:440px;margin:0 auto 18px}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.section-title{font-size:13px;font-weight:600;color:var(--muted);margin:6px 2px -4px}
+
+/* visits */
+.visit{display:flex;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.visit:last-child{border-bottom:0}
+.visit .vd{width:52px;flex:none;text-align:center;background:var(--brand-soft);color:var(--brand-ink);border-radius:12px;padding:6px 0;line-height:1.2}
+.visit .vd b{display:block;font-size:18px}
+.visit .vd span{font-size:11px}
+.visit .vb{flex:1;min-width:0}
+.visit .vn{font-size:13.5px;color:var(--muted);margin-top:4px;white-space:pre-wrap}
+.effect{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+
+/* modal + toast */
+.modal{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:rgba(10,16,30,.45)}
+@media (min-width:640px){.modal{align-items:center}}
+.sheet{background:var(--surface);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto}
+@media (min-width:640px){.sheet{border-radius:20px}}
+.sheet h3{font-size:18px;margin-bottom:14px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:13px;font-weight:600;color:var(--muted)}
+.field input,.field select,.field textarea{padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2)}
+.field textarea{min-height:80px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.sheet-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:12px;font-size:14px;z-index:60;box-shadow:var(--shadow)}
+.loading{position:fixed;inset:0;z-index:55;background:rgba(10,16,30,.4);display:grid;place-items:center}
+.loading div{background:var(--surface);padding:18px 24px;border-radius:16px;font-weight:600}
+table.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{font-weight:600;color:var(--muted);text-align:start;padding:8px 6px;border-bottom:1px solid var(--line)}
+.tbl td{padding:9px 6px;border-bottom:1px solid var(--line)}
+.wrap-x{overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="brand"><div class="logo">P</div><div><b>PharmaDash Pro</b><small>متابعة الأصناف والأطباء</small></div></div>
+    <nav class="nav" id="sideNav"></nav>
+    <div class="side-foot">البيانات محفوظة على جهازك فقط</div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <h1 id="title"></h1>
+      <div class="filters" id="filters"></div>
+      <button class="icon-btn" id="themeBtn" aria-label="الوضع الليلي"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    </header>
+    <main class="view" id="view"></main>
+  </div>
+</div>
+<nav class="tabbar" id="tabBar"></nav>
+<input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.pdf" multiple hidden>
+<input type="file" id="jsonInput" accept=".json" hidden>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+/* PharmaDash Pro — محرّك قراءة الملفات (منقول كما هو من PharmaDash Pro 3.5) */
+/* ══════════════════════════════════════════════════════
+   DATA ENGINE — reused, proven parser + analytics
+   (PharmaCore + PDF/Excel/CSV parsing + aggregation +
+    Private Label / PureHerb product matching)
+══════════════════════════════════════════════════════ */
+
+/* ---- PharmaCore ---- */
+var PharmaCore = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+  // src/core/index.mjs
+  var index_exports = {};
+  __export(index_exports, {
+    MAX_PDF_PAGES: () => MAX_PDF_PAGES,
+    MAX_SNAPSHOT_BYTES: () => MAX_SNAPSHOT_BYTES,
+    MAX_SNAPSHOT_ROWS: () => MAX_SNAPSHOT_ROWS,
+    MAX_UPLOAD_BYTES: () => MAX_UPLOAD_BYTES,
+    MAX_UPLOAD_ROWS: () => MAX_UPLOAD_ROWS,
+    SNAPSHOT_SCHEMA_VERSION: () => SNAPSHOT_SCHEMA_VERSION,
+    assessRows: () => assessRows,
+    countRxHeaderMatches: () => countRxHeaderMatches,
+    deduplicateExactRows: () => deduplicateExactRows,
+    escapeSpreadsheetFormula: () => escapeSpreadsheetFormula,
+    localDateKey: () => localDateKey,
+    matchesCatalogProduct: () => matchesCatalogProduct,
+    normalizeEntityKey: () => normalizeEntityKey,
+    normalizeProductText: () => normalizeProductText,
+    normalizeRxRow: () => normalizeRxRow,
+    normalizeStatus: () => normalizeStatus,
+    normalizeWhitespace: () => normalizeWhitespace,
+    periodDateScore: () => periodDateScore,
+    rowFingerprint: () => rowFingerprint,
+    sanitizeExportRow: () => sanitizeExportRow,
+    selectPeriodRange: () => selectPeriodRange,
+    sortPeriods: () => sortPeriods,
+    validateRxRow: () => validateRxRow,
+    validateSnapshot: () => validateSnapshot
+  });
+  var SNAPSHOT_SCHEMA_VERSION = 2;
+  var MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+  var MAX_UPLOAD_ROWS = 5e5;
+  var MAX_PDF_PAGES = 1e4;
+  var MAX_SNAPSHOT_ROWS = 2e6;
+  var MAX_SNAPSHOT_BYTES = 150 * 1024 * 1024;
+  var ARABIC_DIACRITICS = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g;
+  function stripControlCharacters(value) {
+    return [...value].map((character) => {
+      const code = character.codePointAt(0);
+      return code <= 31 || code >= 127 && code <= 159 ? " " : character;
+    }).join("");
+  }
+  function normalizeWhitespace(value) {
+    return stripControlCharacters(
+      String(value ?? "").normalize("NFKC").replace(/\u00A0/g, " ")
+    ).replace(/\s+/g, " ").trim();
+  }
+  function normalizeEntityKey(value) {
+    return normalizeWhitespace(value).replace(ARABIC_DIACRITICS, "").replace(/\u0640/g, "").replace(/[أإآ]/g, "\u0627").replace(/ى/g, "\u064A").toLocaleUpperCase("en-US");
+  }
+  function normalizeStatus(value) {
+    const status = normalizeEntityKey(value);
+    if (status.includes("CLOS") || status.includes("\u0645\u063A\u0644\u0642")) return "Closed";
+    if (status.includes("CANC") || status.includes("\u0645\u0644\u063A\u064A") || status.includes("\u0645\u0644\u063A\u0649")) return "Canceled";
+    if (status.includes("NEW") || status.includes("\u062C\u062F\u064A\u062F")) return "New";
+    if (status.includes("OPEN") || status.includes("\u0645\u0641\u062A\u0648\u062D")) return "Opened";
+    if (status.includes("PEND") || status.includes("\u0645\u0639\u0644\u0642")) return "Pending";
+    if (status.includes("ACTIV") || status.includes("\u0646\u0634\u0637")) return "Active";
+    return normalizeWhitespace(value) || "\u063A\u064A\u0631 \u0645\u062D\u062F\u062F";
+  }
+  var RX_COLUMN_ALIASES = {
+    doctor: ["doctor", "doctorname", "physician", "physicianname", "\u0627\u0633\u0645 \u0627\u0644\u0637\u0628\u064A\u0628", "\u0627\u0633\u0645\u0627\u0644\u0637\u0628\u064A\u0628", "\u0627\u0644\u0637\u0628\u064A\u0628"],
+    service: ["service", "servicename", "medication", "medicationname", "drug", "drugname", "\u0627\u0633\u0645 \u0627\u0644\u062E\u062F\u0645\u0629", "\u0627\u0633\u0645\u0627\u0644\u062E\u062F\u0645\u0629", "\u0627\u0644\u062F\u0648\u0627\u0621", "\u0627\u0644\u0635\u0646\u0641"],
+    section: ["section", "sectionname", "specialty", "speciality", "department", "\u0627\u0633\u0645 \u0627\u0644\u0642\u0633\u0645", "\u0627\u0633\u0645\u0627\u0644\u0642\u0633\u0645", "\u0627\u0644\u0642\u0633\u0645", "\u0627\u0644\u062A\u062E\u0635\u0635"],
+    patient: ["patient", "patientno", "patientnumber", "mrn", "\u0631\u0642\u0645 \u0627\u0644\u0645\u0631\u064A\u0636", "\u0631\u0642\u0645\u0627\u0644\u0645\u0631\u064A\u0636"],
+    patientName: ["patientname", "\u0627\u0633\u0645 \u0627\u0644\u0645\u0631\u064A\u0636", "\u0627\u0633\u0645\u0627\u0644\u0645\u0631\u064A\u0636"],
+    orderNo: ["orderno", "ordernumber", "orderid", "\u0631\u0642\u0645 \u0627\u0644\u0627\u0645\u0631", "\u0631\u0642\u0645\u0627\u0644\u0627\u0645\u0631", "\u0631\u0642\u0645 \u0627\u0644\u0623\u0645\u0631", "\u0631\u0642\u0645\u0627\u0644\u0623\u0645\u0631", "\u0631\u0642\u0645 \u0627\u0644\u0637\u0644\u0628", "\u0631\u0642\u0645\u0627\u0644\u0637\u0644\u0628"],
+    status: ["status", "orderstatus", "\u0627\u0644\u062D\u0627\u0644\u0629", "\u062D\u0627\u0644\u0629 \u0627\u0644\u0637\u0644\u0628"]
+  };
+  function headerKey(value) {
+    return normalizeEntityKey(value).replace(/[^A-Z0-9\u0600-\u06FF]/g, "");
+  }
+  var RX_ALIAS_KEYS = Object.fromEntries(
+    Object.entries(RX_COLUMN_ALIASES).map(([field, aliases]) => [
+      field,
+      new Set([field, ...aliases].map(headerKey))
+    ])
+  );
+  function countRxHeaderMatches(headers) {
+    const keys = new Set((headers || []).map(headerKey));
+    return Object.values(RX_ALIAS_KEYS).filter((aliases) => [...aliases].some((alias) => keys.has(alias))).length;
+  }
+  function normalizeRxRow(raw) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+    const values = new Map(Object.entries(raw).map(([key, value]) => [headerKey(key), value]));
+    const read = (field) => {
+      for (const alias of RX_ALIAS_KEYS[field]) {
+        if (!values.has(alias)) continue;
+        const value = normalizeWhitespace(values.get(alias));
+        if (value) return value;
+      }
+      return "";
+    };
+    const row = {
+      doctor: read("doctor"),
+      service: read("service"),
+      section: read("section").replace(/OPTHALMOLOGY/gi, "OPHTHALMOLOGY"),
+      patient: read("patient"),
+      patientName: read("patientName"),
+      orderNo: read("orderNo"),
+      status: normalizeStatus(read("status"))
+    };
+    return row.doctor || row.service ? row : null;
+  }
+  function rowFingerprint(row) {
+    return ["doctor", "service", "section", "patient", "patientName", "orderNo", "status"].map((field) => normalizeEntityKey(row?.[field])).join("");
+  }
+  function deduplicateExactRows(rows) {
+    const seen = /* @__PURE__ */ new Set();
+    const unique = [];
+    for (const row of rows || []) {
+      const fingerprint = rowFingerprint(row);
+      if (seen.has(fingerprint)) continue;
+      seen.add(fingerprint);
+      unique.push(row);
+    }
+    return { rows: unique, removed: Math.max(0, (rows || []).length - unique.length) };
+  }
+  function assessRows(rows, meta = {}) {
+    const list = rows || [];
+    const missing = { doctor: 0, service: 0, section: 0, patient: 0, patientName: 0, orderNo: 0, status: 0 };
+    const fingerprints = /* @__PURE__ */ new Set();
+    let duplicates = 0;
+    let unknownStatuses = 0;
+    for (const row of list) {
+      for (const field of Object.keys(missing)) {
+        if (!normalizeWhitespace(row?.[field]) || field === "status" && row.status === "\u063A\u064A\u0631 \u0645\u062D\u062F\u062F") missing[field] += 1;
+      }
+      const fingerprint = rowFingerprint(row);
+      if (fingerprints.has(fingerprint)) duplicates += 1;
+      else fingerprints.add(fingerprint);
+      if (!["Closed", "Canceled", "New", "Opened", "Pending", "Active"].includes(row?.status)) unknownStatuses += 1;
+    }
+    const sourceRows = Number(meta.sourceRows ?? list.length);
+    const rejectedRows = Number(meta.rejectedRows ?? Math.max(0, sourceRows - list.length));
+    const denominator = Math.max(1, sourceRows);
+    const penalty = rejectedRows / denominator * 30 + missing.doctor / denominator * 20 + missing.service / denominator * 25 + missing.section / denominator * 8 + missing.patient / denominator * 5 + missing.status / denominator * 5 + duplicates / denominator * 7;
+    const score = Math.max(0, Math.round(100 - penalty));
+    const warnings = [];
+    if (rejectedRows) warnings.push(`${rejectedRows} \u0635\u0641 \u0644\u0645 \u064A\u064F\u0642\u0628\u0644 \u0623\u062B\u0646\u0627\u0621 \u0642\u0631\u0627\u0621\u0629 \u0627\u0644\u0645\u0644\u0641`);
+    if (missing.doctor) warnings.push(`${missing.doctor} \u0635\u0641 \u0628\u062F\u0648\u0646 \u0637\u0628\u064A\u0628`);
+    if (missing.service) warnings.push(`${missing.service} \u0635\u0641 \u0628\u062F\u0648\u0646 \u062F\u0648\u0627\u0621`);
+    if (missing.section) warnings.push(`${missing.section} \u0635\u0641 \u0628\u062F\u0648\u0646 \u062A\u062E\u0635\u0635`);
+    if (duplicates) warnings.push(`${duplicates} \u0635\u0641 \u0645\u0643\u0631\u0631 \u062A\u0645\u0627\u0645\u064B\u0627`);
+    if (unknownStatuses) warnings.push(`${unknownStatuses} \u062D\u0627\u0644\u0629 \u063A\u064A\u0631 \u0642\u064A\u0627\u0633\u064A\u0629`);
+    if (meta.source === "pdf" && Number(meta.fallbackPages || 0) > 0) {
+      warnings.push(`${Number(meta.fallbackPages)} \u0635\u0641\u062D\u0629 PDF \u0627\u0633\u062A\u064F\u062E\u062F\u0645 \u0644\u0647\u0627 \u062A\u062E\u0637\u064A\u0637 \u0623\u0639\u0645\u062F\u0629 \u0627\u062D\u062A\u064A\u0627\u0637\u064A\u061B \u0631\u0627\u062C\u0639 \u0639\u064A\u0646\u0629 \u0645\u0646 \u0627\u0644\u0646\u062A\u0627\u0626\u062C`);
+    }
+    return {
+      source: meta.source || "unknown",
+      pages: Number(meta.pages || 0),
+      sourceRows,
+      acceptedRows: list.length,
+      rejectedRows,
+      missing,
+      duplicates,
+      unknownStatuses,
+      score,
+      warnings
+    };
+  }
+  var MONTHS = /* @__PURE__ */ new Map([
+    ["\u064A\u0646\u0627\u064A\u0631", 1],
+    ["JANUARY", 1],
+    ["JAN", 1],
+    ["\u0641\u0628\u0631\u0627\u064A\u0631", 2],
+    ["FEBRUARY", 2],
+    ["FEB", 2],
+    ["\u0645\u0627\u0631\u0633", 3],
+    ["MARCH", 3],
+    ["MAR", 3],
+    ["\u0627\u0628\u0631\u064A\u0644", 4],
+    ["APRIL", 4],
+    ["APR", 4],
+    ["\u0645\u0627\u064A\u0648", 5],
+    ["MAY", 5],
+    ["\u064A\u0648\u0646\u064A\u0648", 6],
+    ["\u064A\u0648\u0646\u064A\u0647", 6],
+    ["JUNE", 6],
+    ["JUN", 6],
+    ["\u064A\u0648\u0644\u064A\u0648", 7],
+    ["\u064A\u0648\u0644\u064A\u0647", 7],
+    ["JULY", 7],
+    ["JUL", 7],
+    ["\u0627\u063A\u0633\u0637\u0633", 8],
+    ["AUGUST", 8],
+    ["AUG", 8],
+    ["\u0633\u0628\u062A\u0645\u0628\u0631", 9],
+    ["SEPTEMBER", 9],
+    ["SEP", 9],
+    ["\u0627\u0643\u062A\u0648\u0628\u0631", 10],
+    ["OCTOBER", 10],
+    ["OCT", 10],
+    ["\u0646\u0648\u0641\u0645\u0628\u0631", 11],
+    ["NOVEMBER", 11],
+    ["NOV", 11],
+    ["\u062F\u064A\u0633\u0645\u0628\u0631", 12],
+    ["DECEMBER", 12],
+    ["DEC", 12]
+  ]);
+  function periodDateScore(label) {
+    const source = normalizeEntityKey(label).replace(/_/g, " ");
+    if (!source) return 0;
+    let year = Number(source.match(/\b(20\d{2})\b/)?.[1] || 0);
+    let month = 0;
+    const yearMonth = source.match(/\b(20\d{2})[/-](0?[1-9]|1[0-2])\b/);
+    const monthYear = source.match(/\b(0?[1-9]|1[0-2])[/-](20\d{2})\b/);
+    if (yearMonth) {
+      year = Number(yearMonth[1]);
+      month = Number(yearMonth[2]);
+    } else if (monthYear) {
+      month = Number(monthYear[1]);
+      year = Number(monthYear[2]);
+    }
+    if (!month) {
+      for (const [token, value] of [...MONTHS.entries()].sort((a, b) => b[0].length - a[0].length)) {
+        if (source.includes(token)) {
+          month = value;
+          break;
+        }
+      }
+    }
+    if (!month) {
+      const quarter = source.match(/(?:Q|ربع\s*)([1-4])/);
+      if (quarter) month = Number(quarter[1]) * 3;
+    }
+    return year && month ? year * 100 + month : 0;
+  }
+  function sortPeriods(periods) {
+    return [...periods || []].sort((a, b) => {
+      const aScore = periodDateScore(a?.label);
+      const bScore = periodDateScore(b?.label);
+      if (aScore && bScore && aScore !== bScore) return aScore - bScore;
+      if (aScore !== bScore) return aScore ? -1 : 1;
+      return Number(a?.id || 0) - Number(b?.id || 0);
+    });
+  }
+  function selectPeriodRange(periods) {
+    const sorted = sortPeriods(periods);
+    if (!sorted.length) return { oldest: null, newest: null, sorted };
+    const dated = sorted.filter((period) => periodDateScore(period?.label) > 0);
+    const candidates = dated.length ? dated : sorted;
+    return { oldest: candidates[0], newest: candidates.at(-1), sorted };
+  }
+  function localDateKey(date = /* @__PURE__ */ new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+  function escapeSpreadsheetFormula(value) {
+    if (typeof value !== "string") return value;
+    const normalized = value.replace(/^\s+/, "");
+    return /^[=+\-@]/.test(normalized) ? `'${value}` : value;
+  }
+  function sanitizeExportRow(row, { anonymize = false } = {}) {
+    const safe = {};
+    for (const [key, value] of Object.entries(row || {})) {
+      if (anonymize && !["doctor", "service", "section", "status", "patient", "patientName", "orderNo"].includes(key)) {
+        continue;
+      }
+      if (anonymize && ["patient", "patientName", "orderNo"].includes(key)) {
+        safe[key] = "";
+      } else {
+        safe[key] = escapeSpreadsheetFormula(value);
+      }
+    }
+    return safe;
+  }
+  function normalizeProductText(value) {
+    return normalizeEntityKey(value).replace(/[^A-Z0-9\u0600-\u06FF.]+/g, " ").replace(/\s+/g, " ").trim();
+  }
+  function numericTokens(value) {
+    return [...normalizeProductText(value).matchAll(/\d+(?:\.\d+)?/g)].map((match) => String(Number(match[0]))).filter((token, index, all) => all.indexOf(token) === index);
+  }
+  function matchesCatalogProduct(drugName, product) {
+    const drug = normalizeProductText(drugName);
+    const canonical = normalizeProductText(product?.name || product || "");
+    const short = normalizeProductText(product?.short || canonical.split(" ")[0] || "");
+    if (!drug || !canonical || !short) return false;
+    const brandTokens = short.split(" ").filter(Boolean);
+    if (!brandTokens.every((token) => drug.split(" ").includes(token))) return false;
+    const expectedNumbers = numericTokens(canonical);
+    const actualNumbers = new Set(numericTokens(drug));
+    return expectedNumbers.every((token) => actualNumbers.has(token));
+  }
+  function validateRxRow(row) {
+    if (!row || typeof row !== "object" || Array.isArray(row)) return false;
+    return ["doctor", "service", "section", "patient", "patientName", "orderNo", "status"].every((key) => row[key] == null || ["string", "number"].includes(typeof row[key])) && Boolean(normalizeWhitespace(row.doctor) || normalizeWhitespace(row.service));
+  }
+  function validateSnapshot(snapshot) {
+    if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot)) {
+      return { valid: false, error: "invalid-root" };
+    }
+    if (!snapshot.periods || typeof snapshot.periods !== "object") {
+      return { valid: false, error: "invalid-periods" };
+    }
+    if (Number(snapshot.v || 1) > SNAPSHOT_SCHEMA_VERSION) {
+      return { valid: false, error: "unsupported-version" };
+    }
+    let totalRows = 0;
+    for (const branch of ["T1", "T2", "T3"]) {
+      const periods = snapshot.periods[branch];
+      if (periods != null && !Array.isArray(periods)) return { valid: false, error: `invalid-${branch}` };
+      for (const period of periods || []) {
+        if (!period || typeof period !== "object" || !Array.isArray(period.rows)) {
+          return { valid: false, error: `invalid-period-${branch}` };
+        }
+        if (period.rows.length > MAX_UPLOAD_ROWS || !period.rows.every(validateRxRow)) {
+          return { valid: false, error: `invalid-rows-${branch}` };
+        }
+        totalRows += period.rows.length;
+        if (totalRows > MAX_SNAPSHOT_ROWS) return { valid: false, error: "snapshot-too-large" };
+      }
+    }
+    if (snapshot.dt != null) {
+      if (typeof snapshot.dt !== "object" || Array.isArray(snapshot.dt)) return { valid: false, error: "invalid-daily-store" };
+      for (const [date, branches] of Object.entries(snapshot.dt)) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !branches || typeof branches !== "object") {
+          return { valid: false, error: "invalid-daily-date" };
+        }
+        for (const branch of ["T1", "T2", "T3"]) {
+          const entry = branches[branch];
+          if (entry == null) continue;
+          if (!entry || typeof entry !== "object" || !Array.isArray(entry.rows) || entry.rows.length > MAX_UPLOAD_ROWS || !entry.rows.every(validateRxRow)) {
+            return { valid: false, error: `invalid-daily-${branch}` };
+          }
+          totalRows += entry.rows.length;
+          if (totalRows > MAX_SNAPSHOT_ROWS) return { valid: false, error: "snapshot-too-large" };
+        }
+      }
+    }
+    return { valid: true, version: Number(snapshot.v || 1), totalRows };
+  }
+  return __toCommonJS(index_exports);
+})();
+
+/* ---- Private Label products ---- */
+const PRIVATE_LABEL=[
+  {key:'reflex',    name:'Reflex',      form:'Massage Emulgel · 100ML',cls:'pp1'},{key:'rizer',     name:'Rizer',       form:'Apply Cream · 75ML',     cls:'pp2'},{key:'oracure',   name:'Oracure',     form:'Mouth Wash · 300ML',     cls:'pp3'},{key:'intimo',    name:'Intimo',      form:'Vaginal Wash · 250ML',   cls:'pp4'},{key:'nostriderm',name:'Nostriderm',  form:'Ointment · 50ML',        cls:'pp5'},{key:'nostricure',name:'Nostricure',  form:'Oral Gel · 30ML',        cls:'pp6'},
+];
+function phraseMatch(value,phrase){
+  const text=PharmaCore.normalizeProductText(value),target=PharmaCore.normalizeProductText(phrase);
+  if(!text||!target)return false;
+  return (' '+text+' ').includes(' '+target+' ') || text.replace(/\s/g,'').includes(target.replace(/\s/g,''));
+}
+function findPrivateLabelProduct(service){return PRIVATE_LABEL.find(p=>phraseMatch(service,p.key))||null;}
+
+/* ---- file/row validation ---- */
+function validateUploadFile(file){
+  if(!file||!file.name)throw new Error('لم يتم اختيار ملف');
+  const ext=(file.name.toLowerCase().match(/\.[^.]+$/)||[''])[0];
+  if(!['.xlsx','.xls','.csv','.pdf'].includes(ext))throw new Error('صيغة غير مدعومة — استخدم xlsx أو xls أو csv أو pdf');
+  if(!file.size)throw new Error('الملف فارغ');
+  if(file.size>PharmaCore.MAX_UPLOAD_BYTES)throw new Error('حجم الملف أكبر من الحد الآمن (50MB)');
+  return ext;
+}
+function validateParsedRows(rows){
+  if(!rows||!rows.length)throw new Error('لم يتم العثور على بيانات صالحة في الملف');
+  if(rows.length>PharmaCore.MAX_UPLOAD_ROWS)throw new Error('عدد الصفوف أكبر من الحد المدعوم (500,000 صف)');
+  const meta=rows._parseMeta||{};
+  if(meta.source==='pdf'&&meta.sourceRows>20&&rows.length/meta.sourceRows<.2){
+    throw new Error('نسبة الصفوف المقروءة من PDF منخفضة جداً — راجع تخطيط الأعمدة أو استخدم PDF نصياً واضحاً');
+  }
+  if(rows.some(row=>Object.values(row).some(value=>String(value||'').includes('\uFFFD')))){
+    throw new Error('ترميز النص غير صالح — احفظ الملف بصيغة UTF-8 أو Excel ثم أعد الرفع');
+  }
+}
+
+/* ---- fmt ---- */
+const fmt=n=>(n==null||isNaN(n))?'—':Number(n).toLocaleString('en-US');
+
+/* ---- pct ---- */
+const pct=(a,b)=>b>0?(a*100/b):0;
+
+/* ---- text/entity helpers ---- */
+function escapeHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escapeAttr(s){return escapeHtml(s).replace(/'/g,'&#39;');}
+/* أرقام المرضى قد تتكرر بين أنظمة الفروع؛ لذلك الهوية المجمعة = الفرع + الرقم. */
+function patientIdentityKey(branch,patient){
+  const id=PharmaCore.normalizeWhitespace(patient);
+  return id?branch+'|'+id:'';
+}
+function entityKey(value){return PharmaCore.normalizeEntityKey(value);}
+function sameEntity(a,b){return entityKey(a)===entityKey(b);}
+
+/* ---- aggregate + parsers (excel/csv/pdf) ---- */
+function createAggregateState(){
+  return{docMap:new Map(),drugMap:new Map(),secMap:new Map(),patients:new Set(),statusCounts:{},orders:new Set()};
+}
+function aggregateRow(state,r){
+    const {docMap,drugMap,secMap,patients,statusCounts,orders}=state;
+    const doctorKey=PharmaCore.normalizeEntityKey(r.doctor),drugKey=PharmaCore.normalizeEntityKey(r.service),sectionKey=PharmaCore.normalizeEntityKey(r.section),patientKey=PharmaCore.normalizeEntityKey(r.patient);
+    if(patientKey) patients.add(patientKey);
+    if(r.orderNo) orders.add(PharmaCore.normalizeEntityKey(r.orderNo));
+    const st=PharmaCore.normalizeStatus(r.status);statusCounts[st]=(statusCounts[st]||0)+1;
+    if(doctorKey){
+      let d=docMap.get(doctorKey);if(!d){d={name:r.doctor,section:r.section,total:0,drugs:new Map(),patients:new Set(),status:{}};docMap.set(doctorKey,d);}
+      d.total++;if(r.section&&!d.section)d.section=r.section;
+      if(drugKey){const item=d.drugs.get(drugKey)||{name:r.service,count:0};item.count++;d.drugs.set(drugKey,item);}
+      if(patientKey)d.patients.add(patientKey);d.status[st]=(d.status[st]||0)+1;
+    }
+    if(drugKey){
+      let dr=drugMap.get(drugKey);if(!dr){dr={name:r.service,total:0,doctors:new Map(),patients:new Map(),sections:new Map(),status:{}};drugMap.set(drugKey,dr);}
+      dr.total++;
+      if(doctorKey){const item=dr.doctors.get(doctorKey)||{name:r.doctor,count:0};item.count++;dr.doctors.set(doctorKey,item);}
+      if(patientKey)dr.patients.set(patientKey,(dr.patients.get(patientKey)||0)+1);
+      if(sectionKey){const item=dr.sections.get(sectionKey)||{name:r.section,count:0};item.count++;dr.sections.set(sectionKey,item);}
+      dr.status[st]=(dr.status[st]||0)+1;
+    }
+    if(sectionKey){
+      let s=secMap.get(sectionKey);if(!s){s={name:r.section,total:0,doctors:new Set(),drugs:new Set(),patients:new Set()};secMap.set(sectionKey,s);}
+      s.total++;if(doctorKey)s.doctors.add(doctorKey);if(drugKey)s.drugs.add(drugKey);if(patientKey)s.patients.add(patientKey);
+    }
+}
+function finalizeAggregate(state,totalRows){
+  const {docMap,drugMap,secMap,patients,statusCounts,orders}=state;
+  return{
+    doctors:[...docMap.values()].map(d=>({name:d.name,section:d.section,total:d.total,uniqueDrugs:d.drugs.size,patients:d.patients.size,status:d.status,drugs:[...d.drugs.values()].sort((a,b)=>b.count-a.count)})).sort((a,b)=>b.total-a.total),
+    drugs:[...drugMap.values()].map(d=>({name:d.name,total:d.total,doctorCount:d.doctors.size,patients:d.patients.size,status:d.status,repeatPatients:[...d.patients.values()].filter(c=>c>1).length,sections:[...d.sections.values()].sort((a,b)=>b.count-a.count),doctors:[...d.doctors.values()].sort((a,b)=>b.count-a.count)})).sort((a,b)=>b.total-a.total),
+    sections:[...secMap.values()].map(s=>({name:s.name,total:s.total,doctors:s.doctors.size,drugs:s.drugs.size,patients:s.patients.size})).sort((a,b)=>b.total-a.total),
+    totalRows,totalPatients:patients.size,statusCounts,totalOrders:orders.size
+  };
+}
+function aggregate(rows){
+  const state=createAggregateState();
+  for(const row of rows||[])aggregateRow(state,row);
+  return finalizeAggregate(state,(rows||[]).length);
+}
+function yieldToBrowser(){return new Promise(resolve=>setTimeout(resolve,0));}
+function throwIfCancelled(options){
+  if(options?.shouldCancel?.()){
+    const error=new Error('تم إلغاء المعالجة لأن ملفاً أحدث بدأ');
+    error.name='AbortError';
+    throw error;
+  }
+}
+async function aggregateAsync(rows,onProgress,shouldCancel){
+  const list=rows||[],state=createAggregateState(),chunk=5000;
+  for(let start=0;start<list.length;start+=chunk){
+    if(shouldCancel?.())throwIfCancelled({shouldCancel});
+    const end=Math.min(start+chunk,list.length);
+    for(let i=start;i<end;i++)aggregateRow(state,list[i]);
+    if(onProgress)onProgress(end/list.length);
+    if(end<list.length)await yieldToBrowser();
+  }
+  return finalizeAggregate(state,list.length);
+}
+function attachParseMeta(rows,meta){Object.defineProperty(rows,'_parseMeta',{value:meta,enumerable:false,configurable:true});return rows;}
+async function normalizeParsedRows(rawRows,source,options){
+  if((rawRows||[]).length>PharmaCore.MAX_UPLOAD_ROWS)throw new Error('عدد الصفوف أكبر من الحد المدعوم (500,000 صف)');
+  const sourceList=rawRows||[],rows=[],chunk=5000;
+  for(let start=0;start<sourceList.length;start+=chunk){
+    throwIfCancelled(options);
+    const end=Math.min(start+chunk,sourceList.length);
+    for(let i=start;i<end;i++){const row=normalizeRow(sourceList[i]);if(row)rows.push(row);}
+    options?.onProgress?.(end/sourceList.length);
+    if(end<sourceList.length)await yieldToBrowser();
+  }
+  return attachParseMeta(rows,{source,...(options?.meta||{}),sourceRows:(rawRows||[]).length,rejectedRows:Math.max(0,(rawRows||[]).length-rows.length)});
+}
+function selectWorkbookData(wb,options){
+  for(const sheetName of wb.SheetNames||[]){
+    throwIfCancelled(options);
+    const sheet=wb.Sheets[sheetName];
+    if(!sheet||!sheet['!ref'])continue;
+    let range;
+    try{range=XLSX.utils.decode_range(sheet['!ref']);}catch(_){continue;}
+    if(range.e.r-range.s.r>PharmaCore.MAX_UPLOAD_ROWS+50)throw new Error('عدد صفوف ورقة Excel أكبر من الحد المدعوم (500,000 صف)');
+    const previewRange={s:{r:range.s.r,c:range.s.c},e:{r:Math.min(range.e.r,range.s.r+24),c:range.e.c}};
+    const preview=XLSX.utils.sheet_to_json(sheet,{header:1,defval:'',raw:false,blankrows:true,range:previewRange});
+    const headerOffset=preview.findIndex(row=>PharmaCore.countRxHeaderMatches(row)>=2);
+    if(headerOffset<0)continue;
+    const headerRow=range.s.r+headerOffset;
+    if(range.e.r-headerRow>PharmaCore.MAX_UPLOAD_ROWS)throw new Error('عدد صفوف ورقة Excel أكبر من الحد المدعوم (500,000 صف)');
+    const rows=XLSX.utils.sheet_to_json(sheet,{defval:'',raw:false,range:headerRow});
+    if(rows.length)return{rows,sheetName};
+  }
+  throw new Error('لم أجد ورقة تحتوي أعمدة الطبيب والدواء — راجع أسماء الأعمدة في الملف');
+}
+async function parseExcel(file,options){
+  const buf=await file.arrayBuffer();throwIfCancelled(options);options?.onProgress?.(.08);await yieldToBrowser();
+  const wb=XLSX.read(buf,{type:'array'});throwIfCancelled(options);options?.onProgress?.(.28);
+  if(!wb.SheetNames.length)throw new Error('ملف Excel لا يحتوي أوراقاً');
+  const selected=selectWorkbookData(wb,options);options?.onProgress?.(.4);
+  return normalizeParsedRows(selected.rows,'excel',{...options,meta:{sheet:selected.sheetName},onProgress:p=>options?.onProgress?.(.4+p*.6)});
+}
+function decodeDelimitedText(buffer){
+  const bytes=new Uint8Array(buffer);
+  let text;
+  if(bytes[0]===0xFF&&bytes[1]===0xFE)text=new TextDecoder('utf-16le').decode(bytes.subarray(2));
+  else if(bytes[0]===0xFE&&bytes[1]===0xFF)text=new TextDecoder('utf-16be').decode(bytes.subarray(2));
+  else{
+    const source=bytes[0]===0xEF&&bytes[1]===0xBB&&bytes[2]===0xBF?bytes.subarray(3):bytes;
+    try{text=new TextDecoder('utf-8',{fatal:true}).decode(source);}
+    catch(_){text=new TextDecoder('windows-1256').decode(source);}
+  }
+  if(text.includes('\uFFFD'))throw new Error('تعذر تحديد ترميز CSV — احفظه بصيغة UTF-8 ثم أعد الرفع');
+  return text;
+}
+async function parseCSV(file,options){
+  const buffer=await file.arrayBuffer();throwIfCancelled(options);
+  const text=decodeDelimitedText(buffer);options?.onProgress?.(.1);await yieldToBrowser();
+  const wb=XLSX.read(text,{type:'string'});throwIfCancelled(options);options?.onProgress?.(.3);
+  if(!wb.SheetNames.length)throw new Error('ملف CSV فارغ');
+  const selected=selectWorkbookData(wb,options);options?.onProgress?.(.4);
+  return normalizeParsedRows(selected.rows,'csv',{...options,meta:{encoding:'auto'},onProgress:p=>options?.onProgress?.(.4+p*.6)});
+}
+function normalizeRow(r){return PharmaCore.normalizeRxRow(r);}
+async function parsePDF(file,options){
+  if(!window.pdfjsLib) window.pdfjsLib=window['pdfjs-dist/build/pdf'];
+  if(!window.pdfjsLib)throw new Error('تعذر تحميل قارئ PDF — تحقق من الاتصال ثم أعد المحاولة');
+  if(!window.pdfjsWorker && window['pdfjs-dist/build/pdf.worker']) window.pdfjsWorker=window['pdfjs-dist/build/pdf.worker'];
+  try{ pdfjsLib.GlobalWorkerOptions.workerSrc = window.pdfjsWorker ? '' : 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }catch(e){}
+  const buf=await file.arrayBuffer();throwIfCancelled(options);
+  const loadingTask=pdfjsLib.getDocument({data:buf});
+  let pdf=null;
+  try{
+    pdf=await loadingTask.promise;throwIfCancelled(options);
+    if(pdf.numPages>PharmaCore.MAX_PDF_PAGES)throw new Error('عدد صفحات PDF ('+pdf.numPages.toLocaleString('en-US')+') أكبر من الحد المدعوم ('+PharmaCore.MAX_PDF_PAGES.toLocaleString('en-US')+' صفحة). قسّم التقرير إلى ملفين أو أكثر (مثلاً نصف الفترة لكل ملف) وارفعهم بالترتيب، أو صدّره كـ Excel.');
+    const ENGLISH_SPECIALTIES=['GASTROENTEROLOGY','ENDOCRINOLOGY','OPHTHALMOLOGY','OPTHALMOLOGY','RHEUMATOLOGY','PULMONOLOGY','FAMILY MEDICINE','GENERAL PRACTITIONER','PARACITIONER','DERMATOLOGY','ORTHOPAEDIC','PSYCHIATRY','OBSTETRICS','PAEDIATRIC','CARDIOLOGY','NEPHROLOGY','NEUROLOGY','ONCOLOGY','INTERNAL MEDICINE','UROLOGY','GENERAL','SURGERY','DENTAL','RADIOLOGY','GYNECOLOGY','MEDICINE','ENT'];
+    const SPECIALTIES=[...ENGLISH_SPECIALTIES,'الطب العام','طب عام','الباطنة','باطنة','العظام','عظام','الاطفال','الأطفال','اطفال','أطفال','العيون','عيون','الانف والاذن','الأنف والأذن','النسا والولادة','نساء وولادة','الجلدية','جلدية','النفسية','نفسية','المسالك','مسالك','الاسنان','الأسنان','اسنان','أسنان','الجراحة','جراحة','القلب','قلب','الكلى','كلى','المخ والاعصاب','مخ واعصاب'].sort((a,b)=>b.split(/\s+/).length-a.split(/\s+/).length);
+    const DEFAULT_COLS={patient:[-Infinity,75],patientName:[75,243],service:[243,476],orderNo:[476,535],status:[535,596],doctorSection:[596,Infinity]};
+    const HEADER_ALIASES=[
+      ['patient',/PATIENT\s*(NO|NUMBER)|رقم\s*المريض|المريض\s*رقم/i],
+      ['patientName',/PATIENT\s*NAME|اسم\s*المريض|المريض\s*اسم/i],
+      ['service',/SERVICE\s*NAME|MEDICATION|DRUG\s*NAME|اسم\s*(الخدمة|الدواء|الصنف)/i],
+      ['orderNo',/ORDER\s*(NO|NUMBER)|رقم\s*(الأمر|الطلب)/i],
+      ['status',/STATUS|الحالة|حالة\s*الطلب/i],
+      ['doctorSection',/DOCTOR\s*NAME|PHYSICIAN|اسم\s*الطبيب|الطبيب\s*اسم/i],
+      ['section',/SECTION|SPECIAL(TY|ITY)|DEPARTMENT|القسم|التخصص/i],
+    ];
+    function joinCell(ws,range){
+      if(!range)return'';
+      return ws.filter(word=>word.x>=range[0]&&word.x<range[1]).sort((a,b)=>a.order-b.order).map(word=>word.s).join(' ').replace(/\s+/g,' ').trim();
+    }
+    function findHeader(ws,re){
+      const sequences=[
+        [...ws].sort((a,b)=>a.order-b.order),
+        [...ws].sort((a,b)=>a.x-b.x),
+        [...ws].sort((a,b)=>b.x-a.x),
+      ];
+      let best=null;
+      for(const sequence of sequences){
+        for(let start=0;start<sequence.length;start++){
+          for(let size=1;size<=Math.min(4,sequence.length-start);size++){
+            const words=sequence.slice(start,start+size),text=words.map(word=>word.s).join(' ');
+            if(re.test(text)){
+              const candidate={x:words.reduce((sum,word)=>sum+word.x,0)/words.length,size,length:text.length};
+              if(!best||candidate.size<best.size||(candidate.size===best.size&&candidate.length<best.length))best=candidate;
+            }
+          }
+        }
+      }
+      return best;
+    }
+    function headerFields(ws){
+      return HEADER_ALIASES.map(([key,re])=>{const found=findHeader(ws,re);return found?{key,x:found.x}:null;}).filter(Boolean);
+    }
+    function detectColumns(lines){
+      for(const ws of lines){
+        const found=headerFields(ws),keys=new Set(found.map(item=>item.key));
+        if(!keys.has('patient')||!keys.has('service')||!keys.has('doctorSection'))continue;
+        found.sort((a,b)=>a.x-b.x);
+        const cols={};
+        found.forEach((item,index)=>{
+          const previous=found[index-1],next=found[index+1];
+          cols[item.key]=[previous?(previous.x+item.x)/2:-Infinity,next?(item.x+next.x)/2:Infinity];
+        });
+        return{cols,detected:true};
+      }
+      return{cols:DEFAULT_COLS,detected:false};
+    }
+    function isHeaderLine(ws){
+      const keys=new Set(headerFields(ws).map(item=>item.key));
+      return keys.size>=2&&(keys.has('patient')||keys.has('service')||keys.has('doctorSection'));
+    }
+    function isFooterLine(ws){
+      /* أسطر تذييل تقارير Oracle المتكرّرة في كل صفحة (ترقيم/عنوان/طابع الطباعة) — ليست بيانات */
+      const text=ws.map(word=>word.s).join(' ');
+      return /Page\s+\d+\s+of\s+\d+/i.test(text)||/Printed\s+By\s*:/i.test(text)||/P\.?\s*O\.?\s*Box/i.test(text);
+    }
+    function normalizeDigits(value){
+      return String(value||'').replace(/[٠-٩]/g,d=>'0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]).replace(/[۰-۹]/g,d=>'0123456789'['۰۱۲۳۴۵۶۷۸۹'.indexOf(d)]);
+    }
+    function splitDoctorSection(text){
+      const clean=PharmaCore.normalizeWhitespace(text),words=clean.split(/\s+/).filter(Boolean);
+      for(let index=1;index<words.length;index++){
+        for(const specialty of SPECIALTIES){
+          const size=specialty.split(/\s+/).length;
+          if(entityKey(words.slice(index,index+size).join(' '))===entityKey(specialty)){
+            return{doctor:words.slice(0,index).join(' '),section:words.slice(index).join(' ')};
+          }
+        }
+      }
+      for(let index=0;index<words.length;index++){
+        const upper=words[index].toUpperCase();
+        for(const specialty of ENGLISH_SPECIALTIES.filter(item=>!item.includes(' ')&&item.length>=5)){
+          if(upper.length>specialty.length+1&&upper.endsWith(specialty)){
+            const splitAt=words[index].length-specialty.length;
+            return{doctor:[...words.slice(0,index),words[index].slice(0,splitAt)].join(' ').trim(),section:[words[index].slice(splitAt),...words.slice(index+1)].join(' ').trim()};
+          }
+        }
+      }
+      return{doctor:clean,section:''};
+    }
+    function appendValue(current,next){return next?PharmaCore.normalizeWhitespace((current?current+' ':'')+next):current;}
+    const rows=[];let textItemCount=0,rejectedRows=0,sourceRows=0,layoutDetectedPages=0,fallbackPages=0;
+    for(let pageNumber=1;pageNumber<=pdf.numPages;pageNumber++){
+      throwIfCancelled(options);
+      const page=await pdf.getPage(pageNumber),content=await page.getTextContent();
+      textItemCount+=content.items.length;
+      const lineMap={};
+      content.items.forEach((item,order)=>{
+        const y=Math.round(item.transform[5]/2)*2;
+        if(!lineMap[y])lineMap[y]=[];
+        const text=String(item.str||'').trim();
+        if(text)lineMap[y].push({x:item.transform[4],s:text,order});
+      });
+      const lines=Object.keys(lineMap).map(Number).sort((a,b)=>b-a).map(y=>({y,words:lineMap[y]})).filter(line=>line.words.length);
+      const layout=detectColumns(lines.map(line=>line.words)),cols=layout.cols;
+      if(layout.detected)layoutDetectedPages++;else fallbackPages++;
+      let pending=null;
+      const finalizePending=()=>{
+        if(!pending)return;
+        sourceRows++;
+        const split=cols.section?{doctor:pending.doctorSection,section:pending.section}:splitDoctorSection(pending.doctorSection);
+        const row=normalizeRow({patient:pending.patient,patientName:pending.patientName,service:pending.service,orderNo:pending.orderNo,status:pending.status,doctor:split.doctor,section:split.section});
+        if(row&&row.doctor&&row.service)rows.push(row);else rejectedRows++;
+        pending=null;
+        if(rows.length>PharmaCore.MAX_UPLOAD_ROWS)throw new Error('عدد الصفوف أكبر من الحد المدعوم (500,000 صف)');
+      };
+      for(const line of lines){
+        const ws=line.words;
+        if(isHeaderLine(ws)||isFooterLine(ws))continue;
+        const cells={
+          patient:joinCell(ws,cols.patient),
+          patientName:joinCell(ws,cols.patientName),
+          service:joinCell(ws,cols.service),
+          orderNo:joinCell(ws,cols.orderNo),
+          status:joinCell(ws,cols.status),
+          doctorSection:joinCell(ws,cols.doctorSection),
+          section:joinCell(ws,cols.section),
+        };
+        /* عمود «رقم المريض» قد يلتقط الرقم واسم المريض معاً؛ نأخذ المعرِّف الأول
+           كبداية صفّ جديد ونحوّل بقية النص إلى اسم المريض بدل رفض الصف كاملاً */
+        const patientCell=normalizeDigits(cells.patient).trim();
+        const patientLead=patientCell.split(/\s+/)[0]||'';
+        if(patientCell){
+          if(/^[\p{L}\p{N}][\p{L}\p{N}._/-]{0,31}$/u.test(patientLead)){
+            finalizePending();
+            const patientRest=patientCell.slice(patientLead.length).trim();
+            pending={...cells,patient:patientLead,patientName:patientRest?appendValue(patientRest,cells.patientName):cells.patientName,lastY:line.y};
+            continue;
+          }
+          /* الخلية تبدأ بنص غير معرِّف — عاملها كتكملة سطر ملتفّ إن وُجد صفّ قيد التجميع */
+          if(pending&&Math.abs(pending.lastY-line.y)<=24){
+            ['patientName','service','orderNo','status','doctorSection','section'].forEach(field=>{pending[field]=appendValue(pending[field],cells[field]);});
+            pending.patientName=appendValue(pending.patientName,patientCell);
+            pending.lastY=line.y;
+            continue;
+          }
+          sourceRows++;rejectedRows++;continue;
+        }
+        if(pending&&Math.abs(pending.lastY-line.y)<=24){
+          ['patientName','service','orderNo','status','doctorSection','section'].forEach(field=>{pending[field]=appendValue(pending[field],cells[field]);});
+          pending.lastY=line.y;
+        }
+      }
+      finalizePending();
+      options?.onProgress?.(pageNumber/pdf.numPages);
+      if(pageNumber<pdf.numPages&&pageNumber%3===0)await yieldToBrowser();
+    }
+    if(!textItemCount)throw new Error('ملف PDF عبارة عن صور ممسوحة ولا يحتوي نصاً قابلاً للاستخراج. استخدم PDF نصي من Oracle أو شغّل OCR أولاً');
+    if(!rows.length){
+      if(textItemCount<Math.max(20,pdf.numPages*5)||!layoutDetectedPages)throw new Error('PDF لا يحتوي طبقة نص كاملة أو تخطيطه غير معروف. شغّل OCR أو صدّر تقرير PDF نصياً من النظام');
+      throw new Error('لم أتمكن من تحليل صفوف PDF — تأكد من وجود أعمدة Patient No وService Name وDoctor Name');
+    }
+    return attachParseMeta(rows,{source:'pdf',pages:pdf.numPages,sourceRows,rejectedRows,textItemCount,layoutDetectedPages,fallbackPages});
+  }finally{
+    try{if(pdf)await pdf.destroy();else await loadingTask.destroy();}catch(_){}
+  }
+}
+
+
+/* ---- PureHerb products ---- */
+const PUREHERB_PRODUCTS = [
+  {key:'PURE OMEGA',aliases:['PURE OMEGA','PUREOMEGA','PURE OMEGA 3'],name:'Pure Omega-3 Syrup 240ML',code:'1-03-186-084'},
+  {key:'PUREFEEL',aliases:['PUREFEEL','PURE FEEL'],name:'PureFeel Tablet 30Tab',code:'1-03-187-269'},
+  {key:'CENTROZON W',aliases:['CENTROZON WOMEN','CENTROZON W'],name:'Centrozon Women 30Tab',code:'1-03-187-267'},
+  {key:'CENTROZON',aliases:['CENTROZON'],exclude:['WOMEN'],name:'Centrozon Tablet 30Tab',code:'1-03-187-270'},
+  {key:'ZINCOLIVE',aliases:['ZINCOLIVE','ZINC OLIVE'],name:'Zincolive Syrup 150ML',code:'1-03-186-085'},
+  {key:'BONEFRIEND',aliases:['BONEFRIEND','BONE FRIEND'],name:'BoneFriend Tablet 30Tab',code:'1-03-187-268'},
+  {key:'ARGIGROW',aliases:['ARGIGROW','ARGI GROW'],name:'ArgiGrow Syrup 150ML',code:'1-03-186-083'}
+];
+function findPureHerbProduct(service){
+  const text=PharmaCore.normalizeProductText(service);if(!text)return null;
+  return PUREHERB_PRODUCTS.find(p=>{
+    if((p.exclude||[]).some(x=>phraseMatch(text,x)))return false;
+    return (p.aliases||[p.key]).some(x=>phraseMatch(text,x));
+  })||null;
+}
+
+
+</script>
+<script>
+/* PharmaDash Pro — متابعة الأصناف والأطباء والزيارات
+   كل البيانات تُحفظ على الجهاز (IndexedDB) — لا شيء يُرفع لأي خادم. */
+(function(){
+'use strict';
+
+/* ───────── ثوابت ───────── */
+const BRANCHES = { T1:'التعاون الأول', T2:'التعاون الثاني', T3:'التعاون الثالث' };
+const SALES_BRANCH_MAP = { 'صيدلية 1':'T1', 'صيدلية 18':'T2', 'صيدلية 7':'T3' };
+const PUREHERB_KEYMAP = { 'PURE OMEGA':'pure_omega','PUREFEEL':'purefeel','CENTROZON W':'centrozon_w','CENTROZON':'centrozon','ZINCOLIVE':'zincolive','BONEFRIEND':'bonefriend','ARGIGROW':'argigrow' };
+const PRODUCTS = [
+  ...PRIVATE_LABEL.map(p=>({ key:p.key, name:p.name, form:p.form, brand:'nostri' })),
+  ...PUREHERB_PRODUCTS.map(p=>{ const name=p.name.replace(/\s+(Syrup|Tablet)?\s*\d.*$/,''); return { key:PUREHERB_KEYMAP[p.key], name, form:p.name.slice(name.length).trim(), brand:'herb' }; })
+];
+const PROD = Object.fromEntries(PRODUCTS.map(p=>[p.key,p]));
+const BRAND = { nostri:{ label:'NOSTRI · Private Label', color:'var(--nostri)', cls:'nostri' }, herb:{ label:'PureHerb', color:'var(--herb)', cls:'herb' } };
+
+function productKeyOf(service){
+  const pl = findPrivateLabelProduct(service); if(pl) return pl.key;
+  const ph = findPureHerbProduct(service); if(ph) return PUREHERB_KEYMAP[ph.key] || null;
+  return null;
+}
+const keyOf = v => PharmaCore.normalizeEntityKey(v);
+const esc = escapeHtml;
+const n0 = v => fmt(Math.round(v||0));
+const today = () => PharmaCore.localDateKey ? PharmaCore.localDateKey(new Date()) : new Date().toISOString().slice(0,10);
+
+/* ───────── أيقونات ───────── */
+const I = (p)=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';
+const ICON = {
+  home:I('<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>'),
+  pill:I('<rect x="2" y="8" width="20" height="8" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/>'),
+  doc:I('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
+  visit:I('<rect x="3" y="4" width="18" height="17" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><path d="m9 15 2 2 4-4"/>'),
+  data:I('<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>'),
+  back:I('<polyline points="9 18 15 12 9 6"/>'),
+  search:I('<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/>'),
+  upload:I('<path d="M12 3v13"/><path d="m7 8 5-5 5 5"/><path d="M4 21h16"/>'),
+  plus:I('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'),
+  star:I('<polygon points="12 2 15 9 22 9 16.5 13.5 18.5 21 12 16.5 5.5 21 7.5 13.5 2 9 9 9"/>'),
+  target:I('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>'),
+  down:I('<polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/>'),
+  trash:I('<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>'),
+  save:I('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>')
+};
+
+/* ───────── التخزين (IndexedDB) ───────── */
+const Store = (()=>{
+  let dbp = null;
+  function open(){
+    if(dbp) return dbp;
+    dbp = new Promise((res,rej)=>{
+      const r = indexedDB.open('pharmadash-pro',1);
+      r.onupgradeneeded = ()=>{ const db=r.result;
+        ['uploads','visits'].forEach(s=>{ if(!db.objectStoreNames.contains(s)) db.createObjectStore(s,{keyPath:'id'}); });
+        if(!db.objectStoreNames.contains('kv')) db.createObjectStore('kv'); };
+      r.onsuccess = ()=>res(r.result); r.onerror = ()=>rej(r.error);
+    });
+    return dbp;
+  }
+  async function tx(store, mode, fn){
+    const db = await open();
+    return new Promise((res,rej)=>{ const t=db.transaction(store,mode); const s=t.objectStore(store);
+      const out = fn(s); t.oncomplete=()=>res(out && 'result' in out ? out.result : out); t.onerror=()=>rej(t.error); });
+  }
+  return {
+    all:(s)=>tx(s,'readonly',st=>st.getAll()),
+    put:(s,v)=>tx(s,'readwrite',st=>{ st.put(v); }),
+    del:(s,id)=>tx(s,'readwrite',st=>{ st.delete(id); }),
+    clear:(s)=>tx(s,'readwrite',st=>{ st.clear(); }),
+    get:(k)=>tx('kv','readonly',st=>st.get(k)),
+    set:(k,v)=>tx('kv','readwrite',st=>{ st.put(v,k); })
+  };
+})();
+
+/* ───────── الحالة ───────── */
+const S = {
+  uploads:[], visits:[], sales:[],
+  f:{ branch:'ALL', period:'ALL' },
+  ix:null, full:null,
+  docQuery:'', docSort:'mine', docOnlyMine:false, drugQuery:'', showAllDrugs:false
+};
+try{ const f=JSON.parse(localStorage.getItem('pdp-filter')); if(f&&f.branch) S.f=f; }catch(e){}
+
+async function loadAll(){
+  try{
+    S.uploads = await Store.all('uploads');
+    S.visits = await Store.all('visits');
+    S.sales = (await Store.get('sales')) || [];
+  }catch(e){ toast('تعذّر فتح التخزين المحلي — ستعمل الجلسة بدون حفظ'); }
+  rebuild();
+}
+
+/* ───────── بناء الفهارس ───────── */
+function inPeriod(date, p){
+  if(p==='ALL') return true;
+  if(!date) return false;
+  if(p.startsWith('M:')) return date.slice(0,7)===p.slice(2);
+  if(p.startsWith('D:')) return date===p.slice(2);
+  return true;
+}
+function buildIndex(uploads){
+  const doctors=new Map(), drugs=new Map(), products=new Map(), sections=new Map();
+  const pkCache=new Map(); const patients=new Set(); let rows=0, mine=0;
+  const dates=new Set();
+  PRODUCTS.forEach(p=>products.set(p.key,{ key:p.key, total:0, doctors:new Map(), sections:new Map(), branches:new Map(), dates:new Map(), patients:new Set(), closed:0, canceled:0, names:new Map() }));
+  const bump=(m,k,name,extra)=>{ let o=m.get(k); if(!o){ o={key:k,name,count:0,...(extra||{})}; m.set(k,o);} o.count++; return o; };
+  for(const u of uploads){
+    const date=u.date||''; if(date) dates.add(date);
+    for(const r of u.rows){
+      const [doctor,service,section,patient,status]=r;
+      const dk=keyOf(doctor), gk=keyOf(service), sk=keyOf(section);
+      let pk=pkCache.get(gk); if(pk===undefined){ pk=service?productKeyOf(service):null; pkCache.set(gk,pk); }
+      const pid=patient? u.branch+'|'+patient : '';
+      rows++; if(pk) mine++; if(pid) patients.add(pid);
+      const st=PharmaCore.normalizeStatus(status);
+      if(dk){
+        let d=doctors.get(dk);
+        if(!d){ d={key:dk,name:doctor,section:section||'',branches:new Map(),total:0,mine:0,drugs:new Map(),prods:new Map(),patients:new Set(),dates:new Map(),lastMine:''}; doctors.set(dk,d); }
+        d.total++; if(section&&!d.section) d.section=section;
+        bump(d.branches,u.branch,BRANCHES[u.branch]);
+        if(gk) bump(d.drugs,gk,service,{pk});
+        if(pid) d.patients.add(pid);
+        const dd=d.dates.get(date)||{t:0,m:0}; dd.t++; if(pk) dd.m++; d.dates.set(date,dd);
+        if(pk){ d.mine++; d.prods.set(pk,(d.prods.get(pk)||0)+1); if(date>d.lastMine) d.lastMine=date; }
+      }
+      if(gk){
+        let g=drugs.get(gk);
+        if(!g){ g={key:gk,name:service,pk,total:0,doctors:new Map(),sections:new Map(),branches:new Map(),dates:new Map(),patients:new Set(),closed:0,canceled:0}; drugs.set(gk,g); }
+        fill(g);
+      }
+      if(pk){ const p=products.get(pk); fill(p); bump(p.names,gk,service); }
+      if(sk){
+        let s=sections.get(sk); if(!s){ s={key:sk,name:section,total:0,mine:0,doctors:new Set(),prods:new Map()}; sections.set(sk,s); }
+        s.total++; if(dk) s.doctors.add(dk); if(pk){ s.mine++; s.prods.set(pk,(s.prods.get(pk)||0)+1); }
+      }
+      function fill(o){
+        o.total++;
+        if(dk) bump(o.doctors,dk,doctor);
+        if(sk) bump(o.sections,sk,section);
+        bump(o.branches,u.branch,BRANCHES[u.branch]);
+        if(date) o.dates.set(date,(o.dates.get(date)||0)+1);
+        if(pid) o.patients.add(pid);
+        if(st==='Closed') o.closed++; else if(st==='Canceled') o.canceled++;
+      }
+    }
+  }
+  return { doctors, drugs, products, sections, rows, mine, patients:patients.size, dates:[...dates].sort(), uploads:uploads.length };
+}
+function rebuild(){
+  const f=S.f;
+  const ups=S.uploads.filter(u=>(f.branch==='ALL'||u.branch===f.branch)&&inPeriod(u.date,f.period));
+  S.ix=buildIndex(ups);
+  S.full=buildIndex(S.uploads);
+}
+function salesFor(pk){
+  const f=S.f; let units=0, amount=0, any=false; const byBranch=new Map();
+  for(const e of S.sales){
+    if(pk && e.product!==pk) continue;
+    if(f.branch!=='ALL' && e.branch!==f.branch) continue;
+    if(!inPeriod(e.date,f.period)) continue;
+    units+=e.units; amount+=e.amount; any=true;
+    byBranch.set(e.branch,(byBranch.get(e.branch)||0)+e.units);
+  }
+  return any?{units,amount,byBranch}:null;
+}
+function visitsOf(dk){ return S.visits.filter(v=>v.dk===dk).sort((a,b)=>b.date<a.date?-1:1); }
+function lastVisit(dk){ const v=visitsOf(dk); return v.length?v[0].date:''; }
+function daysSince(d){ if(!d) return Infinity; return Math.round((new Date(today())-new Date(d))/864e5); }
+
+/* ───────── أدوات العرض ───────── */
+function initials(name){
+  const w=String(name||'').replace(/^(DR\.?|DOCTOR|د\.?|دكتور)\s+/i,'').trim().split(/\s+/).filter(Boolean);
+  return ((w[0]||'?')[0]+((w[1]||'')[0]||'')).toUpperCase();
+}
+function sorted(map){ return [...map.values()].sort((a,b)=>b.count-a.count); }
+function hbars(items,{max,cls='',link}={}){
+  if(!items.length) return '<p class="muted small">لا توجد بيانات</p>';
+  const m=max||Math.max(...items.map(i=>i.count),1);
+  return '<div class="hbars">'+items.map(i=>{
+    const inner='<span class="n">'+esc(i.name)+'</span><span class="t"><i style="width:'+(i.count/m*100).toFixed(1)+'%"></i></span><span class="c num">'+fmt(i.count)+'</span>';
+    return link? '<a class="hb '+cls+'" href="'+link(i)+'">'+inner+'</a>' : '<div class="hb '+cls+'">'+inner+'</div>';
+  }).join('')+'</div>';
+}
+function trendCols(datesMap){
+  const entries=[...datesMap.entries()].filter(([d])=>d).sort((a,b)=>a[0]<b[0]?-1:1);
+  if(entries.length<2) return '';
+  let pts=entries;
+  if(entries.length>14){
+    const byM=new Map(); entries.forEach(([d,c])=>byM.set(d.slice(0,7),(byM.get(d.slice(0,7))||0)+c));
+    pts=[...byM.entries()];
+    if(pts.length<2) pts=entries.slice(-14);
+  }
+  pts=pts.slice(-14);
+  const m=Math.max(...pts.map(p=>p[1]),1);
+  return '<div class="cols">'+pts.map(([d,c])=>'<div class="col"><b class="num">'+fmt(c)+'</b><i style="height:'+(c/m*100).toFixed(1)+'%"></i><span>'+esc(fmtDate(d))+'</span></div>').join('')+'</div>';
+}
+const MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function fmtDate(d){
+  if(!d) return '—';
+  const [y,m,dd]=d.split('-');
+  if(!dd) return MONTHS[+m-1]+' '+y.slice(2);
+  return (+dd)+' '+MONTHS[+m-1].slice(0,3);
+}
+function fmtDateLong(d){ if(!d) return '—'; const [y,m,dd]=d.split('-'); return (+dd)+' '+MONTHS[+m-1]+' '+y; }
+function prodChip(pk,count){
+  const p=PROD[pk]; if(!p) return '';
+  return '<a class="chip '+BRAND[p.brand].cls+'" href="#/product/'+pk+'">'+esc(p.name)+(count!=null?' · <span class="num">'+fmt(count)+'</span>':'')+'</a>';
+}
+function kpi(label,value,hint){ return '<div class="card kpi"><div class="l">'+label+'</div><div class="v num">'+value+'</div>'+(hint?'<div class="h">'+hint+'</div>':'')+'</div>'; }
+function rate(o){ const dec=o.closed+o.canceled; return dec?Math.round(o.closed/dec*100)+'%':'—'; }
+const docHref = k => '#/doctor/'+encodeURIComponent(k);
+const drugHref = k => '#/drug/'+encodeURIComponent(k);
+function noData(){
+  return '<div class="card empty"><div class="ei">'+ICON.upload+'</div><h2>ابدأ برفع ملف الكتابات</h2>'
+    +'<p>ارفع تقرير الروشتات (Excel أو CSV أو PDF) لأي تعاون، وبعدها اضغط على أي صنف أو طبيب لتشوف كل تفاصيله.</p>'
+    +'<a class="btn pri" href="#/data">'+ICON.upload+' رفع ملف</a></div>';
+}
+function filterNote(){
+  const f=S.f; if(f.branch==='ALL'&&f.period==='ALL') return '';
+  return '<span class="chip brand">'+(f.branch==='ALL'?'كل التعاونات':BRANCHES[f.branch])+(f.period==='ALL'?'':' · '+esc(periodLabel(f.period)))+'</span>';
+}
+function periodLabel(p){ if(p==='ALL') return 'كل الفترات'; if(p.startsWith('M:')) return fmtDate(p.slice(2)); return fmtDateLong(p.slice(2)); }
+
+/* ───────── الصفحات ───────── */
+const PAGES = {
+  home:{ title:'الرئيسية', icon:'home', nav:true },
+  products:{ title:'أصنافي', icon:'pill', nav:true },
+  doctors:{ title:'الأطباء', icon:'doc', nav:true },
+  visits:{ title:'الزيارات', icon:'visit', nav:true },
+  data:{ title:'البيانات', icon:'data', nav:true }
+};
+
+function renderHome(){
+  const ix=S.ix;
+  if(!S.uploads.length) return noData();
+  const docsMine=[...ix.doctors.values()].filter(d=>d.mine>0);
+  const share=ix.rows?(ix.mine/ix.rows*100).toFixed(1)+'%':'—';
+  const sold=salesFor(null);
+  let h='<div class="stack">';
+  h+='<div class="grid g4">'
+    +kpi('كتابات أصنافي',fmt(ix.mine),'من '+fmt(ix.rows)+' كتابة · '+share)
+    +kpi('أطباء بيكتبوا أصنافي',fmt(docsMine.length),'من '+fmt(ix.doctors.size)+' طبيب')
+    +kpi(sold?'مبيعات فعلية (علبة)':'الأصناف المكتوبة',sold?fmt(sold.units):fmt([...ix.products.values()].filter(p=>p.total).length)+' / '+PRODUCTS.length, sold?'حسب ملف المبيعات':'صنف اتكتب على الأقل مرة')
+    +kpi('زيارات هذا الشهر',fmt(S.visits.filter(v=>v.date.slice(0,7)===today().slice(0,7)).length),'سجّل زياراتك من صفحة الطبيب')
+    +'</div>';
+
+  // أصنافي
+  h+='<div class="card"><h3>'+ICON.pill+' أصنافي <span class="sub">اضغط على الصنف لتفاصيله</span></h3>'+productTiles(true)+'</div>';
+
+  // اقتراحات
+  h+='<div class="grid g2">'+suggestions()+'</div>';
+
+  // أعلى الأطباء
+  const top=docsMine.sort((a,b)=>b.mine-a.mine).slice(0,8);
+  h+='<div class="grid g2"><div class="card"><h3>'+ICON.star+' أكثر الأطباء كتابةً لأصنافي <a class="sub" href="#/doctors">الكل ›</a></h3>'+doctorRows(top,'mine')+'</div>';
+  const secs=[...ix.sections.values()].filter(s=>s.mine).sort((a,b)=>b.mine-a.mine).slice(0,8).map(s=>({name:s.name,count:s.mine}));
+  h+='<div class="card"><h3>'+ICON.target+' أصنافي حسب القسم</h3>'+hbars(secs,{cls:'mine'})+'</div></div>';
+  return h+'</div>';
+}
+
+function productTiles(compact){
+  const ix=S.ix;
+  let h='';
+  ['nostri','herb'].forEach(b=>{
+    const list=PRODUCTS.filter(p=>p.brand===b).map(p=>({p,o:ix.products.get(p.key)})).sort((a,c)=>c.o.total-a.o.total);
+    h+='<div class="section-title" style="margin:'+(h?'16px':'0')+' 2px 10px">'+BRAND[b].label+'</div><div class="grid '+(compact?'g4':'g3')+'">';
+    list.forEach(({p,o})=>{
+      h+='<a class="card ptile'+(o.total?'':' zero')+'" href="#/product/'+p.key+'"><span class="stripe" style="background:'+BRAND[b].color+'"></span>'
+        +'<div><div class="pn">'+esc(p.name)+'</div><div class="pf">'+esc(p.form)+'</div></div>'
+        +'<div class="pv"><b class="num">'+fmt(o.total)+'</b><span>كتابة</span></div>'
+        +'<div class="muted small">'+fmt(o.doctors.size)+' طبيب · '+fmt(o.patients.size)+' مريض</div></a>';
+    });
+    h+='</div>';
+  });
+  return h;
+}
+
+function suggestions(){
+  const ix=S.ix, full=S.full;
+  const docs=[...ix.doctors.values()];
+  // 1) بيكتبوا أصنافي ومحتاجين زيارة
+  const keep=docs.filter(d=>d.mine>0&&daysSince(lastVisit(d.key))>30).sort((a,b)=>b.mine-a.mine).slice(0,5);
+  // 2) فرص: أطباء في أقسام بتكتب أصنافي لكنهم ما كتبوش
+  const hotSecs=new Set([...ix.sections.values()].filter(s=>s.mine>0).map(s=>s.key));
+  const opp=docs.filter(d=>d.mine===0&&hotSecs.has(keyOf(d.section))).sort((a,b)=>b.total-a.total).slice(0,5);
+  // 3) توقفوا: كتبوا أصنافي قبل كده ومفيش كتابة في آخر 14 يوم بيانات
+  const lastData=full.dates[full.dates.length-1]||'';
+  const stopped=lastData?[...full.doctors.values()].filter(d=>d.mine>=2&&d.lastMine&&(new Date(lastData)-new Date(d.lastMine))/864e5>14).sort((a,b)=>b.mine-a.mine).slice(0,5):[];
+  const block=(title,icon,color,soft,list,why)=>'<div class="card"><h3><span class="tip" style="padding:0;background:none"><span class="ti" style="background:'+soft+';color:'+color+'">'+icon+'</span></span>'+title+'</h3>'
+    +(list.length?'<div class="list">'+list.map(d=>'<a class="row" href="'+docHref(d.key)+'"><span class="mini-av">'+esc(initials(d.name))+'</span><span class="rm"><div class="rt">'+esc(d.name)+'</div><div class="rs">'+why(d)+'</div></span></a>').join('')+'</div>'
+      :'<p class="muted small">لا يوجد حاليًا 👌</p>')+'</div>';
+  return block('محتاجين زيارة متابعة',ICON.visit,'var(--brand)','var(--brand-soft)',keep,d=>fmt(d.mine)+' كتابة لأصنافك · '+(lastVisit(d.key)?'آخر زيارة من '+daysSince(lastVisit(d.key))+' يوم':'لم تُسجَّل زيارة'))
+    +block('فرص جديدة — لسه ما كتبوش أصنافك',ICON.target,'var(--warn)','var(--warn-soft)',opp,d=>esc(d.section||'—')+' · '+fmt(d.total)+' كتابة إجمالًا')
+    +(stopped.length||full.dates.length>14?block('توقفوا عن كتابة أصنافك',ICON.down,'var(--bad)','var(--bad-soft)',stopped,d=>'آخر كتابة '+fmtDateLong(d.lastMine)+' · '+fmt(d.mine)+' كتابة سابقًا'):'');
+}
+
+function doctorRows(list,mode){
+  if(!list.length) return '<p class="muted small">لا توجد نتائج</p>';
+  const max=Math.max(...list.map(d=>mode==='mine'?d.mine:d.total),1);
+  return '<div class="list">'+list.map((d,i)=>{
+    const v=mode==='mine'?d.mine:d.total;
+    const lv=lastVisit(d.key);
+    return '<a class="row" href="'+docHref(d.key)+'"><span class="mini-av'+(d.mine?' on':'')+'">'+esc(initials(d.name))+'</span>'
+      +'<span class="rm"><div class="rt">'+esc(d.name)+'</div><div class="rs">'+esc(d.section||'—')+' · '+[...d.branches.values()].map(b=>esc(b.name)).join('، ')+(lv?' · زيارة '+fmtDate(lv):'')+'</div>'
+      +'<div class="bar'+(mode==='mine'?' mine':'')+'"><i style="width:'+(v/max*100).toFixed(1)+'%"></i></div></span>'
+      +'<span class="rv num">'+fmt(d.mine)+'<small>من '+fmt(d.total)+'</small></span></a>';
+  }).join('')+'</div>';
+}
+
+function renderProducts(){
+  if(!S.uploads.length) return noData();
+  const ix=S.ix;
+  let h='<div class="stack"><div class="card">'+productTiles(false)+'</div>';
+  h+='<div class="card"><h3>'+ICON.search+' كل الأدوية المكتوبة <span class="sub">'+fmt(ix.drugs.size)+' دواء</span></h3>'
+    +'<div class="search" style="margin-bottom:10px">'+ICON.search+'<input id="drugQ" placeholder="ابحث عن أي دواء (منافس أو صنفك)…" value="'+escapeAttr(S.drugQuery)+'"></div><div id="drugList"></div></div>';
+  return h+'</div>';
+}
+function drugListHtml(){
+  const q=keyOf(S.drugQuery);
+  let list=[...S.ix.drugs.values()];
+  if(q) list=list.filter(d=>d.key.includes(q));
+  list.sort((a,b)=>b.total-a.total);
+  const shown=list.slice(0,S.showAllDrugs?400:25);
+  const max=Math.max(...shown.map(d=>d.total),1);
+  let h='<div class="list">'+shown.map((d,i)=>'<a class="row" href="'+(d.pk?'#/product/'+d.pk:drugHref(d.key))+'"><span class="rk num">'+(i+1)+'</span><span class="rm"><div class="rt">'+esc(d.name)+(d.pk?' <span class="chip mine">صنفي</span>':'')+'</div><div class="rs">'+fmt(d.doctors.size)+' طبيب · '+fmt(d.patients.size)+' مريض</div><div class="bar'+(d.pk?' mine':'')+'"><i style="width:'+(d.total/max*100).toFixed(1)+'%"></i></div></span><span class="rv num">'+fmt(d.total)+'</span></a>').join('')+'</div>';
+  if(!shown.length) h='<p class="muted small">لا توجد نتائج</p>';
+  if(list.length>shown.length) h+='<div style="text-align:center;margin-top:10px"><button class="btn sm" data-act="moreDrugs">عرض المزيد ('+fmt(list.length-shown.length)+')</button></div>';
+  return h;
+}
+
+function renderItem(o,{isMine,title,sub}){
+  if(!o) return '<div class="card empty"><h2>غير موجود</h2><p>هذا العنصر غير موجود في البيانات الحالية — جرّب تغيير الفلتر.</p></div>';
+  const docs=sorted(o.doctors);
+  const sold=isMine?salesFor(o.key):null;
+  let h='<div class="stack"><div class="card hero"><div class="avatar" style="'+(isMine?'background:var(--mine-soft);color:var(--mine)':'')+'">'+ICON.pill+'</div><div style="min-width:0"><h2>'+esc(title)+'</h2><div class="meta">'+sub+filterNote()+'</div></div></div>';
+  h+='<div class="grid g4">'+kpi('مرات الكتابة',fmt(o.total))+kpi('عدد الأطباء',fmt(o.doctors.size))+kpi('عدد المرضى',fmt(o.patients.size))
+    +(sold?kpi('مبيعات فعلية',fmt(sold.units)+' علبة',o.total?'تحويل '+Math.round(sold.units/o.total*100)+'% من الكتابات':''):kpi('نسبة الصرف',rate(o),'مصروف ÷ (مصروف + ملغي)'))+'</div>';
+  if(!o.total) return h+'<div class="card empty"><h2>لم يُكتب في الفترة المختارة</h2><p>جرّب «كل الفترات» أو تعاون آخر.</p></div></div>';
+  h+='<div class="card"><h3>'+ICON.doc+' مين بيكتبه؟ <span class="sub">'+fmt(docs.length)+' طبيب</span></h3><div class="list">'
+    +docs.map((d,i)=>{ const doc=S.ix.doctors.get(d.key); const lv=lastVisit(d.key);
+      return '<a class="row" href="'+docHref(d.key)+'"><span class="rk num">'+(i+1)+'</span><span class="mini-av on">'+esc(initials(d.name))+'</span><span class="rm"><div class="rt">'+esc(d.name)+'</div><div class="rs">'+esc(doc&&doc.section||'—')+(doc?' · '+[...doc.branches.values()].map(b=>esc(b.name)).join('، '):'')+(lv?' · زيارة '+fmtDate(lv):'')+'</div><div class="bar mine"><i style="width:'+(d.count/docs[0].count*100).toFixed(1)+'%"></i></div></span><span class="rv num">'+fmt(d.count)+'<small>'+Math.round(d.count/o.total*100)+'%</small></span></a>'; }).join('')
+    +'</div></div>';
+  h+='<div class="grid g2"><div class="card"><h3>فين بيتكتب؟ — الأقسام</h3>'+hbars(sorted(o.sections).slice(0,10),{cls:isMine?'mine':''})+'</div>'
+    +'<div class="card"><h3>حسب التعاون</h3>'+hbars(sorted(o.branches),{cls:isMine?'mine':''})
+    +(sold&&sold.byBranch.size?'<div class="section-title" style="margin:14px 0 8px">مبيعات فعلية (علبة)</div>'+hbars([...sold.byBranch.entries()].map(([b,c])=>({name:BRANCHES[b],count:c}))):'')+'</div></div>';
+  const tr=trendCols(o.dates);
+  if(tr) h+='<div class="card"><h3>الكتابات عبر الوقت</h3>'+tr+'</div>';
+  if(isMine&&o.names&&o.names.size>1) h+='<div class="card"><h3>الأسماء كما وردت في التقارير</h3>'+hbars(sorted(o.names))+'</div>';
+  return h+'</div>';
+}
+
+function renderDoctors(){
+  if(!S.uploads.length) return noData();
+  return '<div class="stack"><div class="search">'+ICON.search+'<input id="docQ" placeholder="ابحث باسم الطبيب أو القسم…" value="'+escapeAttr(S.docQuery)+'"></div>'
+    +'<div class="filters"><div class="seg" id="docSort">'
+    +[['mine','الأكثر كتابة لأصنافي'],['total','إجمالي الكتابات'],['visit','الأقدم زيارة']].map(([k,l])=>'<button data-sort="'+k+'" class="'+(S.docSort===k?'on':'')+'">'+l+'</button>').join('')
+    +'</div><button class="chip pick'+(S.docOnlyMine?' on':'')+'" data-act="onlyMine">بيكتب أصنافي فقط</button></div>'
+    +'<div class="card" id="docList"></div></div>';
+}
+function docListHtml(){
+  const q=keyOf(S.docQuery);
+  let list=[...S.ix.doctors.values()];
+  if(q) list=list.filter(d=>d.key.includes(q)||keyOf(d.section).includes(q));
+  if(S.docOnlyMine) list=list.filter(d=>d.mine>0);
+  if(S.docSort==='mine') list.sort((a,b)=>b.mine-a.mine||b.total-a.total);
+  else if(S.docSort==='total') list.sort((a,b)=>b.total-a.total);
+  else list.sort((a,b)=>(lastVisit(a.key)||'0')<(lastVisit(b.key)||'0')?-1:1).sort((a,b)=>(b.mine>0)-(a.mine>0));
+  const n=list.length; list=list.slice(0,200);
+  return '<h3>'+fmt(n)+' طبيب'+(n>200?' <span class="sub">أول 200 — استخدم البحث</span>':'')+'</h3>'+doctorRows(list,S.docSort==='total'?'total':'mine');
+}
+
+function renderDoctor(dk){
+  const d=S.ix.doctors.get(dk)||S.full.doctors.get(dk);
+  const visits=visitsOf(dk);
+  if(!d && !visits.length) return '<div class="card empty"><h2>الطبيب غير موجود</h2><p>غيّر الفلتر أو ارجع لقائمة الأطباء.</p></div>';
+  const inFilter=!!S.ix.doctors.get(dk);
+  const name=d?d.name:visits[0].name;
+  let h='<div class="stack"><div class="card hero"><div class="avatar">'+esc(initials(name))+'</div><div style="min-width:0;flex:1"><h2>'+esc(name)+'</h2><div class="meta">'
+    +(d?'<span class="chip">'+esc(d.section||'بدون قسم')+'</span>'+[...d.branches.values()].map(b=>'<span class="chip">'+esc(b.name)+'</span>').join(''):'')+filterNote()+'</div></div>'
+    +'<button class="btn good" data-act="addVisit" data-dk="'+escapeAttr(dk)+'" data-name="'+escapeAttr(name)+'">'+ICON.plus+' سجّل زيارة</button></div>';
+  if(!d){ h+=visitsCard(visits); return h+'</div>'; }
+  if(!inFilter) h+='<div class="tip"><span class="ti" style="background:var(--warn-soft);color:var(--warn)">!</span><div><b>لا كتابات لهذا الطبيب في الفلتر الحالي</b><p>المعروض من كل الفترات وكل التعاونات.</p></div></div>';
+  const share=d.total?Math.round(d.mine/d.total*100):0;
+  h+='<div class="grid g4">'+kpi('إجمالي كتاباته',fmt(d.total),fmt(d.drugs.size)+' دواء مختلف')+kpi('كتابات أصنافي',fmt(d.mine),share+'% من كتاباته')
+    +kpi('عدد المرضى',fmt(d.patients.size))+kpi('آخر زيارة',visits.length?fmtDate(visits[0].date):'—',visits.length?fmt(visits.length)+' زيارة مسجلة':'لم تُسجَّل زيارة')+'</div>';
+
+  // أصنافي
+  const mineList=[...d.prods.entries()].map(([pk,c])=>({key:pk,name:PROD[pk].name,count:c})).sort((a,b)=>b.count-a.count);
+  h+='<div class="grid g2"><div class="card"><h3>'+ICON.star+' أصنافي اللي بيكتبها</h3>'
+    +(mineList.length?hbars(mineList,{cls:'mine',link:i=>'#/product/'+i.key}):'<p class="muted small">لم يكتب أي صنف من أصنافك بعد — فرصة للزيارة.</p>')+'</div>';
+  // لسه ما كتبهاش — مرتبة بحسب كتابة زملائه في نفس القسم
+  const sec=S.ix.sections.get(keyOf(d.section))||S.full.sections.get(keyOf(d.section));
+  const missing=PRODUCTS.filter(p=>!d.prods.has(p.key)).map(p=>({p,peer:sec?(sec.prods.get(p.key)||0):0})).sort((a,b)=>b.peer-a.peer);
+  h+='<div class="card"><h3>'+ICON.target+' أصناف لسه ما كتبهاش</h3><p class="muted small" style="margin-bottom:10px">مرتبة حسب كتابة زملائه في نفس القسم — الأعلى فرصة أقرب.</p><div class="chips">'
+    +missing.map(({p,peer})=>'<a class="chip '+(peer?'warn':'')+'" href="#/product/'+p.key+'">'+esc(p.name)+(peer?' · زملاؤه '+fmt(peer):'')+'</a>').join('')+'</div></div></div>';
+
+  // كل أدويته
+  const drugs=sorted(d.drugs);
+  h+='<div class="card"><h3>'+ICON.pill+' كل الأدوية اللي بيكتبها <span class="sub">'+fmt(drugs.length)+' دواء</span></h3><div class="list">'
+    +drugs.slice(0,S.showAllDrugs?500:20).map((g,i)=>'<a class="row" href="'+(g.pk?'#/product/'+g.pk:drugHref(g.key))+'"><span class="rk num">'+(i+1)+'</span><span class="rm"><div class="rt">'+esc(g.name)+(g.pk?' <span class="chip mine">صنفي</span>':'')+'</div><div class="bar'+(g.pk?' mine':'')+'"><i style="width:'+(g.count/drugs[0].count*100).toFixed(1)+'%"></i></div></span><span class="rv num">'+fmt(g.count)+'<small>'+Math.round(g.count/d.total*100)+'%</small></span></a>').join('')
+    +'</div>'+(drugs.length>20&&!S.showAllDrugs?'<div style="text-align:center;margin-top:10px"><button class="btn sm" data-act="moreDrugs">عرض كل الأدوية ('+fmt(drugs.length)+')</button></div>':'')+'</div>';
+  const tr=trendCols(new Map([...d.dates.entries()].map(([k,v])=>[k,v.m])));
+  if(tr) h+='<div class="card"><h3>كتابات أصنافي عبر الوقت</h3>'+tr+'</div>';
+  h+=visitsCard(visits);
+  return h+'</div>';
+}
+
+/* أثر الزيارة: متوسط كتابات أصنافي لكل يوم بيانات قبل الزيارة وبعدها (حتى 14 يوم بيانات لكل جانب) */
+function visitEffect(v){
+  const d=S.full.doctors.get(v.dk); const days=S.full.dates; if(!d||!days.length) return '';
+  const before=days.filter(x=>x<v.date).slice(-14), after=days.filter(x=>x>=v.date).slice(0,14);
+  if(!before.length||!after.length) return '<span class="chip">أثر الزيارة يظهر بعد رفع ملفات بعد تاريخها</span>';
+  const avg=arr=>arr.reduce((s,x)=>s+((d.dates.get(x)||{}).m||0),0)/arr.length;
+  const b=avg(before), a=avg(after);
+  const cls=a>b?'mine':a<b?'bad':'';
+  return '<span class="chip '+cls+'">قبل: '+b.toFixed(1)+' / يوم ← بعد: '+a.toFixed(1)+' / يوم '+(a>b?'▲':a<b?'▼':'')+'</span>';
+}
+function visitsCard(visits,withDoctor){
+  let h='<div class="card"><h3>'+ICON.visit+' الزيارات <span class="sub">'+fmt(visits.length)+'</span></h3>';
+  if(!visits.length) return h+'<p class="muted small">لا توجد زيارات مسجلة.</p></div>';
+  h+=visits.map(v=>{ const [y,m,dd]=v.date.split('-');
+    return '<div class="visit"><div class="vd"><b class="num">'+(+dd)+'</b><span>'+MONTHS[+m-1].slice(0,3)+' '+y.slice(2)+'</span></div><div class="vb">'
+      +(withDoctor?'<a class="rt" href="'+docHref(v.dk)+'" style="font-weight:600">'+esc(v.name)+'</a>':'')
+      +'<div class="chips" style="margin-top:2px">'+(v.products||[]).map(pk=>prodChip(pk)).join('')+(v.next?'<span class="chip brand">الزيارة القادمة '+fmtDate(v.next)+'</span>':'')+'</div>'
+      +(v.notes?'<div class="vn">'+esc(v.notes)+'</div>':'')
+      +'<div class="effect">'+visitEffect(v)+'<button class="chip" data-act="editVisit" data-id="'+escapeAttr(v.id)+'">تعديل</button><button class="chip bad" data-act="delVisit" data-id="'+escapeAttr(v.id)+'">حذف</button></div></div></div>'; }).join('');
+  return h+'</div>';
+}
+
+function renderVisits(){
+  const vs=[...S.visits].sort((a,b)=>b.date<a.date?-1:1);
+  const month=today().slice(0,7);
+  const writers=[...S.ix.doctors.values()].filter(d=>d.mine>0);
+  const visited=new Set(S.visits.map(v=>v.dk));
+  const cov=writers.length?Math.round(writers.filter(d=>visited.has(d.key)).length/writers.length*100)+'%':'—';
+  const upcoming=S.visits.filter(v=>v.next&&v.next>=today()).sort((a,b)=>a.next<b.next?-1:1).slice(0,6);
+  let h='<div class="stack"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" data-act="addVisit">'+ICON.plus+' زيارة جديدة</button>'
+    +(vs.length?'<button class="btn" data-act="exportVisits">'+ICON.save+' تصدير Excel</button>':'')+'</div>';
+  h+='<div class="grid g4">'+kpi('زيارات هذا الشهر',fmt(S.visits.filter(v=>v.date.slice(0,7)===month).length))+kpi('أطباء تمت زيارتهم',fmt(visited.size))
+    +kpi('تغطية كُتّاب أصنافي',cov,'من الأطباء اللي بيكتبوا أصنافك')+kpi('إجمالي الزيارات',fmt(vs.length))+'</div>';
+  if(upcoming.length) h+='<div class="card"><h3>'+ICON.visit+' زيارات قادمة</h3><div class="list">'+upcoming.map(v=>'<a class="row" href="'+docHref(v.dk)+'"><span class="mini-av">'+esc(initials(v.name))+'</span><span class="rm"><div class="rt">'+esc(v.name)+'</div></span><span class="chip brand">'+fmtDateLong(v.next)+'</span></a>').join('')+'</div></div>';
+  h+=visitsCard(vs,true);
+  return h+'</div>';
+}
+
+function renderData(){
+  const ups=[...S.uploads].sort((a,b)=>(b.date||'')<(a.date||'')?-1:1);
+  let h='<div class="stack"><div class="card"><h3>'+ICON.upload+' رفع ملف كتابات (روشتات)</h3>'
+    +'<p class="muted small" style="margin-bottom:12px">Excel أو CSV أو PDF — نفس تقارير النظام. لو اخترت أكثر من ملف مرة واحدة يتحسبوا كلهم لنفس اليوم.</p>'
+    +'<div class="grid g3"><div class="field"><label>التعاون</label><select id="upBranch">'+Object.entries(BRANCHES).map(([k,l])=>'<option value="'+k+'"'+(S.f.branch===k?' selected':'')+'>'+l+'</option>').join('')+'</select></div>'
+    +'<div class="field"><label>تاريخ التقرير</label><input type="date" id="upDate" value="'+today()+'"></div>'
+    +'<div class="field"><label>&nbsp;</label><button class="btn pri" data-act="pickFiles">'+ICON.upload+' اختر الملفات</button></div></div></div>';
+  h+='<div class="card"><h3>الملفات المرفوعة <span class="sub">'+fmt(ups.length)+'</span></h3>'
+    +(ups.length?'<div class="wrap-x"><table class="tbl"><thead><tr><th>التاريخ</th><th>التعاون</th><th>الملف</th><th>كتابات</th><th>أصنافي</th><th></th></tr></thead><tbody>'
+      +ups.map(u=>{ const mine=u.rows.reduce((s,r)=>s+(productKeyOf(r[1])?1:0),0);
+        return '<tr><td class="num">'+esc(u.date||'—')+'</td><td>'+esc(BRANCHES[u.branch])+'</td><td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(u.name)+'</td><td class="num">'+fmt(u.rows.length)+'</td><td class="num">'+fmt(mine)+'</td><td><button class="chip bad" data-act="delUpload" data-id="'+escapeAttr(u.id)+'">حذف</button></td></tr>'; }).join('')
+      +'</tbody></table></div>':'<p class="muted small">لم تُرفع ملفات بعد.</p>')+'</div>';
+  h+='<div class="grid g2"><div class="card"><h3>ملف المبيعات (اختياري)</h3><p class="muted small" style="margin-bottom:12px">ملف JSON من داشبورد المبيعات — يضيف «المبيعات الفعلية» بجانب الكتابات في صفحة كل صنف.'+(S.sales.length?' <b>محمّل: '+fmt(S.sales.length)+' سطر.</b>':'')+'</p>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="pickSales">'+ICON.upload+' رفع ملف المبيعات</button>'+(S.sales.length?'<button class="btn danger" data-act="clearSales">إزالة</button>':'')+'</div></div>';
+  h+='<div class="card"><h3>نسخة احتياطية</h3><p class="muted small" style="margin-bottom:12px">البيانات محفوظة في هذا المتصفح فقط. خُد نسخة احتياطية عشان تنقلها لجهاز تاني.</p>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="backup">'+ICON.save+' تنزيل نسخة</button><button class="btn" data-act="restore">'+ICON.upload+' استرجاع نسخة</button><button class="btn danger" data-act="wipe">'+ICON.trash+' مسح الكل</button></div></div></div>';
+  return h+'</div>';
+}
+
+/* ───────── التوجيه ───────── */
+let jsonMode='sales';
+function route(){
+  const hash=location.hash.replace(/^#\/?/,'')||'home';
+  const [page,...rest]=hash.split('/'); const arg=decodeURIComponent(rest.join('/'));
+  const view=document.getElementById('view');
+  let title='', back=false, html='';
+  S.showAllDrugs = S._lastHash===hash ? S.showAllDrugs : false; S._lastHash=hash;
+  if(page==='product'){ const p=PROD[arg]; back=true; title=p?p.name:'صنف';
+    html=p?renderItem(S.ix.products.get(arg),{isMine:true,title:p.name,sub:'<span class="chip '+BRAND[p.brand].cls+'">'+BRAND[p.brand].label+'</span><span class="chip">'+esc(p.form)+'</span>'}):renderItem(null,{}); }
+  else if(page==='drug'){ const g=S.ix.drugs.get(arg); back=true; title='دواء';
+    html=renderItem(g,{isMine:false,title:g?g.name:'',sub:'<span class="chip">ليس من أصنافي</span>'}); }
+  else if(page==='doctor'){ back=true; title='الطبيب'; html=renderDoctor(arg); }
+  else { const P=PAGES[page]||PAGES.home; title=P.title;
+    html=({home:renderHome,products:renderProducts,doctors:renderDoctors,visits:renderVisits,data:renderData}[page]||renderHome)(); }
+  document.getElementById('title').innerHTML=(back?'<button class="back" data-act="back" aria-label="رجوع">'+ICON.back+'</button>':'')+'<span>'+esc(title)+'</span>';
+  view.innerHTML=html;
+  const active=back?({product:'products',drug:'products',doctor:'doctors'})[page]:(PAGES[page]?page:'home');
+  document.querySelectorAll('[data-nav]').forEach(a=>a.classList.toggle('on',a.dataset.nav===active));
+  renderFilters(page);
+  if(document.getElementById('drugList')) document.getElementById('drugList').innerHTML=drugListHtml();
+  if(document.getElementById('docList')) document.getElementById('docList').innerHTML=docListHtml();
+}
+function renderFilters(page){
+  const el=document.getElementById('filters');
+  if(page==='data'||!S.uploads.length){ el.innerHTML=''; return; }
+  const dates=[...new Set(S.uploads.map(u=>u.date).filter(Boolean))].sort().reverse();
+  const months=[...new Set(dates.map(d=>d.slice(0,7)))];
+  el.innerHTML='<div class="seg">'+[['ALL','الكل'],...Object.entries(BRANCHES).map(([k,l])=>[k,l.replace('التعاون ','')])].map(([k,l])=>'<button data-branch="'+k+'" class="'+(S.f.branch===k?'on':'')+'">'+l+'</button>').join('')+'</div>'
+    +'<select class="sel" id="periodSel"><option value="ALL">كل الفترات</option>'
+    +(months.length>1?'<optgroup label="شهر">'+months.map(m=>'<option value="M:'+m+'"'+(S.f.period==='M:'+m?' selected':'')+'>'+fmtDate(m)+'</option>').join('')+'</optgroup>':'')
+    +'<optgroup label="يوم">'+dates.map(d=>'<option value="D:'+d+'"'+(S.f.period==='D:'+d?' selected':'')+'>'+fmtDateLong(d)+'</option>').join('')+'</optgroup></select>';
+}
+function setFilter(k,v){ S.f[k]=v; try{ localStorage.setItem('pdp-filter',JSON.stringify(S.f)); }catch(e){} rebuild(); route(); }
+
+/* ───────── الزيارات (نموذج) ───────── */
+function visitForm(pre){
+  pre=pre||{};
+  const picked=new Set(pre.products||[]);
+  const docs=[...S.full.doctors.values()].sort((a,b)=>b.mine-a.mine||b.total-a.total);
+  const m=document.createElement('div'); m.className='modal';
+  m.innerHTML='<div class="sheet"><h3>'+(pre.id?'تعديل زيارة':'تسجيل زيارة')+'</h3>'
+    +'<div class="field"><label>الطبيب</label><input id="vDoc" list="docOpts" value="'+escapeAttr(pre.name||'')+'" placeholder="اكتب اسم الطبيب"'+(pre.dk&&!pre.id?' readonly':'')+'><datalist id="docOpts">'+docs.slice(0,1500).map(d=>'<option value="'+escapeAttr(d.name)+'">').join('')+'</datalist></div>'
+    +'<div class="grid g2"><div class="field"><label>تاريخ الزيارة</label><input type="date" id="vDate" value="'+escapeAttr(pre.date||today())+'"></div>'
+    +'<div class="field"><label>الزيارة القادمة (اختياري)</label><input type="date" id="vNext" value="'+escapeAttr(pre.next||'')+'"></div></div>'
+    +'<div class="field"><label>الأصناف اللي اتكلمت عنها</label><div class="chips">'+PRODUCTS.map(p=>'<button type="button" class="chip pick'+(picked.has(p.key)?' on':'')+'" data-pk="'+p.key+'">'+esc(p.name)+'</button>').join('')+'</div></div>'
+    +'<div class="field"><label>ملاحظات</label><textarea id="vNotes" placeholder="مثال: طلب عينات Rizer، مهتم بـ Pure Omega للأطفال…">'+esc(pre.notes||'')+'</textarea></div>'
+    +'<div class="sheet-actions"><button class="btn" data-x>إلغاء</button><button class="btn good" data-ok>حفظ الزيارة</button></div></div>';
+  document.body.appendChild(m);
+  m.addEventListener('click',async e=>{
+    if(e.target===m||e.target.closest('[data-x]')){ m.remove(); return; }
+    const c=e.target.closest('[data-pk]'); if(c){ c.classList.toggle('on'); return; }
+    if(e.target.closest('[data-ok]')){
+      const name=document.getElementById('vDoc').value.trim(); const date=document.getElementById('vDate').value;
+      if(!name){ toast('اكتب اسم الطبيب'); return; } if(!date){ toast('اختر تاريخ الزيارة'); return; }
+      const v={ id:pre.id||('v'+Date.now()+Math.random().toString(36).slice(2,6)), dk:pre.dk&&pre.name===name?pre.dk:keyOf(name), name, date,
+        next:document.getElementById('vNext').value||'', notes:document.getElementById('vNotes').value.trim(),
+        products:[...m.querySelectorAll('[data-pk].on')].map(b=>b.dataset.pk) };
+      const existing=S.full.doctors.get(v.dk); if(existing) v.name=existing.name;
+      S.visits=S.visits.filter(x=>x.id!==v.id).concat(v);
+      try{ await Store.put('visits',v); }catch(err){ toast('تعذّر الحفظ'); }
+      m.remove(); toast('تم حفظ الزيارة ✓'); route();
+    }
+  });
+}
+function exportVisits(){
+  const rows=[...S.visits].sort((a,b)=>a.date<b.date?-1:1).map(v=>({ 'التاريخ':v.date, 'الطبيب':v.name, 'القسم':(S.full.doctors.get(v.dk)||{}).section||'', 'الأصناف':(v.products||[]).map(k=>PROD[k]?PROD[k].name:k).join('، '), 'ملاحظات':v.notes||'', 'الزيارة القادمة':v.next||'' })).map(r=>PharmaCore.sanitizeExportRow?PharmaCore.sanitizeExportRow(r):r);
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'الزيارات');
+  XLSX.writeFile(wb,'visits-'+today()+'.xlsx');
+}
+
+/* ───────── رفع الملفات ───────── */
+async function onRxFiles(files){
+  files=[...files]; if(!files.length) return;
+  const branch=document.getElementById('upBranch').value, date=document.getElementById('upDate').value||today();
+  const all=[], names=[];
+  try{
+    for(let i=0;i<files.length;i++){
+      const f=files[i]; const ext=validateUploadFile(f);
+      loading('جارٍ قراءة '+(files.length>1?'('+(i+1)+'/'+files.length+') ':'')+f.name+'…');
+      const rows= ext==='.pdf'? await parsePDF(f,{}) : ext==='.csv'? await parseCSV(f,{}) : await parseExcel(f,{});
+      validateParsedRows(rows);
+      rows.forEach(r=>all.push([r.doctor,r.service,r.section,r.patient,r.status]));
+      names.push(f.name);
+    }
+    const u={ id:'u'+Date.now(), name:names.length>1?names[0]+' + '+(names.length-1)+' ملف':names[0], branch, date, rows:all, added:new Date().toISOString() };
+    S.uploads.push(u);
+    try{ await Store.put('uploads',u); }catch(err){ toast('تحذير: الملف اتقرا لكن ما اتحفظش على الجهاز'); }
+    rebuild(); loading(); route();
+    const mine=all.filter(r=>productKeyOf(r[1])).length;
+    toast('تم ✓ '+fmt(all.length)+' كتابة — منها '+fmt(mine)+' لأصنافك');
+  }catch(err){ loading(); alert('تعذّر قراءة الملف:\n'+(err&&err.message||err)); }
+}
+function onJson(file){
+  const rd=new FileReader();
+  rd.onload=async()=>{
+    let json; try{ json=JSON.parse(rd.result); }catch(e){ alert('ملف JSON غير صالح'); return; }
+    if(jsonMode==='restore'){
+      if(!json||json.app!=='pharmadash-pro'){ alert('هذه ليست نسخة احتياطية من PharmaDash Pro'); return; }
+      if(!confirm('استرجاع النسخة سيستبدل كل البيانات الحالية. متابعة؟')) return;
+      await Store.clear('uploads'); await Store.clear('visits');
+      for(const u of json.uploads||[]) await Store.put('uploads',u);
+      for(const v of json.visits||[]) await Store.put('visits',v);
+      await Store.set('sales',json.sales||[]);
+      await loadAll(); route(); toast('تم استرجاع النسخة ✓'); return;
+    }
+    const arr=Array.isArray(json)?json:['entries','data','records','rows','items','sales'].map(k=>json&&json[k]).find(Array.isArray);
+    if(!arr){ alert('لم أجد بيانات مبيعات في الملف'); return; }
+    const num=v=>{ const n=Number(v); return Number.isFinite(n)&&n>0?n:0; };
+    const entries=arr.filter(e=>e&&/^\d{4}-\d{2}-\d{2}$/.test(String(e.date||''))&&SALES_BRANCH_MAP[e.pharmacy]&&PROD[e.product])
+      .map(e=>({ date:e.date, branch:SALES_BRANCH_MAP[e.pharmacy], product:e.product, units:num(e.units), amount:e.amount!=null?num(e.amount):num(e.price)*num(e.units) }));
+    if(!entries.length){ alert('الملف لا يحتوي سطور مبيعات صالحة (date / pharmacy / product / units)'); return; }
+    S.sales=entries; try{ await Store.set('sales',entries); }catch(e){}
+    route(); toast('تم تحميل '+fmt(entries.length)+' سطر مبيعات ✓');
+  };
+  rd.readAsText(file);
+}
+function download(name,text,type){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
+
+/* ───────── واجهة عامة ───────── */
+let toastT;
+function toast(msg){ let t=document.querySelector('.toast'); if(!t){ t=document.createElement('div'); t.className='toast'; document.body.appendChild(t); } t.textContent=msg; clearTimeout(toastT); toastT=setTimeout(()=>t.remove(),2600); }
+function loading(msg){ let l=document.querySelector('.loading'); if(!msg){ if(l) l.remove(); return; } if(!l){ l=document.createElement('div'); l.className='loading'; l.innerHTML='<div></div>'; document.body.appendChild(l); } l.firstChild.textContent=msg; }
+
+function buildNav(){
+  const items=Object.entries(PAGES).filter(([,p])=>p.nav);
+  document.getElementById('sideNav').innerHTML=items.map(([k,p])=>'<a href="#/'+k+'" data-nav="'+k+'">'+ICON[p.icon]+'<span>'+p.title+'</span></a>').join('');
+  document.getElementById('tabBar').innerHTML=items.map(([k,p])=>'<a href="#/'+k+'" data-nav="'+k+'">'+ICON[p.icon]+'<span>'+p.title+'</span></a>').join('');
+}
+function initTheme(){
+  try{ const t=localStorage.getItem('pdp-theme'); if(t) document.documentElement.dataset.theme=t; }catch(e){}
+  document.getElementById('themeBtn').onclick=()=>{
+    const cur=document.documentElement.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    const next=cur==='dark'?'light':'dark'; document.documentElement.dataset.theme=next;
+    try{ localStorage.setItem('pdp-theme',next); }catch(e){}
+  };
+}
+
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-branch]'); if(b){ setFilter('branch',b.dataset.branch); return; }
+  const s=e.target.closest('[data-sort]'); if(s){ S.docSort=s.dataset.sort; route(); return; }
+  const a=e.target.closest('[data-act]'); if(!a) return;
+  const act=a.dataset.act;
+  if(act==='back'){ if(history.length>1) history.back(); else location.hash='#/home'; }
+  else if(act==='onlyMine'){ S.docOnlyMine=!S.docOnlyMine; route(); }
+  else if(act==='moreDrugs'){ S.showAllDrugs=true; route(); }
+  else if(act==='addVisit'){ visitForm(a.dataset.dk?{dk:a.dataset.dk,name:a.dataset.name}:{}); }
+  else if(act==='editVisit'){ const v=S.visits.find(x=>x.id===a.dataset.id); if(v) visitForm(v); }
+  else if(act==='delVisit'){ if(!confirm('حذف هذه الزيارة؟')) return; S.visits=S.visits.filter(x=>x.id!==a.dataset.id); try{ await Store.del('visits',a.dataset.id); }catch(err){} route(); }
+  else if(act==='exportVisits') exportVisits();
+  else if(act==='pickFiles') document.getElementById('fileInput').click();
+  else if(act==='pickSales'){ jsonMode='sales'; document.getElementById('jsonInput').click(); }
+  else if(act==='restore'){ jsonMode='restore'; document.getElementById('jsonInput').click(); }
+  else if(act==='clearSales'){ S.sales=[]; try{ await Store.set('sales',[]); }catch(err){} route(); }
+  else if(act==='delUpload'){ if(!confirm('حذف هذا الملف من البيانات؟')) return; S.uploads=S.uploads.filter(u=>u.id!==a.dataset.id); try{ await Store.del('uploads',a.dataset.id); }catch(err){} rebuild(); route(); }
+  else if(act==='backup'){ download('pharmadash-pro-backup-'+today()+'.json',JSON.stringify({app:'pharmadash-pro',v:1,exported:new Date().toISOString(),uploads:S.uploads,visits:S.visits,sales:S.sales}),'application/json'); }
+  else if(act==='wipe'){ if(!confirm('مسح كل الملفات والزيارات من هذا الجهاز؟ لا يمكن التراجع.')) return; await Store.clear('uploads'); await Store.clear('visits'); await Store.set('sales',[]); S.f={branch:'ALL',period:'ALL'}; await loadAll(); route(); }
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='periodSel') setFilter('period',e.target.value);
+  else if(e.target.id==='fileInput'){ onRxFiles(e.target.files); e.target.value=''; }
+  else if(e.target.id==='jsonInput'){ if(e.target.files[0]) onJson(e.target.files[0]); e.target.value=''; }
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='docQ'){ S.docQuery=e.target.value; document.getElementById('docList').innerHTML=docListHtml(); }
+  else if(e.target.id==='drugQ'){ S.drugQuery=e.target.value; document.getElementById('drugList').innerHTML=drugListHtml(); }
+});
+window.addEventListener('hashchange',()=>{ route(); window.scrollTo(0,0); });
+
+buildNav(); initTheme();
+loadAll().then(()=>{
+  // لو الفلتر المحفوظ لم يعد موجودًا في البيانات
+  if(S.f.period!=='ALL' && !S.uploads.some(u=>inPeriod(u.date,S.f.period))){ S.f.period='ALL'; rebuild(); }
+  route();
+});
+if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+
+</script>
+</body>
+</html>
