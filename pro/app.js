@@ -1,4 +1,4 @@
-/* PharmaDash Pro — متابعة الأصناف والأطباء والزيارات
+/* PharmaDash Pro — متابعة الأصناف والأطباء
    كل البيانات تُحفظ على الجهاز (IndexedDB) — لا شيء يُرفع لأي خادم. */
 (function(){
 'use strict';
@@ -30,7 +30,6 @@ const ICON = {
   home:I('<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>'),
   pill:I('<rect x="2" y="8" width="20" height="8" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/>'),
   doc:I('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
-  visit:I('<rect x="3" y="4" width="18" height="17" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><path d="m9 15 2 2 4-4"/>'),
   data:I('<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>'),
   back:I('<polyline points="9 18 15 12 9 6"/>'),
   search:I('<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/>'),
@@ -38,7 +37,6 @@ const ICON = {
   plus:I('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'),
   star:I('<polygon points="12 2 15 9 22 9 16.5 13.5 18.5 21 12 16.5 5.5 21 7.5 13.5 2 9 9 9"/>'),
   target:I('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>'),
-  down:I('<polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/>'),
   trash:I('<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>'),
   save:I('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>')
 };
@@ -74,7 +72,7 @@ const Store = (()=>{
 
 /* ───────── الحالة ───────── */
 const S = {
-  uploads:[], visits:[], sales:[],
+  uploads:[], sales:[],
   f:{ branch:'ALL', period:'ALL' },
   ix:null, full:null,
   docQuery:'', docSort:'mine', docOnlyMine:false, drugQuery:'', showAllDrugs:false
@@ -84,7 +82,6 @@ try{ const f=JSON.parse(localStorage.getItem('pdp-filter')); if(f&&f.branch) S.f
 async function loadAll(){
   try{
     S.uploads = await Store.all('uploads');
-    S.visits = await Store.all('visits');
     S.sales = (await Store.get('sales')) || [];
   }catch(e){ toast('تعذّر فتح التخزين المحلي — ستعمل الجلسة بدون حفظ'); }
   rebuild();
@@ -163,9 +160,6 @@ function salesFor(pk){
   }
   return any?{units,amount,byBranch}:null;
 }
-function visitsOf(dk){ return S.visits.filter(v=>v.dk===dk).sort((a,b)=>b.date<a.date?-1:1); }
-function lastVisit(dk){ const v=visitsOf(dk); return v.length?v[0].date:''; }
-function daysSince(d){ if(!d) return Infinity; return Math.round((new Date(today())-new Date(d))/864e5); }
 
 /* ───────── أدوات العرض ───────── */
 function initials(name){
@@ -226,7 +220,6 @@ const PAGES = {
   home:{ title:'الرئيسية', icon:'home', nav:true },
   products:{ title:'أصنافي', icon:'pill', nav:true },
   doctors:{ title:'الأطباء', icon:'doc', nav:true },
-  visits:{ title:'الزيارات', icon:'visit', nav:true },
   data:{ title:'البيانات', icon:'data', nav:true }
 };
 
@@ -241,14 +234,11 @@ function renderHome(){
     +kpi('كتابات أصنافي',fmt(ix.mine),'من '+fmt(ix.rows)+' كتابة · '+share)
     +kpi('أطباء بيكتبوا أصنافي',fmt(docsMine.length),'من '+fmt(ix.doctors.size)+' طبيب')
     +kpi(sold?'مبيعات فعلية (علبة)':'الأصناف المكتوبة',sold?fmt(sold.units):fmt([...ix.products.values()].filter(p=>p.total).length)+' / '+PRODUCTS.length, sold?'حسب ملف المبيعات':'صنف اتكتب على الأقل مرة')
-    +kpi('زيارات هذا الشهر',fmt(S.visits.filter(v=>v.date.slice(0,7)===today().slice(0,7)).length),'سجّل زياراتك من صفحة الطبيب')
+    +kpi('عدد المرضى',fmt(ix.patients),'في الفترة المختارة')
     +'</div>';
 
   // أصنافي
   h+='<div class="card"><h3>'+ICON.pill+' أصنافي <span class="sub">اضغط على الصنف لتفاصيله</span></h3>'+productTiles(true)+'</div>';
-
-  // اقتراحات
-  h+='<div class="grid g2">'+suggestions()+'</div>';
 
   // أعلى الأطباء
   const top=docsMine.sort((a,b)=>b.mine-a.mine).slice(0,8);
@@ -275,33 +265,13 @@ function productTiles(compact){
   return h;
 }
 
-function suggestions(){
-  const ix=S.ix, full=S.full;
-  const docs=[...ix.doctors.values()];
-  // 1) بيكتبوا أصنافي ومحتاجين زيارة
-  const keep=docs.filter(d=>d.mine>0&&daysSince(lastVisit(d.key))>30).sort((a,b)=>b.mine-a.mine).slice(0,5);
-  // 2) فرص: أطباء في أقسام بتكتب أصنافي لكنهم ما كتبوش
-  const hotSecs=new Set([...ix.sections.values()].filter(s=>s.mine>0).map(s=>s.key));
-  const opp=docs.filter(d=>d.mine===0&&hotSecs.has(keyOf(d.section))).sort((a,b)=>b.total-a.total).slice(0,5);
-  // 3) توقفوا: كتبوا أصنافي قبل كده ومفيش كتابة في آخر 14 يوم بيانات
-  const lastData=full.dates[full.dates.length-1]||'';
-  const stopped=lastData?[...full.doctors.values()].filter(d=>d.mine>=2&&d.lastMine&&(new Date(lastData)-new Date(d.lastMine))/864e5>14).sort((a,b)=>b.mine-a.mine).slice(0,5):[];
-  const block=(title,icon,color,soft,list,why)=>'<div class="card"><h3><span class="tip" style="padding:0;background:none"><span class="ti" style="background:'+soft+';color:'+color+'">'+icon+'</span></span>'+title+'</h3>'
-    +(list.length?'<div class="list">'+list.map(d=>'<a class="row" href="'+docHref(d.key)+'"><span class="mini-av">'+esc(initials(d.name))+'</span><span class="rm"><div class="rt">'+esc(d.name)+'</div><div class="rs">'+why(d)+'</div></span></a>').join('')+'</div>'
-      :'<p class="muted small">لا يوجد حاليًا 👌</p>')+'</div>';
-  return block('محتاجين زيارة متابعة',ICON.visit,'var(--brand)','var(--brand-soft)',keep,d=>fmt(d.mine)+' كتابة لأصنافك · '+(lastVisit(d.key)?'آخر زيارة من '+daysSince(lastVisit(d.key))+' يوم':'لم تُسجَّل زيارة'))
-    +block('فرص جديدة — لسه ما كتبوش أصنافك',ICON.target,'var(--warn)','var(--warn-soft)',opp,d=>esc(d.section||'—')+' · '+fmt(d.total)+' كتابة إجمالًا')
-    +(stopped.length||full.dates.length>14?block('توقفوا عن كتابة أصنافك',ICON.down,'var(--bad)','var(--bad-soft)',stopped,d=>'آخر كتابة '+fmtDateLong(d.lastMine)+' · '+fmt(d.mine)+' كتابة سابقًا'):'');
-}
-
 function doctorRows(list,mode){
   if(!list.length) return '<p class="muted small">لا توجد نتائج</p>';
   const max=Math.max(...list.map(d=>mode==='mine'?d.mine:d.total),1);
   return '<div class="list">'+list.map((d,i)=>{
     const v=mode==='mine'?d.mine:d.total;
-    const lv=lastVisit(d.key);
     return '<a class="row" href="'+docHref(d.key)+'"><span class="mini-av'+(d.mine?' on':'')+'">'+esc(initials(d.name))+'</span>'
-      +'<span class="rm"><div class="rt">'+esc(d.name)+'</div><div class="rs">'+esc(d.section||'—')+' · '+[...d.branches.values()].map(b=>esc(b.name)).join('، ')+(lv?' · زيارة '+fmtDate(lv):'')+'</div>'
+      +'<span class="rm"><div class="rt">'+esc(d.name)+'</div><div class="rs">'+esc(d.section||'—')+' · '+[...d.branches.values()].map(b=>esc(b.name)).join('، ')+'</div>'
       +'<div class="bar'+(mode==='mine'?' mine':'')+'"><i style="width:'+(v/max*100).toFixed(1)+'%"></i></div></span>'
       +'<span class="rv num">'+fmt(d.mine)+'<small>من '+fmt(d.total)+'</small></span></a>';
   }).join('')+'</div>';
@@ -337,8 +307,8 @@ function renderItem(o,{isMine,title,sub}){
     +(sold?kpi('مبيعات فعلية',fmt(sold.units)+' علبة',o.total?'تحويل '+Math.round(sold.units/o.total*100)+'% من الكتابات':''):kpi('نسبة الصرف',rate(o),'مصروف ÷ (مصروف + ملغي)'))+'</div>';
   if(!o.total) return h+'<div class="card empty"><h2>لم يُكتب في الفترة المختارة</h2><p>جرّب «كل الفترات» أو تعاون آخر.</p></div></div>';
   h+='<div class="card"><h3>'+ICON.doc+' مين بيكتبه؟ <span class="sub">'+fmt(docs.length)+' طبيب</span></h3><div class="list">'
-    +docs.map((d,i)=>{ const doc=S.ix.doctors.get(d.key); const lv=lastVisit(d.key);
-      return '<a class="row" href="'+docHref(d.key)+'"><span class="rk num">'+(i+1)+'</span><span class="mini-av on">'+esc(initials(d.name))+'</span><span class="rm"><div class="rt">'+esc(d.name)+'</div><div class="rs">'+esc(doc&&doc.section||'—')+(doc?' · '+[...doc.branches.values()].map(b=>esc(b.name)).join('، '):'')+(lv?' · زيارة '+fmtDate(lv):'')+'</div><div class="bar mine"><i style="width:'+(d.count/docs[0].count*100).toFixed(1)+'%"></i></div></span><span class="rv num">'+fmt(d.count)+'<small>'+Math.round(d.count/o.total*100)+'%</small></span></a>'; }).join('')
+    +docs.map((d,i)=>{ const doc=S.ix.doctors.get(d.key);
+      return '<a class="row" href="'+docHref(d.key)+'"><span class="rk num">'+(i+1)+'</span><span class="mini-av on">'+esc(initials(d.name))+'</span><span class="rm"><div class="rt">'+esc(d.name)+'</div><div class="rs">'+esc(doc&&doc.section||'—')+(doc?' · '+[...doc.branches.values()].map(b=>esc(b.name)).join('، '):'')+'</div><div class="bar mine"><i style="width:'+(d.count/docs[0].count*100).toFixed(1)+'%"></i></div></span><span class="rv num">'+fmt(d.count)+'<small>'+Math.round(d.count/o.total*100)+'%</small></span></a>'; }).join('')
     +'</div></div>';
   h+='<div class="grid g2"><div class="card"><h3>فين بيتكتب؟ — الأقسام</h3>'+hbars(sorted(o.sections).slice(0,10),{cls:isMine?'mine':''})+'</div>'
     +'<div class="card"><h3>حسب التعاون</h3>'+hbars(sorted(o.branches),{cls:isMine?'mine':''})
@@ -353,7 +323,7 @@ function renderDoctors(){
   if(!S.uploads.length) return noData();
   return '<div class="stack"><div class="search">'+ICON.search+'<input id="docQ" placeholder="ابحث باسم الطبيب أو القسم…" value="'+escapeAttr(S.docQuery)+'"></div>'
     +'<div class="filters"><div class="seg" id="docSort">'
-    +[['mine','الأكثر كتابة لأصنافي'],['total','إجمالي الكتابات'],['visit','الأقدم زيارة']].map(([k,l])=>'<button data-sort="'+k+'" class="'+(S.docSort===k?'on':'')+'">'+l+'</button>').join('')
+    +[['mine','الأكثر كتابة لأصنافي'],['total','إجمالي الكتابات']].map(([k,l])=>'<button data-sort="'+k+'" class="'+(S.docSort===k?'on':'')+'">'+l+'</button>').join('')
     +'</div><button class="chip pick'+(S.docOnlyMine?' on':'')+'" data-act="onlyMine">بيكتب أصنافي فقط</button></div>'
     +'<div class="card" id="docList"></div></div>';
 }
@@ -363,31 +333,27 @@ function docListHtml(){
   if(q) list=list.filter(d=>d.key.includes(q)||keyOf(d.section).includes(q));
   if(S.docOnlyMine) list=list.filter(d=>d.mine>0);
   if(S.docSort==='mine') list.sort((a,b)=>b.mine-a.mine||b.total-a.total);
-  else if(S.docSort==='total') list.sort((a,b)=>b.total-a.total);
-  else list.sort((a,b)=>(lastVisit(a.key)||'0')<(lastVisit(b.key)||'0')?-1:1).sort((a,b)=>(b.mine>0)-(a.mine>0));
+  else list.sort((a,b)=>b.total-a.total);
   const n=list.length; list=list.slice(0,200);
   return '<h3>'+fmt(n)+' طبيب'+(n>200?' <span class="sub">أول 200 — استخدم البحث</span>':'')+'</h3>'+doctorRows(list,S.docSort==='total'?'total':'mine');
 }
 
 function renderDoctor(dk){
   const d=S.ix.doctors.get(dk)||S.full.doctors.get(dk);
-  const visits=visitsOf(dk);
-  if(!d && !visits.length) return '<div class="card empty"><h2>الطبيب غير موجود</h2><p>غيّر الفلتر أو ارجع لقائمة الأطباء.</p></div>';
+  if(!d) return '<div class="card empty"><h2>الطبيب غير موجود</h2><p>غيّر الفلتر أو ارجع لقائمة الأطباء.</p></div>';
   const inFilter=!!S.ix.doctors.get(dk);
-  const name=d?d.name:visits[0].name;
+  const name=d.name;
   let h='<div class="stack"><div class="card hero"><div class="avatar">'+esc(initials(name))+'</div><div style="min-width:0;flex:1"><h2>'+esc(name)+'</h2><div class="meta">'
-    +(d?'<span class="chip">'+esc(d.section||'بدون قسم')+'</span>'+[...d.branches.values()].map(b=>'<span class="chip">'+esc(b.name)+'</span>').join(''):'')+filterNote()+'</div></div>'
-    +'<button class="btn good" data-act="addVisit" data-dk="'+escapeAttr(dk)+'" data-name="'+escapeAttr(name)+'">'+ICON.plus+' سجّل زيارة</button></div>';
-  if(!d){ h+=visitsCard(visits); return h+'</div>'; }
+    +'<span class="chip">'+esc(d.section||'بدون قسم')+'</span>'+[...d.branches.values()].map(b=>'<span class="chip">'+esc(b.name)+'</span>').join('')+filterNote()+'</div></div></div>';
   if(!inFilter) h+='<div class="tip"><span class="ti" style="background:var(--warn-soft);color:var(--warn)">!</span><div><b>لا كتابات لهذا الطبيب في الفلتر الحالي</b><p>المعروض من كل الفترات وكل التعاونات.</p></div></div>';
   const share=d.total?Math.round(d.mine/d.total*100):0;
   h+='<div class="grid g4">'+kpi('إجمالي كتاباته',fmt(d.total),fmt(d.drugs.size)+' دواء مختلف')+kpi('كتابات أصنافي',fmt(d.mine),share+'% من كتاباته')
-    +kpi('عدد المرضى',fmt(d.patients.size))+kpi('آخر زيارة',visits.length?fmtDate(visits[0].date):'—',visits.length?fmt(visits.length)+' زيارة مسجلة':'لم تُسجَّل زيارة')+'</div>';
+    +kpi('عدد المرضى',fmt(d.patients.size))+kpi('أصنافي اللي كتبها',fmt(d.prods.size)+' / '+PRODUCTS.length)+'</div>';
 
   // أصنافي
   const mineList=[...d.prods.entries()].map(([pk,c])=>({key:pk,name:PROD[pk].name,count:c})).sort((a,b)=>b.count-a.count);
   h+='<div class="grid g2"><div class="card"><h3>'+ICON.star+' أصنافي اللي بيكتبها</h3>'
-    +(mineList.length?hbars(mineList,{cls:'mine',link:i=>'#/product/'+i.key}):'<p class="muted small">لم يكتب أي صنف من أصنافك بعد — فرصة للزيارة.</p>')+'</div>';
+    +(mineList.length?hbars(mineList,{cls:'mine',link:i=>'#/product/'+i.key}):'<p class="muted small">لم يكتب أي صنف من أصنافك بعد.</p>')+'</div>';
   // لسه ما كتبهاش — مرتبة بحسب كتابة زملائه في نفس القسم
   const sec=S.ix.sections.get(keyOf(d.section))||S.full.sections.get(keyOf(d.section));
   const missing=PRODUCTS.filter(p=>!d.prods.has(p.key)).map(p=>({p,peer:sec?(sec.prods.get(p.key)||0):0})).sort((a,b)=>b.peer-a.peer);
@@ -401,45 +367,6 @@ function renderDoctor(dk){
     +'</div>'+(drugs.length>20&&!S.showAllDrugs?'<div style="text-align:center;margin-top:10px"><button class="btn sm" data-act="moreDrugs">عرض كل الأدوية ('+fmt(drugs.length)+')</button></div>':'')+'</div>';
   const tr=trendCols(new Map([...d.dates.entries()].map(([k,v])=>[k,v.m])));
   if(tr) h+='<div class="card"><h3>كتابات أصنافي عبر الوقت</h3>'+tr+'</div>';
-  h+=visitsCard(visits);
-  return h+'</div>';
-}
-
-/* أثر الزيارة: متوسط كتابات أصنافي لكل يوم بيانات قبل الزيارة وبعدها (حتى 14 يوم بيانات لكل جانب) */
-function visitEffect(v){
-  const d=S.full.doctors.get(v.dk); const days=S.full.dates; if(!d||!days.length) return '';
-  const before=days.filter(x=>x<v.date).slice(-14), after=days.filter(x=>x>=v.date).slice(0,14);
-  if(!before.length||!after.length) return '<span class="chip">أثر الزيارة يظهر بعد رفع ملفات بعد تاريخها</span>';
-  const avg=arr=>arr.reduce((s,x)=>s+((d.dates.get(x)||{}).m||0),0)/arr.length;
-  const b=avg(before), a=avg(after);
-  const cls=a>b?'mine':a<b?'bad':'';
-  return '<span class="chip '+cls+'">قبل: '+b.toFixed(1)+' / يوم ← بعد: '+a.toFixed(1)+' / يوم '+(a>b?'▲':a<b?'▼':'')+'</span>';
-}
-function visitsCard(visits,withDoctor){
-  let h='<div class="card"><h3>'+ICON.visit+' الزيارات <span class="sub">'+fmt(visits.length)+'</span></h3>';
-  if(!visits.length) return h+'<p class="muted small">لا توجد زيارات مسجلة.</p></div>';
-  h+=visits.map(v=>{ const [y,m,dd]=v.date.split('-');
-    return '<div class="visit"><div class="vd"><b class="num">'+(+dd)+'</b><span>'+MONTHS[+m-1].slice(0,3)+' '+y.slice(2)+'</span></div><div class="vb">'
-      +(withDoctor?'<a class="rt" href="'+docHref(v.dk)+'" style="font-weight:600">'+esc(v.name)+'</a>':'')
-      +'<div class="chips" style="margin-top:2px">'+(v.products||[]).map(pk=>prodChip(pk)).join('')+(v.next?'<span class="chip brand">الزيارة القادمة '+fmtDate(v.next)+'</span>':'')+'</div>'
-      +(v.notes?'<div class="vn">'+esc(v.notes)+'</div>':'')
-      +'<div class="effect">'+visitEffect(v)+'<button class="chip" data-act="editVisit" data-id="'+escapeAttr(v.id)+'">تعديل</button><button class="chip bad" data-act="delVisit" data-id="'+escapeAttr(v.id)+'">حذف</button></div></div></div>'; }).join('');
-  return h+'</div>';
-}
-
-function renderVisits(){
-  const vs=[...S.visits].sort((a,b)=>b.date<a.date?-1:1);
-  const month=today().slice(0,7);
-  const writers=[...S.ix.doctors.values()].filter(d=>d.mine>0);
-  const visited=new Set(S.visits.map(v=>v.dk));
-  const cov=writers.length?Math.round(writers.filter(d=>visited.has(d.key)).length/writers.length*100)+'%':'—';
-  const upcoming=S.visits.filter(v=>v.next&&v.next>=today()).sort((a,b)=>a.next<b.next?-1:1).slice(0,6);
-  let h='<div class="stack"><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" data-act="addVisit">'+ICON.plus+' زيارة جديدة</button>'
-    +(vs.length?'<button class="btn" data-act="exportVisits">'+ICON.save+' تصدير Excel</button>':'')+'</div>';
-  h+='<div class="grid g4">'+kpi('زيارات هذا الشهر',fmt(S.visits.filter(v=>v.date.slice(0,7)===month).length))+kpi('أطباء تمت زيارتهم',fmt(visited.size))
-    +kpi('تغطية كُتّاب أصنافي',cov,'من الأطباء اللي بيكتبوا أصنافك')+kpi('إجمالي الزيارات',fmt(vs.length))+'</div>';
-  if(upcoming.length) h+='<div class="card"><h3>'+ICON.visit+' زيارات قادمة</h3><div class="list">'+upcoming.map(v=>'<a class="row" href="'+docHref(v.dk)+'"><span class="mini-av">'+esc(initials(v.name))+'</span><span class="rm"><div class="rt">'+esc(v.name)+'</div></span><span class="chip brand">'+fmtDateLong(v.next)+'</span></a>').join('')+'</div></div>';
-  h+=visitsCard(vs,true);
   return h+'</div>';
 }
 
@@ -476,7 +403,7 @@ function route(){
     html=renderItem(g,{isMine:false,title:g?g.name:'',sub:'<span class="chip">ليس من أصنافي</span>'}); }
   else if(page==='doctor'){ back=true; title='الطبيب'; html=renderDoctor(arg); }
   else { const P=PAGES[page]||PAGES.home; title=P.title;
-    html=({home:renderHome,products:renderProducts,doctors:renderDoctors,visits:renderVisits,data:renderData}[page]||renderHome)(); }
+    html=({home:renderHome,products:renderProducts,doctors:renderDoctors,data:renderData}[page]||renderHome)(); }
   document.getElementById('title').innerHTML=(back?'<button class="back" data-act="back" aria-label="رجوع">'+ICON.back+'</button>':'')+'<span>'+esc(title)+'</span>';
   view.innerHTML=html;
   const active=back?({product:'products',drug:'products',doctor:'doctors'})[page]:(PAGES[page]?page:'home');
@@ -496,42 +423,6 @@ function renderFilters(page){
     +'<optgroup label="يوم">'+dates.map(d=>'<option value="D:'+d+'"'+(S.f.period==='D:'+d?' selected':'')+'>'+fmtDateLong(d)+'</option>').join('')+'</optgroup></select>';
 }
 function setFilter(k,v){ S.f[k]=v; try{ localStorage.setItem('pdp-filter',JSON.stringify(S.f)); }catch(e){} rebuild(); route(); }
-
-/* ───────── الزيارات (نموذج) ───────── */
-function visitForm(pre){
-  pre=pre||{};
-  const picked=new Set(pre.products||[]);
-  const docs=[...S.full.doctors.values()].sort((a,b)=>b.mine-a.mine||b.total-a.total);
-  const m=document.createElement('div'); m.className='modal';
-  m.innerHTML='<div class="sheet"><h3>'+(pre.id?'تعديل زيارة':'تسجيل زيارة')+'</h3>'
-    +'<div class="field"><label>الطبيب</label><input id="vDoc" list="docOpts" value="'+escapeAttr(pre.name||'')+'" placeholder="اكتب اسم الطبيب"'+(pre.dk&&!pre.id?' readonly':'')+'><datalist id="docOpts">'+docs.slice(0,1500).map(d=>'<option value="'+escapeAttr(d.name)+'">').join('')+'</datalist></div>'
-    +'<div class="grid g2"><div class="field"><label>تاريخ الزيارة</label><input type="date" id="vDate" value="'+escapeAttr(pre.date||today())+'"></div>'
-    +'<div class="field"><label>الزيارة القادمة (اختياري)</label><input type="date" id="vNext" value="'+escapeAttr(pre.next||'')+'"></div></div>'
-    +'<div class="field"><label>الأصناف اللي اتكلمت عنها</label><div class="chips">'+PRODUCTS.map(p=>'<button type="button" class="chip pick'+(picked.has(p.key)?' on':'')+'" data-pk="'+p.key+'">'+esc(p.name)+'</button>').join('')+'</div></div>'
-    +'<div class="field"><label>ملاحظات</label><textarea id="vNotes" placeholder="مثال: طلب عينات Rizer، مهتم بـ Pure Omega للأطفال…">'+esc(pre.notes||'')+'</textarea></div>'
-    +'<div class="sheet-actions"><button class="btn" data-x>إلغاء</button><button class="btn good" data-ok>حفظ الزيارة</button></div></div>';
-  document.body.appendChild(m);
-  m.addEventListener('click',async e=>{
-    if(e.target===m||e.target.closest('[data-x]')){ m.remove(); return; }
-    const c=e.target.closest('[data-pk]'); if(c){ c.classList.toggle('on'); return; }
-    if(e.target.closest('[data-ok]')){
-      const name=document.getElementById('vDoc').value.trim(); const date=document.getElementById('vDate').value;
-      if(!name){ toast('اكتب اسم الطبيب'); return; } if(!date){ toast('اختر تاريخ الزيارة'); return; }
-      const v={ id:pre.id||('v'+Date.now()+Math.random().toString(36).slice(2,6)), dk:pre.dk&&pre.name===name?pre.dk:keyOf(name), name, date,
-        next:document.getElementById('vNext').value||'', notes:document.getElementById('vNotes').value.trim(),
-        products:[...m.querySelectorAll('[data-pk].on')].map(b=>b.dataset.pk) };
-      const existing=S.full.doctors.get(v.dk); if(existing) v.name=existing.name;
-      S.visits=S.visits.filter(x=>x.id!==v.id).concat(v);
-      try{ await Store.put('visits',v); }catch(err){ toast('تعذّر الحفظ'); }
-      m.remove(); toast('تم حفظ الزيارة ✓'); route();
-    }
-  });
-}
-function exportVisits(){
-  const rows=[...S.visits].sort((a,b)=>a.date<b.date?-1:1).map(v=>({ 'التاريخ':v.date, 'الطبيب':v.name, 'القسم':(S.full.doctors.get(v.dk)||{}).section||'', 'الأصناف':(v.products||[]).map(k=>PROD[k]?PROD[k].name:k).join('، '), 'ملاحظات':v.notes||'', 'الزيارة القادمة':v.next||'' })).map(r=>PharmaCore.sanitizeExportRow?PharmaCore.sanitizeExportRow(r):r);
-  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'الزيارات');
-  XLSX.writeFile(wb,'visits-'+today()+'.xlsx');
-}
 
 /* ───────── رفع الملفات ───────── */
 async function onRxFiles(files){
@@ -562,9 +453,8 @@ function onJson(file){
     if(jsonMode==='restore'){
       if(!json||json.app!=='pharmadash-pro'){ alert('هذه ليست نسخة احتياطية من PharmaDash Pro'); return; }
       if(!confirm('استرجاع النسخة سيستبدل كل البيانات الحالية. متابعة؟')) return;
-      await Store.clear('uploads'); await Store.clear('visits');
+      await Store.clear('uploads');
       for(const u of json.uploads||[]) await Store.put('uploads',u);
-      for(const v of json.visits||[]) await Store.put('visits',v);
       await Store.set('sales',json.sales||[]);
       await loadAll(); route(); toast('تم استرجاع النسخة ✓'); return;
     }
@@ -608,17 +498,13 @@ document.addEventListener('click',async e=>{
   if(act==='back'){ if(history.length>1) history.back(); else location.hash='#/home'; }
   else if(act==='onlyMine'){ S.docOnlyMine=!S.docOnlyMine; route(); }
   else if(act==='moreDrugs'){ S.showAllDrugs=true; route(); }
-  else if(act==='addVisit'){ visitForm(a.dataset.dk?{dk:a.dataset.dk,name:a.dataset.name}:{}); }
-  else if(act==='editVisit'){ const v=S.visits.find(x=>x.id===a.dataset.id); if(v) visitForm(v); }
-  else if(act==='delVisit'){ if(!confirm('حذف هذه الزيارة؟')) return; S.visits=S.visits.filter(x=>x.id!==a.dataset.id); try{ await Store.del('visits',a.dataset.id); }catch(err){} route(); }
-  else if(act==='exportVisits') exportVisits();
   else if(act==='pickFiles') document.getElementById('fileInput').click();
   else if(act==='pickSales'){ jsonMode='sales'; document.getElementById('jsonInput').click(); }
   else if(act==='restore'){ jsonMode='restore'; document.getElementById('jsonInput').click(); }
   else if(act==='clearSales'){ S.sales=[]; try{ await Store.set('sales',[]); }catch(err){} route(); }
   else if(act==='delUpload'){ if(!confirm('حذف هذا الملف من البيانات؟')) return; S.uploads=S.uploads.filter(u=>u.id!==a.dataset.id); try{ await Store.del('uploads',a.dataset.id); }catch(err){} rebuild(); route(); }
-  else if(act==='backup'){ download('pharmadash-pro-backup-'+today()+'.json',JSON.stringify({app:'pharmadash-pro',v:1,exported:new Date().toISOString(),uploads:S.uploads,visits:S.visits,sales:S.sales}),'application/json'); }
-  else if(act==='wipe'){ if(!confirm('مسح كل الملفات والزيارات من هذا الجهاز؟ لا يمكن التراجع.')) return; await Store.clear('uploads'); await Store.clear('visits'); await Store.set('sales',[]); S.f={branch:'ALL',period:'ALL'}; await loadAll(); route(); }
+  else if(act==='backup'){ download('pharmadash-pro-backup-'+today()+'.json',JSON.stringify({app:'pharmadash-pro',v:1,exported:new Date().toISOString(),uploads:S.uploads,sales:S.sales}),'application/json'); }
+  else if(act==='wipe'){ if(!confirm('مسح كل الملفات من هذا الجهاز؟ لا يمكن التراجع.')) return; await Store.clear('uploads'); await Store.set('sales',[]); S.f={branch:'ALL',period:'ALL'}; await loadAll(); route(); }
 });
 document.addEventListener('change',e=>{
   if(e.target.id==='periodSel') setFilter('period',e.target.value);
