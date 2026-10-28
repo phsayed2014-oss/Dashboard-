@@ -260,8 +260,8 @@ a.brow:hover{color:var(--rx)}
 <div class="wrap">
   <div class="topline"><a class="logo" href="#home" aria-label="الرئيسية">P</a><b>PharmaDash Pro</b>
     <button class="icon-btn" id="themeBtn" aria-label="الوضع الليلي"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></div>
-  <main id="app"></main>
-  <div class="foot">Dr.Elsayed Hassan · تطوير الاعمال - قطاع الصيدليات<br>الإصدار 4.3 · 28 أكتوبر 2026</div>
+  <main id="app"><div class="panel empty"><b>جارٍ فتح البيانات…</b>لو الرسالة دي فضلت ظاهرة، اعمل تحديث للصفحة.</div></main>
+  <div class="foot">Dr.Elsayed Hassan · تطوير الاعمال - قطاع الصيدليات<br>الإصدار 4.4 · 28 أكتوبر 2026</div>
 </div>
 <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.pdf,.json" multiple hidden>
 <input type="file" id="restoreInput" accept=".json" hidden>
@@ -1072,7 +1072,10 @@ const Store=(()=>{
   function open(){
     if(dbp) return dbp;
     dbp=new Promise((res,rej)=>{
+      // لو التخزين ما ردّش خلال 6 ثواني (بعض المتصفحات/الإطارات بتمنعه) نكمّل من غير حفظ
+      setTimeout(()=>rej(new Error('التخزين المحلي مش بيرد')),6000);
       const r=indexedDB.open('pharmadash-pro',1);
+      r.onblocked=()=>rej(new Error('التخزين مقفول من نسخة تانية مفتوحة — اقفل التابات التانية'));
       r.onupgradeneeded=()=>{ const db=r.result;
         ['uploads','visits'].forEach(s=>{ if(!db.objectStoreNames.contains(s)) db.createObjectStore(s,{keyPath:'id'}); });
         if(!db.objectStoreNames.contains('kv')) db.createObjectStore('kv'); };
@@ -1101,15 +1104,17 @@ try{ const f=JSON.parse(localStorage.getItem('pdp-filter2')); if(f&&f.mode) S.f=
 function saveFilter(){ try{ localStorage.setItem('pdp-filter2',JSON.stringify(S.f)); }catch(e){} }
 
 async function loadAll(){
+  S.storageOk=true;
   try{ S.uploads=await Store.all('uploads'); S.sales=(await Store.get('sales'))||[];
     // الإصدار 4.2 كان بيضيف أصناف من التقارير لوحده — اتلغى، والقائمة ثابتة (13 صنف)
     if(((await Store.get('products'))||[]).length){ await Store.set('products',[]); S.sales=S.sales.filter(e=>PROD[e.product]); await Store.set('sales',S.sales); } }
-  catch(e){ toast('تعذّر فتح التخزين المحلي — البيانات مش هتتحفظ بعد قفل الصفحة'); }
+  catch(e){ S.storageOk=false; S.storageErr=String(e&&e.message||e); toast('تعذّر فتح التخزين المحلي — البيانات مش هتتحفظ بعد قفل الصفحة'); }
   // النسخ القديمة كانت بتحفظ يوم واحد (date) — بقت فترة (from/to)
   S.uploads.forEach(u=>{ if(!u.from){ u.from=u.to=u.date||todayISO(); } });
   S.sales.forEach(e=>{ if(!e.from){ e.from=e.to=e.date; } });
-  S.ready=true; rebuild();
+  S.ready=true; safeRebuild();
 }
+function safeRebuild(){ try{ rebuild(); S.err=null; }catch(e){ S.err=e; console.error(e); } }
 
 /* ───────── الفترات ─────────
    كل ملف (كتابات أو مبيعات) بيغطي فترة من/إلى. أي فترة بتختارها بتاخد من كل ملف
@@ -1496,12 +1501,20 @@ function route(){
   if(!S.ready) return;
   const id=(location.hash||'#home').slice(1);
   let html;
-  if(id.startsWith('product-')) html=productPage(id.slice(8).replace(/-/g,'_'));
-  else if(id.startsWith('doctor-')) html=doctorPage(id.slice(7));
-  else html=({products,matrix,leakage,alerts:alertsPage,timeline,upload}[id]||home)();
+  try{
+    if(S.err) throw S.err;
+    if(id.startsWith('product-')) html=productPage(id.slice(8).replace(/-/g,'_'));
+    else if(id.startsWith('doctor-')) html=doctorPage(id.slice(7));
+    else html=({products,matrix,leakage,alerts:alertsPage,timeline,upload}[id]||home)();
+    if(!S.storageOk) html='<div class="panel" style="margin-bottom:14px;border-color:var(--warn)"><b>البيانات مش بتتحفظ على الجهاز ده</b><p class="small muted">'+esc(S.storageErr||'')+' — الملفات اللي ترفعها هتفضل لحد ما تقفل الصفحة بس. جرّب تفتح الملف من متصفح Chrome عادي (مش من داخل واتساب أو تطبيق تاني).</p></div>'+html;
+  }catch(e){ html=errorPanel(e); }
   document.getElementById('app').innerHTML=html;
 }
-function setF(k,v){ S.f[k]=v; saveFilter(); rebuild(); route(); }
+function errorPanel(e){
+  return '<div class="panel empty" style="text-align:start"><b>حصلت مشكلة في عرض الصفحة</b><p class="small muted" style="margin:6px 0 12px">صوّر الرسالة دي وابعتها: <code dir="ltr">'+esc(String(e&&e.stack||e).split('\n').slice(0,3).join(' | '))+'</code></p>'
+    +'<div class="row-actions"><a class="btn" href="#upload">رفع الملفات</a><button class="btn danger" data-act="wipe">مسح البيانات والبدء من جديد</button></div></div>';
+}
+function setF(k,v){ S.f[k]=v; saveFilter(); safeRebuild(); route(); }
 
 /* ───────── قراءة الملفات: تحديد النوع والصيدلية والفترة ───────── */
 /* أكواد الأصناف كما في تقارير "مبيعات أصناف مورد" — الأدق في المطابقة */
@@ -1688,7 +1701,7 @@ function review(items){
     // اعرض الفترة اللي اترفعت
     const lastTo=items.filter(x=>x.include&&x.to).map(x=>x.to).sort().pop();
     if(lastTo&&S.f.mode!=='all'){ S.f.mode='month'; S.f.month=lastTo.slice(0,7); saveFilter(); }
-    m.remove(); rebuild(); route();
+    m.remove(); safeRebuild(); route();
     toast('اتحفظ ✓'+(nRx?' '+nRx+' ملف كتابات':'')+(nRx&&nS?' و':'')+(nS?' '+nS+' ملف مبيعات':''));
   });
 }
@@ -1726,9 +1739,9 @@ document.addEventListener('click',e=>{
   else if(act==='restore') document.getElementById('restoreInput').click();
   else if(act==='allFiles'){ S.allFiles=true; route(); }
   else if(act==='backup') download('pharmadash-pro-backup-'+todayISO()+'.json',JSON.stringify({app:'pharmadash-pro',v:3,exported:new Date().toISOString(),uploads:S.uploads,sales:S.sales}));
-  else if(act==='delRx') confirmBox('حذف ملف الكتابات ده؟','حذف',async()=>{ S.uploads=S.uploads.filter(u=>u.id!==a.dataset.id); try{ await Store.del('uploads',a.dataset.id); }catch(err){} rebuild(); route(); });
-  else if(act==='delSales') confirmBox('حذف ملف المبيعات ده؟','حذف',async()=>{ S.sales=S.sales.filter(x=>x.branch+'|'+x.from+'|'+x.to+'|'+PROD[x.product].brand!==a.dataset.k); try{ await Store.set('sales',S.sales); }catch(err){} rebuild(); route(); });
-  else if(act==='wipe') confirmBox('مسح كل الكتابات والمبيعات من الجهاز ده؟ مش هينفع ترجعها إلا من نسخة احتياطية.','مسح الكل',async()=>{ try{ await Store.clear('uploads'); await Store.set('sales',[]); }catch(err){} S.uploads=[]; S.sales=[]; rebuild(); route(); toast('اتمسح كل حاجة'); });
+  else if(act==='delRx') confirmBox('حذف ملف الكتابات ده؟','حذف',async()=>{ S.uploads=S.uploads.filter(u=>u.id!==a.dataset.id); try{ await Store.del('uploads',a.dataset.id); }catch(err){} safeRebuild(); route(); });
+  else if(act==='delSales') confirmBox('حذف ملف المبيعات ده؟','حذف',async()=>{ S.sales=S.sales.filter(x=>x.branch+'|'+x.from+'|'+x.to+'|'+PROD[x.product].brand!==a.dataset.k); try{ await Store.set('sales',S.sales); }catch(err){} safeRebuild(); route(); });
+  else if(act==='wipe') confirmBox('مسح كل الكتابات والمبيعات من الجهاز ده؟ مش هينفع ترجعها إلا من نسخة احتياطية.','مسح الكل',async()=>{ try{ await Store.clear('uploads'); await Store.set('sales',[]); }catch(err){} S.uploads=[]; S.sales=[]; safeRebuild(); route(); toast('اتمسح كل حاجة'); });
 });
 document.addEventListener('change',e=>{
   if(e.target.id==='monthSel'){ S.f.month=e.target.value; setF('mode','month'); }
@@ -1747,7 +1760,9 @@ document.getElementById('themeBtn').onclick=()=>{
   const next=cur==='dark'?'light':'dark'; document.documentElement.dataset.theme=next;
   try{ localStorage.setItem('pdp-theme',next); }catch(e){}
 };
-loadAll().then(route);
+window.addEventListener('error',e=>{ if(e.message) toast('خطأ: '+e.message); });
+window.addEventListener('unhandledrejection',e=>{ const r=e.reason; toast('خطأ: '+(r&&r.message||r)); loading(); });
+loadAll().then(route,err=>{ S.ready=true; S.err=err; route(); });
 if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
 

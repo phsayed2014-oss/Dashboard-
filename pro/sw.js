@@ -1,5 +1,5 @@
 /* PharmaDash Pro — يخزّن الملفات للعمل بدون إنترنت */
-const CACHE = 'pdp-v5';
+const CACHE = 'pdp-v6';
 const CORE = ['./', 'index.html', 'app.js', 'engine.js', 'manifest.webmanifest',
   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
