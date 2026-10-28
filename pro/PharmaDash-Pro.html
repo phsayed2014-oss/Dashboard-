@@ -261,7 +261,7 @@ a.brow:hover{color:var(--rx)}
   <div class="topline"><a class="logo" href="#home" aria-label="الرئيسية">P</a><b>PharmaDash Pro</b>
     <button class="icon-btn" id="themeBtn" aria-label="الوضع الليلي"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></div>
   <main id="app"></main>
-  <div class="foot">Dr.Elsayed Hassan · تطوير الاعمال - قطاع الصيدليات<br>الإصدار 4.0 · 28 أكتوبر 2026</div>
+  <div class="foot">Dr.Elsayed Hassan · تطوير الاعمال - قطاع الصيدليات<br>الإصدار 4.1 · 28 أكتوبر 2026</div>
 </div>
 <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.pdf,.json" multiple hidden>
 <input type="file" id="restoreInput" accept=".json" hidden>
@@ -1540,6 +1540,8 @@ function guessMeta(text,fileName){
   let branch=null;
   const pm=text.match(/(?:صيدلي[ةه]|pharmacy)\s*(?:رقم|no\.?|#)?\s*(\d+)/i)||String(fileName||'').match(/(?:صيدلي[ةه]|ph|pharmacy)\s*[-_ ]?(\d+)/i);
   if(pm&&PHARMACY_TO_BRANCH[pm[1]]) branch=PHARMACY_TO_BRANCH[pm[1]];
+  // تقارير الكتابات بتكتب رقم التعاون في آخر الصفحة: "-Co.3"
+  if(!branch){ const cm=text.match(/\bCo\.?\s*([123])\b/)||text.match(/التعاون\s*(الأول|الثاني|الثالث)/); if(cm) branch={'1':'T1','2':'T2','3':'T3','الأول':'T1','الثاني':'T2','الثالث':'T3'}[cm[1]]; }
   // الفترة: "من تاريخ … الى تاريخ …" في الملف، من غير تاريخ الطباعة
   const body=text.split('\n').filter(l=>!/Printing Date|Print Date|تاريخ الطباع[ةه]/i.test(l)).join('\n');
   let ds=[...new Set(datesIn(body))].sort(), sure=ds.length>0, from='', to='';

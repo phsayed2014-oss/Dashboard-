@@ -537,6 +537,8 @@ function guessMeta(text,fileName){
   let branch=null;
   const pm=text.match(/(?:صيدلي[ةه]|pharmacy)\s*(?:رقم|no\.?|#)?\s*(\d+)/i)||String(fileName||'').match(/(?:صيدلي[ةه]|ph|pharmacy)\s*[-_ ]?(\d+)/i);
   if(pm&&PHARMACY_TO_BRANCH[pm[1]]) branch=PHARMACY_TO_BRANCH[pm[1]];
+  // تقارير الكتابات بتكتب رقم التعاون في آخر الصفحة: "-Co.3"
+  if(!branch){ const cm=text.match(/\bCo\.?\s*([123])\b/)||text.match(/التعاون\s*(الأول|الثاني|الثالث)/); if(cm) branch={'1':'T1','2':'T2','3':'T3','الأول':'T1','الثاني':'T2','الثالث':'T3'}[cm[1]]; }
   // الفترة: "من تاريخ … الى تاريخ …" في الملف، من غير تاريخ الطباعة
   const body=text.split('\n').filter(l=>!/Printing Date|Print Date|تاريخ الطباع[ةه]/i.test(l)).join('\n');
   let ds=[...new Set(datesIn(body))].sort(), sure=ds.length>0, from='', to='';
