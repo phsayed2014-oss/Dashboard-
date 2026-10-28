@@ -1,453 +1,455 @@
-/* PharmaDash Pro — متابعة الأصناف والأطباء
+/* PharmaDash Pro — متابعة الأصناف الـ 13: كتابات الأطباء مقابل مبيعات الصيدلية
    كل البيانات تُحفظ على الجهاز (IndexedDB) — لا شيء يُرفع لأي خادم. */
 (function(){
 'use strict';
 
 /* ───────── ثوابت ───────── */
-const BRANCHES = { T1:'التعاون الأول', T2:'التعاون الثاني', T3:'التعاون الثالث' };
-const SALES_BRANCH_MAP = { 'صيدلية 1':'T1', 'صيدلية 18':'T2', 'صيدلية 7':'T3' };
+const BRANCHES = { T1:'صيدلية 1', T2:'صيدلية 18', T3:'صيدلية 7' };
+const PHARMACY_TO_BRANCH = { '1':'T1', '18':'T2', '7':'T3' };
 const PUREHERB_KEYMAP = { 'PURE OMEGA':'pure_omega','PUREFEEL':'purefeel','CENTROZON W':'centrozon_w','CENTROZON':'centrozon','ZINCOLIVE':'zincolive','BONEFRIEND':'bonefriend','ARGIGROW':'argigrow' };
 const PRODUCTS = [
-  ...PRIVATE_LABEL.map(p=>({ key:p.key, name:p.name, form:p.form, brand:'nostri' })),
-  ...PUREHERB_PRODUCTS.map(p=>{ const name=p.name.replace(/\s+(Syrup|Tablet)?\s*\d.*$/,''); return { key:PUREHERB_KEYMAP[p.key], name, form:p.name.slice(name.length).trim(), brand:'herb' }; })
+  ...PRIVATE_LABEL.map(p=>({ key:p.key, name:p.name, form:p.form.replace(' · ',' '), brand:'n' })),
+  ...PUREHERB_PRODUCTS.map(p=>{ const name=p.name.replace(/\s+(Syrup|Tablet)?\s*\d.*$/,''); return { key:PUREHERB_KEYMAP[p.key], name, form:p.name.slice(name.length).trim(), brand:'h' }; })
 ];
 const PROD = Object.fromEntries(PRODUCTS.map(p=>[p.key,p]));
-const BRAND = { nostri:{ label:'NOSTRI · Private Label', color:'var(--nostri)', cls:'nostri' }, herb:{ label:'PureHerb', color:'var(--herb)', cls:'herb' } };
+const MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 
 function productKeyOf(service){
-  const pl = findPrivateLabelProduct(service); if(pl) return pl.key;
-  const ph = findPureHerbProduct(service); if(ph) return PUREHERB_KEYMAP[ph.key] || null;
+  const pl=findPrivateLabelProduct(service); if(pl) return pl.key;
+  const ph=findPureHerbProduct(service); if(ph) return PUREHERB_KEYMAP[ph.key]||null;
   return null;
 }
 const keyOf = v => PharmaCore.normalizeEntityKey(v);
 const esc = escapeHtml;
-const n0 = v => fmt(Math.round(v||0));
-const today = () => PharmaCore.localDateKey ? PharmaCore.localDateKey(new Date()) : new Date().toISOString().slice(0,10);
+const ymd = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const todayISO = () => ymd(new Date());
+function addDays(iso,n){ const [y,m,d]=iso.split('-').map(Number); return new Date(Date.UTC(y,m-1,d+n)).toISOString().slice(0,10); }
+function monthEnd(ym){ const [y,m]=ym.split('-').map(Number); return new Date(Date.UTC(y,m,0)).toISOString().slice(0,10); }
+function prevMonth(ym){ const [y,m]=ym.split('-').map(Number); return m===1?(y-1)+'-12':y+'-'+String(m-1).padStart(2,'0'); }
+const fmtDay = d => { if(!d) return '—'; const [,m,dd]=d.split('-'); return (+dd)+' '+MONTHS[+m-1]; };
+const fmtMonth = ym => { const [y,m]=ym.split('-'); return MONTHS[+m-1]+' '+y; };
+const pctChange = (cur,prev) => prev>0 ? Math.round((cur-prev)/prev*100) : null;
+const tone = c => c==null?'var(--faint)':c>=80?'var(--sale)':c>=40?'var(--warn)':'var(--leak)';
+const slug = k => k.replace(/_/g,'-');
+function idOf(str){ let h=5381; for(const ch of str) h=((h<<5)+h+ch.codePointAt(0))>>>0; return h.toString(36); }
+function initials(name){
+  const w=String(name||'').replace(/^(DR\.?|DOCTOR|د\.?|دكتور)\s+/i,'').trim().split(/\s+/).filter(Boolean);
+  return ((w[0]||'?')[0]+((w[1]||'')[0]||'')).toUpperCase();
+}
 
 /* ───────── أيقونات ───────── */
-const I = (p)=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';
-const ICON = {
-  home:I('<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>'),
-  pill:I('<rect x="2" y="8" width="20" height="8" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/>'),
-  doc:I('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
-  data:I('<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>'),
-  back:I('<polyline points="9 18 15 12 9 6"/>'),
-  search:I('<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/>'),
-  upload:I('<path d="M12 3v13"/><path d="m7 8 5-5 5 5"/><path d="M4 21h16"/>'),
-  plus:I('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'),
-  star:I('<polygon points="12 2 15 9 22 9 16.5 13.5 18.5 21 12 16.5 5.5 21 7.5 13.5 2 9 9 9"/>'),
-  target:I('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>'),
-  trash:I('<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>'),
-  save:I('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>')
+const ICON={
+  pill:'<path d="M10.5 20.5 3.5 13.5a5 5 0 0 1 7-7l7 7a5 5 0 0 1-7 7Z"/><path d="m8.5 8.5 7 7"/>',
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  leak:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z"/><path d="M9 14h6"/>',
+  bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
+  chart:'<path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-6"/>',
+  upload:'<path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/>',
+  back:'<path d="m9 18 6-6-6-6"/>', go:'<path d="m15 18-6-6 6-6"/>',
+  down:'<path d="m22 17-8.5-8.5-5 5L2 7"/><path d="M16 17h6v-6"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  box:'<path d="M21 8 12 3 3 8v8l9 5 9-5Z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/>',
+  save:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  trash:'<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>'
 };
+const svg=(k,w=2)=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="'+w+'" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICON[k]+'</svg>';
+
+const SECTIONS=[
+  {id:'products', t:'أصنافي الـ 13',     d:'اتكتب كام واتباع كام لكل صنف',          k:'k-sale', i:'pill'},
+  {id:'matrix',   t:'الأطباء × الأصناف', d:'مين بيكتب إيه — والخانات الفاضية فرص', k:'k-rx',   i:'grid'},
+  {id:'leakage',  t:'اتكتب وما اتباعش',  d:'كتابات أصنافك اللي ما وصلتش للبيع',     k:'k-leak', i:'leak'},
+  {id:'alerts',   t:'التنبيهات',          d:'أصناف نزلت وأطباء بطّلوا',             k:'k-warn', i:'bell'},
+  {id:'timeline', t:'الخط الزمني',        d:'شهر قصاد شهر',                        k:'k-time', i:'chart'},
+  {id:'upload',   t:'رفع الملفات',        d:'كتابات أو مبيعات — PDF أو Excel',      k:'k-up',   i:'upload'}
+];
 
 /* ───────── التخزين (IndexedDB) ───────── */
-const Store = (()=>{
-  let dbp = null;
+const Store=(()=>{
+  let dbp=null;
   function open(){
     if(dbp) return dbp;
-    dbp = new Promise((res,rej)=>{
-      const r = indexedDB.open('pharmadash-pro',1);
-      r.onupgradeneeded = ()=>{ const db=r.result;
+    dbp=new Promise((res,rej)=>{
+      const r=indexedDB.open('pharmadash-pro',1);
+      r.onupgradeneeded=()=>{ const db=r.result;
         ['uploads','visits'].forEach(s=>{ if(!db.objectStoreNames.contains(s)) db.createObjectStore(s,{keyPath:'id'}); });
         if(!db.objectStoreNames.contains('kv')) db.createObjectStore('kv'); };
-      r.onsuccess = ()=>res(r.result); r.onerror = ()=>rej(r.error);
+      r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);
     });
     return dbp;
   }
-  async function tx(store, mode, fn){
-    const db = await open();
-    return new Promise((res,rej)=>{ const t=db.transaction(store,mode); const s=t.objectStore(store);
-      const out = fn(s); t.oncomplete=()=>res(out && 'result' in out ? out.result : out); t.onerror=()=>rej(t.error); });
+  async function tx(store,mode,fn){
+    const db=await open();
+    return new Promise((res,rej)=>{ const t=db.transaction(store,mode); const out=fn(t.objectStore(store));
+      t.oncomplete=()=>res(out&&'result' in out?out.result:out); t.onerror=()=>rej(t.error); });
   }
   return {
-    all:(s)=>tx(s,'readonly',st=>st.getAll()),
+    all:s=>tx(s,'readonly',st=>st.getAll()),
     put:(s,v)=>tx(s,'readwrite',st=>{ st.put(v); }),
     del:(s,id)=>tx(s,'readwrite',st=>{ st.delete(id); }),
-    clear:(s)=>tx(s,'readwrite',st=>{ st.clear(); }),
-    get:(k)=>tx('kv','readonly',st=>st.get(k)),
+    clear:s=>tx(s,'readwrite',st=>{ st.clear(); }),
+    get:k=>tx('kv','readonly',st=>st.get(k)),
     set:(k,v)=>tx('kv','readwrite',st=>{ st.put(v,k); })
   };
 })();
 
 /* ───────── الحالة ───────── */
-const S = {
-  uploads:[], sales:[],
-  f:{ branch:'ALL', period:'ALL' },
-  ix:null, full:null,
-  docQuery:'', docSort:'mine', docOnlyMine:false, drugQuery:'', showAllDrugs:false
-};
-try{ const f=JSON.parse(localStorage.getItem('pdp-filter')); if(f&&f.branch) S.f=f; }catch(e){}
+const S={ uploads:[], sales:[], f:{ mode:'month', month:'', branch:'ALL' }, ix:null, brand:'all', tlProduct:'ALL', ready:false, allFiles:false };
+try{ const f=JSON.parse(localStorage.getItem('pdp-filter2')); if(f&&f.mode) S.f=Object.assign(S.f,f); }catch(e){}
+function saveFilter(){ try{ localStorage.setItem('pdp-filter2',JSON.stringify(S.f)); }catch(e){} }
 
 async function loadAll(){
-  try{
-    S.uploads = await Store.all('uploads');
-    S.sales = (await Store.get('sales')) || [];
-  }catch(e){ toast('تعذّر فتح التخزين المحلي — ستعمل الجلسة بدون حفظ'); }
-  rebuild();
+  try{ S.uploads=await Store.all('uploads'); S.sales=(await Store.get('sales'))||[]; }
+  catch(e){ toast('تعذّر فتح التخزين المحلي — البيانات مش هتتحفظ بعد قفل الصفحة'); }
+  S.ready=true; rebuild();
 }
 
-/* ───────── بناء الفهارس ───────── */
-function inPeriod(date, p){
-  if(p==='ALL') return true;
-  if(!date) return false;
-  if(p.startsWith('M:')) return date.slice(0,7)===p.slice(2);
-  if(p.startsWith('D:')) return date===p.slice(2);
-  return true;
+/* ───────── الفترات ───────── */
+function dataDates(){
+  const s=new Set(); S.uploads.forEach(u=>u.date&&s.add(u.date)); S.sales.forEach(e=>s.add(e.date));
+  return [...s].sort();
 }
-function buildIndex(uploads){
-  const doctors=new Map(), drugs=new Map(), products=new Map(), sections=new Map();
-  const pkCache=new Map(); const patients=new Set(); let rows=0, mine=0;
-  const dates=new Set();
-  PRODUCTS.forEach(p=>products.set(p.key,{ key:p.key, total:0, doctors:new Map(), sections:new Map(), branches:new Map(), dates:new Map(), patients:new Set(), closed:0, canceled:0, names:new Map() }));
-  const bump=(m,k,name,extra)=>{ let o=m.get(k); if(!o){ o={key:k,name,count:0,...(extra||{})}; m.set(k,o);} o.count++; return o; };
-  for(const u of uploads){
-    const date=u.date||''; if(date) dates.add(date);
+function windowOf(){
+  const dates=dataDates(); const last=dates[dates.length-1]||todayISO(); const f=S.f;
+  if(f.mode==='day'){
+    const prevDay=[...dates].reverse().find(d=>d<last)||'';
+    return { from:last, to:last, prev:prevDay?{from:prevDay,to:prevDay}:null, label:fmtDay(last), cmp:prevDay?'عن '+fmtDay(prevDay):'' };
+  }
+  if(f.mode==='week'){
+    const from=addDays(last,-6);
+    return { from, to:last, prev:{from:addDays(from,-7),to:addDays(from,-1)}, label:'آخر 7 أيام', cmp:'عن الـ 7 أيام اللي قبلها' };
+  }
+  if(f.mode==='all') return { from:'0000-00-00', to:'9999-12-31', prev:null, label:'كل الفترة', cmp:'' };
+  const months=[...new Set(dates.map(d=>d.slice(0,7)))];
+  const ym=months.includes(f.month)?f.month:(months[months.length-1]||todayISO().slice(0,7));
+  const to=last.slice(0,7)===ym?last:monthEnd(ym);
+  const days=+to.slice(8,10); const pm=prevMonth(ym);
+  const pTo=pm+'-'+String(Math.min(days,+monthEnd(pm).slice(8,10))).padStart(2,'0');
+  return { from:ym+'-01', to, prev:{from:pm+'-01',to:pTo}, label:fmtMonth(ym), cmp:'عن نفس الأيام من '+MONTHS[+pm.slice(5,7)-1], ym };
+}
+const inR=(d,r)=>!!r&&d>=r.from&&d<=r.to;
+
+/* ───────── بناء الفهرس ───────── */
+function rebuild(){
+  const W=windowOf(); const B=S.f.branch; const last=dataDates().slice(-1)[0]||todayISO();
+  const okB=b=>B==='ALL'||b===B;
+  const prod={}; PRODUCTS.forEach(p=>prod[p.key]={ key:p.key, w:0, wPrev:0, s:0, sPrev:0, canceled:0,
+      wB:{T1:0,T2:0,T3:0}, sB:{T1:0,T2:0,T3:0}, docs:new Map(), dailyW:new Map(), dailyS:new Map() });
+  const doctors=new Map(); const salesCov={T1:false,T2:false,T3:false};
+  const months=new Map(); const mon=ym=>{ let m=months.get(ym); if(!m){ m={w:0,s:0,pw:{},ps:{}}; months.set(ym,m);} return m; };
+  const sparkTo=W.to==='9999-12-31'?last:W.to, sparkFrom=addDays(sparkTo,-29);
+  // التنبيهات: نوافذ ثابتة منسوبة لآخر يوم فيه بيانات
+  const a7={from:addDays(last,-6),to:last}, p7={from:addDays(last,-13),to:addDays(last,-7)};
+  const r14={from:addDays(last,-13),to:last}, o28={from:addDays(last,-41),to:addDays(last,-14)};
+  const alertW={}, alertS={}; PRODUCTS.forEach(p=>{ alertW[p.key]={c:0,p:0}; alertS[p.key]={c:0,p:0}; });
+  const docStop=new Map(); let anySalesA=false, anySalesP=false;
+  const pkCache=new Map();
+
+  for(const u of S.uploads){
+    if(!okB(u.branch)) continue;
+    const d=u.date||''; const cur=inR(d,W), prv=inR(d,W.prev), spk=d>=sparkFrom&&d<=sparkTo;
     for(const r of u.rows){
-      const [doctor,service,section,patient,status]=r;
-      const dk=keyOf(doctor), gk=keyOf(service), sk=keyOf(section);
+      const service=r[1]; const gk=keyOf(service);
       let pk=pkCache.get(gk); if(pk===undefined){ pk=service?productKeyOf(service):null; pkCache.set(gk,pk); }
-      const pid=patient? u.branch+'|'+patient : '';
-      rows++; if(pk) mine++; if(pid) patients.add(pid);
-      const st=PharmaCore.normalizeStatus(status);
-      if(dk){
-        let d=doctors.get(dk);
-        if(!d){ d={key:dk,name:doctor,section:section||'',branches:new Map(),total:0,mine:0,drugs:new Map(),prods:new Map(),patients:new Set(),dates:new Map(),lastMine:''}; doctors.set(dk,d); }
-        d.total++; if(section&&!d.section) d.section=section;
-        bump(d.branches,u.branch,BRANCHES[u.branch]);
-        if(gk) bump(d.drugs,gk,service,{pk});
-        if(pid) d.patients.add(pid);
-        const dd=d.dates.get(date)||{t:0,m:0}; dd.t++; if(pk) dd.m++; d.dates.set(date,dd);
-        if(pk){ d.mine++; d.prods.set(pk,(d.prods.get(pk)||0)+1); if(date>d.lastMine) d.lastMine=date; }
+      const doctor=r[0]; const dk=keyOf(doctor);
+      if(cur&&dk){
+        let doc=doctors.get(dk);
+        if(!doc){ doc={ key:dk, id:idOf(dk), name:doctor, section:r[2]||'', total:0, mine:0, prods:new Map(), drugs:new Map(), branches:new Set() }; doctors.set(dk,doc); }
+        doc.total++; doc.branches.add(u.branch); if(r[2]&&!doc.section) doc.section=r[2];
+        if(gk){ const g=doc.drugs.get(gk)||{name:service,count:0,pk}; g.count++; doc.drugs.set(gk,g); }
+        if(pk){ doc.mine++; const pp=doc.prods.get(pk)||{w:0}; pp.w++; doc.prods.set(pk,pp); }
       }
-      if(gk){
-        let g=drugs.get(gk);
-        if(!g){ g={key:gk,name:service,pk,total:0,doctors:new Map(),sections:new Map(),branches:new Map(),dates:new Map(),patients:new Set(),closed:0,canceled:0}; drugs.set(gk,g); }
-        fill(g);
-      }
-      if(pk){ const p=products.get(pk); fill(p); bump(p.names,gk,service); }
-      if(sk){
-        let s=sections.get(sk); if(!s){ s={key:sk,name:section,total:0,mine:0,doctors:new Set(),prods:new Map()}; sections.set(sk,s); }
-        s.total++; if(dk) s.doctors.add(dk); if(pk){ s.mine++; s.prods.set(pk,(s.prods.get(pk)||0)+1); }
-      }
-      function fill(o){
-        o.total++;
-        if(dk) bump(o.doctors,dk,doctor);
-        if(sk) bump(o.sections,sk,section);
-        bump(o.branches,u.branch,BRANCHES[u.branch]);
-        if(date) o.dates.set(date,(o.dates.get(date)||0)+1);
-        if(pid) o.patients.add(pid);
-        if(st==='Closed') o.closed++; else if(st==='Canceled') o.canceled++;
+      if(!pk) continue;
+      const P=prod[pk];
+      if(cur){ P.w++; P.wB[u.branch]++; if(PharmaCore.normalizeStatus(r[4])==='Canceled') P.canceled++;
+        if(dk){ const x=P.docs.get(dk)||{name:doctor,w:0,wB:{T1:0,T2:0,T3:0}}; x.w++; x.wB[u.branch]++; P.docs.set(dk,x); } }
+      if(prv) P.wPrev++;
+      if(spk) P.dailyW.set(d,(P.dailyW.get(d)||0)+1);
+      if(d){ const m=mon(d.slice(0,7)); m.w++; m.pw[pk]=(m.pw[pk]||0)+1; }
+      if(inR(d,a7)) alertW[pk].c++; else if(inR(d,p7)) alertW[pk].p++;
+      if(dk&&(inR(d,r14)||inR(d,o28))){
+        const k=dk+'|'+pk; const x=docStop.get(k)||{name:doctor,dk,pk,recent:0,old:0}; if(inR(d,r14)) x.recent++; else x.old++; docStop.set(k,x);
       }
     }
   }
-  return { doctors, drugs, products, sections, rows, mine, patients:patients.size, dates:[...dates].sort(), uploads:uploads.length };
-}
-function rebuild(){
-  const f=S.f;
-  const ups=S.uploads.filter(u=>(f.branch==='ALL'||u.branch===f.branch)&&inPeriod(u.date,f.period));
-  S.ix=buildIndex(ups);
-  S.full=buildIndex(S.uploads);
-}
-function salesFor(pk){
-  const f=S.f; let units=0, amount=0, any=false; const byBranch=new Map();
   for(const e of S.sales){
-    if(pk && e.product!==pk) continue;
-    if(f.branch!=='ALL' && e.branch!==f.branch) continue;
-    if(!inPeriod(e.date,f.period)) continue;
-    units+=e.units; amount+=e.amount; any=true;
-    byBranch.set(e.branch,(byBranch.get(e.branch)||0)+e.units);
+    if(!okB(e.branch)||!PROD[e.product]) continue;
+    const P=prod[e.product]; const d=e.date;
+    if(inR(d,W)){ P.s+=e.units; P.sB[e.branch]+=e.units; salesCov[e.branch]=true; }
+    if(inR(d,W.prev)) P.sPrev+=e.units;
+    if(d>=sparkFrom&&d<=sparkTo) P.dailyS.set(d,(P.dailyS.get(d)||0)+e.units);
+    const m=mon(d.slice(0,7)); m.s+=e.units; m.ps[e.product]=(m.ps[e.product]||0)+e.units;
+    if(inR(d,a7)){ alertS[e.product].c+=e.units; anySalesA=true; } else if(inR(d,p7)){ alertS[e.product].p+=e.units; anySalesP=true; }
   }
-  return any?{units,amount,byBranch}:null;
-}
-
-/* ───────── أدوات العرض ───────── */
-function initials(name){
-  const w=String(name||'').replace(/^(DR\.?|DOCTOR|د\.?|دكتور)\s+/i,'').trim().split(/\s+/).filter(Boolean);
-  return ((w[0]||'?')[0]+((w[1]||'')[0]||'')).toUpperCase();
-}
-function sorted(map){ return [...map.values()].sort((a,b)=>b.count-a.count); }
-function hbars(items,{max,cls='',link}={}){
-  if(!items.length) return '<p class="muted small">لا توجد بيانات</p>';
-  const m=max||Math.max(...items.map(i=>i.count),1);
-  return '<div class="hbars">'+items.map(i=>{
-    const inner='<span class="n">'+esc(i.name)+'</span><span class="t"><i style="width:'+(i.count/m*100).toFixed(1)+'%"></i></span><span class="c num">'+fmt(i.count)+'</span>';
-    return link? '<a class="hb '+cls+'" href="'+link(i)+'">'+inner+'</a>' : '<div class="hb '+cls+'">'+inner+'</div>';
-  }).join('')+'</div>';
-}
-function trendCols(datesMap){
-  const entries=[...datesMap.entries()].filter(([d])=>d).sort((a,b)=>a[0]<b[0]?-1:1);
-  if(entries.length<2) return '';
-  let pts=entries;
-  if(entries.length>14){
-    const byM=new Map(); entries.forEach(([d,c])=>byM.set(d.slice(0,7),(byM.get(d.slice(0,7))||0)+c));
-    pts=[...byM.entries()];
-    if(pts.length<2) pts=entries.slice(-14);
-  }
-  pts=pts.slice(-14);
-  const m=Math.max(...pts.map(p=>p[1]),1);
-  return '<div class="cols">'+pts.map(([d,c])=>'<div class="col"><b class="num">'+fmt(c)+'</b><i style="height:'+(c/m*100).toFixed(1)+'%"></i><span>'+esc(fmtDate(d))+'</span></div>').join('')+'</div>';
-}
-const MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-function fmtDate(d){
-  if(!d) return '—';
-  const [y,m,dd]=d.split('-');
-  if(!dd) return MONTHS[+m-1]+' '+y.slice(2);
-  return (+dd)+' '+MONTHS[+m-1].slice(0,3);
-}
-function fmtDateLong(d){ if(!d) return '—'; const [y,m,dd]=d.split('-'); return (+dd)+' '+MONTHS[+m-1]+' '+y; }
-function prodChip(pk,count){
-  const p=PROD[pk]; if(!p) return '';
-  return '<a class="chip '+BRAND[p.brand].cls+'" href="#/product/'+pk+'">'+esc(p.name)+(count!=null?' · <span class="num">'+fmt(count)+'</span>':'')+'</a>';
-}
-function kpi(label,value,hint){ return '<div class="card kpi"><div class="l">'+label+'</div><div class="v num">'+value+'</div>'+(hint?'<div class="h">'+hint+'</div>':'')+'</div>'; }
-function rate(o){ const dec=o.closed+o.canceled; return dec?Math.round(o.closed/dec*100)+'%':'—'; }
-const docHref = k => '#/doctor/'+encodeURIComponent(k);
-const drugHref = k => '#/drug/'+encodeURIComponent(k);
-function noData(){
-  return '<div class="card empty"><div class="ei">'+ICON.upload+'</div><h2>ابدأ برفع ملف الكتابات</h2>'
-    +'<p>ارفع تقرير الروشتات (Excel أو CSV أو PDF) لأي تعاون، وبعدها اضغط على أي صنف أو طبيب لتشوف كل تفاصيله.</p>'
-    +'<a class="btn pri" href="#/data">'+ICON.upload+' رفع ملف</a></div>';
-}
-function filterNote(){
-  const f=S.f; if(f.branch==='ALL'&&f.period==='ALL') return '';
-  return '<span class="chip brand">'+(f.branch==='ALL'?'كل التعاونات':BRANCHES[f.branch])+(f.period==='ALL'?'':' · '+esc(periodLabel(f.period)))+'</span>';
-}
-function periodLabel(p){ if(p==='ALL') return 'كل الفترات'; if(p.startsWith('M:')) return fmtDate(p.slice(2)); return fmtDateLong(p.slice(2)); }
-
-/* ───────── الصفحات ───────── */
-const PAGES = {
-  home:{ title:'الرئيسية', icon:'home', nav:true },
-  products:{ title:'أصنافي', icon:'pill', nav:true },
-  doctors:{ title:'الأطباء', icon:'doc', nav:true },
-  data:{ title:'البيانات', icon:'data', nav:true }
-};
-
-function renderHome(){
-  const ix=S.ix;
-  if(!S.uploads.length) return noData();
-  const docsMine=[...ix.doctors.values()].filter(d=>d.mine>0);
-  const share=ix.rows?(ix.mine/ix.rows*100).toFixed(1)+'%':'—';
-  const sold=salesFor(null);
-  let h='<div class="stack">';
-  h+='<div class="grid g4">'
-    +kpi('كتابات أصنافي',fmt(ix.mine),'من '+fmt(ix.rows)+' كتابة · '+share)
-    +kpi('أطباء بيكتبوا أصنافي',fmt(docsMine.length),'من '+fmt(ix.doctors.size)+' طبيب')
-    +kpi(sold?'مبيعات فعلية (علبة)':'الأصناف المكتوبة',sold?fmt(sold.units):fmt([...ix.products.values()].filter(p=>p.total).length)+' / '+PRODUCTS.length, sold?'حسب ملف المبيعات':'صنف اتكتب على الأقل مرة')
-    +kpi('عدد المرضى',fmt(ix.patients),'في الفترة المختارة')
-    +'</div>';
-
-  // أصنافي
-  h+='<div class="card"><h3>'+ICON.pill+' أصنافي <span class="sub">اضغط على الصنف لتفاصيله</span></h3>'+productTiles(true)+'</div>';
-
-  // أعلى الأطباء
-  const top=docsMine.sort((a,b)=>b.mine-a.mine).slice(0,8);
-  h+='<div class="grid g2"><div class="card"><h3>'+ICON.star+' أكثر الأطباء كتابةً لأصنافي <a class="sub" href="#/doctors">الكل ›</a></h3>'+doctorRows(top,'mine')+'</div>';
-  const secs=[...ix.sections.values()].filter(s=>s.mine).sort((a,b)=>b.mine-a.mine).slice(0,8).map(s=>({name:s.name,count:s.mine}));
-  h+='<div class="card"><h3>'+ICON.target+' أصنافي حسب القسم</h3>'+hbars(secs,{cls:'mine'})+'</div></div>';
-  return h+'</div>';
-}
-
-function productTiles(compact){
-  const ix=S.ix;
-  let h='';
-  ['nostri','herb'].forEach(b=>{
-    const list=PRODUCTS.filter(p=>p.brand===b).map(p=>({p,o:ix.products.get(p.key)})).sort((a,c)=>c.o.total-a.o.total);
-    h+='<div class="section-title" style="margin:'+(h?'16px':'0')+' 2px 10px">'+BRAND[b].label+'</div><div class="grid '+(compact?'g4':'g3')+'">';
-    list.forEach(({p,o})=>{
-      h+='<a class="card ptile'+(o.total?'':' zero')+'" href="#/product/'+p.key+'"><span class="stripe" style="background:'+BRAND[b].color+'"></span>'
-        +'<div><div class="pn">'+esc(p.name)+'</div><div class="pf">'+esc(p.form)+'</div></div>'
-        +'<div class="pv"><b class="num">'+fmt(o.total)+'</b><span>كتابة</span></div>'
-        +'<div class="muted small">'+fmt(o.doctors.size)+' طبيب · '+fmt(o.patients.size)+' مريض</div></a>';
-    });
-    h+='</div>';
+  // التحويل والفاقد: بنحسبهم بس في الصيدليات اللي ليها ملف مبيعات في نفس الفترة
+  const cov=Object.keys(salesCov).filter(b=>salesCov[b]);
+  const hasSales=cov.length>0;
+  let W_=0,S_=0,WC=0,LOST=0,Wp=0,Sp=0;
+  PRODUCTS.forEach(p=>{ const P=prod[p.key];
+    P.wCov=cov.reduce((a,b)=>a+P.wB[b],0);
+    P.lostB={T1:0,T2:0,T3:0}; cov.forEach(b=>{ P.lostB[b]=Math.max(0,P.wB[b]-P.sB[b]); });
+    P.lost=cov.reduce((a,b)=>a+P.lostB[b],0);
+    P.conv=hasSales&&P.wCov>0?Math.round(P.s/P.wCov*100):null;
+    P.trend=hasSales?pctChange(P.s,P.sPrev):pctChange(P.w,P.wPrev);
+    W_+=P.w; S_+=P.s; WC+=P.wCov; LOST+=P.lost; Wp+=P.wPrev; Sp+=P.sPrev;
   });
+  // الفاقد لكل طبيب (تقديري): نصيبه من فاقد الصنف في نفس الصيدلية
+  const leak=[];
+  PRODUCTS.forEach(p=>{ const P=prod[p.key];
+    P.docs.forEach((x,dk)=>{ let est=0; cov.forEach(b=>{ if(P.wB[b]>0) est+=x.wB[b]*P.lostB[b]/P.wB[b]; });
+      x.lost=Math.round(est);
+      if(x.lost>0) leak.push({dk,id:idOf(dk),name:x.name,pk:p.key,w:x.w,lost:x.lost,branches:Object.keys(x.wB).filter(b=>x.wB[b]>0)}); });
+  });
+  leak.sort((a,b)=>b.lost-a.lost||b.w-a.w);
+
+  // التنبيهات
+  const alerts=[];
+  PRODUCTS.forEach(p=>{
+    const s=alertS[p.key], w=alertW[p.key];
+    if(anySalesA&&anySalesP&&s.p>=5&&s.c<=s.p*.75) alerts.push({sev:2,c:'leak',i:'down',t:p.name+' مبيعاته نزلت '+Math.round((1-s.c/s.p)*100)+'%',p:'آخر 7 أيام '+s.c+' علبة مقابل '+s.p+' في الأسبوع اللي قبله.'+(w.c>=w.p&&w.p>0?' الكتابات ثابتة أو زادت، يعني المشكلة غالبًا في البيع أو التوفر.':''),pk:p.key});
+    if(w.p>=5&&w.c<=w.p*.75) alerts.push({sev:2,c:'leak',i:'down',t:p.name+' كتاباته نزلت '+Math.round((1-w.c/w.p)*100)+'%',p:'آخر 7 أيام '+w.c+' كتابة مقابل '+w.p+' في الأسبوع اللي قبله.',pk:p.key});
+    const P=prod[p.key]; if(P.conv!=null&&P.wCov>=10&&P.conv<40) alerts.push({sev:1,c:'warn',i:'box',t:p.name+' بيتكتب ومش بيتباع',p:'في '+W.label+' اتكتب '+P.wCov+' مرة واتباع '+P.s+' علبة بس ('+P.conv+'%). راجع التوفر في الصيدلية.',pk:p.key});
+  });
+  [...docStop.values()].filter(x=>x.old>=3&&x.recent===0).sort((a,b)=>b.old-a.old).slice(0,8).forEach(x=>{
+    alerts.push({sev:0,c:'rx',i:'user',t:x.name+' بطّل يكتب '+PROD[x.pk].name,p:'كتبه '+x.old+' مرة في الأسابيع اللي فاتت، وما كتبهوش ولا مرة في آخر 14 يوم.',id:idOf(x.dk)});
+  });
+  alerts.sort((a,b)=>b.sev-a.sev);
+
+  S.ix={ W, prod, doctors, leak, alerts, months, hasSales, cov, last,
+    totals:{w:W_,s:S_,wc:WC,lost:LOST,wPrev:Wp,sPrev:Sp,conv:hasSales&&WC>0?Math.round(S_/WC*100):null} };
+}
+
+/* ───────── رسومات صغيرة ───────── */
+function ring(size,stroke,parts){
+  const r=(size-stroke)/2, C=2*Math.PI*r; let off=0;
+  let h='<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="currentColor" stroke-opacity=".14" stroke-width="'+stroke+'"/>';
+  parts.forEach(p=>{ const v=Math.max(0,Math.min(1,p.v)); if(!v) return;
+    h+='<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="'+p.c+'" stroke-width="'+stroke+'" stroke-linecap="round" stroke-dasharray="'+(C*v).toFixed(1)+' '+C.toFixed(1)+'" stroke-dashoffset="'+(-off).toFixed(1)+'"/>'; off+=C*v; });
+  return '<svg viewBox="0 0 '+size+' '+size+'" aria-hidden="true">'+h+'</svg>';
+}
+function spark(vals,c){
+  if(vals.length<2||!vals.some(v=>v)) return '<svg class="spark" viewBox="0 0 96 28" aria-hidden="true"></svg>';
+  const m=Math.max(...vals,1), n=vals.length-1, pts=vals.map((v,i)=>[i*96/n,26-v/m*22]);
+  return '<svg class="spark" viewBox="0 0 96 28" aria-hidden="true"><path d="M0 28 L'+pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' L')+' L96 28Z" fill="'+c+'" fill-opacity=".14"/><polyline fill="none" stroke="'+c+'" stroke-width="2" points="'+pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+'"/><circle cx="'+pts[n][0].toFixed(1)+'" cy="'+pts[n][1].toFixed(1)+'" r="2.6" fill="'+c+'"/></svg>';
+}
+function series(map,to,days){ const out=[]; for(let i=days-1;i>=0;i--) out.push(map.get(addDays(to,-i))||0); return out; }
+function trendTag(t){ if(t==null) return '<span class="trend flat">—</span>';
+  return '<span class="trend '+(t>0?'up':t<0?'down':'flat')+'">'+(t>0?'▲ ':t<0?'▼ ':'')+Math.abs(t)+'%</span>'; }
+function delta(t){ if(t==null) return '<div class="d flat">—</div>'; return '<div class="d '+(t>0?'up':t<0?'down':'flat')+'">'+(t>0?'▲ ':t<0?'▼ ':'')+Math.abs(t)+'%</div>'; }
+function niceMax(v){ const step=Math.pow(10,Math.floor(Math.log10(Math.max(v,1)/4))); const unit=[1,2,2.5,5,10].map(x=>x*step).find(u=>u*4>=v)||step*10; return unit*4; }
+const heatLv=v=>v===0?0:v<3?1:v<6?2:v<10?3:4;
+const hasData=()=>S.uploads.length>0||S.sales.length>0;
+
+/* ───────── الشاشات ───────── */
+function periodControls(hero){
+  const months=[...new Set(dataDates().map(d=>d.slice(0,7)))].reverse();
+  const cls=hero?'pill':'chip'; const curM=S.ix.W.ym||months[0]||'';
+  let h=[['day','اليوم'],['week','آخر 7 أيام']].map(([k,l])=>'<button class="'+cls+(S.f.mode===k?' on':'')+'" data-mode="'+k+'">'+l+'</button>').join('');
+  h+='<select class="'+cls+(S.f.mode==='month'?' on':'')+'" id="monthSel" aria-label="الشهر">'+(months.length?months:[curM]).map(m=>'<option value="'+m+'"'+(S.f.mode==='month'&&m===curM?' selected':'')+'>'+(m?fmtMonth(m):'الشهر')+'</option>').join('')+'</select>';
+  h+='<button class="'+cls+(S.f.mode==='all'?' on':'')+'" data-mode="all">الكل</button>';
+  h+=(hero?'':'<span class="sep"></span>')+branchSelect(cls);
   return h;
 }
+const branchSelect=cls=>'<select class="'+cls+(S.f.branch!=='ALL'?' on':'')+'" id="branchSel" aria-label="الصيدلية"><option value="ALL">كل الصيدليات ▾</option>'+Object.entries(BRANCHES).map(([k,l])=>'<option value="'+k+'"'+(S.f.branch===k?' selected':'')+'>'+l+'</option>').join('')+'</select>';
 
-function doctorRows(list,mode){
-  if(!list.length) return '<p class="muted small">لا توجد نتائج</p>';
-  const max=Math.max(...list.map(d=>mode==='mine'?d.mine:d.total),1);
-  return '<div class="list">'+list.map((d,i)=>{
-    const v=mode==='mine'?d.mine:d.total;
-    return '<a class="row" href="'+docHref(d.key)+'"><span class="mini-av'+(d.mine?' on':'')+'">'+esc(initials(d.name))+'</span>'
-      +'<span class="rm"><div class="rt">'+esc(d.name)+'</div><div class="rs">'+esc(d.section||'—')+' · '+[...d.branches.values()].map(b=>esc(b.name)).join('، ')+'</div>'
-      +'<div class="bar'+(mode==='mine'?' mine':'')+'"><i style="width:'+(v/max*100).toFixed(1)+'%"></i></div></span>'
-      +'<span class="rv num">'+fmt(d.mine)+'<small>من '+fmt(d.total)+'</small></span></a>';
-  }).join('')+'</div>';
+function home(){
+  const ix=S.ix, T=ix.totals;
+  let h='<section class="hero"><div class="hero-in"><div><div class="hello">Dr. Elsayed Hassan · '+esc(ix.W.label)+(S.f.branch!=='ALL'?' · '+BRANCHES[S.f.branch]:'')+'</div>';
+  if(!hasData()){
+    h+='<h1>ارفع ملفات الكتابات والمبيعات، وهتلاقي متابعة أصنافك الـ 13 هنا</h1><a class="cta" href="#upload">'+svg('upload')+' رفع الملفات</a></div>'
+      +'<div class="ring-wrap" style="color:var(--hero-muted)">'+ring(200,16,[])+'<div class="ring-c"><b class="num">—</b><span>نسبة التحويل</span></div></div></div></section>';
+  } else {
+    h+='<h1>أصنافك اتكتبت <span class="num">'+fmt(T.w)+'</span> مرة'+(ix.hasSales?' واتباع منها <em class="num">'+fmt(T.s)+'</em> علبة':'')+'</h1>'
+      +'<div class="pills">'+periodControls(true)+'</div><div class="hstats">'
+      +'<div class="hs"><div class="l"><i style="background:var(--rx)"></i>كتابات</div><div class="v num">'+fmt(T.w)+'</div>'+delta(pctChange(T.w,T.wPrev))+'</div>'
+      +'<div class="hs"><div class="l"><i style="background:var(--sale)"></i>مبيعات</div><div class="v num">'+(ix.hasSales?fmt(T.s):'—')+'</div>'+(ix.hasSales?delta(pctChange(T.s,T.sPrev)):'<div class="d flat">ارفع المبيعات</div>')+'</div>'
+      +'<div class="hs"><div class="l"><i style="background:var(--leak)"></i>ما اتباعش</div><div class="v num">'+(ix.hasSales?fmt(T.lost):'—')+'</div><div class="d flat">'+(ix.hasSales&&T.wc?Math.round(T.lost/T.wc*100)+'% من الكتابات':'')+'</div></div>'
+      +'</div></div>'
+      +'<div class="ring-wrap" style="color:var(--hero-muted)">'+ring(200,16,ix.hasSales&&T.wc?[{v:Math.min(T.s,T.wc)/T.wc,c:'var(--sale)'},{v:T.lost/T.wc,c:'var(--leak)'}]:[])
+      +'<div class="ring-c"><b class="num">'+(T.conv==null?'—':T.conv+'%')+'</b><span>نسبة التحويل</span></div></div></div>';
+    const partial=ix.hasSales&&ix.cov.length<(S.f.branch==='ALL'?3:1);
+    if(ix.W.cmp||partial) h+='<div class="hero-note">'+(ix.W.cmp?'الأسهم = التغيير '+esc(ix.W.cmp):'')+(partial?(ix.W.cmp?' · ':'')+'التحويل محسوب لـ '+ix.cov.map(b=>BRANCHES[b]).join(' و')+' بس (اللي ليها مبيعات)':'')+'</div>';
+    h+='</section>';
+  }
+  const P=Object.values(ix.prod);
+  const writers=[...ix.doctors.values()].filter(d=>d.mine>0).sort((a,b)=>b.mine-a.mine);
+  const mths=[...ix.months.keys()].sort();
+  const mv=m=>ix.hasSales?ix.months.get(m).s:ix.months.get(m).w;
+  const val={
+    products:ix.hasSales?[P.filter(p=>p.conv!=null&&p.conv>=80).length+' من 13','صنف تحويله أخضر']:[P.filter(p=>p.w).length+' من 13','صنف اتكتب في الفترة'],
+    matrix:[fmt(writers.length),'طبيب بيكتب أصنافك'],
+    leakage:ix.hasSales?[fmt(T.lost),'كتابة ما اتباعتش']:['—','محتاج ملف مبيعات'],
+    alerts:[fmt(ix.alerts.length), ix.alerts.length?'تنبيه محتاج نظرة':'مفيش تنبيهات'],
+    timeline:[fmt(mths.length),'شهر فيه بيانات'],
+    upload:[fmt(S.uploads.length+new Set(S.sales.map(e=>e.date+e.branch)).size),'ملف محفوظ']
+  };
+  const extra={
+    products:'<div class="dots">'+PRODUCTS.map(p=>'<i style="background:'+tone(ix.prod[p.key].conv)+'" title="'+esc(p.name)+'"></i>').join('')+'</div>',
+    matrix:writers.length?'<div class="mini-heat">'+writers.slice(0,5).flatMap(d=>PRODUCTS.map(p=>'<i style="background:var(--h'+heatLv((d.prods.get(p.key)||{w:0}).w)+')"></i>')).join('')+'</div>':'',
+    timeline:mths.length>1?spark(mths.slice(-8).map(mv),'var(--time)'):''
+  };
+  h+='<div class="sec-h"><h2>الأقسام</h2><span>اضغط على أي قسم</span></div><div class="hub">';
+  SECTIONS.forEach(s=>{
+    h+='<a class="tile" href="#'+s.id+'"><span class="go">'+svg('go')+'</span>'+(s.id==='alerts'&&ix.alerts.length?'<span class="badge num">'+ix.alerts.length+'</span>':'')
+      +'<span class="ic '+s.k+'">'+svg(s.i,1.8)+'</span><div><div class="tt">'+s.t+'</div><div class="td">'+s.d+'</div></div>'
+      +'<div class="tv"><b class="num">'+val[s.id][0]+'<small>'+val[s.id][1]+'</small></b>'+(extra[s.id]||'')+'</div></a>';
+  });
+  return h+'</div>';
 }
+function head(id,sub){
+  const s=SECTIONS.find(x=>x.id===id);
+  return '<div class="bar"><a class="back" href="#home" aria-label="رجوع">'+svg('back')+'</a><span class="ic '+s.k+'">'+svg(s.i,1.8)+'</span><div><h2>'+s.t+'</h2><p>'+sub+'</p></div></div>';
+}
+const strip=()=>'<div class="fstrip">'+periodControls(false)+'</div>';
+const needData=()=>'<div class="panel empty"><b>مفيش بيانات لسه</b>ارفع ملفات الكتابات والمبيعات من <a href="#upload" style="color:var(--rx)">رفع الملفات</a>.</div>';
 
-function renderProducts(){
-  if(!S.uploads.length) return noData();
+function products(){
   const ix=S.ix;
-  let h='<div class="stack"><div class="card">'+productTiles(false)+'</div>';
-  h+='<div class="card"><h3>'+ICON.search+' كل الأدوية المكتوبة <span class="sub">'+fmt(ix.drugs.size)+' دواء</span></h3>'
-    +'<div class="search" style="margin-bottom:10px">'+ICON.search+'<input id="drugQ" placeholder="ابحث عن أي دواء (منافس أو صنفك)…" value="'+escapeAttr(S.drugQuery)+'"></div><div id="drugList"></div></div>';
+  let h=head('products',ix.hasSales?'اللون = نسبة التحويل · أخضر ٨٠٪ وأكتر · أصفر ٤٠–٨٠٪ · أحمر أقل من ٤٠٪':'ارفع ملف المبيعات علشان تظهر نسبة التحويل');
+  if(!hasData()) return h+needData();
+  h+=strip()+'<div class="fstrip">'+[['all','الكل'],['n','NOSTRI'],['h','PureHerb']].map(([k,l])=>'<button class="chip'+(S.brand===k?' on':'')+'" data-brand="'+k+'">'+l+'</button>').join('')+'</div><div class="pgrid">';
+  const to=ix.W.to==='9999-12-31'?ix.last:ix.W.to;
+  PRODUCTS.filter(p=>S.brand==='all'||p.brand===S.brand).forEach(p=>{ const P=ix.prod[p.key], col=tone(P.conv);
+    h+='<a class="pcard" href="#product-'+slug(p.key)+'"><div class="top"><div><div class="pn">'+esc(p.name)+'</div><div class="pf">'+esc(p.form)+'</div></div><span class="brand '+(p.brand==='n'?'b-n':'b-h')+'">'+(p.brand==='n'?'NOSTRI':'PUREHERB')+'</span></div>'
+      +'<div class="pmid"><div class="gauge" style="color:'+col+'">'+ring(78,8,P.conv!=null?[{v:P.conv/100,c:col}]:[])+'<b class="num">'+(P.conv==null?'—':P.conv+'%')+'</b></div>'
+      +'<div class="pnums"><span><i style="background:var(--rx)"></i>اتكتب <b>'+fmt(P.w)+'</b></span><span><i style="background:var(--sale)"></i>اتباع <b>'+(ix.hasSales?fmt(P.s):'—')+'</b></span></div></div>'
+      +'<div class="pfoot">'+(ix.W.prev?trendTag(P.trend):'<span></span>')+spark(series(ix.hasSales?P.dailyS:P.dailyW,to,30),ix.hasSales?'var(--sale)':'var(--rx)')+'</div></a>';
+  });
   return h+'</div>';
 }
-function drugListHtml(){
-  const q=keyOf(S.drugQuery);
-  let list=[...S.ix.drugs.values()];
-  if(q) list=list.filter(d=>d.key.includes(q));
-  list.sort((a,b)=>b.total-a.total);
-  const shown=list.slice(0,S.showAllDrugs?400:25);
-  const max=Math.max(...shown.map(d=>d.total),1);
-  let h='<div class="list">'+shown.map((d,i)=>'<a class="row" href="'+(d.pk?'#/product/'+d.pk:drugHref(d.key))+'"><span class="rk num">'+(i+1)+'</span><span class="rm"><div class="rt">'+esc(d.name)+(d.pk?' <span class="chip mine">صنفي</span>':'')+'</div><div class="rs">'+fmt(d.doctors.size)+' طبيب · '+fmt(d.patients.size)+' مريض</div><div class="bar'+(d.pk?' mine':'')+'"><i style="width:'+(d.total/max*100).toFixed(1)+'%"></i></div></span><span class="rv num">'+fmt(d.total)+'</span></a>').join('')+'</div>';
-  if(!shown.length) h='<p class="muted small">لا توجد نتائج</p>';
-  if(list.length>shown.length) h+='<div style="text-align:center;margin-top:10px"><button class="btn sm" data-act="moreDrugs">عرض المزيد ('+fmt(list.length-shown.length)+')</button></div>';
+function productPage(key){
+  const ix=S.ix, p=PROD[key]; if(!p) return products();
+  const P=ix.prod[key], col=tone(P.conv);
+  let h='<div class="bar"><a class="back" href="#products" aria-label="رجوع">'+svg('back')+'</a><span class="ic k-sale">'+svg('pill',1.8)+'</span><div><h2>'+esc(p.name)+'</h2><p>'+esc(p.form)+' · '+(p.brand==='n'?'NOSTRI':'PureHerb')+'</p></div></div>'+strip();
+  h+='<div class="stack"><div class="panel dgrid"><div class="gauge" style="width:150px;height:150px;color:'+col+'">'+ring(150,14,P.conv!=null?[{v:P.conv/100,c:col}]:[])+'<b class="num" style="font-size:34px">'+(P.conv==null?'—':P.conv+'%')+'</b></div>'
+    +'<div class="bars"><div class="pnums" style="flex-direction:row;flex-wrap:wrap;gap:8px 22px;font-size:14px"><span><i style="background:var(--rx)"></i>اتكتب <b>'+fmt(P.w)+'</b></span><span><i style="background:var(--sale)"></i>اتباع <b>'+(ix.hasSales?fmt(P.s):'—')+'</b></span><span><i style="background:var(--leak)"></i>ما اتباعش <b>'+(ix.hasSales?fmt(P.lost):'—')+'</b></span>'+(P.canceled?'<span>ملغي في التقرير <b>'+fmt(P.canceled)+'</b></span>':'')+'</div>'
+    +'<div class="small muted">حسب الصيدلية — الشريط الأزرق كتابات والأخضر مبيعات</div>';
+  const mx=Math.max(1,...Object.keys(BRANCHES).map(b=>Math.max(P.wB[b],P.sB[b])));
+  Object.entries(BRANCHES).forEach(([b,l])=>{ if(S.f.branch!=='ALL'&&S.f.branch!==b) return;
+    h+='<div class="brow"><span>'+l+'</span><span style="display:grid;gap:3px"><span class="t"><i style="width:'+(P.wB[b]/mx*100)+'%;background:var(--rx)"></i></span><span class="t"><i style="width:'+(P.sB[b]/mx*100)+'%;background:var(--sale)"></i></span></span><b class="num">'+P.wB[b]+' / '+(ix.cov.includes(b)?P.sB[b]:'—')+'</b></div>'; });
+  h+='</div></div>';
+  const docs=[...P.docs.entries()].map(([dk,x])=>({dk,...x})).sort((a,b)=>b.w-a.w);
+  h+='<div class="panel"><h3>مين بيكتبه؟ <span class="small muted">'+fmt(docs.length)+' طبيب</span></h3>';
+  if(!docs.length) h+='<div class="empty">ما اتكتبش في الفترة دي.</div>';
+  else { const m=docs[0].w; h+='<div class="bars">'+docs.slice(0,25).map(x=>{ const lost=ix.hasSales?(x.lost||0):0, ok=x.w-lost;
+    return '<a class="brow" href="#doctor-'+idOf(x.dk)+'"><span>'+esc(x.name)+'</span><span class="t"><i style="width:'+(ok/m*100)+'%;background:'+(ix.hasSales?'var(--sale)':'var(--rx)')+'"></i><i style="width:'+(lost/m*100)+'%;background:var(--leak);opacity:.75"></i></span><b class="num">'+x.w+'</b></a>'; }).join('')+'</div>'
+    +(ix.hasSales?'<div class="legend"><span><i style="background:var(--sale)"></i>اتباع (تقديري)</span><span><i style="background:var(--leak)"></i>ما اتباعش (تقديري)</span><span>الرقم = عدد الكتابات</span></div>':''); }
+  h+='</div>';
+  const to=ix.W.to==='9999-12-31'?ix.last:ix.W.to; const days=[]; for(let i=29;i>=0;i--) days.push(addDays(to,-i));
+  h+='<div class="panel"><h3>آخر 30 يوم لحد '+fmtDay(to)+'</h3>'+dayChart(days,P.dailyW,P.dailyS,ix.hasSales)+'</div></div>';
   return h;
 }
-
-function renderItem(o,{isMine,title,sub}){
-  if(!o) return '<div class="card empty"><h2>غير موجود</h2><p>هذا العنصر غير موجود في البيانات الحالية — جرّب تغيير الفلتر.</p></div>';
-  const docs=sorted(o.doctors);
-  const sold=isMine?salesFor(o.key):null;
-  let h='<div class="stack"><div class="card hero"><div class="avatar" style="'+(isMine?'background:var(--mine-soft);color:var(--mine)':'')+'">'+ICON.pill+'</div><div style="min-width:0"><h2>'+esc(title)+'</h2><div class="meta">'+sub+filterNote()+'</div></div></div>';
-  h+='<div class="grid g4">'+kpi('مرات الكتابة',fmt(o.total))+kpi('عدد الأطباء',fmt(o.doctors.size))+kpi('عدد المرضى',fmt(o.patients.size))
-    +(sold?kpi('مبيعات فعلية',fmt(sold.units)+' علبة',[sold.amount?'بقيمة '+fmt(Math.round(sold.amount)):'',o.total?'تحويل '+Math.round(sold.units/o.total*100)+'% من الكتابات':''].filter(Boolean).join(' · ')):kpi('نسبة الصرف',rate(o),'مصروف ÷ (مصروف + ملغي)'))+'</div>';
-  if(!o.total) return h+'<div class="card empty"><h2>لم يُكتب في الفترة المختارة</h2><p>جرّب «كل الفترات» أو تعاون آخر.</p></div></div>';
-  h+='<div class="card"><h3>'+ICON.doc+' مين بيكتبه؟ <span class="sub">'+fmt(docs.length)+' طبيب</span></h3><div class="list">'
-    +docs.map((d,i)=>{ const doc=S.ix.doctors.get(d.key);
-      return '<a class="row" href="'+docHref(d.key)+'"><span class="rk num">'+(i+1)+'</span><span class="mini-av on">'+esc(initials(d.name))+'</span><span class="rm"><div class="rt">'+esc(d.name)+'</div><div class="rs">'+esc(doc&&doc.section||'—')+(doc?' · '+[...doc.branches.values()].map(b=>esc(b.name)).join('، '):'')+'</div><div class="bar mine"><i style="width:'+(d.count/docs[0].count*100).toFixed(1)+'%"></i></div></span><span class="rv num">'+fmt(d.count)+'<small>'+Math.round(d.count/o.total*100)+'%</small></span></a>'; }).join('')
-    +'</div></div>';
-  h+='<div class="grid g2"><div class="card"><h3>فين بيتكتب؟ — الأقسام</h3>'+hbars(sorted(o.sections).slice(0,10),{cls:isMine?'mine':''})+'</div>'
-    +'<div class="card"><h3>حسب التعاون</h3>'+hbars(sorted(o.branches),{cls:isMine?'mine':''})
-    +(sold&&sold.byBranch.size?'<div class="section-title" style="margin:14px 0 8px">مبيعات فعلية (علبة)</div>'+hbars([...sold.byBranch.entries()].map(([b,c])=>({name:BRANCHES[b],count:c}))):'')+'</div></div>';
-  const tr=trendCols(o.dates);
-  if(tr) h+='<div class="card"><h3>الكتابات عبر الوقت</h3>'+tr+'</div>';
-  if(isMine&&o.names&&o.names.size>1) h+='<div class="card"><h3>الأسماء كما وردت في التقارير</h3>'+hbars(sorted(o.names))+'</div>';
+function dayChart(days,wMap,sMap,withSales){
+  const Wv=days.map(d=>wMap.get(d)||0), Sv=days.map(d=>sMap.get(d)||0);
+  const mx=niceMax(Math.max(4,...Wv,...Sv)); const w=760,hgt=172,x0=36,bw=(w-x0)/days.length;
+  let g='';[0,.5,1].forEach(f=>{ const y=150-f*130; g+='<line x1="'+x0+'" x2="'+w+'" y1="'+y+'" y2="'+y+'" stroke="var(--line)"/><text x="'+(x0-6)+'" y="'+(y+4)+'" font-size="11" fill="var(--faint)" text-anchor="end">'+Math.round(mx*f)+'</text>'; });
+  days.forEach((d,i)=>{ const x=x0+i*bw, hw=Wv[i]/mx*130, hs=Sv[i]/mx*130;
+    if(hw) g+='<rect x="'+(x+bw*.12).toFixed(1)+'" y="'+(150-hw).toFixed(1)+'" width="'+(bw*(withSales?.36:.76)).toFixed(1)+'" height="'+hw.toFixed(1)+'" rx="2" fill="var(--rx)"/>';
+    if(withSales&&hs) g+='<rect x="'+(x+bw*.52).toFixed(1)+'" y="'+(150-hs).toFixed(1)+'" width="'+(bw*.36).toFixed(1)+'" height="'+hs.toFixed(1)+'" rx="2" fill="var(--sale)"/>';
+    const lastI=i===days.length-1; if(i%5===4&&i<days.length-3||lastI) g+='<text x="'+(lastI?w:x+bw/2).toFixed(1)+'" y="168" font-size="10.5" fill="var(--muted)" text-anchor="'+(lastI?'end':'middle')+'">'+fmtDay(d)+'</text>'; });
+  return '<div class="tl"><svg viewBox="0 0 '+w+' '+hgt+'" role="img" aria-label="الكتابات والمبيعات يوميًا">'+g+'</svg></div><div class="legend"><span><i style="background:var(--rx)"></i>كتابات</span>'+(withSales?'<span><i style="background:var(--sale)"></i>مبيعات</span>':'')+'</div>';
+}
+function matrix(){
+  const ix=S.ix;
+  let h=head('matrix','كل خانة = كام مرة الدكتور كتب الصنف في '+esc(ix.W.label));
+  if(!hasData()) return h+needData();
+  h+=strip();
+  const docs=[...ix.doctors.values()].filter(d=>d.mine>0).sort((a,b)=>b.mine-a.mine);
+  if(!docs.length) return h+'<div class="panel empty"><b>مفيش كتابات لأصنافك في الفترة دي</b>جرّب فترة أطول.</div>';
+  h+='<div class="panel"><div class="heat"><table><tr><th class="dn"></th>'+PRODUCTS.map(p=>'<th><a href="#product-'+slug(p.key)+'">'+esc(p.name)+'</a></th>').join('')+'</tr>';
+  docs.slice(0,60).forEach(d=>{ h+='<tr><td class="dn"><a href="#doctor-'+d.id+'">'+esc(d.name)+'</a></td>'+PRODUCTS.map(p=>{ const v=(d.prods.get(p.key)||{w:0}).w, lv=heatLv(v);
+    return '<td><div class="c" style="background:var(--h'+lv+');color:'+(lv>=3?'var(--surface)':'var(--muted)')+'">'+(v||'')+'</div></td>'; }).join('')+'</tr>'; });
+  h+='</table></div><div class="legend">أقل <i style="background:var(--h0)"></i><i style="background:var(--h1)"></i><i style="background:var(--h2)"></i><i style="background:var(--h3)"></i><i style="background:var(--h4)"></i> أكتر · الخانة الفاضية = ما كتبش الصنف · اضغط على اسم الدكتور لكل أدويته'+(docs.length>60?' · معروض أول 60 طبيب':'')+'</div></div>';
+  return h;
+}
+function doctorPage(id){
+  const ix=S.ix; const d=[...ix.doctors.values()].find(x=>x.id===id);
+  let h='<div class="bar"><a class="back" href="#matrix" aria-label="رجوع">'+svg('back')+'</a><span class="ic k-rx">'+svg('user',1.8)+'</span><div><h2>'+(d?esc(d.name):'الطبيب')+'</h2><p>'+(d?esc(d.section||'—')+' · '+[...d.branches].map(b=>BRANCHES[b]).join('، '):'')+'</p></div></div>'+strip();
+  if(!d) return h+'<div class="panel empty"><b>الطبيب ما كتبش في الفترة دي</b>جرّب «الكل».</div>';
+  h+='<div class="stack"><div class="panel"><h3>أصنافي اللي بيكتبها <span class="small muted">'+fmt(d.mine)+' من '+fmt(d.total)+' كتابة ('+(d.total?Math.round(d.mine/d.total*100):0)+'%)</span></h3>';
+  const mine=[...d.prods.entries()].sort((a,b)=>b[1].w-a[1].w);
+  if(mine.length){ const m=mine[0][1].w; h+='<div class="bars">'+mine.map(([pk,x])=>'<a class="brow" href="#product-'+slug(pk)+'"><span>'+esc(PROD[pk].name)+'</span><span class="t"><i style="width:'+(x.w/m*100)+'%;background:var(--sale)"></i></span><b class="num">'+x.w+'</b></a>').join('')+'</div>'; }
+  else h+='<div class="empty">ما كتبش أي صنف من أصنافك في الفترة دي.</div>';
+  const missing=PRODUCTS.filter(p=>!d.prods.has(p.key));
+  if(missing.length) h+='<div class="small muted" style="margin:14px 0 8px">ما كتبهاش:</div><div class="dchips">'+missing.map(p=>'<a class="dchip '+(p.brand==='n'?'b-n':'b-h')+'" href="#product-'+slug(p.key)+'">'+esc(p.name)+'</a>').join('')+'</div>';
+  h+='</div>';
+  const drugs=[...d.drugs.values()].sort((a,b)=>b.count-a.count).slice(0,20);
+  if(drugs.length) h+='<div class="panel"><h3>كل الأدوية اللي بيكتبها <span class="small muted">'+fmt(d.drugs.size)+' دواء</span></h3><div class="bars">'
+    +drugs.map(g=>'<div class="brow"><span>'+esc(g.name)+'</span><span class="t"><i style="width:'+(g.count/drugs[0].count*100)+'%;background:'+(g.pk?'var(--sale)':'var(--rx)')+'"></i></span><b class="num">'+g.count+'</b></div>').join('')
+    +'</div><div class="legend"><span><i style="background:var(--sale)"></i>أصنافي</span><span><i style="background:var(--rx)"></i>أدوية تانية</span></div></div>';
   return h+'</div>';
 }
-
-function renderDoctors(){
-  if(!S.uploads.length) return noData();
-  return '<div class="stack"><div class="search">'+ICON.search+'<input id="docQ" placeholder="ابحث باسم الطبيب أو القسم…" value="'+escapeAttr(S.docQuery)+'"></div>'
-    +'<div class="filters"><div class="seg" id="docSort">'
-    +[['mine','الأكثر كتابة لأصنافي'],['total','إجمالي الكتابات']].map(([k,l])=>'<button data-sort="'+k+'" class="'+(S.docSort===k?'on':'')+'">'+l+'</button>').join('')
-    +'</div><button class="chip pick'+(S.docOnlyMine?' on':'')+'" data-act="onlyMine">بيكتب أصنافي فقط</button></div>'
-    +'<div class="card" id="docList"></div></div>';
+function leakage(){
+  const ix=S.ix;
+  let h=head('leakage','الكتابات اللي ما قابلهاش بيع في نفس الصيدلية — مرتبة من الأكبر');
+  if(!hasData()) return h+needData();
+  h+=strip();
+  if(!ix.hasSales) return h+'<div class="panel empty"><b>محتاج ملف مبيعات للفترة دي</b>القسم ده بيقارن الكتابات بالمبيعات. ارفع تقرير المبيعات من <a href="#upload" style="color:var(--rx)">رفع الملفات</a>.</div>';
+  const byP=PRODUCTS.map(p=>({p,P:ix.prod[p.key]})).filter(x=>x.P.lost>0).sort((a,b)=>b.P.lost-a.P.lost);
+  h+='<div class="two"><div class="panel"><h3>حسب الصنف</h3>'+(byP.length?byP.map(({p,P})=>'<a class="lrow" href="#product-'+slug(p.key)+'"><span class="av k-leak"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICON.pill+'</svg></span><div><div class="n">'+esc(p.name)+'</div><div class="s">'+ix.cov.filter(b=>P.lostB[b]>0).map(b=>BRANCHES[b]+': اتكتب '+P.wB[b]+' واتباع '+P.sB[b]).join(' · ')+'</div><div class="lbar"><i style="width:'+(P.lost/Math.max(1,P.wCov)*100)+'%;background:var(--leak)"></i></div></div><div class="big num" style="color:var(--leak)">'+P.lost+'<small>ما اتباعش</small></div></a>').join(''):'<div class="empty">كل الكتابات اتباعت.</div>')+'</div>';
+  h+='<div class="panel"><h3>حسب الطبيب <span class="small muted">تقديري</span></h3>'+(ix.leak.length?ix.leak.slice(0,15).map(l=>'<a class="lrow" href="#doctor-'+l.id+'"><span class="av k-leak">'+esc(initials(l.name))+'</span><div><div class="n">'+esc(l.name)+'</div><div class="s">'+esc(PROD[l.pk].name)+' · '+l.branches.map(b=>BRANCHES[b]).join('، ')+' · كتب '+l.w+'</div><div class="lbar"><i style="width:'+(l.lost/l.w*100)+'%;background:var(--leak)"></i></div></div><div class="big num" style="color:var(--leak)">'+l.lost+'<small>ما اتباعش</small></div></a>').join(''):'<div class="empty">مفيش فاقد.</div>')+'</div></div>';
+  h+='<p class="small muted" style="margin-top:12px">تقرير المبيعات ما بيقولش البيعة جاية من أنهي روشتة، فنصيب كل طبيب من الفاقد محسوب بنسبة كتاباته من الصنف في نفس الصيدلية.</p>';
+  return h;
 }
-function docListHtml(){
-  const q=keyOf(S.docQuery);
-  let list=[...S.ix.doctors.values()];
-  if(q) list=list.filter(d=>d.key.includes(q)||keyOf(d.section).includes(q));
-  if(S.docOnlyMine) list=list.filter(d=>d.mine>0);
-  if(S.docSort==='mine') list.sort((a,b)=>b.mine-a.mine||b.total-a.total);
-  else list.sort((a,b)=>b.total-a.total);
-  const n=list.length; list=list.slice(0,200);
-  return '<h3>'+fmt(n)+' طبيب'+(n>200?' <span class="sub">أول 200 — استخدم البحث</span>':'')+'</h3>'+doctorRows(list,S.docSort==='total'?'total':'mine');
+function alertsPage(){
+  const ix=S.ix;
+  let h=head('alerts','محسوبة على آخر 7 و14 يوم لحد '+fmtDay(ix.last));
+  if(!hasData()) return h+needData();
+  h+='<div class="fstrip">'+branchSelect('chip')+'</div>';
+  if(!ix.alerts.length) return h+'<div class="panel empty"><b>مفيش تنبيهات دلوقتي</b>مفيش صنف نزل بشكل واضح ولا دكتور بطّل يكتب.</div>';
+  return h+'<div class="alerts">'+ix.alerts.map(a=>'<a class="alert" href="'+(a.pk?'#product-'+slug(a.pk):'#doctor-'+a.id)+'"><span class="ic k-'+a.c+'">'+svg(a.i,1.9)+'</span><div><b>'+esc(a.t)+'</b><p>'+esc(a.p)+'</p></div></a>').join('')+'</div>';
 }
-
-function renderDoctor(dk){
-  const d=S.ix.doctors.get(dk)||S.full.doctors.get(dk);
-  if(!d) return '<div class="card empty"><h2>الطبيب غير موجود</h2><p>غيّر الفلتر أو ارجع لقائمة الأطباء.</p></div>';
-  const inFilter=!!S.ix.doctors.get(dk);
-  const name=d.name;
-  let h='<div class="stack"><div class="card hero"><div class="avatar">'+esc(initials(name))+'</div><div style="min-width:0;flex:1"><h2>'+esc(name)+'</h2><div class="meta">'
-    +'<span class="chip">'+esc(d.section||'بدون قسم')+'</span>'+[...d.branches.values()].map(b=>'<span class="chip">'+esc(b.name)+'</span>').join('')+filterNote()+'</div></div></div>';
-  if(!inFilter) h+='<div class="tip"><span class="ti" style="background:var(--warn-soft);color:var(--warn)">!</span><div><b>لا كتابات لهذا الطبيب في الفلتر الحالي</b><p>المعروض من كل الفترات وكل التعاونات.</p></div></div>';
-  const share=d.total?Math.round(d.mine/d.total*100):0;
-  h+='<div class="grid g4">'+kpi('إجمالي كتاباته',fmt(d.total),fmt(d.drugs.size)+' دواء مختلف')+kpi('كتابات أصنافي',fmt(d.mine),share+'% من كتاباته')
-    +kpi('عدد المرضى',fmt(d.patients.size))+kpi('أصنافي اللي كتبها',fmt(d.prods.size)+' / '+PRODUCTS.length)+'</div>';
-
-  // أصنافي
-  const mineList=[...d.prods.entries()].map(([pk,c])=>({key:pk,name:PROD[pk].name,count:c})).sort((a,b)=>b.count-a.count);
-  h+='<div class="grid g2"><div class="card"><h3>'+ICON.star+' أصنافي اللي بيكتبها</h3>'
-    +(mineList.length?hbars(mineList,{cls:'mine',link:i=>'#/product/'+i.key}):'<p class="muted small">لم يكتب أي صنف من أصنافك بعد.</p>')+'</div>';
-  // لسه ما كتبهاش — مرتبة بحسب كتابة زملائه في نفس القسم
-  const sec=S.ix.sections.get(keyOf(d.section))||S.full.sections.get(keyOf(d.section));
-  const missing=PRODUCTS.filter(p=>!d.prods.has(p.key)).map(p=>({p,peer:sec?(sec.prods.get(p.key)||0):0})).sort((a,b)=>b.peer-a.peer);
-  h+='<div class="card"><h3>'+ICON.target+' أصناف لسه ما كتبهاش</h3><p class="muted small" style="margin-bottom:10px">مرتبة حسب كتابة زملائه في نفس القسم — الأعلى فرصة أقرب.</p><div class="chips">'
-    +missing.map(({p,peer})=>'<a class="chip '+(peer?'warn':'')+'" href="#/product/'+p.key+'">'+esc(p.name)+(peer?' · زملاؤه '+fmt(peer):'')+'</a>').join('')+'</div></div></div>';
-
-  // كل أدويته
-  const drugs=sorted(d.drugs);
-  h+='<div class="card"><h3>'+ICON.pill+' كل الأدوية اللي بيكتبها <span class="sub">'+fmt(drugs.length)+' دواء</span></h3><div class="list">'
-    +drugs.slice(0,S.showAllDrugs?500:20).map((g,i)=>'<a class="row" href="'+(g.pk?'#/product/'+g.pk:drugHref(g.key))+'"><span class="rk num">'+(i+1)+'</span><span class="rm"><div class="rt">'+esc(g.name)+(g.pk?' <span class="chip mine">صنفي</span>':'')+'</div><div class="bar'+(g.pk?' mine':'')+'"><i style="width:'+(g.count/drugs[0].count*100).toFixed(1)+'%"></i></div></span><span class="rv num">'+fmt(g.count)+'<small>'+Math.round(g.count/d.total*100)+'%</small></span></a>').join('')
-    +'</div>'+(drugs.length>20&&!S.showAllDrugs?'<div style="text-align:center;margin-top:10px"><button class="btn sm" data-act="moreDrugs">عرض كل الأدوية ('+fmt(drugs.length)+')</button></div>':'')+'</div>';
-  const tr=trendCols(new Map([...d.dates.entries()].map(([k,v])=>[k,v.m])));
-  if(tr) h+='<div class="card"><h3>كتابات أصنافي عبر الوقت</h3>'+tr+'</div>';
-  return h+'</div>';
+function timeline(){
+  const ix=S.ix;
+  let h=head('timeline','الكتابات والمبيعات شهر بشهر');
+  const mths=[...ix.months.keys()].sort();
+  if(!mths.length) return h+needData();
+  h+='<div class="fstrip">'+branchSelect('chip')+'</div>';
+  h+='<div class="fstrip"><button class="chip'+(S.tlProduct==='ALL'?' on':'')+'" data-tlp="ALL">كل الأصناف</button>'+PRODUCTS.map(p=>'<button class="chip'+(S.tlProduct===p.key?' on':'')+'" data-tlp="'+p.key+'">'+esc(p.name)+'</button>').join('')+'</div>';
+  const pk=S.tlProduct, ms=mths.slice(-12);
+  const Wv=ms.map(m=>pk==='ALL'?ix.months.get(m).w:(ix.months.get(m).pw[pk]||0)), Sv=ms.map(m=>pk==='ALL'?ix.months.get(m).s:(ix.months.get(m).ps[pk]||0));
+  const hasS=Sv.some(v=>v>0); const Cv=ms.map((m,i)=>hasS&&Wv[i]?Math.round(Sv[i]/Wv[i]*100):null);
+  const nice=niceMax(Math.max(4,...Wv,...Sv));
+  const n=ms.length, x=i=>n===1?413:70+i*(690/(n-1)), y=v=>200-v/nice*175, yc=v=>200-Math.min(v,150)/150*175;
+  let g='';[0,.25,.5,.75,1].forEach(f=>g+='<line x1="56" x2="770" y1="'+y(nice*f)+'" y2="'+y(nice*f)+'" stroke="var(--line)"/><text x="46" y="'+(y(nice*f)+4)+'" font-size="11" fill="var(--faint)" text-anchor="end">'+Math.round(nice*f)+'</text>');
+  if(hasS&&n>1) g+='<path d="M'+x(0).toFixed(1)+' 200 '+Sv.map((v,i)=>'L'+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(' ')+' L'+x(n-1).toFixed(1)+' 200Z" fill="var(--sale)" fill-opacity=".12"/>';
+  const pl=(a,f,c,dash)=>{ const pts=a.map((v,i)=>v==null?null:[x(i),f(v)]).filter(Boolean); return (pts.length>1?'<polyline fill="none" stroke="'+c+'" stroke-width="3" stroke-linejoin="round" '+(dash?'stroke-dasharray="6 5"':'')+' points="'+pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+'"/>':'')+pts.map((p,i)=>'<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="'+(i===pts.length-1?5.5:3.5)+'" fill="'+c+'"/>').join(''); };
+  g+=pl(Wv,y,'var(--rx)')+(hasS?pl(Sv,y,'var(--sale)')+pl(Cv,yc,'var(--warn)',1):'');
+  g+=ms.map((m,i)=>'<text x="'+x(i).toFixed(1)+'" y="222" font-size="12" fill="var(--muted)" text-anchor="middle">'+MONTHS[+m.slice(5,7)-1]+'</text>').join('');
+  h+='<div class="panel tl"><svg viewBox="0 0 790 232" role="img" aria-label="الخط الزمني">'+g+'</svg><div class="legend"><span><i style="background:var(--rx)"></i>كتابات</span>'+(hasS?'<span><i style="background:var(--sale)"></i>مبيعات</span><span><i style="background:var(--warn)"></i>نسبة التحويل (مقياس منفصل، الخط المتقطع)</span>':'')+'</div>'
+    +'<div class="scroll-x"><table class="tbl" style="margin-top:14px"><tr><th>الشهر</th><th>كتابات</th><th>مبيعات</th><th>التحويل</th><th>التغيير</th></tr>'
+    +ms.map((m,i)=>{ const partial=m===ix.last.slice(0,7)&&ix.last<monthEnd(m); const t=i&&!partial?pctChange(hasS?Sv[i]:Wv[i],hasS?Sv[i-1]:Wv[i-1]):null; return '<tr><td>'+fmtMonth(m)+(partial?' <span class="small muted">(لحد '+(+ix.last.slice(8,10))+')</span>':'')+'</td><td class="num">'+fmt(Wv[i])+'</td><td class="num">'+(hasS?fmt(Sv[i]):'—')+'</td><td class="num">'+(Cv[i]==null?'—':Cv[i]+'%')+'</td><td>'+(t!=null?trendTag(t):'')+'</td></tr>'; }).reverse().join('')
+    +'</table></div></div>';
+  return h;
 }
-
-function renderData(){
-  const ups=[...S.uploads].sort((a,b)=>(b.date||'')<(a.date||'')?-1:1);
-  let h='<div class="stack"><div class="card"><h3>'+ICON.upload+' رفع ملف كتابات (روشتات)</h3>'
-    +'<p class="muted small" style="margin-bottom:12px">Excel أو CSV أو PDF — نفس تقارير النظام. لو اخترت أكثر من ملف مرة واحدة يتحسبوا كلهم لنفس اليوم.</p>'
-    +'<div class="grid g3"><div class="field"><label>التعاون</label><select id="upBranch">'+Object.entries(BRANCHES).map(([k,l])=>'<option value="'+k+'"'+(S.f.branch===k?' selected':'')+'>'+l+'</option>').join('')+'</select></div>'
-    +'<div class="field"><label>تاريخ التقرير</label><input type="date" id="upDate" value="'+today()+'"></div>'
-    +'<div class="field"><label>&nbsp;</label><button class="btn pri" data-act="pickFiles">'+ICON.upload+' اختر الملفات</button></div></div></div>';
-  h+='<div class="card"><h3>الملفات المرفوعة <span class="sub">'+fmt(ups.length)+'</span></h3>'
-    +(ups.length?'<div class="wrap-x"><table class="tbl"><thead><tr><th>التاريخ</th><th>التعاون</th><th>الملف</th><th>كتابات</th><th>أصنافي</th><th></th></tr></thead><tbody>'
-      +ups.map(u=>{ const mine=u.rows.reduce((s,r)=>s+(productKeyOf(r[1])?1:0),0);
-        return '<tr><td class="num">'+esc(u.date||'—')+'</td><td>'+esc(BRANCHES[u.branch])+'</td><td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(u.name)+'</td><td class="num">'+fmt(u.rows.length)+'</td><td class="num">'+fmt(mine)+'</td><td><button class="chip bad" data-act="delUpload" data-id="'+escapeAttr(u.id)+'">حذف</button></td></tr>'; }).join('')
-      +'</tbody></table></div>':'<p class="muted small">لم تُرفع ملفات بعد.</p>')+'</div>';
-  h+=salesCard();
-  h+='<div class="card"><h3>نسخة احتياطية</h3><p class="muted small" style="margin-bottom:12px">البيانات محفوظة في هذا المتصفح فقط. خُد نسخة احتياطية عشان تنقلها لجهاز تاني.</p>'
-    +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="backup">'+ICON.save+' تنزيل نسخة</button><button class="btn" data-act="restore">'+ICON.upload+' استرجاع نسخة</button><button class="btn danger" data-act="wipe">'+ICON.trash+' مسح الكل</button></div></div>';
-  return h+'</div>';
+function upload(){
+  let h=head('upload','حط الملفات وخلاص — البرنامج بيعرف نوعها والصيدلية والتاريخ');
+  h+='<button class="drop" id="dropZone" data-act="pick"><span class="ic k-rx">'+svg('upload',1.8)+'</span><b>اسحب الملفات هنا أو اضغط للاختيار</b><p>تقارير الكتابات أو المبيعات، PDF أو Excel، أكتر من ملف مرة واحدة. قبل الحفظ هتشوف البرنامج فهم إيه، وتقدر تعدّل.</p></button>';
+  const rx=[...S.uploads].sort((a,b)=>(b.date||'')<(a.date||'')?-1:1);
+  const sg=new Map(); S.sales.forEach(e=>{ const k=e.date+'|'+e.branch; const g=sg.get(k)||{date:e.date,branch:e.branch,units:0,n:0}; g.units+=e.units; g.n++; sg.set(k,g); });
+  const sl=[...sg.values()].sort((a,b)=>a.date<b.date?1:-1);
+  h+='<div class="two" style="margin-top:14px"><div class="panel"><h3>ملفات الكتابات <span class="small muted">'+rx.length+'</span></h3>'
+    +(rx.length?'<div class="scroll-x"><table class="tbl"><tr><th>التاريخ</th><th>الصيدلية</th><th>كتابات</th><th>أصنافي</th><th></th></tr>'+rx.slice(0,S.allFiles?9999:10).map(u=>'<tr><td class="num">'+esc(u.date||'—')+'</td><td>'+esc(BRANCHES[u.branch]||'')+'</td><td class="num">'+fmt(u.rows.length)+'</td><td class="num">'+fmt(u.mine!=null?u.mine:u.rows.filter(r=>productKeyOf(r[1])).length)+'</td><td><button class="btn sm danger" data-act="delRx" data-id="'+escapeAttr(u.id)+'">حذف</button></td></tr>').join('')+'</table></div>':'<div class="empty">لسه ما رفعتش كتابات.</div>')+'</div>'
+    +'<div class="panel"><h3>ملفات المبيعات <span class="small muted">'+sl.length+'</span></h3>'
+    +(sl.length?'<div class="scroll-x"><table class="tbl"><tr><th>التاريخ</th><th>الصيدلية</th><th>أصناف</th><th>علب</th><th></th></tr>'+sl.slice(0,S.allFiles?9999:10).map(g=>'<tr><td class="num">'+esc(g.date)+'</td><td>'+esc(BRANCHES[g.branch])+'</td><td class="num">'+g.n+'</td><td class="num">'+fmt(g.units)+'</td><td><button class="btn sm danger" data-act="delSales" data-k="'+escapeAttr(g.date+'|'+g.branch)+'">حذف</button></td></tr>').join('')+'</table></div>':'<div class="empty">لسه ما رفعتش مبيعات.</div>')+'</div></div>';
+  if(!S.allFiles&&(rx.length>10||sl.length>10)) h+='<div style="text-align:center;margin-top:10px"><button class="btn sm" data-act="allFiles">عرض كل الملفات</button></div>';
+  h+='<div class="panel" style="margin-top:14px"><h3>نسخة احتياطية</h3><p class="small muted" style="margin-bottom:12px">البيانات محفوظة في المتصفح ده بس. نزّل نسخة علشان تنقلها لجهاز تاني أو تحتفظ بيها.</p><div class="row-actions"><button class="btn" data-act="backup">'+svg('save')+' تنزيل نسخة</button><button class="btn" data-act="restore">'+svg('upload')+' استرجاع نسخة</button><button class="btn danger" data-act="wipe">'+svg('trash')+' مسح الكل</button></div></div>';
+  return h;
 }
 
 /* ───────── التوجيه ───────── */
-let jsonMode='sales';
 function route(){
-  const hash=location.hash.replace(/^#\/?/,'')||'home';
-  const [page,...rest]=hash.split('/'); const arg=decodeURIComponent(rest.join('/'));
-  const view=document.getElementById('view');
-  let title='', back=false, html='';
-  S.showAllDrugs = S._lastHash===hash ? S.showAllDrugs : false; S._lastHash=hash;
-  if(page==='product'){ const p=PROD[arg]; back=true; title=p?p.name:'صنف';
-    html=p?renderItem(S.ix.products.get(arg),{isMine:true,title:p.name,sub:'<span class="chip '+BRAND[p.brand].cls+'">'+BRAND[p.brand].label+'</span><span class="chip">'+esc(p.form)+'</span>'}):renderItem(null,{}); }
-  else if(page==='drug'){ const g=S.ix.drugs.get(arg); back=true; title='دواء';
-    html=renderItem(g,{isMine:false,title:g?g.name:'',sub:'<span class="chip">ليس من أصنافي</span>'}); }
-  else if(page==='doctor'){ back=true; title='الطبيب'; html=renderDoctor(arg); }
-  else { const P=PAGES[page]||PAGES.home; title=P.title;
-    html=({home:renderHome,products:renderProducts,doctors:renderDoctors,data:renderData}[page]||renderHome)(); }
-  document.getElementById('title').innerHTML=(back?'<button class="back" data-act="back" aria-label="رجوع">'+ICON.back+'</button>':'')+'<span>'+esc(title)+'</span>';
-  view.innerHTML=html;
-  const active=back?({product:'products',drug:'products',doctor:'doctors'})[page]:(PAGES[page]?page:'home');
-  document.querySelectorAll('[data-nav]').forEach(a=>a.classList.toggle('on',a.dataset.nav===active));
-  renderFilters(page);
-  if(document.getElementById('drugList')) document.getElementById('drugList').innerHTML=drugListHtml();
-  if(document.getElementById('docList')) document.getElementById('docList').innerHTML=docListHtml();
+  if(!S.ready) return;
+  const id=(location.hash||'#home').slice(1);
+  let html;
+  if(id.startsWith('product-')) html=productPage(id.slice(8).replace(/-/g,'_'));
+  else if(id.startsWith('doctor-')) html=doctorPage(id.slice(7));
+  else html=({products,matrix,leakage,alerts:alertsPage,timeline,upload}[id]||home)();
+  document.getElementById('app').innerHTML=html;
 }
-function renderFilters(page){
-  const el=document.getElementById('filters');
-  if(page==='data'||!S.uploads.length){ el.innerHTML=''; return; }
-  const dates=[...new Set(S.uploads.map(u=>u.date).filter(Boolean))].sort().reverse();
-  const months=[...new Set(dates.map(d=>d.slice(0,7)))];
-  el.innerHTML='<div class="seg">'+[['ALL','الكل'],...Object.entries(BRANCHES).map(([k,l])=>[k,l.replace('التعاون ','')])].map(([k,l])=>'<button data-branch="'+k+'" class="'+(S.f.branch===k?'on':'')+'">'+l+'</button>').join('')+'</div>'
-    +'<select class="sel" id="periodSel"><option value="ALL">كل الفترات</option>'
-    +(months.length>1?'<optgroup label="شهر">'+months.map(m=>'<option value="M:'+m+'"'+(S.f.period==='M:'+m?' selected':'')+'>'+fmtDate(m)+'</option>').join('')+'</optgroup>':'')
-    +'<optgroup label="يوم">'+dates.map(d=>'<option value="D:'+d+'"'+(S.f.period==='D:'+d?' selected':'')+'>'+fmtDateLong(d)+'</option>').join('')+'</optgroup></select>';
-}
-function setFilter(k,v){ S.f[k]=v; try{ localStorage.setItem('pdp-filter',JSON.stringify(S.f)); }catch(e){} rebuild(); route(); }
+function setF(k,v){ S.f[k]=v; saveFilter(); rebuild(); route(); }
 
-/* ───────── رفع الملفات ───────── */
-async function onRxFiles(files){
-  files=[...files]; if(!files.length) return;
-  const branch=document.getElementById('upBranch').value, date=document.getElementById('upDate').value||today();
-  const all=[], names=[];
-  try{
-    for(let i=0;i<files.length;i++){
-      const f=files[i]; const ext=validateUploadFile(f);
-      loading('جارٍ قراءة '+(files.length>1?'('+(i+1)+'/'+files.length+') ':'')+f.name+'…');
-      const rows= ext==='.pdf'? await parsePDF(f,{}) : ext==='.csv'? await parseCSV(f,{}) : await parseExcel(f,{});
-      validateParsedRows(rows);
-      rows.forEach(r=>all.push([r.doctor,r.service,r.section,r.patient,r.status]));
-      names.push(f.name);
-    }
-    const u={ id:'u'+Date.now(), name:names.length>1?names[0]+' + '+(names.length-1)+' ملف':names[0], branch, date, rows:all, added:new Date().toISOString() };
-    S.uploads.push(u);
-    try{ await Store.put('uploads',u); }catch(err){ toast('تحذير: الملف اتقرا لكن ما اتحفظش على الجهاز'); }
-    rebuild(); loading(); route();
-    const mine=all.filter(r=>productKeyOf(r[1])).length;
-    toast('تم ✓ '+fmt(all.length)+' كتابة — منها '+fmt(mine)+' لأصنافك');
-  }catch(err){ loading(); alert('تعذّر قراءة الملف:\n'+(err&&err.message||err)); }
-}
-/* ───────── ملف المبيعات: سحب البيانات من PDF أو Excel ─────────
-   نفس منطق داشبورد المبيعات: كل سطر فيه اسم صنف من أصنافي → الكمية والقيمة. */
-const SALES_KW = [
+/* ───────── قراءة الملفات: تحديد النوع والصيدلية والتاريخ ───────── */
+const SALES_KW=[
   {key:'reflex',kw:'REFLEX'},{key:'rizer',kw:'RIZER'},{key:'oracure',kw:'ORACURE'},
   {key:'intimo',kw:'INTIMO'},{key:'nostriderm',kw:'NOSTRIDERM'},{key:'nostricure',kw:'NOSTRICURE'},
   {key:'pure_omega',kw:'PURE OMEGA'},{key:'pure_omega',kw:'PUREOMEGA'},{key:'purefeel',kw:'PUREFEEL'},{key:'purefeel',kw:'PURE FEEL'},
@@ -455,208 +457,198 @@ const SALES_KW = [
   {key:'zincolive',kw:'ZINCOLIVE'},{key:'zincolive',kw:'ZINC OLIVE'},{key:'bonefriend',kw:'BONEFRIEND'},{key:'bonefriend',kw:'BONE FRIEND'},
   {key:'argigrow',kw:'ARGIGROW'},{key:'argigrow',kw:'ARGI GROW'}
 ];
-const salesKw = text => { const up=String(text||'').normalize('NFKC').toUpperCase(); const k=SALES_KW.find(p=>up.includes(p.kw)); return k?{key:k.key,at:up.indexOf(k.kw)}:null; };
-const toNum = v => { const n=Number(String(v==null?'':v).replace(/[,٬\s]/g,'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d))); return Number.isFinite(n)?n:NaN; };
-const SALES_HEAD = {
-  units:/^(الكمي[ةه]|كمي[ةه]|الكميه المباع[ةه]|الكمية المباعة|عدد|العدد|qty|quantity|units?|sold qty|sales qty)$/i,
-  amount:/^(القيم[ةه]|قيم[ةه]|المبيعات|قيمة المبيعات|اجمالي|الاجمالي|إجمالي|الإجمالي|الصافي|صافي المبيعات|net|net sales|amount|total|value|sales|sales value)$/i,
+const salesKw=text=>{ const up=String(text||'').normalize('NFKC').toUpperCase(); const k=SALES_KW.find(p=>up.includes(p.kw)); return k?{key:k.key,at:up.indexOf(k.kw)}:null; };
+const toNum=v=>{ if(typeof v==='number') return v; const n=Number(String(v==null?'':v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[,٬\s]/g,'')); return Number.isFinite(n)?n:NaN; };
+const SALES_HEAD={
+  units:/^(الكمي[ةه]|كمي[ةه]|الكمي[ةه] المباع[ةه]|عدد|العدد|qty|quantity|units?|sold qty|sales qty)$/i,
+  amount:/^(القيم[ةه]|قيم[ةه]|المبيعات|قيم[ةه] المبيعات|اجمالي|الاجمالي|إجمالي|الإجمالي|الصافي|صافي المبيعات|net|net sales|amount|total|value|sales|sales value)$/i,
   cost:/^(التكلف[ةه]|تكلف[ةه]|cost|total cost)$/i
 };
-function guessMeta(text, fileName){
-  let pharmacy=null, date='';
-  const pm=text.match(/صيدلي[ةه]\s*رقم\s*(\d+)/)||text.match(/صيدلي[ةه]\s*(\d+)/);
-  if(pm && SALES_BRANCH_MAP['صيدلية '+pm[1]]) pharmacy='صيدلية '+pm[1];
-  const dm=text.match(/(\d{2})[-/](\d{2})[-/](\d{4})/)||String(fileName||'').match(/(\d{1,2})[-_. ](\d{1,2})[-_. ](\d{4})/);
-  if(dm){ const d=+dm[1], m=+dm[2]; if(m>=1&&m<=12&&d>=1&&d<=31) date=dm[3]+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
-  const branch=pharmacy?SALES_BRANCH_MAP[pharmacy]:(S.f.branch!=='ALL'?S.f.branch:'T1');
-  return { branch, date:date||today() };
+function guessMeta(text,fileName){
+  let branch=null, date='';
+  const pm=text.match(/(?:صيدلي[ةه]|pharmacy)\s*(?:رقم|no\.?|#)?\s*(\d+)/i)||String(fileName||'').match(/(?:صيدلي[ةه]|ph|pharmacy)\s*[-_ ]?(\d+)/i);
+  if(pm&&PHARMACY_TO_BRANCH[pm[1]]) branch=PHARMACY_TO_BRANCH[pm[1]];
+  const dm=text.match(/(\d{1,2})[-/.](\d{1,2})[-/.](20\d{2})/)||String(fileName||'').match(/(\d{1,2})[-_. ](\d{1,2})[-_. ](20\d{2})/);
+  const im=!dm&&(text.match(/(20\d{2})-(\d{2})-(\d{2})/)||String(fileName||'').match(/(20\d{2})-(\d{2})-(\d{2})/));
+  if(dm){ let d=+dm[1], m=+dm[2]; if(m>12&&d<=12){ const t=d; d=m; m=t; } if(m>=1&&m<=12&&d>=1&&d<=31) date=dm[3]+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
+  else if(im) date=im[1]+'-'+im[2]+'-'+im[3];
+  return { branch:branch||(S.f.branch!=='ALL'?S.f.branch:'T1'), branchSure:!!branch, date:date||todayISO(), dateSure:!!date };
 }
 async function pdfLines(file){
   if(!window.pdfjsLib) window.pdfjsLib=window['pdfjs-dist/build/pdf'];
-  if(!window.pdfjsLib) throw new Error('تعذّر تحميل قارئ PDF — تأكد من الاتصال بالإنترنت');
+  if(!window.pdfjsLib) throw new Error('تعذّر تحميل قارئ PDF — تأكد من الاتصال بالإنترنت وجرّب تاني');
   try{ if(!pdfjsLib.GlobalWorkerOptions.workerSrc) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }catch(e){}
-  const doc=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
-  const lines=[];
-  for(let i=1;i<=doc.numPages;i++){
-    const content=await (await doc.getPage(i)).getTextContent(); const byY={};
-    content.items.forEach(it=>{ if(!it.str) return; const y=Math.round(it.transform[5]); (byY[y]=byY[y]||[]).push({s:it.str,x:it.transform[4]}); });
-    Object.keys(byY).map(Number).sort((a,b)=>b-a).forEach(y=>{ const l=byY[y].sort((a,b)=>a.x-b.x).map(t=>t.s).join(' ').replace(/\s+/g,' ').trim(); if(l) lines.push(l); });
-  }
-  try{ await doc.destroy(); }catch(e){}
+  const doc=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise; const lines=[];
+  try{
+    for(let i=1;i<=doc.numPages;i++){
+      const content=await (await doc.getPage(i)).getTextContent(); const byY={};
+      content.items.forEach(it=>{ if(!it.str) return; const y=Math.round(it.transform[5]); (byY[y]=byY[y]||[]).push({s:it.str,x:it.transform[4]}); });
+      Object.keys(byY).map(Number).sort((a,b)=>b-a).forEach(y=>{ const l=byY[y].sort((a,b)=>a.x-b.x).map(t=>t.s).join(' ').replace(/\s+/g,' ').trim(); if(l) lines.push(l.normalize('NFKC')); });
+    }
+  } finally { try{ await doc.destroy(); }catch(e){} }
   return lines;
 }
-function addRow(map,key,units,amount,cost){
-  const r=map.get(key)||{product:key,units:0,amount:0,cost:0,include:true};
-  r.units+=units||0; r.amount+=amount||0; r.cost+=cost||0; map.set(key,r);
-}
-async function parseSalesPdf(file){
-  const lines=(await pdfLines(file)).map(l=>l.normalize('NFKC')); const joined=lines.join('\n');
-  if(/Service Name|Medication Orders/i.test(joined)) throw new Error('ده تقرير كتابات (روشتات) مش مبيعات — ارفعه من «رفع ملف كتابات» فوق');
+function addSale(map,key,units,amount,cost){ const r=map.get(key)||{product:key,units:0,amount:0,cost:0}; r.units+=units||0; r.amount+=amount||0; r.cost+=cost||0; map.set(key,r); }
+/* PDF المبيعات: نفس منطق داشبورد المبيعات — الأرقام قبل اسم الصنف: القيمة … الكمية */
+function salesFromLines(lines){
   const rows=new Map();
-  lines.forEach(line=>{
-    const k=salesKw(line); if(!k) return;
+  lines.forEach(line=>{ const k=salesKw(line); if(!k) return;
     const nums=(line.slice(0,k.at).match(/\d[\d,]*(?:\.\d+)?/g)||[]).map(toNum).filter(n=>!isNaN(n));
     if(nums.length<2) return;
-    addRow(rows,k.key,Math.round(nums[nums.length-1]),Math.round(nums[0]),nums.length>=3?Math.round(nums[1]):0);
-  });
-  return { ...guessMeta(joined,file.name), rows:[...rows.values()] };
+    addSale(rows,k.key,Math.round(nums[nums.length-1]),Math.round(nums[0]),nums.length>=3?Math.round(nums[1]):0); });
+  return [...rows.values()];
 }
-async function parseSalesSheet(file,ext){
-  const wb= ext==='.csv' ? XLSX.read(decodeDelimitedText(await file.arrayBuffer()),{type:'string'}) : XLSX.read(await file.arrayBuffer(),{type:'array'});
-  const rows=new Map(); let text='';
-  for(const name of wb.SheetNames){
-    const grid=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:'',raw:true});
-    let cols=null;
-    grid.forEach(row=>{
-      const cells=row.map(c=>String(c==null?'':c).trim()); text+=cells.join(' ')+'\n';
-      if(!cols){ const c={}; cells.forEach((v,i)=>{ const h=v.replace(/\s+/g,' '); for(const k in SALES_HEAD) if(c[k]==null&&SALES_HEAD[k].test(h)) c[k]=i; }); if(c.units!=null) cols=c; }
+function salesFromGrid(grids){
+  const rows=new Map();
+  grids.forEach(grid=>{ let cols=null;
+    grid.forEach(row=>{ const cells=row.map(c=>String(c==null?'':c).trim());
+      if(!cols){ const c={}; cells.forEach((v,i)=>{ const h=v.replace(/\s+/g,' '); for(const k in SALES_HEAD) if(c[k]==null&&SALES_HEAD[k].test(h)) c[k]=i; }); if(c.units!=null){ cols=c; return; } }
       const k=salesKw(cells.join(' ')); if(!k) return;
-      if(cols){
-        const u=toNum(row[cols.units]); if(isNaN(u)) return;
-        addRow(rows,k.key,Math.round(u),cols.amount!=null?Math.round(toNum(row[cols.amount])||0):0,cols.cost!=null?Math.round(toNum(row[cols.cost])||0):0);
-      } else {
-        const nums=row.filter(c=>c!==''&&!salesKw(c)).map(toNum).filter(n=>!isNaN(n));
-        if(!nums.length) return;
-        if(nums.length===1) addRow(rows,k.key,Math.round(nums[0]),0,0);
-        else addRow(rows,k.key,Math.round(Math.min(...nums.filter(n=>n>0).concat([nums[0]]))),Math.round(Math.max(...nums)),0);
-      }
-    });
-  }
-  return { ...guessMeta(text,file.name), rows:[...rows.values()] };
+      if(cols){ const u=toNum(row[cols.units]); if(isNaN(u)) return;
+        addSale(rows,k.key,Math.round(u),cols.amount!=null?Math.round(toNum(row[cols.amount])||0):0,cols.cost!=null?Math.round(toNum(row[cols.cost])||0):0); }
+      else { const nums=row.filter(c=>c!==''&&!salesKw(c)).map(toNum).filter(n=>!isNaN(n)); if(!nums.length) return;
+        addSale(rows,k.key,Math.round(nums.length===1?nums[0]:nums[nums.length-1]),nums.length>1?Math.round(nums[0]):0,0); }
+    }); });
+  return [...rows.values()];
 }
-async function onSalesFiles(files){
-  files=[...files]; if(!files.length) return;
-  const json=files.find(f=>/\.json$/i.test(f.name)); if(json){ jsonMode='sales'; onJson(json); return; }
-  const reports=[];
+async function analyzeFile(f){
+  const name=f.name||'ملف'; const ext=(name.toLowerCase().match(/\.[^.]+$/)||[''])[0];
+  if(!['.pdf','.xlsx','.xls','.csv'].includes(ext)) throw new Error('صيغة غير مدعومة — استخدم PDF أو Excel');
+  if(f.size>PharmaCore.MAX_UPLOAD_BYTES) throw new Error('الملف أكبر من 50MB');
+  if(ext==='.pdf'){
+    const lines=await pdfLines(f); const text=lines.join('\n');
+    if(/Service Name|Medication Orders|Doctor Name|اسم الطبيب|اسم الخدمة/i.test(text)){
+      const rows=await parsePDF(f,{}); validateParsedRows(rows);
+      return { name, kind:'rx', rows:rows.map(r=>[r.doctor,r.service,r.section,r.patient,r.status]), ...guessMeta(text,name) };
+    }
+    const sales=salesFromLines(lines);
+    if(!sales.length) throw new Error('ما لقيتش أعمدة كتابات ولا أي صنف من أصنافك في الملف');
+    return { name, kind:'sales', sales, ...guessMeta(text,name) };
+  }
+  const buf=await f.arrayBuffer();
+  const wb= ext==='.csv' ? XLSX.read(decodeDelimitedText(buf),{type:'string'}) : XLSX.read(buf,{type:'array'});
+  const grids=wb.SheetNames.map(n=>XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:'',raw:true}));
+  const text=grids.map(g=>g.slice(0,40).map(r=>r.join(' ')).join('\n')).join('\n');
+  let selected=null; try{ selected=selectWorkbookData(wb,{}); }catch(e){}
+  if(selected){
+    const rows=await normalizeParsedRows(selected.rows,ext==='.csv'?'csv':'excel',{}); validateParsedRows(rows);
+    return { name, kind:'rx', rows:rows.map(r=>[r.doctor,r.service,r.section,r.patient,r.status]), ...guessMeta(text,name) };
+  }
+  const sales=salesFromGrid(grids);
+  if(!sales.length) throw new Error('ما لقيتش أعمدة كتابات (الطبيب والدواء) ولا أي صنف من أصنافك في الملف');
+  return { name, kind:'sales', sales, ...guessMeta(text,name) };
+}
+async function onFiles(list){
+  const files=[...list]; if(!files.length) return;
+  const json=files.find(f=>/\.json$/i.test(f.name)); if(json){ restoreFrom(json); return; }
+  const out=[];
   for(let i=0;i<files.length;i++){
-    const f=files[i]; const ext=(f.name.toLowerCase().match(/\.[^.]+$/)||[''])[0];
-    loading('جارٍ سحب المبيعات '+(files.length>1?'('+(i+1)+'/'+files.length+') ':'')+'من '+f.name+'…');
-    try{
-      if(!['.pdf','.xlsx','.xls','.csv'].includes(ext)) throw new Error('صيغة غير مدعومة — PDF أو Excel');
-      const r= ext==='.pdf' ? await parseSalesPdf(f) : await parseSalesSheet(f,ext);
-      if(!r.rows.length) throw new Error('ما لقيتش أي صنف من أصنافك في الملف');
-      reports.push({...r,name:f.name});
-    }catch(err){ reports.push({name:f.name,error:String(err&&err.message||err),rows:[]}); }
+    loading('جارٍ قراءة '+(files.length>1?'('+(i+1)+'/'+files.length+') ':'')+files[i].name+'…');
+    try{ out.push(await analyzeFile(files[i])); }catch(err){ out.push({name:files[i].name,kind:'error',error:String(err&&err.message||err)}); }
   }
-  loading(); salesReview(reports);
+  loading(); review(out);
 }
-function salesReview(reports){
+function review(items){
   const m=document.createElement('div'); m.className='modal';
-  const ok=reports.some(r=>r.rows.length);
-  m.innerHTML='<div class="sheet" style="max-width:640px"><h3>راجع المبيعات المسحوبة</h3>'
-    +reports.map((r,ri)=>'<div class="card" style="margin-bottom:12px;padding:14px"><div style="font-weight:600;margin-bottom:8px;word-break:break-all">'+esc(r.name)+'</div>'
-      +(r.error?'<p class="small" style="color:var(--bad)">'+esc(r.error)+'</p>'
-      :'<div class="grid g2"><div class="field"><label>التعاون</label><select data-r="'+ri+'" data-f="branch">'+Object.entries(BRANCHES).map(([k,l])=>'<option value="'+k+'"'+(r.branch===k?' selected':'')+'>'+l+'</option>').join('')+'</select></div>'
-        +'<div class="field"><label>التاريخ</label><input type="date" data-r="'+ri+'" data-f="date" value="'+escapeAttr(r.date)+'"></div></div>'
-        +'<div class="wrap-x"><table class="tbl"><thead><tr><th></th><th>الصنف</th><th>الكمية</th><th>القيمة</th></tr></thead><tbody>'
-        +r.rows.map((x,xi)=>'<tr><td><input type="checkbox" checked data-r="'+ri+'" data-x="'+xi+'"></td><td>'+esc(PROD[x.product].name)+'</td><td class="num">'+fmt(x.units)+'</td><td class="num">'+(x.amount?fmt(x.amount):'—')+'</td></tr>').join('')
-        +'</tbody></table></div>')+'</div>').join('')
-    +'<p class="muted small" style="margin-bottom:10px">لو نفس اليوم ونفس التعاون موجودين قبل كده، الأرقام الجديدة هتحل محلهم.</p>'
-    +'<div class="sheet-actions"><button class="btn" data-x>إلغاء</button>'+(ok?'<button class="btn good" data-ok>حفظ المبيعات</button>':'')+'</div></div>';
+  const ok=items.some(x=>x.kind==='rx'||x.kind==='sales');
+  items.forEach(x=>x.include=x.kind==='rx'||x.kind==='sales');
+  const sel=(i,b)=>'<select id="rv-b'+i+'" data-i="'+i+'" data-f="branch">'+Object.entries(BRANCHES).map(([k,l])=>'<option value="'+k+'"'+(b===k?' selected':'')+'>'+l+'</option>').join('')+'</select>';
+  m.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-label="مراجعة الملفات"><h3>راجع الملفات قبل الحفظ</h3><p class="small muted">لو الصيدلية أو التاريخ مش مظبوطين عدّلهم. لو نفس النوع ونفس اليوم ونفس الصيدلية محفوظ قبل كده، الجديد هيحل محله.</p>'
+    +items.map((x,i)=>{
+      const badge=x.kind==='rx'?'<span class="ftype k-rx">كتابات</span>':x.kind==='sales'?'<span class="ftype k-sale">مبيعات</span>':'<span class="ftype k-leak">مش مفهوم</span>';
+      let body='';
+      if(x.kind==='error') body='<p class="small" style="color:var(--leak)">'+esc(x.error)+'</p>';
+      else {
+        body='<div class="fields"><div class="field"><label for="rv-b'+i+'">الصيدلية'+(x.branchSure?'':' — اتأكد منها')+'</label>'+sel(i,x.branch)+'</div><div class="field"><label for="rv-d'+i+'">التاريخ'+(x.dateSure?'':' — اتأكد منه')+'</label><input type="date" id="rv-d'+i+'" data-i="'+i+'" data-f="date" value="'+escapeAttr(x.date)+'"></div></div>';
+        if(x.kind==='rx'){ const mine=x.rows.filter(r=>productKeyOf(r[1])).length; body+='<p class="small muted" style="margin-top:10px">'+fmt(x.rows.length)+' كتابة، منها <b style="color:var(--ink)">'+fmt(mine)+'</b> لأصنافك</p>'; }
+        else body+='<div class="dchips" style="margin-top:10px">'+x.sales.map(s=>'<span class="dchip k-sale">'+esc(PROD[s.product].name)+' · '+fmt(s.units)+'</span>').join('')+'</div>';
+      }
+      return '<div class="fcard"><div class="fhead">'+badge+'<b>'+esc(x.name)+'</b>'+(x.kind!=='error'?'<label class="small muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="rv-c'+i+'" checked data-i="'+i+'" data-f="include"> حفظ</label>':'')+'</div>'+body+'</div>';
+    }).join('')
+    +'<div class="sheet-actions"><button class="btn" data-x>إلغاء</button>'+(ok?'<button class="btn pri" data-ok>حفظ</button>':'')+'</div></div>';
   document.body.appendChild(m);
-  m.addEventListener('change',e=>{ const t=e.target, r=reports[+t.dataset.r]; if(!r) return;
-    if(t.dataset.f) r[t.dataset.f]=t.value; else if(t.dataset.x!=null) r.rows[+t.dataset.x].include=t.checked; });
+  m.addEventListener('change',e=>{ const t=e.target, x=items[+t.dataset.i]; if(!x) return; if(t.dataset.f==='include') x.include=t.checked; else x[t.dataset.f]=t.value; });
   m.addEventListener('click',async e=>{
     if(e.target===m||e.target.closest('[data-x]')){ m.remove(); return; }
     if(!e.target.closest('[data-ok]')) return;
-    let n=0; const map=new Map(S.sales.map(x=>[x.date+'|'+x.branch+'|'+x.product,x]));
-    reports.forEach(r=>{ if(r.error||!/^\d{4}-\d{2}-\d{2}$/.test(r.date||'')) return;
-      r.rows.forEach(x=>{ if(!x.include) return; map.set(r.date+'|'+r.branch+'|'+x.product,{date:r.date,branch:r.branch,product:x.product,units:x.units,amount:x.amount,cost:x.cost}); n++; }); });
-    if(!n){ toast('مفيش سطور متعلّم عليها'); return; }
-    S.sales=[...map.values()]; try{ await Store.set('sales',S.sales); }catch(err){ toast('تعذّر الحفظ'); }
-    m.remove(); route(); toast('تم حفظ '+fmt(n)+' سطر مبيعات ✓');
+    const rxGroups=new Map(); let nRx=0,nS=0;
+    const salesMap=new Map(S.sales.map(x=>[x.date+'|'+x.branch+'|'+x.product,x]));
+    const replaced=new Set();
+    items.forEach(x=>{ if(!x.include||!/^\d{4}-\d{2}-\d{2}$/.test(x.date||'')) return;
+      if(x.kind==='rx'){ const k=x.branch+'|'+x.date; const g=rxGroups.get(k)||{branch:x.branch,date:x.date,rows:[],names:[]}; g.rows.push(...x.rows); g.names.push(x.name); rxGroups.set(k,g); }
+      if(x.kind==='sales'){ const day=x.date+'|'+x.branch+'|';
+        if(!replaced.has(day)){ [...salesMap.keys()].filter(k=>k.startsWith(day)).forEach(k=>salesMap.delete(k)); replaced.add(day); }
+        x.sales.forEach(s=>{ const k=day+s.product; const prev=salesMap.get(k);
+          salesMap.set(k,{date:x.date,branch:x.branch,product:s.product,units:s.units+(prev?prev.units:0),amount:s.amount+(prev?prev.amount:0),cost:s.cost+(prev?prev.cost:0)}); });
+        nS++; } });
+    try{
+      for(const g of rxGroups.values()){
+        for(const old of S.uploads.filter(u=>u.branch===g.branch&&u.date===g.date)) await Store.del('uploads',old.id);
+        S.uploads=S.uploads.filter(u=>!(u.branch===g.branch&&u.date===g.date));
+        const u={ id:'u'+Date.now()+Math.random().toString(36).slice(2,6), name:g.names.join(' + '), branch:g.branch, date:g.date, rows:g.rows, mine:g.rows.filter(r=>productKeyOf(r[1])).length, added:new Date().toISOString() };
+        S.uploads.push(u); await Store.put('uploads',u); nRx++;
+      }
+      if(nS){ S.sales=[...salesMap.values()]; await Store.set('sales',S.sales); }
+    }catch(err){ toast('اتقرا بس ما اتحفظش على الجهاز: '+(err&&err.message||err)); }
+    m.remove(); rebuild(); route();
+    toast('اتحفظ ✓'+(nRx?' '+nRx+' ملف كتابات':'')+(nRx&&nS?' و':'')+(nS?' '+nS+' ملف مبيعات':''));
   });
 }
-async function importSalesJson(json){
-  const arr=Array.isArray(json)?json:['entries','data','records','rows','items','sales'].map(k=>json&&json[k]).find(Array.isArray);
-  const num=v=>{ const n=Number(v); return Number.isFinite(n)&&n>0?n:0; };
-  const entries=(arr||[]).filter(e=>e&&/^\d{4}-\d{2}-\d{2}$/.test(String(e.date||''))&&SALES_BRANCH_MAP[e.pharmacy]&&PROD[e.product])
-    .map(e=>({ date:e.date, branch:SALES_BRANCH_MAP[e.pharmacy], product:e.product, units:num(e.units), amount:e.amount!=null?num(e.amount):num(e.price)*num(e.units) }));
-  if(!entries.length){ alert('الملف لا يحتوي سطور مبيعات صالحة'); return; }
-  S.sales=entries; try{ await Store.set('sales',entries); }catch(e){}
-  route(); toast('تم تحميل '+fmt(entries.length)+' سطر مبيعات ✓');
-}
-function salesCard(){
-  const groups=new Map();
-  S.sales.forEach(e=>{ const k=e.date+'|'+e.branch; const g=groups.get(k)||{date:e.date,branch:e.branch,units:0,amount:0,n:0}; g.units+=e.units; g.amount+=e.amount||0; g.n++; groups.set(k,g); });
-  const list=[...groups.values()].sort((a,b)=>a.date<b.date?1:-1);
-  return '<div class="card"><h3>'+ICON.upload+' رفع ملف المبيعات</h3>'
-    +'<p class="muted small" style="margin-bottom:12px">PDF أو Excel من تقرير مبيعات الصيدلية. البرنامج بيسحب الكمية والقيمة لكل صنف من أصنافك لوحده، وبيعرضها عليك تراجعها قبل الحفظ.</p>'
-    +'<button class="btn pri" data-act="pickSales">'+ICON.upload+' اختر ملفات المبيعات</button>'
-    +(list.length?'<div class="wrap-x" style="margin-top:14px"><table class="tbl"><thead><tr><th>التاريخ</th><th>التعاون</th><th>أصناف</th><th>الكمية</th><th>القيمة</th><th></th></tr></thead><tbody>'
-      +list.map(g=>'<tr><td class="num">'+esc(g.date)+'</td><td>'+esc(BRANCHES[g.branch])+'</td><td class="num">'+fmt(g.n)+'</td><td class="num">'+fmt(g.units)+'</td><td class="num">'+(g.amount?fmt(g.amount):'—')+'</td><td><button class="chip bad" data-act="delSales" data-k="'+escapeAttr(g.date+'|'+g.branch)+'">حذف</button></td></tr>').join('')
-      +'</tbody></table></div>':'')+'</div>';
-}
-function onJson(file){
+function restoreFrom(file){
   const rd=new FileReader();
-  rd.onload=async()=>{
-    let json; try{ json=JSON.parse(rd.result); }catch(e){ alert('ملف JSON غير صالح'); return; }
-    if(jsonMode==='restore'){
-      if(!json||json.app!=='pharmadash-pro'){ alert('هذه ليست نسخة احتياطية من PharmaDash Pro'); return; }
-      if(!confirm('استرجاع النسخة سيستبدل كل البيانات الحالية. متابعة؟')) return;
-      await Store.clear('uploads');
-      for(const u of json.uploads||[]) await Store.put('uploads',u);
-      await Store.set('sales',json.sales||[]);
-      await loadAll(); route(); toast('تم استرجاع النسخة ✓'); return;
-    }
-    importSalesJson(json);
+  rd.onload=()=>{
+    let json; try{ json=JSON.parse(rd.result); }catch(e){ toast('ملف JSON غير صالح'); return; }
+    if(!json||json.app!=='pharmadash-pro'){ toast('ده مش نسخة احتياطية من PharmaDash Pro'); return; }
+    confirmBox('استرجاع النسخة هيستبدل كل البيانات الحالية بـ '+(json.uploads||[]).length+' ملف كتابات و'+(json.sales||[]).length+' سطر مبيعات.','استرجاع',async()=>{
+      await Store.clear('uploads'); for(const u of json.uploads||[]) await Store.put('uploads',u);
+      await Store.set('sales',json.sales||[]); await loadAll(); route(); toast('اتسترجعت النسخة ✓'); });
   };
   rd.readAsText(file);
 }
-function download(name,text,type){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
+function confirmBox(msg,okLabel,fn){
+  const m=document.createElement('div'); m.className='modal';
+  m.innerHTML='<div class="sheet" role="dialog" aria-modal="true" style="max-width:420px"><h3>متأكد؟</h3><p class="muted" style="margin-top:6px">'+esc(msg)+'</p><div class="sheet-actions"><button class="btn" data-x>إلغاء</button><button class="btn pri" data-ok>'+esc(okLabel)+'</button></div></div>';
+  document.body.appendChild(m);
+  m.addEventListener('click',e=>{ if(e.target===m||e.target.closest('[data-x]')) m.remove(); else if(e.target.closest('[data-ok]')){ m.remove(); fn(); } });
+}
+function download(name,text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'application/json'})); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
 
 /* ───────── واجهة عامة ───────── */
 let toastT;
-function toast(msg){ let t=document.querySelector('.toast'); if(!t){ t=document.createElement('div'); t.className='toast'; document.body.appendChild(t); } t.textContent=msg; clearTimeout(toastT); toastT=setTimeout(()=>t.remove(),2600); }
+function toast(msg){ let t=document.querySelector('.toast'); if(!t){ t=document.createElement('div'); t.className='toast'; t.setAttribute('role','status'); document.body.appendChild(t); } t.textContent=msg; clearTimeout(toastT); toastT=setTimeout(()=>t.remove(),2800); }
 function loading(msg){ let l=document.querySelector('.loading'); if(!msg){ if(l) l.remove(); return; } if(!l){ l=document.createElement('div'); l.className='loading'; l.innerHTML='<div></div>'; document.body.appendChild(l); } l.firstChild.textContent=msg; }
 
-function buildNav(){
-  const items=Object.entries(PAGES).filter(([,p])=>p.nav);
-  document.getElementById('sideNav').innerHTML=items.map(([k,p])=>'<a href="#/'+k+'" data-nav="'+k+'">'+ICON[p.icon]+'<span>'+p.title+'</span></a>').join('');
-  document.getElementById('tabBar').innerHTML=items.map(([k,p])=>'<a href="#/'+k+'" data-nav="'+k+'">'+ICON[p.icon]+'<span>'+p.title+'</span></a>').join('');
-}
-function initTheme(){
-  try{ const t=localStorage.getItem('pdp-theme'); if(t) document.documentElement.dataset.theme=t; }catch(e){}
-  document.getElementById('themeBtn').onclick=()=>{
-    const cur=document.documentElement.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
-    const next=cur==='dark'?'light':'dark'; document.documentElement.dataset.theme=next;
-    try{ localStorage.setItem('pdp-theme',next); }catch(e){}
-  };
-}
-
-document.addEventListener('click',async e=>{
-  const b=e.target.closest('[data-branch]'); if(b){ setFilter('branch',b.dataset.branch); return; }
-  const s=e.target.closest('[data-sort]'); if(s){ S.docSort=s.dataset.sort; route(); return; }
+document.addEventListener('click',e=>{
+  const md=e.target.closest('[data-mode]'); if(md){ setF('mode',md.dataset.mode); return; }
+  const br=e.target.closest('[data-brand]'); if(br){ S.brand=br.dataset.brand; route(); return; }
+  const tp=e.target.closest('[data-tlp]'); if(tp){ S.tlProduct=tp.dataset.tlp; route(); return; }
   const a=e.target.closest('[data-act]'); if(!a) return;
   const act=a.dataset.act;
-  if(act==='back'){ if(history.length>1) history.back(); else location.hash='#/home'; }
-  else if(act==='onlyMine'){ S.docOnlyMine=!S.docOnlyMine; route(); }
-  else if(act==='moreDrugs'){ S.showAllDrugs=true; route(); }
-  else if(act==='pickFiles') document.getElementById('fileInput').click();
-  else if(act==='pickSales') document.getElementById('salesInput').click();
-  else if(act==='restore'){ jsonMode='restore'; document.getElementById('jsonInput').click(); }
-  else if(act==='delSales'){ if(!confirm('حذف مبيعات هذا اليوم؟')) return; S.sales=S.sales.filter(x=>x.date+'|'+x.branch!==a.dataset.k); try{ await Store.set('sales',S.sales); }catch(err){} route(); }
-  else if(act==='delUpload'){ if(!confirm('حذف هذا الملف من البيانات؟')) return; S.uploads=S.uploads.filter(u=>u.id!==a.dataset.id); try{ await Store.del('uploads',a.dataset.id); }catch(err){} rebuild(); route(); }
-  else if(act==='backup'){ download('pharmadash-pro-backup-'+today()+'.json',JSON.stringify({app:'pharmadash-pro',v:1,exported:new Date().toISOString(),uploads:S.uploads,sales:S.sales}),'application/json'); }
-  else if(act==='wipe'){ if(!confirm('مسح كل الملفات من هذا الجهاز؟ لا يمكن التراجع.')) return; await Store.clear('uploads'); await Store.set('sales',[]); S.f={branch:'ALL',period:'ALL'}; await loadAll(); route(); }
+  if(act==='pick') document.getElementById('fileInput').click();
+  else if(act==='restore') document.getElementById('restoreInput').click();
+  else if(act==='allFiles'){ S.allFiles=true; route(); }
+  else if(act==='backup') download('pharmadash-pro-backup-'+todayISO()+'.json',JSON.stringify({app:'pharmadash-pro',v:2,exported:new Date().toISOString(),uploads:S.uploads,sales:S.sales}));
+  else if(act==='delRx') confirmBox('حذف ملف الكتابات ده؟','حذف',async()=>{ S.uploads=S.uploads.filter(u=>u.id!==a.dataset.id); try{ await Store.del('uploads',a.dataset.id); }catch(err){} rebuild(); route(); });
+  else if(act==='delSales') confirmBox('حذف مبيعات اليوم ده؟','حذف',async()=>{ S.sales=S.sales.filter(x=>x.date+'|'+x.branch!==a.dataset.k); try{ await Store.set('sales',S.sales); }catch(err){} rebuild(); route(); });
+  else if(act==='wipe') confirmBox('مسح كل الكتابات والمبيعات من الجهاز ده؟ مش هينفع ترجعها إلا من نسخة احتياطية.','مسح الكل',async()=>{ try{ await Store.clear('uploads'); await Store.set('sales',[]); }catch(err){} S.uploads=[]; S.sales=[]; rebuild(); route(); toast('اتمسح كل حاجة'); });
 });
 document.addEventListener('change',e=>{
-  if(e.target.id==='periodSel') setFilter('period',e.target.value);
-  else if(e.target.id==='fileInput'){ onRxFiles(e.target.files); e.target.value=''; }
-  else if(e.target.id==='salesInput'){ onSalesFiles(e.target.files); e.target.value=''; }
-  else if(e.target.id==='jsonInput'){ if(e.target.files[0]) onJson(e.target.files[0]); e.target.value=''; }
+  if(e.target.id==='monthSel'){ S.f.month=e.target.value; setF('mode','month'); }
+  else if(e.target.id==='branchSel') setF('branch',e.target.value);
+  else if(e.target.id==='fileInput'){ onFiles(e.target.files); e.target.value=''; }
+  else if(e.target.id==='restoreInput'){ if(e.target.files[0]) restoreFrom(e.target.files[0]); e.target.value=''; }
 });
-document.addEventListener('input',e=>{
-  if(e.target.id==='docQ'){ S.docQuery=e.target.value; document.getElementById('docList').innerHTML=docListHtml(); }
-  else if(e.target.id==='drugQ'){ S.drugQuery=e.target.value; document.getElementById('drugList').innerHTML=drugListHtml(); }
-});
+['dragover','dragenter'].forEach(ev=>document.addEventListener(ev,e=>{ if(e.dataTransfer&&[...e.dataTransfer.types].includes('Files')){ e.preventDefault(); const z=document.getElementById('dropZone'); if(z) z.classList.add('over'); } }));
+document.addEventListener('dragleave',e=>{ const z=document.getElementById('dropZone'); if(z&&!z.contains(e.relatedTarget)) z.classList.remove('over'); });
+document.addEventListener('drop',e=>{ if(!e.dataTransfer||!e.dataTransfer.files.length) return; e.preventDefault(); const z=document.getElementById('dropZone'); if(z) z.classList.remove('over'); onFiles(e.dataTransfer.files); });
 window.addEventListener('hashchange',()=>{ route(); window.scrollTo(0,0); });
 
-buildNav(); initTheme();
-loadAll().then(()=>{
-  // لو الفلتر المحفوظ لم يعد موجودًا في البيانات
-  if(S.f.period!=='ALL' && !S.uploads.some(u=>inPeriod(u.date,S.f.period))){ S.f.period='ALL'; rebuild(); }
-  route();
-});
+try{ const t=localStorage.getItem('pdp-theme'); if(t) document.documentElement.dataset.theme=t; }catch(e){}
+document.getElementById('themeBtn').onclick=()=>{
+  const cur=document.documentElement.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+  const next=cur==='dark'?'light':'dark'; document.documentElement.dataset.theme=next;
+  try{ localStorage.setItem('pdp-theme',next); }catch(e){}
+};
+loadAll().then(route);
 if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
