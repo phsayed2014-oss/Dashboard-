@@ -232,6 +232,7 @@ a.brow:hover{color:var(--rx)}
 .fhead{display:flex;gap:10px;align-items:center;margin-bottom:10px}
 .fhead b{flex:1;min-width:0;word-break:break-all;font-size:14px}
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fields.three{grid-template-columns:1fr 1fr 1fr}
 .field{display:flex;flex-direction:column;gap:4px}
 .field label{font-size:12px;color:var(--muted);font-weight:600}
 .field input,.field select{padding:9px 10px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2)}
@@ -250,7 +251,7 @@ a.brow:hover{color:var(--rx)}
   .tile .go,.badge{display:none}
   .tile .tv{flex-direction:column;align-items:stretch}.dots i{width:8px;height:8px}
   .pgrid,.two{grid-template-columns:1fr}.dgrid{grid-template-columns:1fr;justify-items:center}.dgrid .bars{width:100%}
-  .fields{grid-template-columns:1fr}
+  .fields,.fields.three{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){.tile,.pcard{transition:none}}
 </style>
@@ -1018,7 +1019,7 @@ const MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','
 
 function productKeyOf(service){
   const pl=findPrivateLabelProduct(service); if(pl) return pl.key;
-  const ph=findPureHerbProduct(service); if(ph) return PUREHERB_KEYMAP[ph.key]||null;
+  const ph=findPureHerbProduct(service); if(ph){ const k=PUREHERB_KEYMAP[ph.key]||null; if(k==='argigrow'&&/TABL/i.test(service)) return null; return k; }
   return null;
 }
 const keyOf = v => PharmaCore.normalizeEntityKey(v);
@@ -1102,103 +1103,148 @@ function saveFilter(){ try{ localStorage.setItem('pdp-filter2',JSON.stringify(S.
 async function loadAll(){
   try{ S.uploads=await Store.all('uploads'); S.sales=(await Store.get('sales'))||[]; }
   catch(e){ toast('تعذّر فتح التخزين المحلي — البيانات مش هتتحفظ بعد قفل الصفحة'); }
+  // النسخ القديمة كانت بتحفظ يوم واحد (date) — بقت فترة (from/to)
+  S.uploads.forEach(u=>{ if(!u.from){ u.from=u.to=u.date||todayISO(); } });
+  S.sales.forEach(e=>{ if(!e.from){ e.from=e.to=e.date; } });
   S.ready=true; rebuild();
 }
 
-/* ───────── الفترات ───────── */
-function dataDates(){
-  const s=new Set(); S.uploads.forEach(u=>u.date&&s.add(u.date)); S.sales.forEach(e=>s.add(e.date));
-  return [...s].sort();
+/* ───────── الفترات ─────────
+   كل ملف (كتابات أو مبيعات) بيغطي فترة من/إلى. أي فترة بتختارها بتاخد من كل ملف
+   نصيب الأيام اللي جواها بس (بافتراض إن أيام الملف متساوية). */
+const dayDiff=(a,b)=>Math.round((Date.parse(b+'T00:00:00Z')-Date.parse(a+'T00:00:00Z'))/864e5);
+const lenOf=r=>dayDiff(r.from,r.to)+1;
+function overlap(r,W){ if(!W) return 0; const f=r.from>W.from?r.from:W.from, t=r.to<W.to?r.to:W.to; return f>t?0:dayDiff(f,t)+1; }
+const frac=(r,W)=>overlap(r,W)/lenOf(r);
+function eachDay(from,to,fn){ for(let d=from,g=0;d<=to&&g<800;d=addDays(d,1),g++) fn(d); }
+function dataRange(){
+  let a='', b='';
+  S.uploads.forEach(u=>{ if(!a||u.from<a) a=u.from; if(!b||u.to>b) b=u.to; });
+  S.sales.forEach(e=>{ if(!a||e.from<a) a=e.from; if(!b||e.to>b) b=e.to; });
+  return { first:a||todayISO(), last:b||todayISO() };
+}
+function dataMonths(){
+  const s=new Set(); const add=r=>{ for(let m=r.from.slice(0,7),g=0;m<=r.to.slice(0,7)&&g<60;g++){ s.add(m); const [y,mm]=m.split('-').map(Number); m=mm===12?(y+1)+'-01':y+'-'+String(mm+1).padStart(2,'0'); } };
+  S.uploads.forEach(add); S.sales.forEach(add); return [...s].sort();
 }
 function windowOf(){
-  const dates=dataDates(); const last=dates[dates.length-1]||todayISO(); const f=S.f;
-  if(f.mode==='day'){
-    const prevDay=[...dates].reverse().find(d=>d<last)||'';
-    return { from:last, to:last, prev:prevDay?{from:prevDay,to:prevDay}:null, label:fmtDay(last), cmp:prevDay?'عن '+fmtDay(prevDay):'' };
-  }
+  const {first,last}=dataRange(); const f=S.f;
+  if(f.mode==='day'){ const p=addDays(last,-1); return { from:last, to:last, prev:{from:p,to:p}, label:fmtDay(last), cmp:'عن '+fmtDay(p) }; }
   if(f.mode==='week'){
     const from=addDays(last,-6);
     return { from, to:last, prev:{from:addDays(from,-7),to:addDays(from,-1)}, label:'آخر 7 أيام', cmp:'عن الـ 7 أيام اللي قبلها' };
   }
-  if(f.mode==='all') return { from:'0000-00-00', to:'9999-12-31', prev:null, label:'كل الفترة', cmp:'' };
-  const months=[...new Set(dates.map(d=>d.slice(0,7)))];
+  if(f.mode==='all') return { from:first, to:last, prev:null, label:'كل الفترة', cmp:'' };
+  const months=dataMonths();
   const ym=months.includes(f.month)?f.month:(months[months.length-1]||todayISO().slice(0,7));
   const to=last.slice(0,7)===ym?last:monthEnd(ym);
   const days=+to.slice(8,10); const pm=prevMonth(ym);
   const pTo=pm+'-'+String(Math.min(days,+monthEnd(pm).slice(8,10))).padStart(2,'0');
   return { from:ym+'-01', to, prev:{from:pm+'-01',to:pTo}, label:fmtMonth(ym), cmp:'عن نفس الأيام من '+MONTHS[+pm.slice(5,7)-1], ym };
 }
-const inR=(d,r)=>!!r&&d>=r.from&&d<=r.to;
 
 /* ───────── بناء الفهرس ───────── */
+const aggCache=new WeakMap();
+function aggOf(u){
+  let a=aggCache.get(u); if(a) return a;
+  a={ prod:{}, canc:{}, docs:new Map() };
+  for(const r of u.rows){
+    const service=r[1], doctor=r[0]; const pk=service?productKeyOf(service):null; const dk=keyOf(doctor); const gk=keyOf(service);
+    if(pk){ a.prod[pk]=(a.prod[pk]||0)+1; if(PharmaCore.normalizeStatus(r[4])==='Canceled') a.canc[pk]=(a.canc[pk]||0)+1; }
+    if(!dk) continue;
+    let d=a.docs.get(dk); if(!d){ d={name:doctor,section:r[2]||'',total:0,mine:0,prods:{},drugs:new Map()}; a.docs.set(dk,d); }
+    d.total++; if(r[2]&&!d.section) d.section=r[2];
+    if(gk){ const g=d.drugs.get(gk)||{name:service,count:0,pk}; g.count++; d.drugs.set(gk,g); }
+    if(pk){ d.mine++; d.prods[pk]=(d.prods[pk]||0)+1; }
+  }
+  aggCache.set(u,a); return a;
+}
+const R=v=>Math.round(v);
 function rebuild(){
-  const W=windowOf(); const B=S.f.branch; const last=dataDates().slice(-1)[0]||todayISO();
-  const okB=b=>B==='ALL'||b===B;
-  const prod={}; PRODUCTS.forEach(p=>prod[p.key]={ key:p.key, w:0, wPrev:0, s:0, sPrev:0, canceled:0,
-      wB:{T1:0,T2:0,T3:0}, sB:{T1:0,T2:0,T3:0}, docs:new Map(), dailyW:new Map(), dailyS:new Map() });
-  const doctors=new Map(); const salesCov={T1:false,T2:false,T3:false};
-  const months=new Map(); const mon=ym=>{ let m=months.get(ym); if(!m){ m={w:0,s:0,pw:{},ps:{}}; months.set(ym,m);} return m; };
-  const sparkTo=W.to==='9999-12-31'?last:W.to, sparkFrom=addDays(sparkTo,-29);
-  // التنبيهات: نوافذ ثابتة منسوبة لآخر يوم فيه بيانات
+  const W=windowOf(); const B=S.f.branch; const {last}=dataRange();
+  const okB=b=>B==='ALL'||b===B; let approx=false;
+  const prod={}; PRODUCTS.forEach(p=>prod[p.key]={ key:p.key, brand:p.brand, w:0, wPrev:0, s:0, sPrev:0, amount:0, canceled:0,
+      wB:{T1:0,T2:0,T3:0}, sB:{T1:0,T2:0,T3:0}, sPrevB:{T1:0,T2:0,T3:0}, wCovB:{T1:0,T2:0,T3:0}, stock:{}, docs:new Map(), dailyW:new Map(), dailyS:new Map() });
+  const doctors=new Map(); const months=new Map();
+  const mon=ym=>{ let m=months.get(ym); if(!m){ m={w:0,s:0,pw:{},ps:{}}; months.set(ym,m);} return m; };
+  const sparkTo=W.to, sparkFrom=addDays(sparkTo,-29), SP={from:sparkFrom,to:sparkTo};
   const a7={from:addDays(last,-6),to:last}, p7={from:addDays(last,-13),to:addDays(last,-7)};
   const r14={from:addDays(last,-13),to:last}, o28={from:addDays(last,-41),to:addDays(last,-14)};
   const alertW={}, alertS={}; PRODUCTS.forEach(p=>{ alertW[p.key]={c:0,p:0}; alertS[p.key]={c:0,p:0}; });
-  const docStop=new Map(); let anySalesA=false, anySalesP=false;
-  const pkCache=new Map();
+  const docStop=new Map(); let salesA=false, salesP=false;
+  const spread=(map,r,v)=>{ const n=lenOf(r); const f=r.from>SP.from?r.from:SP.from, t=r.to<SP.to?r.to:SP.to; if(f<=t) eachDay(f,t,d=>map.set(d,(map.get(d)||0)+v/n)); };
+  const toMonths=(r,fn)=>{ const n=lenOf(r); const byM={}; eachDay(r.from,r.to,d=>{ const m=d.slice(0,7); byM[m]=(byM[m]||0)+1; }); Object.keys(byM).forEach(m=>fn(mon(m),byM[m]/n)); };
+
+  // أيام فيها ملف مبيعات (لكل صيدلية ولكل شركة) داخل الفترة — التحويل بيتحسب عليها بس
+  const covDays={};
+  S.sales.forEach(e=>{ if(!okB(e.branch)||!PROD[e.product]) return;
+    const f=e.from>W.from?e.from:W.from, t=e.to<W.to?e.to:W.to; if(f>t) return;
+    const k=e.branch+'|'+PROD[e.product].brand; const set=covDays[k]||(covDays[k]=new Set()); eachDay(f,t,d=>set.add(d)); });
+  const covPrev=new Set(); S.sales.forEach(e=>{ if(okB(e.branch)&&PROD[e.product]&&overlap(e,W.prev)) covPrev.add(e.branch+'|'+PROD[e.product].brand); });
+  const covFrac=(u,brand)=>{ const set=covDays[u.branch+'|'+brand]; if(!set) return 0; const f=u.from>W.from?u.from:W.from, t=u.to<W.to?u.to:W.to; if(f>t) return 0; let n=0; eachDay(f,t,d=>{ if(set.has(d)) n++; }); return n/lenOf(u); };
 
   for(const u of S.uploads){
     if(!okB(u.branch)) continue;
-    const d=u.date||''; const cur=inR(d,W), prv=inR(d,W.prev), spk=d>=sparkFrom&&d<=sparkTo;
-    for(const r of u.rows){
-      const service=r[1]; const gk=keyOf(service);
-      let pk=pkCache.get(gk); if(pk===undefined){ pk=service?productKeyOf(service):null; pkCache.set(gk,pk); }
-      const doctor=r[0]; const dk=keyOf(doctor);
-      if(cur&&dk){
+    const a=aggOf(u); const fw=frac(u,W), fp=frac(u,W.prev); if(fw>0&&fw<1) approx=true;
+    const cf={n:fw?covFrac(u,'n'):0,h:fw?covFrac(u,'h'):0};
+    for(const pk in a.prod){ const c=a.prod[pk], P=prod[pk];
+      P.w+=c*fw; P.wB[u.branch]+=c*fw; P.wCovB[u.branch]+=c*cf[P.brand]; P.wPrev+=c*fp; P.canceled+=(a.canc[pk]||0)*fw;
+      spread(P.dailyW,u,c); toMonths(u,(m,f)=>{ m.w+=c*f; m.pw[pk]=(m.pw[pk]||0)+c*f; });
+      alertW[pk].c+=c*frac(u,a7); alertW[pk].p+=c*frac(u,p7); }
+    const fr14=frac(u,r14), fo28=frac(u,o28);
+    a.docs.forEach((d,dk)=>{
+      if(fw>0){
         let doc=doctors.get(dk);
-        if(!doc){ doc={ key:dk, id:idOf(dk), name:doctor, section:r[2]||'', total:0, mine:0, prods:new Map(), drugs:new Map(), branches:new Set() }; doctors.set(dk,doc); }
-        doc.total++; doc.branches.add(u.branch); if(r[2]&&!doc.section) doc.section=r[2];
-        if(gk){ const g=doc.drugs.get(gk)||{name:service,count:0,pk}; g.count++; doc.drugs.set(gk,g); }
-        if(pk){ doc.mine++; const pp=doc.prods.get(pk)||{w:0}; pp.w++; doc.prods.set(pk,pp); }
+        if(!doc){ doc={ key:dk, id:idOf(dk), name:d.name, section:d.section, total:0, mine:0, prods:new Map(), drugs:new Map(), branches:new Set() }; doctors.set(dk,doc); }
+        doc.total+=d.total*fw; doc.mine+=d.mine*fw; doc.branches.add(u.branch); if(!doc.section) doc.section=d.section;
+        d.drugs.forEach((g,gk)=>{ const x=doc.drugs.get(gk)||{name:g.name,count:0,pk:g.pk}; x.count+=g.count*fw; doc.drugs.set(gk,x); });
+        for(const pk in d.prods){ const c=d.prods[pk]; const pp=doc.prods.get(pk)||{w:0}; pp.w+=c*fw; doc.prods.set(pk,pp);
+          const P=prod[pk]; const x=P.docs.get(dk)||{name:d.name,w:0,wB:{T1:0,T2:0,T3:0},wCovB:{T1:0,T2:0,T3:0}};
+          x.w+=c*fw; x.wB[u.branch]+=c*fw; x.wCovB[u.branch]+=c*cf[P.brand]; P.docs.set(dk,x); }
       }
-      if(!pk) continue;
-      const P=prod[pk];
-      if(cur){ P.w++; P.wB[u.branch]++; if(PharmaCore.normalizeStatus(r[4])==='Canceled') P.canceled++;
-        if(dk){ const x=P.docs.get(dk)||{name:doctor,w:0,wB:{T1:0,T2:0,T3:0}}; x.w++; x.wB[u.branch]++; P.docs.set(dk,x); } }
-      if(prv) P.wPrev++;
-      if(spk) P.dailyW.set(d,(P.dailyW.get(d)||0)+1);
-      if(d){ const m=mon(d.slice(0,7)); m.w++; m.pw[pk]=(m.pw[pk]||0)+1; }
-      if(inR(d,a7)) alertW[pk].c++; else if(inR(d,p7)) alertW[pk].p++;
-      if(dk&&(inR(d,r14)||inR(d,o28))){
-        const k=dk+'|'+pk; const x=docStop.get(k)||{name:doctor,dk,pk,recent:0,old:0}; if(inR(d,r14)) x.recent++; else x.old++; docStop.set(k,x);
-      }
-    }
+      if(fr14||fo28) for(const pk in d.prods){ const k=dk+'|'+pk; const x=docStop.get(k)||{name:d.name,dk,pk,recent:0,old:0}; x.recent+=d.prods[pk]*fr14; x.old+=d.prods[pk]*fo28; docStop.set(k,x); }
+    });
   }
+  const latestSeg={};
   for(const e of S.sales){
     if(!okB(e.branch)||!PROD[e.product]) continue;
-    const P=prod[e.product]; const d=e.date;
-    if(inR(d,W)){ P.s+=e.units; P.sB[e.branch]+=e.units; salesCov[e.branch]=true; }
-    if(inR(d,W.prev)) P.sPrev+=e.units;
-    if(d>=sparkFrom&&d<=sparkTo) P.dailyS.set(d,(P.dailyS.get(d)||0)+e.units);
-    const m=mon(d.slice(0,7)); m.s+=e.units; m.ps[e.product]=(m.ps[e.product]||0)+e.units;
-    if(inR(d,a7)){ alertS[e.product].c+=e.units; anySalesA=true; } else if(inR(d,p7)){ alertS[e.product].p+=e.units; anySalesP=true; }
+    const P=prod[e.product]; const fw=frac(e,W); if(fw>0&&fw<1) approx=true;
+    P.s+=e.units*fw; P.sB[e.branch]+=e.units*fw; P.amount+=(e.amount||0)*fw; const fpv=frac(e,W.prev); P.sPrev+=e.units*fpv; P.sPrevB[e.branch]+=e.units*fpv;
+    spread(P.dailyS,e,e.units); toMonths(e,(m,f)=>{ m.s+=e.units*f; m.ps[e.product]=(m.ps[e.product]||0)+e.units*f; });
+    const fa=frac(e,a7), fp=frac(e,p7); if(fa) salesA=true; if(fp) salesP=true; alertS[e.product].c+=e.units*fa; alertS[e.product].p+=e.units*fp;
+    if(e.stock!=null){ const k=e.product+'|'+e.branch; if(!latestSeg[k]||e.to>latestSeg[k].to) latestSeg[k]=e; }
   }
-  // التحويل والفاقد: بنحسبهم بس في الصيدليات اللي ليها ملف مبيعات في نفس الفترة
-  const cov=Object.keys(salesCov).filter(b=>salesCov[b]);
-  const hasSales=cov.length>0;
-  let W_=0,S_=0,WC=0,LOST=0,Wp=0,Sp=0;
+  Object.values(latestSeg).forEach(e=>{ prod[e.product].stock[e.branch]={qty:e.stock,at:e.to}; });
+
+  // تقريب الأرقام بعد التوزيع على الأيام
+  const hasSales=Object.keys(covDays).length>0;
+  const cov=[...new Set(Object.keys(covDays).map(k=>k.split('|')[0]))];
+  let W_=0,S_=0,WC=0,LOST=0,Wp=0,Sp=0,SC=0,SPC=0;
   PRODUCTS.forEach(p=>{ const P=prod[p.key];
-    P.wCov=cov.reduce((a,b)=>a+P.wB[b],0);
-    P.lostB={T1:0,T2:0,T3:0}; cov.forEach(b=>{ P.lostB[b]=Math.max(0,P.wB[b]-P.sB[b]); });
-    P.lost=cov.reduce((a,b)=>a+P.lostB[b],0);
-    P.conv=hasSales&&P.wCov>0?Math.round(P.s/P.wCov*100):null;
-    P.trend=hasSales?pctChange(P.s,P.sPrev):pctChange(P.w,P.wPrev);
-    W_+=P.w; S_+=P.s; WC+=P.wCov; LOST+=P.lost; Wp+=P.wPrev; Sp+=P.sPrev;
+    ['w','wPrev','s','sPrev','amount','canceled'].forEach(k=>P[k]=R(P[k]));
+    ['T1','T2','T3'].forEach(b=>{ P.wB[b]=R(P.wB[b]); P.sB[b]=R(P.sB[b]); P.wCovB[b]=R(P.wCovB[b]); });
+    P.dailyW.forEach((v,k)=>P.dailyW.set(k,R(v))); P.dailyS.forEach((v,k)=>P.dailyS.set(k,R(v)));
+    const covB=b=>!!covDays[b+'|'+p.brand];
+    P.covered=['T1','T2','T3'].filter(covB);
+    P.wCov=P.covered.reduce((a,b)=>a+P.wCovB[b],0);
+    P.lostB={T1:0,T2:0,T3:0}; P.covered.forEach(b=>{ P.lostB[b]=Math.max(0,P.wCovB[b]-P.sB[b]); });
+    P.lost=P.covered.reduce((a,b)=>a+P.lostB[b],0);
+    P.conv=P.covered.length&&P.wCov>0?Math.round(P.s/P.wCov*100):null;
+    // مقارنة المبيعات: بس الصيدليات اللي ليها ملف مبيعات للشركة دي في الفترتين
+    const both=P.covered.filter(b=>covPrev.has(b+'|'+p.brand));
+    P.sCmp=R(both.reduce((a,b)=>a+P.sB[b],0)); P.sPrevCmp=R(both.reduce((a,b)=>a+P.sPrevB[b],0));
+    P.trend=hasSales?(both.length?pctChange(P.sCmp,P.sPrevCmp):null):pctChange(P.w,P.wPrev);
+    W_+=P.w; S_+=P.s; WC+=P.wCov; LOST+=P.lost; Wp+=P.wPrev; Sp+=P.sPrev; SC+=P.sCmp; SPC+=P.sPrevCmp;
   });
+  doctors.forEach(d=>{ d.total=R(d.total); d.mine=R(d.mine); d.prods.forEach((x,k)=>{ x.w=R(x.w); if(!x.w) d.prods.delete(k); }); d.drugs.forEach((x,k)=>{ x.count=R(x.count); if(!x.count) d.drugs.delete(k); }); });
+  months.forEach(m=>{ m.w=R(m.w); m.s=R(m.s); for(const k in m.pw) m.pw[k]=R(m.pw[k]); for(const k in m.ps) m.ps[k]=R(m.ps[k]); });
+
   // الفاقد لكل طبيب (تقديري): نصيبه من فاقد الصنف في نفس الصيدلية
   const leak=[];
   PRODUCTS.forEach(p=>{ const P=prod[p.key];
-    P.docs.forEach((x,dk)=>{ let est=0; cov.forEach(b=>{ if(P.wB[b]>0) est+=x.wB[b]*P.lostB[b]/P.wB[b]; });
-      x.lost=Math.round(est);
+    P.docs.forEach((x,dk)=>{ let est=0; P.covered.forEach(b=>{ if(P.wCovB[b]>0) est+=x.wCovB[b]*P.lostB[b]/P.wCovB[b]; });
+      x.w=R(x.w); ['T1','T2','T3'].forEach(b=>x.wB[b]=R(x.wB[b])); x.lost=Math.min(x.w,R(est));
+      if(!x.w){ P.docs.delete(dk); return; }
       if(x.lost>0) leak.push({dk,id:idOf(dk),name:x.name,pk:p.key,w:x.w,lost:x.lost,branches:Object.keys(x.wB).filter(b=>x.wB[b]>0)}); });
   });
   leak.sort((a,b)=>b.lost-a.lost||b.w-a.w);
@@ -1206,18 +1252,18 @@ function rebuild(){
   // التنبيهات
   const alerts=[];
   PRODUCTS.forEach(p=>{
-    const s=alertS[p.key], w=alertW[p.key];
-    if(anySalesA&&anySalesP&&s.p>=5&&s.c<=s.p*.75) alerts.push({sev:2,c:'leak',i:'down',t:p.name+' مبيعاته نزلت '+Math.round((1-s.c/s.p)*100)+'%',p:'آخر 7 أيام '+s.c+' علبة مقابل '+s.p+' في الأسبوع اللي قبله.'+(w.c>=w.p&&w.p>0?' الكتابات ثابتة أو زادت، يعني المشكلة غالبًا في البيع أو التوفر.':''),pk:p.key});
+    const s={c:R(alertS[p.key].c),p:R(alertS[p.key].p)}, w={c:R(alertW[p.key].c),p:R(alertW[p.key].p)};
+    if(salesA&&salesP&&s.p>=5&&s.c<=s.p*.75) alerts.push({sev:2,c:'leak',i:'down',t:p.name+' مبيعاته نزلت '+Math.round((1-s.c/s.p)*100)+'%',p:'آخر 7 أيام '+s.c+' علبة مقابل '+s.p+' في الأسبوع اللي قبله.'+(w.c>=w.p&&w.p>0?' الكتابات ثابتة أو زادت، يعني المشكلة غالبًا في البيع أو التوفر.':''),pk:p.key});
     if(w.p>=5&&w.c<=w.p*.75) alerts.push({sev:2,c:'leak',i:'down',t:p.name+' كتاباته نزلت '+Math.round((1-w.c/w.p)*100)+'%',p:'آخر 7 أيام '+w.c+' كتابة مقابل '+w.p+' في الأسبوع اللي قبله.',pk:p.key});
     const P=prod[p.key]; if(P.conv!=null&&P.wCov>=10&&P.conv<40) alerts.push({sev:1,c:'warn',i:'box',t:p.name+' بيتكتب ومش بيتباع',p:'في '+W.label+' اتكتب '+P.wCov+' مرة واتباع '+P.s+' علبة بس ('+P.conv+'%). راجع التوفر في الصيدلية.',pk:p.key});
   });
-  [...docStop.values()].filter(x=>x.old>=3&&x.recent===0).sort((a,b)=>b.old-a.old).slice(0,8).forEach(x=>{
-    alerts.push({sev:0,c:'rx',i:'user',t:x.name+' بطّل يكتب '+PROD[x.pk].name,p:'كتبه '+x.old+' مرة في الأسابيع اللي فاتت، وما كتبهوش ولا مرة في آخر 14 يوم.',id:idOf(x.dk)});
+  [...docStop.values()].filter(x=>R(x.old)>=3&&x.recent<0.5).sort((a,b)=>b.old-a.old).slice(0,8).forEach(x=>{
+    alerts.push({sev:0,c:'rx',i:'user',t:x.name+' بطّل يكتب '+PROD[x.pk].name,p:'كتبه '+R(x.old)+' مرة في الأسابيع اللي فاتت، وما كتبهوش ولا مرة في آخر 14 يوم.',id:idOf(x.dk)});
   });
   alerts.sort((a,b)=>b.sev-a.sev);
 
-  S.ix={ W, prod, doctors, leak, alerts, months, hasSales, cov, last,
-    totals:{w:W_,s:S_,wc:WC,lost:LOST,wPrev:Wp,sPrev:Sp,conv:hasSales&&WC>0?Math.round(S_/WC*100):null} };
+  S.ix={ W, prod, doctors, leak, alerts, months, hasSales, cov, last, approx,
+    totals:{w:W_,s:S_,wc:WC,lost:LOST,wPrev:Wp,sPrev:Sp,sCmp:SC,sPrevCmp:SPC,conv:hasSales&&WC>0?Math.round(S_/WC*100):null} };
 }
 
 /* ───────── رسومات صغيرة ───────── */
@@ -1243,7 +1289,7 @@ const hasData=()=>S.uploads.length>0||S.sales.length>0;
 
 /* ───────── الشاشات ───────── */
 function periodControls(hero){
-  const months=[...new Set(dataDates().map(d=>d.slice(0,7)))].reverse();
+  const months=dataMonths().reverse();
   const cls=hero?'pill':'chip'; const curM=S.ix.W.ym||months[0]||'';
   let h=[['day','اليوم'],['week','آخر 7 أيام']].map(([k,l])=>'<button class="'+cls+(S.f.mode===k?' on':'')+'" data-mode="'+k+'">'+l+'</button>').join('');
   h+='<select class="'+cls+(S.f.mode==='month'?' on':'')+'" id="monthSel" aria-label="الشهر">'+(months.length?months:[curM]).map(m=>'<option value="'+m+'"'+(S.f.mode==='month'&&m===curM?' selected':'')+'>'+(m?fmtMonth(m):'الشهر')+'</option>').join('')+'</select>';
@@ -1263,13 +1309,16 @@ function home(){
     h+='<h1>أصنافك اتكتبت <span class="num">'+fmt(T.w)+'</span> مرة'+(ix.hasSales?' واتباع منها <em class="num">'+fmt(T.s)+'</em> علبة':'')+'</h1>'
       +'<div class="pills">'+periodControls(true)+'</div><div class="hstats">'
       +'<div class="hs"><div class="l"><i style="background:var(--rx)"></i>كتابات</div><div class="v num">'+fmt(T.w)+'</div>'+delta(pctChange(T.w,T.wPrev))+'</div>'
-      +'<div class="hs"><div class="l"><i style="background:var(--sale)"></i>مبيعات</div><div class="v num">'+(ix.hasSales?fmt(T.s):'—')+'</div>'+(ix.hasSales?delta(pctChange(T.s,T.sPrev)):'<div class="d flat">ارفع المبيعات</div>')+'</div>'
+      +'<div class="hs"><div class="l"><i style="background:var(--sale)"></i>مبيعات</div><div class="v num">'+(ix.hasSales?fmt(T.s):'—')+'</div>'+(ix.hasSales?delta(pctChange(T.sCmp,T.sPrevCmp)):'<div class="d flat">ارفع المبيعات</div>')+'</div>'
       +'<div class="hs"><div class="l"><i style="background:var(--leak)"></i>ما اتباعش</div><div class="v num">'+(ix.hasSales?fmt(T.lost):'—')+'</div><div class="d flat">'+(ix.hasSales&&T.wc?Math.round(T.lost/T.wc*100)+'% من الكتابات':'')+'</div></div>'
       +'</div></div>'
       +'<div class="ring-wrap" style="color:var(--hero-muted)">'+ring(200,16,ix.hasSales&&T.wc?[{v:Math.min(T.s,T.wc)/T.wc,c:'var(--sale)'},{v:T.lost/T.wc,c:'var(--leak)'}]:[])
       +'<div class="ring-c"><b class="num">'+(T.conv==null?'—':T.conv+'%')+'</b><span>نسبة التحويل</span></div></div></div>';
     const partial=ix.hasSales&&ix.cov.length<(S.f.branch==='ALL'?3:1);
-    if(ix.W.cmp||partial) h+='<div class="hero-note">'+(ix.W.cmp?'الأسهم = التغيير '+esc(ix.W.cmp):'')+(partial?(ix.W.cmp?' · ':'')+'التحويل محسوب لـ '+ix.cov.map(b=>BRANCHES[b]).join(' و')+' بس (اللي ليها مبيعات)':'')+'</div>';
+    const notes=[]; if(ix.W.cmp) notes.push('الأسهم = التغيير '+esc(ix.W.cmp));
+    if(partial) notes.push('التحويل محسوب لـ '+ix.cov.map(b=>BRANCHES[b]).join(' و')+' بس (اللي ليها مبيعات)');
+    if(ix.approx) notes.push('فيه ملفات بتغطي فترة أطول من اللي اخترتها، فأخدنا منها نصيب الأيام دي بالتقريب');
+    if(notes.length) h+='<div class="hero-note">'+notes.join(' · ')+'</div>';
     h+='</section>';
   }
   const P=Object.values(ix.prod);
@@ -1282,7 +1331,7 @@ function home(){
     leakage:ix.hasSales?[fmt(T.lost),'كتابة ما اتباعتش']:['—','محتاج ملف مبيعات'],
     alerts:[fmt(ix.alerts.length), ix.alerts.length?'تنبيه محتاج نظرة':'مفيش تنبيهات'],
     timeline:[fmt(mths.length),'شهر فيه بيانات'],
-    upload:[fmt(S.uploads.length+new Set(S.sales.map(e=>e.date+e.branch)).size),'ملف محفوظ']
+    upload:[fmt(S.uploads.length+new Set(S.sales.map(e=>e.branch+e.from+e.to+PROD[e.product].brand)).size),'ملف محفوظ']
   };
   const extra={
     products:'<div class="dots">'+PRODUCTS.map(p=>'<i style="background:'+tone(ix.prod[p.key].conv)+'" title="'+esc(p.name)+'"></i>').join('')+'</div>',
@@ -1327,7 +1376,8 @@ function productPage(key){
     +'<div class="small muted">حسب الصيدلية — الشريط الأزرق كتابات والأخضر مبيعات</div>';
   const mx=Math.max(1,...Object.keys(BRANCHES).map(b=>Math.max(P.wB[b],P.sB[b])));
   Object.entries(BRANCHES).forEach(([b,l])=>{ if(S.f.branch!=='ALL'&&S.f.branch!==b) return;
-    h+='<div class="brow"><span>'+l+'</span><span style="display:grid;gap:3px"><span class="t"><i style="width:'+(P.wB[b]/mx*100)+'%;background:var(--rx)"></i></span><span class="t"><i style="width:'+(P.sB[b]/mx*100)+'%;background:var(--sale)"></i></span></span><b class="num">'+P.wB[b]+' / '+(ix.cov.includes(b)?P.sB[b]:'—')+'</b></div>'; });
+    const st=P.stock[b];
+    h+='<div class="brow"><span>'+l+(st?'<br><span class="small muted">مخزون '+fmt(st.qty)+' ('+fmtDay(st.at)+')</span>':'')+'</span><span style="display:grid;gap:3px"><span class="t"><i style="width:'+(P.wB[b]/mx*100)+'%;background:var(--rx)"></i></span><span class="t"><i style="width:'+(P.sB[b]/mx*100)+'%;background:var(--sale)"></i></span></span><b class="num">'+P.wB[b]+' / '+(P.covered.includes(b)?P.sB[b]:'—')+'</b></div>'; });
   h+='</div></div>';
   const docs=[...P.docs.entries()].map(([dk,x])=>({dk,...x})).sort((a,b)=>b.w-a.w);
   h+='<div class="panel"><h3>مين بيكتبه؟ <span class="small muted">'+fmt(docs.length)+' طبيب</span></h3>';
@@ -1387,7 +1437,7 @@ function leakage(){
   h+=strip();
   if(!ix.hasSales) return h+'<div class="panel empty"><b>محتاج ملف مبيعات للفترة دي</b>القسم ده بيقارن الكتابات بالمبيعات. ارفع تقرير المبيعات من <a href="#upload" style="color:var(--rx)">رفع الملفات</a>.</div>';
   const byP=PRODUCTS.map(p=>({p,P:ix.prod[p.key]})).filter(x=>x.P.lost>0).sort((a,b)=>b.P.lost-a.P.lost);
-  h+='<div class="two"><div class="panel"><h3>حسب الصنف</h3>'+(byP.length?byP.map(({p,P})=>'<a class="lrow" href="#product-'+slug(p.key)+'"><span class="av k-leak"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICON.pill+'</svg></span><div><div class="n">'+esc(p.name)+'</div><div class="s">'+ix.cov.filter(b=>P.lostB[b]>0).map(b=>BRANCHES[b]+': اتكتب '+P.wB[b]+' واتباع '+P.sB[b]).join(' · ')+'</div><div class="lbar"><i style="width:'+(P.lost/Math.max(1,P.wCov)*100)+'%;background:var(--leak)"></i></div></div><div class="big num" style="color:var(--leak)">'+P.lost+'<small>ما اتباعش</small></div></a>').join(''):'<div class="empty">كل الكتابات اتباعت.</div>')+'</div>';
+  h+='<div class="two"><div class="panel"><h3>حسب الصنف</h3>'+(byP.length?byP.map(({p,P})=>'<a class="lrow" href="#product-'+slug(p.key)+'"><span class="av k-leak"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICON.pill+'</svg></span><div><div class="n">'+esc(p.name)+'</div><div class="s">'+P.covered.filter(b=>P.lostB[b]>0).map(b=>BRANCHES[b]+': اتكتب '+P.wB[b]+' واتباع '+P.sB[b]).join(' · ')+'</div><div class="lbar"><i style="width:'+(P.lost/Math.max(1,P.wCov)*100)+'%;background:var(--leak)"></i></div></div><div class="big num" style="color:var(--leak)">'+P.lost+'<small>ما اتباعش</small></div></a>').join(''):'<div class="empty">كل الكتابات اتباعت.</div>')+'</div>';
   h+='<div class="panel"><h3>حسب الطبيب <span class="small muted">تقديري</span></h3>'+(ix.leak.length?ix.leak.slice(0,15).map(l=>'<a class="lrow" href="#doctor-'+l.id+'"><span class="av k-leak">'+esc(initials(l.name))+'</span><div><div class="n">'+esc(l.name)+'</div><div class="s">'+esc(PROD[l.pk].name)+' · '+l.branches.map(b=>BRANCHES[b]).join('، ')+' · كتب '+l.w+'</div><div class="lbar"><i style="width:'+(l.lost/l.w*100)+'%;background:var(--leak)"></i></div></div><div class="big num" style="color:var(--leak)">'+l.lost+'<small>ما اتباعش</small></div></a>').join(''):'<div class="empty">مفيش فاقد.</div>')+'</div></div>';
   h+='<p class="small muted" style="margin-top:12px">تقرير المبيعات ما بيقولش البيعة جاية من أنهي روشتة، فنصيب كل طبيب من الفاقد محسوب بنسبة كتاباته من الصنف في نفس الصيدلية.</p>';
   return h;
@@ -1424,15 +1474,16 @@ function timeline(){
   return h;
 }
 function upload(){
-  let h=head('upload','حط الملفات وخلاص — البرنامج بيعرف نوعها والصيدلية والتاريخ');
-  h+='<button class="drop" id="dropZone" data-act="pick"><span class="ic k-rx">'+svg('upload',1.8)+'</span><b>اسحب الملفات هنا أو اضغط للاختيار</b><p>تقارير الكتابات أو المبيعات، PDF أو Excel، أكتر من ملف مرة واحدة. قبل الحفظ هتشوف البرنامج فهم إيه، وتقدر تعدّل.</p></button>';
-  const rx=[...S.uploads].sort((a,b)=>(b.date||'')<(a.date||'')?-1:1);
-  const sg=new Map(); S.sales.forEach(e=>{ const k=e.date+'|'+e.branch; const g=sg.get(k)||{date:e.date,branch:e.branch,units:0,n:0}; g.units+=e.units; g.n++; sg.set(k,g); });
-  const sl=[...sg.values()].sort((a,b)=>a.date<b.date?1:-1);
+  let h=head('upload','حط الملفات وخلاص — البرنامج بيعرف نوعها والصيدلية والفترة');
+  h+='<button class="drop" id="dropZone" data-act="pick"><span class="ic k-rx">'+svg('upload',1.8)+'</span><b>اسحب الملفات هنا أو اضغط للاختيار</b><p>تقارير الكتابات أو المبيعات (NOSTRI أو PureHerb)، PDF أو Excel، أكتر من ملف مرة واحدة. قبل الحفظ هتشوف البرنامج فهم إيه، وتقدر تعدّل.</p></button>';
+  const rx=[...S.uploads].sort((a,b)=>b.to<a.to?-1:1);
+  const sg=new Map(); S.sales.forEach(e=>{ const k=e.branch+'|'+e.from+'|'+e.to+'|'+PROD[e.product].brand; const g=sg.get(k)||{branch:e.branch,from:e.from,to:e.to,brand:PROD[e.product].brand,units:0,n:0,key:k}; g.units+=e.units; g.n++; sg.set(k,g); });
+  const sl=[...sg.values()].sort((a,b)=>a.to<b.to?1:-1);
+  const lim=S.allFiles?9999:10;
   h+='<div class="two" style="margin-top:14px"><div class="panel"><h3>ملفات الكتابات <span class="small muted">'+rx.length+'</span></h3>'
-    +(rx.length?'<div class="scroll-x"><table class="tbl"><tr><th>التاريخ</th><th>الصيدلية</th><th>كتابات</th><th>أصنافي</th><th></th></tr>'+rx.slice(0,S.allFiles?9999:10).map(u=>'<tr><td class="num">'+esc(u.date||'—')+'</td><td>'+esc(BRANCHES[u.branch]||'')+'</td><td class="num">'+fmt(u.rows.length)+'</td><td class="num">'+fmt(u.mine!=null?u.mine:u.rows.filter(r=>productKeyOf(r[1])).length)+'</td><td><button class="btn sm danger" data-act="delRx" data-id="'+escapeAttr(u.id)+'">حذف</button></td></tr>').join('')+'</table></div>':'<div class="empty">لسه ما رفعتش كتابات.</div>')+'</div>'
+    +(rx.length?'<div class="scroll-x"><table class="tbl"><tr><th>الفترة</th><th>الصيدلية</th><th>كتابات</th><th>أصنافي</th><th></th></tr>'+rx.slice(0,lim).map(u=>'<tr><td>'+esc(rangeLabel(u.from,u.to))+'</td><td>'+esc(BRANCHES[u.branch]||'')+'</td><td class="num">'+fmt(u.rows.length)+'</td><td class="num">'+fmt(u.mine!=null?u.mine:u.rows.filter(r=>productKeyOf(r[1])).length)+'</td><td><button class="btn sm danger" data-act="delRx" data-id="'+escapeAttr(u.id)+'">حذف</button></td></tr>').join('')+'</table></div>':'<div class="empty">لسه ما رفعتش كتابات.</div>')+'</div>'
     +'<div class="panel"><h3>ملفات المبيعات <span class="small muted">'+sl.length+'</span></h3>'
-    +(sl.length?'<div class="scroll-x"><table class="tbl"><tr><th>التاريخ</th><th>الصيدلية</th><th>أصناف</th><th>علب</th><th></th></tr>'+sl.slice(0,S.allFiles?9999:10).map(g=>'<tr><td class="num">'+esc(g.date)+'</td><td>'+esc(BRANCHES[g.branch])+'</td><td class="num">'+g.n+'</td><td class="num">'+fmt(g.units)+'</td><td><button class="btn sm danger" data-act="delSales" data-k="'+escapeAttr(g.date+'|'+g.branch)+'">حذف</button></td></tr>').join('')+'</table></div>':'<div class="empty">لسه ما رفعتش مبيعات.</div>')+'</div></div>';
+    +(sl.length?'<div class="scroll-x"><table class="tbl"><tr><th>الفترة</th><th>الصيدلية</th><th>الشركة</th><th>علب</th><th></th></tr>'+sl.slice(0,lim).map(g=>'<tr><td>'+esc(rangeLabel(g.from,g.to))+'</td><td>'+esc(BRANCHES[g.branch])+'</td><td><span class="brand '+(g.brand==='n'?'b-n':'b-h')+'">'+(g.brand==='n'?'NOSTRI':'PUREHERB')+'</span></td><td class="num">'+fmt(g.units)+'</td><td><button class="btn sm danger" data-act="delSales" data-k="'+escapeAttr(g.key)+'">حذف</button></td></tr>').join('')+'</table></div>':'<div class="empty">لسه ما رفعتش مبيعات.</div>')+'</div></div>';
   if(!S.allFiles&&(rx.length>10||sl.length>10)) h+='<div style="text-align:center;margin-top:10px"><button class="btn sm" data-act="allFiles">عرض كل الملفات</button></div>';
   h+='<div class="panel" style="margin-top:14px"><h3>نسخة احتياطية</h3><p class="small muted" style="margin-bottom:12px">البيانات محفوظة في المتصفح ده بس. نزّل نسخة علشان تنقلها لجهاز تاني أو تحتفظ بيها.</p><div class="row-actions"><button class="btn" data-act="backup">'+svg('save')+' تنزيل نسخة</button><button class="btn" data-act="restore">'+svg('upload')+' استرجاع نسخة</button><button class="btn danger" data-act="wipe">'+svg('trash')+' مسح الكل</button></div></div>';
   return h;
@@ -1450,7 +1501,10 @@ function route(){
 }
 function setF(k,v){ S.f[k]=v; saveFilter(); rebuild(); route(); }
 
-/* ───────── قراءة الملفات: تحديد النوع والصيدلية والتاريخ ───────── */
+/* ───────── قراءة الملفات: تحديد النوع والصيدلية والفترة ───────── */
+/* أكواد الأصناف كما في تقارير "مبيعات أصناف مورد" — الأدق في المطابقة */
+const PRODUCT_CODES={ '1-02-066-034':'reflex','2-09-031-483':'rizer','1-12-109-038':'oracure','1-14-166-032':'intimo','1-09-118-050':'nostriderm','1-09-066-046':'nostricure' };
+PUREHERB_PRODUCTS.forEach(p=>{ if(p.code) PRODUCT_CODES[p.code]=PUREHERB_KEYMAP[p.key]; });
 const SALES_KW=[
   {key:'reflex',kw:'REFLEX'},{key:'rizer',kw:'RIZER'},{key:'oracure',kw:'ORACURE'},
   {key:'intimo',kw:'INTIMO'},{key:'nostriderm',kw:'NOSTRIDERM'},{key:'nostricure',kw:'NOSTRICURE'},
@@ -1459,22 +1513,44 @@ const SALES_KW=[
   {key:'zincolive',kw:'ZINCOLIVE'},{key:'zincolive',kw:'ZINC OLIVE'},{key:'bonefriend',kw:'BONEFRIEND'},{key:'bonefriend',kw:'BONE FRIEND'},
   {key:'argigrow',kw:'ARGIGROW'},{key:'argigrow',kw:'ARGI GROW'}
 ];
-const salesKw=text=>{ const up=String(text||'').normalize('NFKC').toUpperCase(); const k=SALES_KW.find(p=>up.includes(p.kw)); return k?{key:k.key,at:up.indexOf(k.kw)}:null; };
+function salesKw(text){
+  const up=String(text||'').normalize('NFKC').toUpperCase();
+  const k=SALES_KW.find(p=>up.includes(p.kw)); if(!k) return null;
+  const at=up.indexOf(k.kw);
+  const code=Object.keys(PRODUCT_CODES).find(c=>up.includes(c));
+  if(code) return {key:PRODUCT_CODES[code],at};
+  if(k.key==='argigrow'&&/TABL/.test(up)) return null;   // ArgiGrow أقراص مش من الأصناف الـ 13
+  return {key:k.key,at};
+}
 const toNum=v=>{ if(typeof v==='number') return v; const n=Number(String(v==null?'':v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[,٬\s]/g,'')); return Number.isFinite(n)?n:NaN; };
 const SALES_HEAD={
-  units:/^(الكمي[ةه]|كمي[ةه]|الكمي[ةه] المباع[ةه]|عدد|العدد|qty|quantity|units?|sold qty|sales qty)$/i,
-  amount:/^(القيم[ةه]|قيم[ةه]|المبيعات|قيم[ةه] المبيعات|اجمالي|الاجمالي|إجمالي|الإجمالي|الصافي|صافي المبيعات|net|net sales|amount|total|value|sales|sales value)$/i,
-  cost:/^(التكلف[ةه]|تكلف[ةه]|cost|total cost)$/i
+  units:/^(الكمي[ةه]|كمي[ةه]|الكمي[ةه] المباع[ةه]|الكمي[ةه]المباع[ةه]|المباع|عدد|العدد|qty|quantity|units?|sold qty|sales qty)$/i,
+  amount:/^(القيم[ةه]|قيم[ةه]|المبيعات|قيم[ةه] المبيعات|القيم[ةه] بسعر البيع|اجمالي|الاجمالي|إجمالي|الإجمالي|الصافي|صافي المبيعات|net|net sales|amount|total|value|sales|sales value)$/i,
+  stock:/^(الكمي[ةه] الحالي[ةه]|الرصيد|المخزون|stock|on hand|balance)$/i,
+  cost:/^(التكلف[ةه]|تكلف[ةه]|القيم[ةه] بالتكلف[ةه]|cost|total cost)$/i
 };
+function toISO(d,m,y){ d=+d; m=+m; if(m>12&&d<=12){ const t=d; d=m; m=t; } if(m<1||m>12||d<1||d>31) return ''; return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
+function datesIn(s){
+  const out=[];
+  for(const m of String(s).matchAll(/(\d{1,2})[-/.](\d{1,2})[-/.](20\d{2})/g)){ const iso=toISO(m[1],m[2],m[3]); if(iso) out.push(iso); }
+  for(const m of String(s).matchAll(/(20\d{2})[-/.](\d{1,2})[-/.](\d{1,2})/g)){ const iso=toISO(m[3],m[2],m[1]); if(iso) out.push(iso); }
+  return out;
+}
 function guessMeta(text,fileName){
-  let branch=null, date='';
+  let branch=null;
   const pm=text.match(/(?:صيدلي[ةه]|pharmacy)\s*(?:رقم|no\.?|#)?\s*(\d+)/i)||String(fileName||'').match(/(?:صيدلي[ةه]|ph|pharmacy)\s*[-_ ]?(\d+)/i);
   if(pm&&PHARMACY_TO_BRANCH[pm[1]]) branch=PHARMACY_TO_BRANCH[pm[1]];
-  const dm=text.match(/(\d{1,2})[-/.](\d{1,2})[-/.](20\d{2})/)||String(fileName||'').match(/(\d{1,2})[-_. ](\d{1,2})[-_. ](20\d{2})/);
-  const im=!dm&&(text.match(/(20\d{2})-(\d{2})-(\d{2})/)||String(fileName||'').match(/(20\d{2})-(\d{2})-(\d{2})/));
-  if(dm){ let d=+dm[1], m=+dm[2]; if(m>12&&d<=12){ const t=d; d=m; m=t; } if(m>=1&&m<=12&&d>=1&&d<=31) date=dm[3]+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
-  else if(im) date=im[1]+'-'+im[2]+'-'+im[3];
-  return { branch:branch||(S.f.branch!=='ALL'?S.f.branch:'T1'), branchSure:!!branch, date:date||todayISO(), dateSure:!!date };
+  // الفترة: "من تاريخ … الى تاريخ …" في الملف، من غير تاريخ الطباعة
+  const body=text.split('\n').filter(l=>!/Printing Date|Print Date|تاريخ الطباع[ةه]/i.test(l)).join('\n');
+  let ds=[...new Set(datesIn(body))].sort(), sure=ds.length>0, from='', to='';
+  if(ds.length){ from=ds[0]; to=ds[ds.length-1]; }
+  else {
+    const nm=String(fileName||'').replace(/_/g,' '); const fd=[...new Set(datesIn(nm))].sort();
+    if(fd.length>=2){ from=fd[0]; to=fd[fd.length-1]; }
+    else if(fd.length===1){ to=fd[0]; from=/till|until|حتى|لحد|الى|إلى/i.test(nm)?to.slice(0,8)+'01':to; }
+    else { from=to=todayISO(); }
+  }
+  return { branch:branch||(S.f.branch!=='ALL'?S.f.branch:'T1'), branchSure:!!branch, from, to, dateSure:sure };
 }
 async function pdfLines(file){
   if(!window.pdfjsLib) window.pdfjsLib=window['pdfjs-dist/build/pdf'];
@@ -1490,26 +1566,26 @@ async function pdfLines(file){
   } finally { try{ await doc.destroy(); }catch(e){} }
   return lines;
 }
-function addSale(map,key,units,amount,cost){ const r=map.get(key)||{product:key,units:0,amount:0,cost:0}; r.units+=units||0; r.amount+=amount||0; r.cost+=cost||0; map.set(key,r); }
-/* PDF المبيعات: نفس منطق داشبورد المبيعات — الأرقام قبل اسم الصنف: القيمة … الكمية */
+function addSale(map,key,v){ const r=map.get(key)||{product:key,units:0,amount:0,cost:0,stock:null}; r.units+=v.units||0; r.amount+=v.amount||0; r.cost+=v.cost||0; if(v.stock!=null) r.stock=(r.stock||0)+v.stock; map.set(key,r); }
+/* PDF "مبيعات أصناف مورد": الأرقام قبل اسم الصنف بالترتيب: القيمة بسعر البيع · بالتكلفة · الكمية الحالية · الكمية المباعة */
 function salesFromLines(lines){
   const rows=new Map();
   lines.forEach(line=>{ const k=salesKw(line); if(!k) return;
     const nums=(line.slice(0,k.at).match(/\d[\d,]*(?:\.\d+)?/g)||[]).map(toNum).filter(n=>!isNaN(n));
     if(nums.length<2) return;
-    addSale(rows,k.key,Math.round(nums[nums.length-1]),Math.round(nums[0]),nums.length>=3?Math.round(nums[1]):0); });
+    addSale(rows,k.key,{units:Math.round(nums[nums.length-1]),amount:Math.round(nums[0]),cost:nums.length>=3?Math.round(nums[1]):0,stock:nums.length>=4?Math.round(nums[nums.length-2]):null}); });
   return [...rows.values()];
 }
 function salesFromGrid(grids){
   const rows=new Map();
   grids.forEach(grid=>{ let cols=null;
-    grid.forEach(row=>{ const cells=row.map(c=>String(c==null?'':c).trim());
-      if(!cols){ const c={}; cells.forEach((v,i)=>{ const h=v.replace(/\s+/g,' '); for(const k in SALES_HEAD) if(c[k]==null&&SALES_HEAD[k].test(h)) c[k]=i; }); if(c.units!=null){ cols=c; return; } }
+    grid.forEach((row,ri)=>{ const cells=row.map(c=>String(c==null?'':c).trim());
+      if(!cols){ const c={}; cells.forEach((v,i)=>{ const h=(v+' '+String((grid[ri+1]||[])[i]||'')).replace(/\s+/g,' ').trim(); for(const k in SALES_HEAD) if(c[k]==null&&(SALES_HEAD[k].test(v.replace(/\s+/g,' '))||SALES_HEAD[k].test(h))) c[k]=i; }); if(c.units!=null){ cols=c; return; } }
       const k=salesKw(cells.join(' ')); if(!k) return;
       if(cols){ const u=toNum(row[cols.units]); if(isNaN(u)) return;
-        addSale(rows,k.key,Math.round(u),cols.amount!=null?Math.round(toNum(row[cols.amount])||0):0,cols.cost!=null?Math.round(toNum(row[cols.cost])||0):0); }
-      else { const nums=row.filter(c=>c!==''&&!salesKw(c)).map(toNum).filter(n=>!isNaN(n)); if(!nums.length) return;
-        addSale(rows,k.key,Math.round(nums.length===1?nums[0]:nums[nums.length-1]),nums.length>1?Math.round(nums[0]):0,0); }
+        addSale(rows,k.key,{units:Math.round(u),amount:cols.amount!=null?Math.round(toNum(row[cols.amount])||0):0,cost:cols.cost!=null?Math.round(toNum(row[cols.cost])||0):0,stock:cols.stock!=null&&!isNaN(toNum(row[cols.stock]))?Math.round(toNum(row[cols.stock])):null}); }
+      else { const nums=row.filter(c=>c!==''&&!salesKw(c)&&!/^\d-\d{2}-\d{3}-\d{3}$/.test(String(c).trim())).map(toNum).filter(n=>!isNaN(n)&&n<1e7); if(!nums.length) return;
+        addSale(rows,k.key,{units:Math.round(nums.length===1?nums[0]:nums[nums.length-1]),amount:nums.length>1?Math.round(nums[0]):0}); }
     }); });
   return [...rows.values()];
 }
@@ -1519,7 +1595,8 @@ async function analyzeFile(f){
   if(f.size>PharmaCore.MAX_UPLOAD_BYTES) throw new Error('الملف أكبر من 50MB');
   if(ext==='.pdf'){
     const lines=await pdfLines(f); const text=lines.join('\n');
-    if(/Service Name|Medication Orders|Doctor Name|اسم الطبيب|اسم الخدمة/i.test(text)){
+    const looksSales=/مبيعات|الكمي[ةه] المباع[ةه]|بسعر البيع/.test(text)&&salesFromLines(lines).length>0;
+    if(!looksSales&&/Service Name|Medication Orders|Doctor Name|اسم الطبيب|اسم الخدم[ةه]/i.test(text)){
       const rows=await parsePDF(f,{}); validateParsedRows(rows);
       return { name, kind:'rx', rows:rows.map(r=>[r.doctor,r.service,r.section,r.patient,r.status]), ...guessMeta(text,name) };
     }
@@ -1550,20 +1627,24 @@ async function onFiles(list){
   }
   loading(); review(out);
 }
+const rangeLabel=(a,b)=>a===b?fmtDay(a)+' '+a.slice(0,4):'من '+fmtDay(a)+' لـ '+fmtDay(b)+' '+b.slice(0,4);
 function review(items){
   const m=document.createElement('div'); m.className='modal';
   const ok=items.some(x=>x.kind==='rx'||x.kind==='sales');
   items.forEach(x=>x.include=x.kind==='rx'||x.kind==='sales');
   const sel=(i,b)=>'<select id="rv-b'+i+'" data-i="'+i+'" data-f="branch">'+Object.entries(BRANCHES).map(([k,l])=>'<option value="'+k+'"'+(b===k?' selected':'')+'>'+l+'</option>').join('')+'</select>';
-  m.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-label="مراجعة الملفات"><h3>راجع الملفات قبل الحفظ</h3><p class="small muted">لو الصيدلية أو التاريخ مش مظبوطين عدّلهم. لو نفس النوع ونفس اليوم ونفس الصيدلية محفوظ قبل كده، الجديد هيحل محله.</p>'
+  m.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-label="مراجعة الملفات"><h3>راجع الملفات قبل الحفظ</h3><p class="small muted">البرنامج حدّد نوع كل ملف والصيدلية والفترة اللي بيغطيها. لو حاجة مش مظبوطة عدّلها. أي ملف قديم لنفس الصيدلية بيغطي نفس الأيام هيتشال ويحل محله الجديد.</p>'
     +items.map((x,i)=>{
       const badge=x.kind==='rx'?'<span class="ftype k-rx">كتابات</span>':x.kind==='sales'?'<span class="ftype k-sale">مبيعات</span>':'<span class="ftype k-leak">مش مفهوم</span>';
       let body='';
       if(x.kind==='error') body='<p class="small" style="color:var(--leak)">'+esc(x.error)+'</p>';
       else {
-        body='<div class="fields"><div class="field"><label for="rv-b'+i+'">الصيدلية'+(x.branchSure?'':' — اتأكد منها')+'</label>'+sel(i,x.branch)+'</div><div class="field"><label for="rv-d'+i+'">التاريخ'+(x.dateSure?'':' — اتأكد منه')+'</label><input type="date" id="rv-d'+i+'" data-i="'+i+'" data-f="date" value="'+escapeAttr(x.date)+'"></div></div>';
+        const warn=t=>'<span style="color:var(--warn)"> — '+t+'</span>';
+        body='<div class="fields three"><div class="field"><label for="rv-b'+i+'">الصيدلية'+(x.branchSure?'':warn('اتأكد'))+'</label>'+sel(i,x.branch)+'</div>'
+          +'<div class="field"><label for="rv-f'+i+'">من'+(x.dateSure?'':warn('اتأكد'))+'</label><input type="date" id="rv-f'+i+'" data-i="'+i+'" data-f="from" value="'+escapeAttr(x.from)+'"></div>'
+          +'<div class="field"><label for="rv-t'+i+'">إلى</label><input type="date" id="rv-t'+i+'" data-i="'+i+'" data-f="to" value="'+escapeAttr(x.to)+'"></div></div>';
         if(x.kind==='rx'){ const mine=x.rows.filter(r=>productKeyOf(r[1])).length; body+='<p class="small muted" style="margin-top:10px">'+fmt(x.rows.length)+' كتابة، منها <b style="color:var(--ink)">'+fmt(mine)+'</b> لأصنافك</p>'; }
-        else body+='<div class="dchips" style="margin-top:10px">'+x.sales.map(s=>'<span class="dchip k-sale">'+esc(PROD[s.product].name)+' · '+fmt(s.units)+'</span>').join('')+'</div>';
+        else body+='<div class="dchips" style="margin-top:10px">'+x.sales.map(s=>'<span class="dchip '+(PROD[s.product].brand==='n'?'b-n':'b-h')+'">'+esc(PROD[s.product].name)+' · '+fmt(s.units)+' علبة</span>').join('')+'</div>';
       }
       return '<div class="fcard"><div class="fhead">'+badge+'<b>'+esc(x.name)+'</b>'+(x.kind!=='error'?'<label class="small muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="rv-c'+i+'" checked data-i="'+i+'" data-f="include"> حفظ</label>':'')+'</div>'+body+'</div>';
     }).join('')
@@ -1573,25 +1654,29 @@ function review(items){
   m.addEventListener('click',async e=>{
     if(e.target===m||e.target.closest('[data-x]')){ m.remove(); return; }
     if(!e.target.closest('[data-ok]')) return;
-    const rxGroups=new Map(); let nRx=0,nS=0;
-    const salesMap=new Map(S.sales.map(x=>[x.date+'|'+x.branch+'|'+x.product,x]));
-    const replaced=new Set();
-    items.forEach(x=>{ if(!x.include||!/^\d{4}-\d{2}-\d{2}$/.test(x.date||'')) return;
-      if(x.kind==='rx'){ const k=x.branch+'|'+x.date; const g=rxGroups.get(k)||{branch:x.branch,date:x.date,rows:[],names:[]}; g.rows.push(...x.rows); g.names.push(x.name); rxGroups.set(k,g); }
-      if(x.kind==='sales'){ const day=x.date+'|'+x.branch+'|';
-        if(!replaced.has(day)){ [...salesMap.keys()].filter(k=>k.startsWith(day)).forEach(k=>salesMap.delete(k)); replaced.add(day); }
-        x.sales.forEach(s=>{ const k=day+s.product; const prev=salesMap.get(k);
-          salesMap.set(k,{date:x.date,branch:x.branch,product:s.product,units:s.units+(prev?prev.units:0),amount:s.amount+(prev?prev.amount:0),cost:s.cost+(prev?prev.cost:0)}); });
+    const bad=items.find(x=>x.include&&(!/^\d{4}-\d{2}-\d{2}$/.test(x.from||'')||!/^\d{4}-\d{2}-\d{2}$/.test(x.to||'')||x.from>x.to));
+    if(bad){ toast('راجع الفترة في '+bad.name+': «من» لازم تكون قبل «إلى»'); return; }
+    const ovl=(a,b)=>a.from<=b.to&&b.from<=a.to;
+    const rxGroups=new Map(); let nRx=0,nS=0; let sales=S.sales.slice();
+    items.forEach(x=>{ if(!x.include) return;
+      if(x.kind==='rx'){ const k=x.branch+'|'+x.from+'|'+x.to; const g=rxGroups.get(k)||{branch:x.branch,from:x.from,to:x.to,rows:[],names:[]}; g.rows.push(...x.rows); g.names.push(x.name); rxGroups.set(k,g); }
+      if(x.kind==='sales'){
+        sales=sales.filter(o=>!(o.branch===x.branch&&x.sales.some(s=>s.product===o.product)&&ovl(o,x)));
+        x.sales.forEach(s=>sales.push({branch:x.branch,product:s.product,from:x.from,to:x.to,units:s.units,amount:s.amount,cost:s.cost,stock:s.stock,file:x.name}));
         nS++; } });
     try{
       for(const g of rxGroups.values()){
-        for(const old of S.uploads.filter(u=>u.branch===g.branch&&u.date===g.date)) await Store.del('uploads',old.id);
-        S.uploads=S.uploads.filter(u=>!(u.branch===g.branch&&u.date===g.date));
-        const u={ id:'u'+Date.now()+Math.random().toString(36).slice(2,6), name:g.names.join(' + '), branch:g.branch, date:g.date, rows:g.rows, mine:g.rows.filter(r=>productKeyOf(r[1])).length, added:new Date().toISOString() };
+        const old=S.uploads.filter(u=>u.branch===g.branch&&ovl(u,g));
+        for(const o of old) await Store.del('uploads',o.id);
+        S.uploads=S.uploads.filter(u=>!old.includes(u));
+        const u={ id:'u'+Date.now()+Math.random().toString(36).slice(2,6), name:g.names.join(' + '), branch:g.branch, from:g.from, to:g.to, rows:g.rows, mine:g.rows.filter(r=>productKeyOf(r[1])).length, added:new Date().toISOString() };
         S.uploads.push(u); await Store.put('uploads',u); nRx++;
       }
-      if(nS){ S.sales=[...salesMap.values()]; await Store.set('sales',S.sales); }
+      if(nS){ S.sales=sales; await Store.set('sales',S.sales); }
     }catch(err){ toast('اتقرا بس ما اتحفظش على الجهاز: '+(err&&err.message||err)); }
+    // اعرض الفترة اللي اترفعت
+    const lastTo=items.filter(x=>x.include&&x.to).map(x=>x.to).sort().pop();
+    if(lastTo&&S.f.mode!=='all'){ S.f.mode='month'; S.f.month=lastTo.slice(0,7); saveFilter(); }
     m.remove(); rebuild(); route();
     toast('اتحفظ ✓'+(nRx?' '+nRx+' ملف كتابات':'')+(nRx&&nS?' و':'')+(nS?' '+nS+' ملف مبيعات':''));
   });
@@ -1629,9 +1714,9 @@ document.addEventListener('click',e=>{
   if(act==='pick') document.getElementById('fileInput').click();
   else if(act==='restore') document.getElementById('restoreInput').click();
   else if(act==='allFiles'){ S.allFiles=true; route(); }
-  else if(act==='backup') download('pharmadash-pro-backup-'+todayISO()+'.json',JSON.stringify({app:'pharmadash-pro',v:2,exported:new Date().toISOString(),uploads:S.uploads,sales:S.sales}));
+  else if(act==='backup') download('pharmadash-pro-backup-'+todayISO()+'.json',JSON.stringify({app:'pharmadash-pro',v:3,exported:new Date().toISOString(),uploads:S.uploads,sales:S.sales}));
   else if(act==='delRx') confirmBox('حذف ملف الكتابات ده؟','حذف',async()=>{ S.uploads=S.uploads.filter(u=>u.id!==a.dataset.id); try{ await Store.del('uploads',a.dataset.id); }catch(err){} rebuild(); route(); });
-  else if(act==='delSales') confirmBox('حذف مبيعات اليوم ده؟','حذف',async()=>{ S.sales=S.sales.filter(x=>x.date+'|'+x.branch!==a.dataset.k); try{ await Store.set('sales',S.sales); }catch(err){} rebuild(); route(); });
+  else if(act==='delSales') confirmBox('حذف ملف المبيعات ده؟','حذف',async()=>{ S.sales=S.sales.filter(x=>x.branch+'|'+x.from+'|'+x.to+'|'+PROD[x.product].brand!==a.dataset.k); try{ await Store.set('sales',S.sales); }catch(err){} rebuild(); route(); });
   else if(act==='wipe') confirmBox('مسح كل الكتابات والمبيعات من الجهاز ده؟ مش هينفع ترجعها إلا من نسخة احتياطية.','مسح الكل',async()=>{ try{ await Store.clear('uploads'); await Store.set('sales',[]); }catch(err){} S.uploads=[]; S.sales=[]; rebuild(); route(); toast('اتمسح كل حاجة'); });
 });
 document.addEventListener('change',e=>{
